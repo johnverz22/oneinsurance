@@ -1,0 +1,105 @@
+name: Deploy OneInsurance App - Agent
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "agent/**"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate .env file
+        working-directory: agent
+        run: |
+          cat <<EOF > .env
+          NEXT_PUBLIC_TOKEN=${{ secrets.NEXT_PUBLIC_TOKEN }}
+          NEXT_PUBLIC_STORAGE_SECRET=${{ secrets.NEXT_PUBLIC_STORAGE_SECRET }}
+          BASE_URL=${{ secrets.BASE_URL }}
+
+          EOF
+
+      - name: Install dependencies
+        working-directory: agent
+        run: |
+          rm -f package-lock.json
+          npm install
+
+      - name: Build app
+        working-directory: agent
+        run: |
+          npm run build
+          npm prune --omit=dev
+
+      - name: Archive build
+        working-directory: agent
+        run: |
+          tar -czf agent-build.tar.gz .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env auth.db
+
+      - name: Upload production bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-build
+          path: agent/agent-build.tar.gz
+
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: agent-build
+
+      - name: Clean previous deploy
+        run: |
+          rm -rf .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env
+
+      - name: Extract build
+        run: |
+          tar -xzf agent-build.tar.gz
+          rm agent-build.tar.gz
+
+      - name: Show downloaded files
+        run: ls -lah
+
+      - name: Use Node.js 22
+        run: |
+          source ~/.nvm/nvm.sh
+          nvm use 22
+
+      - name: Restart app with PM2
+        run: |
+          pm2 delete oneinsurance-agent || true
+          PORT=4000 pm2 start "npx next start" --name "oneinsurance-agent"
+          pm2 save
+
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: Delete old artifacts
+        run: |
+          REPO=${{ github.repository }}
+          echo "Cleaning up old artifacts from $REPO"
+          gh api repos/$REPO/actions/artifacts --paginate -q '.artifacts[].id' | while read -r id; do
+            gh api repos/$REPO/actions/artifacts/$id -X DELETE
+            echo "Deleted artifact $id"
+          done
