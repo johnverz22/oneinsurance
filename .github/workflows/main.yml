@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "oneinsurance/**"
+      - "ecommerce/**"
   workflow_dispatch:
 
 
@@ -23,7 +23,7 @@ jobs:
           node-version: 22
 
       - name: Generate .env file
-        working-directory: oneinsurance
+        working-directory: ecommerce
         run: |
           cat <<EOF > .env
           NEXT_PUBLIC_TOKEN=${{ secrets.NEXT_PUBLIC_TOKEN }}
@@ -43,27 +43,27 @@ jobs:
           EOF
 
       - name: Install dependencies
-        working-directory: oneinsurance
+        working-directory: ecommerce
         run: |
           rm -f package-lock.json
           npm install
 
       - name: Build app
-        working-directory: oneinsurance
+        working-directory: ecommerce
         run: |
           npm run build
           npm prune --omit=dev
 
       - name: Archive build
-        working-directory: oneinsurance
+        working-directory: ecommerce
         run: |
           tar -czf oneinsurance-build.tar.gz .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env auth.db
 
       - name: Upload production bundle
         uses: actions/upload-artifact@v4
         with:
-          name: oneinsurance-build
-          path: oneinsurance/oneinsurance-build.tar.gz
+          name: ecommerce-build
+          path: ecommerce/ecommerce-build.tar.gz
 
 
   deploy:
@@ -74,7 +74,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: oneinsurance-build
+          name: ecommerce-build
 
       - name: Clean previous deploy
         run: |
@@ -82,8 +82,8 @@ jobs:
 
       - name: Extract build
         run: |
-          tar -xzf oneinsurance-build.tar.gz
-          rm oneinsurance-build.tar.gz
+          tar -xzf ecommerce-build.tar.gz
+          rm ecommerce-build.tar.gz
 
       - name: Use Node.js 22
         run: |
