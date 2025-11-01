@@ -96,8 +96,17 @@ export type SendEmailVerificationRequest = {
   name: string
 }
 
+export const ForgotPasswordResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+})
+export type ForgotPasswordResponse = z.infer<
+  typeof ForgotPasswordResponseSchema
+>
+
 export const ResetPasswordSchema = z
   .object({
+    email: z.string().email('Please enter a valid email address'),
     token: z.string().min(1, 'Reset token is required'),
     password: z
       .string()
