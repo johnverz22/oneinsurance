@@ -57,7 +57,7 @@ jobs:
       - name: Archive build
         working-directory: ecommerce
         run: |
-          tar -czf oneinsurance-build.tar.gz .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env auth.db
+          tar -czf ecommerce-build.tar.gz .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env auth.db
 
       - name: Upload production bundle
         uses: actions/upload-artifact@v4
