@@ -83,8 +83,8 @@ jobs:
 
       - name: Restart app with PM2
         run: |
-          pm2 delete insurance-admin || true
-          PORT=5000 pm2 start "npx next start" --name "insurance-admin"
+          pm2 delete oneinsurance-admin || true
+          PORT=5000 pm2 start "npx next start" --name "oneinsurance-admin"
           pm2 save
 
 
