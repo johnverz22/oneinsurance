@@ -1,4 +1,5 @@
 import { Insurance } from '@/types/insurance'
+import { AGENT_CODE } from './agent-code'
 
 export const INSURANCES = [
   {
@@ -9,7 +10,7 @@ export const INSURANCES = [
     description:
       'Get comprehensive travel insurance that protects you from trip cancellations, medical emergencies, and more—wherever your journey takes you.',
     image: '/images/products/travel.jpg',
-    checkoutLink: '/VbiKN9PpML/products/travel-insurance',
+    checkoutLink: `/${AGENT_CODE}/products/travel-insurance`,
     tag: 'Popular',
     more: {
       overview: 'Worry-Free Trips, Anywhere You Go.',

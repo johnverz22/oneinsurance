@@ -1,9 +1,10 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-
-import { COMPANIES } from '@/constants/companies'
+import Marquee from 'react-fast-marquee'
 import { Metadata } from 'next'
+import { cn } from '@/lib/utils'
+import { COMPANIES } from '@/constants/companies'
 
 export const metadata: Metadata = {
   title: 'One Insurance | Providers',
@@ -12,38 +13,83 @@ export const metadata: Metadata = {
 
 export default function ProviderPage() {
   return (
-    <div className="py-16 lg:py-24">
-      <div className="container mx-auto px-4">
-        <div className="mb-12 text-center lg:mb-16">
-          <h2 className="mb-4 text-3xl font-bold lg:text-4xl">
+    <div className="relative py-16 lg:py-24">
+      <div className="mx-auto space-y-8">
+        {/* Header */}
+        <div className="mx-auto w-full max-w-7xl space-y-4 text-center">
+          <h2 className="from-primary to-tertiary bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent lg:text-5xl">
             Our Trusted Providers
           </h2>
-          <p className="mx-auto max-w-3xl text-xl">
+          <p className="text-lg font-normal">
             Partner with industry-leading companies that deliver exceptional
+            <br className="hidden sm:block" />
             solutions and services
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-8">
-          {COMPANIES.map((company) => (
+        {/* Logo Marquee */}
+        <Marquee
+          autoFill
+          pauseOnHover
+          direction="right"
+          className="mx-auto w-full max-w-7xl py-4"
+        >
+          {COMPANIES.map((company, index) => (
+            <Link
+              href={`/provider/${company.id}`}
+              key={index}
+              className="relative mx-4 flex h-24 w-40 items-center justify-center transition-opacity hover:opacity-75"
+            >
+              <div className="relative h-full w-full">
+                <Image
+                  src={company.image}
+                  alt={company.companyName}
+                  fill
+                  className="object-contain grayscale transition-all hover:grayscale-0"
+                  style={{ background: 'transparent' }}
+                />
+              </div>
+            </Link>
+          ))}
+        </Marquee>
+
+        <div className="grid gap-6">
+          {COMPANIES.map((company, index) => (
             <Link
               key={company.id}
               href={`/provider/${company.id}`}
               className="group"
             >
-              <div className="transform cursor-pointer rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl lg:p-8">
-                <div className="relative mb-4 h-20 w-full lg:h-24">
-                  <Image
-                    src={company.image}
-                    alt={`${company.companyName} logo`}
-                    fill
-                    className="object-contain grayscale filter transition-all duration-300 group-hover:grayscale-0"
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+              <div
+                className={cn(
+                  'flex transform cursor-pointer gap-3 p-6 transition-all duration-300 lg:p-8 xl:p-12',
+                  {
+                    'bg-muted-foreground/5 border-t border-b': index % 2 !== 1,
+                  }
+                )}
+              >
+                <div
+                  className={cn(
+                    'mx-auto flex w-full max-w-7xl flex-row-reverse',
+                    {
+                      'flex-row': index % 2 !== 1,
+                    }
+                  )}
+                >
+                  <div className="relative mb-4 h-20 w-full min-w-1/3 lg:h-24">
+                    <Image
+                      src={company.image}
+                      alt={`${company.companyName} logo`}
+                      fill
+                      className="object-contain filter transition-all duration-300"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                    />
+                  </div>
+                  <p
+                    className="text-left text-sm leading-tight font-semibold text-gray-800 transition-colors duration-300 group-hover:text-blue-600 lg:text-base"
+                    dangerouslySetInnerHTML={{ __html: company.description }}
                   />
                 </div>
-                <h3 className="text-center text-sm leading-tight font-semibold text-gray-800 transition-colors duration-300 group-hover:text-blue-600 lg:text-base">
-                  {company.companyName}
-                </h3>
               </div>
             </Link>
           ))}

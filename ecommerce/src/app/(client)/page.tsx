@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect } from 'react'
+import Marquee from 'react-fast-marquee'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, ArrowRight } from 'lucide-react'
@@ -25,7 +26,7 @@ import {
 } from '@/components/ui/accordion'
 import { INSURANCES } from '@/constants/insurances'
 import { COMPANIES } from '@/constants/companies'
-import Marquee from 'react-fast-marquee'
+import { AGENT_CODE } from '@/constants/agent-code'
 
 export default function Home() {
   // Sample testimonials data
@@ -235,18 +236,23 @@ export default function Home() {
               range of general insurance products tailored to your needs.
             </p>
           </div>
-
-          {/* <Button variant="link" className="text-lilac hidden lg:flex" asChild>
-            <Link href="/products">
-              View All Products <ChevronRight />
-            </Link>
-          </Button> */}
         </div>
 
         <div className="grid w-full items-center justify-between gap-4 md:grid-cols-5">
           {INSURANCES.slice(0, 5).map((product, index) => (
             <InsuranceCard key={index} {...product} />
           ))}
+        </div>
+
+        {/* View All Button */}
+        <div className="flex justify-center pt-4">
+          <Button
+            variant="outline"
+            className="hover:bg-primary rounded-full border-2 px-8 py-6 text-base font-semibold transition-all hover:text-white"
+            asChild
+          >
+            <Link href={`/${AGENT_CODE}/products`}>View All</Link>
+          </Button>
         </div>
       </section>
 
