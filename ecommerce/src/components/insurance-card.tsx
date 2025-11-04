@@ -7,12 +7,14 @@ import { Insurance } from '@/types/insurance'
 
 type InsuranceCardProps = Insurance & {
   variant?: 'compact' | 'expanded'
+  orientation?: 'horizontal' | 'vertical'
   className?: string
   companyName?: string
 }
 
 export const InsuranceCard = ({
   variant = 'compact',
+  orientation = 'horizontal',
   className,
   companyName,
   ...insurance
@@ -70,7 +72,7 @@ export const InsuranceCard = ({
   return (
     <div
       className={cn(
-        'bg-background border-muted-foreground/10 relative m-auto h-max min-h-2/5 w-11/12 overflow-visible rounded-md border shadow-lg md:w-[30rem]',
+        'bg-background border-muted-foreground/10 relative m-auto h-max min-h-2/5 w-11/12 overflow-visible rounded-md border shadow-sm md:w-[30rem]',
         className
       )}
     >
@@ -87,19 +89,31 @@ export const InsuranceCard = ({
         </div>
       )}
 
-      <div className="relative h-full w-full space-y-4 px-6 pt-6 pb-3">
-        <div className="relative mx-auto max-h-[12rem] min-h-40 w-full overflow-hidden rounded-md border lg:max-h-[20rem] lg:min-h-64">
+      <div
+        className={cn(
+          'relative flex h-[16rem] max-h-[20rem] w-full items-center justify-center gap-8',
+          {
+            'flex-col': orientation === 'vertical',
+            'flex-row': orientation === 'horizontal',
+          }
+        )}
+      >
+        <div
+          className={cn('relative mx-auto h-full w-full overflow-hidden', {
+            'max-w-1/3 rounded-l-md': orientation === 'horizontal',
+          })}
+        >
           <Image
             src={img}
             alt={insurance.title}
-            className="object-cover object-top"
+            className="object-cover"
             fill
           />
         </div>
 
-        <div className="z-10 p-3">
+        <div className="z-10 p-8">
           <div className="insurances-start mb-2 flex justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-semibold text-gray-900 lg:text-2xl xl:text-3xl dark:text-gray-100">
               {insurance.title}
             </h2>
           </div>
@@ -112,10 +126,10 @@ export const InsuranceCard = ({
           <Button
             size="sm"
             variant="link"
-            className="text-foreground !px-0 py-0"
+            className="text-foreground !px-0 py-0 underline underline-offset-8"
             asChild
           >
-            <Link href={`/products/${insurance.categoryId}/${insurance.id}`}>
+            <Link href={`/coming-soon`}>
               Learn More <ChevronRight />
             </Link>
           </Button>
