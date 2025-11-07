@@ -30,7 +30,7 @@ import {
 import { PaymentBrand, PaymentSubmitResponse } from '@/types/payment'
 import { IssueQuoteResponse } from '@/types/travel-insurance/policy-types'
 import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
-import { CoverNote } from './cover-note'
+import { CoverageOfConfirmation } from './coverage-of-confirmation'
 
 interface PaymentSuccessDialogProps {
   open: boolean
@@ -296,7 +296,10 @@ Thank you for choosing our travel insurance service!
               </Badge>
             </div>
             <div className="rounded-lg border bg-gray-50 p-2 sm:p-4">
-              <CoverNote policyData={policyData} quoteData={quoteData} />
+              <CoverageOfConfirmation
+                policyData={policyData}
+                quoteData={quoteData}
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Button
