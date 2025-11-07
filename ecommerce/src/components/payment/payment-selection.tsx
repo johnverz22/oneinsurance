@@ -104,10 +104,6 @@ export default function PaymentSelection() {
     }
   }, [searchParams])
 
-  // useEffect(() => {
-  //   setPaymentSubmitResponse(null)
-  // }, [])
-
   // Handle transaction completion when returning from redirect
   const handleTransactionCompletion = async () => {
     // Prevent duplicate execution
