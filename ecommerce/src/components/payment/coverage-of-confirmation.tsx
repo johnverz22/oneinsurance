@@ -9,14 +9,17 @@ import {
 } from '@/types/travel-insurance/policy-types'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { transformToCOCData } from '@/utils/travel-summary-helpers'
-import { GenerateAndDownloadCoverNote } from '../travel-insurance/cover-note-renderer'
+import { GenerateAndDownloadCoverNote } from '../travel-insurance/coverage-of-confirmation-renderer'
 
 interface coverNoteProps {
   policyData: IssueQuoteResponse['data']
   quoteData: FullQuoteResponse['data']
 }
 
-export function CoverNote({ policyData, quoteData }: coverNoteProps) {
+export function CoverageOfConfirmation({
+  policyData,
+  quoteData,
+}: coverNoteProps) {
   const { coverageOption } = useTravelInsuranceStore()
 
   const COC_DATA = transformToCOCData(policyData, quoteData, coverageOption)
@@ -36,7 +39,9 @@ export function CoverNote({ policyData, quoteData }: coverNoteProps) {
         <CardContent className="p-0">
           <div className="flex items-start justify-between border-b p-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Cover Note</h1>
+              <h1 className="text-3xl font-bold text-gray-800">
+                Confirmation of Coverage
+              </h1>
               <p className="text-sm text-gray-600">
                 #{policyData.PolicyNo || 'PQTRAVEL001'}
               </p>
