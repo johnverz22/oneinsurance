@@ -102,6 +102,7 @@ const initialState = {
         line1: '',
         line2: '',
       },
+      hasBeneficiary: false,
       beneficiary: {
         firstName: '',
         middleName: '',
