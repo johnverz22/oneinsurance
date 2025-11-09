@@ -8,7 +8,7 @@ import { CheckCircle, FileText, Shield } from 'lucide-react'
 import { PaymentBrand, PaymentSubmitResponse } from '@/types/payment'
 import { IssueQuoteResponse } from '@/types/travel-insurance/policy-types'
 import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
-import { CoverNote } from './cover-note'
+import { CoverageOfConfirmation } from './coverage-of-confirmation'
 import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import Image from 'next/image'
@@ -69,7 +69,7 @@ export function PaymentSuccessInline({
           className={`flex items-center gap-2 py-3 ${showCovernote ? 'from-primary to-lilac bg-gradient-to-r text-white' : ''}`}
         >
           <FileText className="h-4 w-4" />
-          Cover Note
+          Confirmation of Coverage
         </Button>
         <Button
           variant={!showCovernote ? 'default' : 'outline'}
@@ -82,7 +82,7 @@ export function PaymentSuccessInline({
       </div>
 
       {showCovernote ? (
-        <CoverNote policyData={policyData} quoteData={quoteData} />
+        <CoverageOfConfirmation policyData={policyData} quoteData={quoteData} />
       ) : (
         <div className="mx-auto max-w-4xl">
           <Card className="overflow-hidden">
@@ -203,7 +203,7 @@ export function PaymentSuccessInline({
                       Total Amount
                     </span>
                     <span className="text-base font-bold text-gray-800">
-                      PHP {INVOICE_DATA.payment.total.toLocaleString()}
+                      PHP {INVOICE_DATA.payment.basePremium.toLocaleString()}
                     </span>
                   </div>
                 </div>
