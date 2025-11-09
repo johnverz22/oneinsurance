@@ -22,13 +22,13 @@ import {
   PH_ID_TYPES,
   SuffixEnum,
   getIdFormatDescription,
+  PersonalInfoFormData,
 } from '@/types/travel-insurance/travel-insurance-request'
 import { FieldInfo } from '@/components/ui/form'
-import { useRouter } from 'next/navigation'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { provinces } from '@/constants/phil-prov'
 import { citiesMunicipalities } from '@/constants/phil-city-mun'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { getZipCodeByCityCode } from '@/utils/address-util'
 import { IdUploadComponent } from '../id-upload/id-upload-component'
 import { z } from 'zod'
@@ -42,6 +42,8 @@ import { FullQuoteResponseValidationErrorSchema } from '@/types/travel-insurance
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { mapTravelInsuranceStoreToFullQuoteRequest } from '@/utils/travel-insurance-mapper'
 import { useFullQuoteRequest } from '@/app/data/mutations/full-quote-request'
+import { CircleCheck, OctagonAlert } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 // Wrapper schema for the form
 const travelersFormSchema = z.object({
@@ -61,15 +63,13 @@ export function PersonalInfoForm() {
   const { mutateAsync } = useFullQuoteRequest()
   const { setApiResponse } = useFullQuoteResponseStore()
 
-  const router = useRouter()
   const [selectedProvinceCode, setSelectedProvinceCode] = useState<
     Record<number, string>
   >({})
   const formErrorRefs = useRef<{ [key: string]: HTMLElement | null }>({})
   const [activeTab, setActiveTab] = useState('traveler-0')
-  const [hasBeneficiary, setHasBeneficiary] = useState<Record<number, boolean>>(
-    {}
-  )
+
+  const [hasValidated, setHasValidated] = useState(false)
 
   const totalTravelers =
     (travelDetails.noOfAdults || 0) + (travelDetails.noOfChildren || 0)
@@ -139,7 +139,7 @@ export function PersonalInfoForm() {
 
       // Add new empty travelers if needed
       for (let i = currentTravelers.length; i < totalTravelers; i++) {
-        newTravelers.push({
+        const INITIAL_TRAVELLER_DATA = {
           firstName: '',
           middleName: '',
           lastName: '',
@@ -156,13 +156,18 @@ export function PersonalInfoForm() {
             line1: '',
             line2: '',
           },
+          hasBeneficiary: false,
           beneficiary: {
-            name: '',
+            firstName: '',
+            middleName: '',
+            lastName: '',
             dateOfBirth: null,
             relationship: '',
           },
           dateOfBirth: new Date('1990-01-01'),
-        })
+        } satisfies PersonalInfoFormData
+
+        newTravelers.push(INITIAL_TRAVELLER_DATA)
       }
 
       form.setFieldValue('travelers', newTravelers)
@@ -184,56 +189,80 @@ export function PersonalInfoForm() {
     )
 
     setSelectedProvinceCode(provinceCodes)
-
-    // Initialize hasBeneficiary state based on existing data
-    const beneficiaryStates = travelers.reduce(
-      (acc, traveler, idx) => {
-        acc[idx] = !!(
-          traveler?.beneficiary?.firstName ||
-          traveler?.beneficiary?.lastName ||
-          traveler?.beneficiary?.dateOfBirth ||
-          traveler?.beneficiary?.relationship
-        )
-        return acc
-      },
-      {} as Record<number, boolean>
-    )
-    setHasBeneficiary(beneficiaryStates)
   }, [form.state.values?.travelers])
 
-  const handleNext = (currentTabIndex: number) => {
+  const FIELD_INDEX_REGEX = /travelers\[(\d+)\]/g
+  const indexesWithErrors = useMemo(() => {
+    if (!hasValidated)
+      return { indexes: [] as number[], fields: [] as string[] }
+
+    const fields = Object.keys(form.state.errorMap.onChange ?? {})
+    const indexes = [
+      ...new Set(
+        fields.flatMap((field) => {
+          const matches = [...field.matchAll(FIELD_INDEX_REGEX)]
+          return matches.map((m) => Number(m[1]))
+        })
+      ),
+    ]
+
+    return { indexes, fields }
+  }, [form.state.errorMap, hasValidated])
+
+  const currentTabIndex = useMemo(
+    () => parseInt(activeTab.split('-')[1], 10),
+    [activeTab]
+  )
+
+  const scrollToFirstError = (errorFields?: string[]) => {
+    const fields = errorFields ?? indexesWithErrors.fields
+    const { currentTabErrors } = getSortedTravelerErrors(fields)
+
+    if (!currentTabErrors.length) {
+      handleSetActiveTab(Math.min(currentTabIndex + 1, totalTravelers - 1))
+      return
+    }
+
+    const firstErrorField = currentTabErrors[0]
+    const element = formErrorRefs.current[firstErrorField]
+    handleSetActiveTab(currentTabIndex)
+
+    if (!element) return
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if ('focus' in element) element.focus()
+  }
+
+  const handleNextTraveller = () => {
+    if (hasValidated) {
+      const { fieldsErrorMap } = form.validateSync('submit')
+      const errorFields = Object.keys(fieldsErrorMap ?? {})
+      scrollToFirstError(errorFields)
+
+      const { currentTabErrors } = getSortedTravelerErrors(errorFields)
+      if (currentTabErrors.length > 0) return
+    }
+
     if (currentTabIndex < totalTravelers - 1) {
-      setActiveTab(`traveler-${currentTabIndex + 1}`)
-      document.getElementById('travelers-info')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+      handleSetActiveTab(currentTabIndex + 1)
     }
   }
 
-  const scrollToFirstError = async () => {
-    const currentTabIndex = parseInt(activeTab.split('-')[1], 10)
+  const handlePrevTraveller = () => {
+    if (currentTabIndex > 0) handleSetActiveTab(currentTabIndex - 1)
+  }
 
-    const errors = form.state.errors?.[currentTabIndex] ?? {}
-    const sortedTravelerErrors = getSortedTravelerErrors(errors ?? {})
+  const handleSetActiveTab = (index: number) => {
+    setActiveTab(`traveler-${index}`)
+    document.getElementById('travelers-info')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
 
-    for (const [index, fields] of Object.entries(sortedTravelerErrors)) {
-      const firstErrorField = fields[0]
-      if (firstErrorField) {
-        if (currentTabIndex !== Number(index)) {
-          handleNext(currentTabIndex)
-        }
-
-        const element = formErrorRefs.current[firstErrorField]
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
-        if (element && 'focus' in element) {
-          element.focus()
-        }
-
-        break
-      }
-    }
+  const handleTriggerValidation = () => {
+    setHasValidated(true)
+    form.validateSync('submit')
   }
 
   const handleDataExtracted = (index: number) => (extractedData: any) => {
@@ -284,7 +313,7 @@ export function PersonalInfoForm() {
             })
           }}
         >
-          <Card id="travelers-info" className="gap-4">
+          <Card id="travelers-info" className="gap-4 shadow-none">
             <CardHeader className="text-2xl font-bold">
               Travelers Information
             </CardHeader>
@@ -292,12 +321,13 @@ export function PersonalInfoForm() {
             <div className="space-y-4 px-6 pb-6">
               <form.Field name="travelers" mode="array">
                 {(field) => {
-                  const travelerCount = field.state.value?.length || 0
-
                   return (
                     <Tabs
                       value={activeTab}
-                      onValueChange={setActiveTab}
+                      onValueChange={(value) => {
+                        if (hasValidated) handleTriggerValidation()
+                        return setActiveTab(value)
+                      }}
                       className="w-full"
                     >
                       <TabsList
@@ -310,13 +340,31 @@ export function PersonalInfoForm() {
                           const isAdult =
                             index < (travelDetails.noOfAdults || 0)
                           const travelerType = isAdult ? 'Adult' : 'Child'
+                          const hasError =
+                            indexesWithErrors.indexes.includes(index)
 
                           return (
                             <TabsTrigger
                               key={index}
                               value={`traveler-${index}`}
-                              className="data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none border-b-2 border-transparent bg-transparent px-0 pt-0 pb-3 text-lg font-semibold text-gray-400 shadow-none transition-colors hover:text-gray-600 data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                              className={cn(
+                                'data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none border-b-2 border-transparent bg-transparent px-0 pt-0 pb-3 text-lg font-semibold text-gray-400 shadow-none transition-colors hover:text-gray-600 data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none',
+                                {
+                                  'data-[state=active]:text-destructive data-[state=active]:border-b-destructive':
+                                    hasError,
+                                }
+                              )}
                             >
+                              {hasError ? (
+                                <OctagonAlert
+                                  className="text-destructive"
+                                  size={24}
+                                />
+                              ) : (
+                                hasValidated && (
+                                  <CircleCheck className="text-primary" />
+                                )
+                              )}
                               <span className="flex items-center gap-2">
                                 Traveler {index + 1}
                                 <span className="text-xs font-normal opacity-70">
@@ -378,7 +426,6 @@ export function PersonalInfoForm() {
                                         onBlur={field.handleBlur}
                                         className="h-12"
                                         placeholder="Enter first name"
-                                        required
                                       />
                                       <FieldInfo field={field} />
                                     </div>
@@ -431,7 +478,6 @@ export function PersonalInfoForm() {
                                         onBlur={field.handleBlur}
                                         className="h-12"
                                         placeholder="Enter last name"
-                                        required
                                       />
                                       <FieldInfo field={field} />
                                     </div>
@@ -551,7 +597,6 @@ export function PersonalInfoForm() {
                                                 )
                                               }
                                             }}
-                                            required
                                           />
                                         </div>
                                         <FieldInfo field={field} />
@@ -580,7 +625,6 @@ export function PersonalInfoForm() {
                                         onBlur={field.handleBlur}
                                         className="h-12"
                                         placeholder="johndoe@example.com"
-                                        required
                                       />
                                       <FieldInfo field={field} />
                                     </div>
@@ -609,7 +653,6 @@ export function PersonalInfoForm() {
                                           onBlur={field.handleBlur}
                                           className="h-12 rounded-l-none bg-none"
                                           placeholder="9123456789"
-                                          required
                                         />
                                       </div>
 
@@ -631,7 +674,6 @@ export function PersonalInfoForm() {
                                         onValueChange={(value) =>
                                           field.handleChange(value as any)
                                         }
-                                        required
                                       >
                                         <SelectTrigger
                                           ref={(el) => {
@@ -693,7 +735,6 @@ export function PersonalInfoForm() {
                                           onBlur={field.handleBlur}
                                           className="h-12"
                                           placeholder="Enter ID Number"
-                                          required
                                         />
 
                                         <FieldInfo field={field} />
@@ -718,7 +759,6 @@ export function PersonalInfoForm() {
                                             [index]: value,
                                           }))
                                         }}
-                                        required
                                       >
                                         <SelectTrigger
                                           ref={(el) => {
@@ -774,7 +814,6 @@ export function PersonalInfoForm() {
                                             `travelers[${index}].address.province`
                                           ).length === 0
                                         }
-                                        required
                                       >
                                         <SelectTrigger
                                           ref={(el) => {
@@ -829,7 +868,6 @@ export function PersonalInfoForm() {
                                         }
                                         className="h-12"
                                         placeholder="Enter ZIP Code"
-                                        required
                                       />
                                       <FieldInfo field={field} />
                                     </div>
@@ -857,7 +895,6 @@ export function PersonalInfoForm() {
                                         onBlur={field.handleBlur}
                                         className="h-12"
                                         placeholder="Enter full address line 1"
-                                        required
                                       />
                                       <FieldInfo field={field} />
                                     </div>
@@ -885,7 +922,6 @@ export function PersonalInfoForm() {
                                         className="h-12"
                                         placeholder="Enter full address line 2"
                                         maxLength={45}
-                                        required
                                       />
                                       <FieldInfo field={field} />
                                     </div>
@@ -899,39 +935,33 @@ export function PersonalInfoForm() {
                                     Beneficiary
                                   </div>
                                   <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                      id={`has-beneficiary-${index}`}
-                                      checked={hasBeneficiary[index] ?? false}
-                                      onCheckedChange={(checked) => {
-                                        setHasBeneficiary((prev) => ({
-                                          ...prev,
-                                          [index]: checked as boolean,
-                                        }))
-                                        // Clear beneficiary data when unchecked
-                                        if (!checked) {
-                                          form.setFieldValue(
-                                            `travelers[${index}].beneficiary.firstName`,
-                                            ''
-                                          )
-                                          form.setFieldValue(
-                                            `travelers[${index}].beneficiary.middleName`,
-                                            ''
-                                          )
-                                          form.setFieldValue(
-                                            `travelers[${index}].beneficiary.lastName`,
-                                            ''
-                                          )
-                                          form.setFieldValue(
-                                            `travelers[${index}].beneficiary.dateOfBirth`,
-                                            null
-                                          )
-                                          form.setFieldValue(
-                                            `travelers[${index}].beneficiary.relationship`,
-                                            ''
-                                          )
-                                        }
-                                      }}
+                                    <form.Field
+                                      name={`travelers[${index}].hasBeneficiary`}
+                                      children={(field) => (
+                                        <Checkbox
+                                          id={`has-beneficiary-${index}`}
+                                          checked={field.state.value}
+                                          onCheckedChange={() => {
+                                            const value = !field.state.value
+                                            field.handleChange(value)
+
+                                            if (!value) {
+                                              form.setFieldValue(
+                                                `travelers[${index}].beneficiary`,
+                                                {
+                                                  firstName: '',
+                                                  middleName: '',
+                                                  lastName: '',
+                                                  dateOfBirth: null,
+                                                  relationship: '',
+                                                }
+                                              )
+                                            }
+                                          }}
+                                        />
+                                      )}
                                     />
+
                                     <label
                                       htmlFor={`has-beneficiary-${index}`}
                                       className="text-sm leading-none font-normal peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -940,168 +970,191 @@ export function PersonalInfoForm() {
                                     </label>
                                   </div>
                                 </CardHeader>
-                                <div className="space-y-4 px-6 pb-6">
-                                  <div className="flex flex-col gap-4">
-                                    <div className="grid gap-4 md:grid-cols-3">
-                                      <form.Field
-                                        name={`travelers[${index}].beneficiary.firstName`}
-                                        children={(field) => (
-                                          <div className="space-y-2">
-                                            <Label className="text-primary block">
-                                              First Name
-                                            </Label>
-                                            <Input
-                                              ref={(el) => {
-                                                formErrorRefs.current[
-                                                  `travelers[${index}].beneficiary.firstName`
-                                                ] = el
-                                              }}
-                                              value={field.state.value ?? ''}
-                                              onChange={(e) =>
-                                                field.handleChange(
-                                                  e.target.value
-                                                )
-                                              }
-                                              onBlur={field.handleBlur}
-                                              className="h-12"
-                                              placeholder="Enter beneficiary first name"
-                                              disabled={!hasBeneficiary[index]}
-                                              required={hasBeneficiary[index]}
-                                            />
-                                            <FieldInfo field={field} />
-                                          </div>
-                                        )}
-                                      />
-                                      <form.Field
-                                        name={`travelers[${index}].beneficiary.middleName`}
-                                        children={(field) => (
-                                          <div className="space-y-2">
-                                            <Label className="text-primary block">
-                                              Middle Name
-                                            </Label>
-                                            <Input
-                                              ref={(el) => {
-                                                formErrorRefs.current[
-                                                  `travelers[${index}].beneficiary.middleName`
-                                                ] = el
-                                              }}
-                                              value={field.state.value ?? ''}
-                                              onChange={(e) =>
-                                                field.handleChange(
-                                                  e.target.value
-                                                )
-                                              }
-                                              onBlur={field.handleBlur}
-                                              className="h-12"
-                                              placeholder="Enter beneficiary middle name"
-                                              disabled={!hasBeneficiary[index]}
-                                            />
-                                            <FieldInfo field={field} />
-                                          </div>
-                                        )}
-                                      />
-                                      <form.Field
-                                        name={`travelers[${index}].beneficiary.lastName`}
-                                        children={(field) => (
-                                          <div className="space-y-2">
-                                            <Label className="text-primary block">
-                                              Last Name
-                                            </Label>
-                                            <Input
-                                              ref={(el) => {
-                                                formErrorRefs.current[
-                                                  `travelers[${index}].beneficiary.lastName`
-                                                ] = el
-                                              }}
-                                              value={field.state.value ?? ''}
-                                              onChange={(e) =>
-                                                field.handleChange(
-                                                  e.target.value
-                                                )
-                                              }
-                                              onBlur={field.handleBlur}
-                                              className="h-12"
-                                              placeholder="Enter beneficiary last name"
-                                              disabled={!hasBeneficiary[index]}
-                                              required={hasBeneficiary[index]}
-                                            />
-                                            <FieldInfo field={field} />
-                                          </div>
-                                        )}
-                                      />
-                                    </div>
-
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                      <form.Field
-                                        name={`travelers[${index}].beneficiary.dateOfBirth`}
-                                        children={(field) => (
-                                          <div className="space-y-2">
-                                            <Label className="text-primary block">
-                                              Date of Birth
-                                            </Label>
-                                            {hasBeneficiary[index] ? (
-                                              <DateTimePicker
-                                                variant="date"
-                                                value={
-                                                  field.state.value ?? undefined
+                                <form.Subscribe
+                                  selector={(state) =>
+                                    state.values.travelers[index].hasBeneficiary
+                                  }
+                                >
+                                  {(hasBeneficiary) => (
+                                    <div className="flex flex-col gap-4 space-y-4 px-6 pb-6">
+                                      <div className="grid gap-4 md:grid-cols-3">
+                                        <form.Field
+                                          name={`travelers[${index}].beneficiary.firstName`}
+                                          children={(field) => (
+                                            <div className="space-y-2">
+                                              <Label className="text-primary block">
+                                                First Name
+                                              </Label>
+                                              <Input
+                                                ref={(el) => {
+                                                  formErrorRefs.current[
+                                                    `travelers[${index}].beneficiary.firstName`
+                                                  ] = el
+                                                }}
+                                                value={field.state.value ?? ''}
+                                                onChange={(e) =>
+                                                  field.handleChange(
+                                                    e.target.value
+                                                  )
                                                 }
-                                                onChange={(value) =>
-                                                  field.handleChange(value)
-                                                }
-                                                disabled={(date) =>
-                                                  date >= new Date()
-                                                }
-                                                required
+                                                onBlur={field.handleBlur}
+                                                className="h-12"
+                                                placeholder="Enter beneficiary first name"
+                                                disabled={!hasBeneficiary}
+                                                required={hasBeneficiary}
                                               />
-                                            ) : (
-                                              <DateTimePicker
-                                                variant="date"
-                                                value={
-                                                  field.state.value ?? undefined
+                                              <FieldInfo field={field} />
+                                            </div>
+                                          )}
+                                        />
+                                        <form.Field
+                                          name={`travelers[${index}].beneficiary.middleName`}
+                                          children={(field) => (
+                                            <div className="space-y-2">
+                                              <Label className="text-primary block">
+                                                Middle Name
+                                              </Label>
+                                              <Input
+                                                ref={(el) => {
+                                                  formErrorRefs.current[
+                                                    `travelers[${index}].beneficiary.middleName`
+                                                  ] = el
+                                                }}
+                                                value={field.state.value ?? ''}
+                                                onChange={(e) =>
+                                                  field.handleChange(
+                                                    e.target.value
+                                                  )
                                                 }
-                                                onChange={(value) =>
-                                                  field.handleChange(value)
-                                                }
-                                                disabled={() => true}
+                                                onBlur={field.handleBlur}
+                                                className="h-12"
+                                                placeholder="Enter beneficiary middle name"
+                                                disabled={!hasBeneficiary}
                                               />
-                                            )}
-                                            <FieldInfo field={field} />
-                                          </div>
-                                        )}
-                                      />
+                                              <FieldInfo field={field} />
+                                            </div>
+                                          )}
+                                        />
+                                        <form.Field
+                                          name={`travelers[${index}].beneficiary.lastName`}
+                                          children={(field) => (
+                                            <div className="space-y-2">
+                                              <Label className="text-primary block">
+                                                Last Name
+                                              </Label>
+                                              <Input
+                                                ref={(el) => {
+                                                  formErrorRefs.current[
+                                                    `travelers[${index}].beneficiary.lastName`
+                                                  ] = el
+                                                }}
+                                                value={field.state.value ?? ''}
+                                                onChange={(e) =>
+                                                  field.handleChange(
+                                                    e.target.value
+                                                  )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                className="h-12"
+                                                placeholder="Enter beneficiary last name"
+                                                disabled={!hasBeneficiary}
+                                                required={hasBeneficiary}
+                                              />
+                                              <FieldInfo field={field} />
+                                            </div>
+                                          )}
+                                        />
+                                      </div>
 
-                                      <form.Field
-                                        name={`travelers[${index}].beneficiary.relationship`}
-                                        children={(field) => (
-                                          <div className="space-y-2">
-                                            <Label className="text-primary block">
-                                              Relationship
-                                            </Label>
-                                            <Input
-                                              ref={(el) => {
-                                                formErrorRefs.current[
-                                                  `travelers[${index}].beneficiary.relationship`
-                                                ] = el
-                                              }}
-                                              value={field.state.value ?? ''}
-                                              onChange={(e) =>
-                                                field.handleChange(
-                                                  e.target.value
-                                                )
-                                              }
-                                              onBlur={field.handleBlur}
-                                              className="h-12"
-                                              placeholder="e.g., Spouse, Parent, Child"
-                                              disabled={!hasBeneficiary[index]}
-                                              required={hasBeneficiary[index]}
-                                            />
+                                      <div className="grid gap-4 md:grid-cols-2">
+                                        <form.Field
+                                          name={`travelers[${index}].beneficiary.dateOfBirth`}
+                                          children={(field) => (
+                                            <div className="space-y-2">
+                                              <Label className="text-primary block">
+                                                Date of Birth
+                                              </Label>
+                                              {hasBeneficiary ? (
+                                                <DateTimePicker
+                                                  variant="date"
+                                                  value={
+                                                    field.state.value ??
+                                                    undefined
+                                                  }
+                                                  onChange={(value) =>
+                                                    field.handleChange(value)
+                                                  }
+                                                  disabled={(date) =>
+                                                    date >= new Date()
+                                                  }
+                                                  required
+                                                />
+                                              ) : (
+                                                <DateTimePicker
+                                                  variant="date"
+                                                  value={
+                                                    field.state.value ??
+                                                    undefined
+                                                  }
+                                                  onChange={(value) =>
+                                                    field.handleChange(value)
+                                                  }
+                                                  disabled={() => true}
+                                                />
+                                              )}
+                                              <FieldInfo field={field} />
+                                            </div>
+                                          )}
+                                        />
+
+                                        <form.Field
+                                          name={`travelers[${index}].beneficiary.relationship`}
+                                          children={(field) => (
+                                            <div className="space-y-2">
+                                              <Label className="text-primary block">
+                                                Relationship
+                                              </Label>
+                                              <Input
+                                                ref={(el) => {
+                                                  formErrorRefs.current[
+                                                    `travelers[${index}].beneficiary.relationship`
+                                                  ] = el
+                                                }}
+                                                value={field.state.value ?? ''}
+                                                onChange={(e) =>
+                                                  field.handleChange(
+                                                    e.target.value
+                                                  )
+                                                }
+                                                onBlur={field.handleBlur}
+                                                className="h-12"
+                                                placeholder="e.g., Spouse, Parent, Child"
+                                                disabled={!hasBeneficiary}
+                                                required={hasBeneficiary}
+                                              />
+                                              <FieldInfo field={field} />
+                                            </div>
+                                          )}
+                                        />
+                                      </div>
+
+                                      <div
+                                        ref={(el) => {
+                                          formErrorRefs.current[
+                                            `travelers[${index}].beneficiary`
+                                          ] = el
+                                        }}
+                                      >
+                                        <form.Field
+                                          name={`travelers[${index}].beneficiary`}
+                                          children={(field) => (
                                             <FieldInfo field={field} />
-                                          </div>
-                                        )}
-                                      />
+                                          )}
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
+                                  )}
+                                </form.Subscribe>
                               </Card>
                             </div>
                           </TabsContent>
@@ -1114,28 +1167,43 @@ export function PersonalInfoForm() {
             </div>
           </Card>
 
-          <div className="flex items-center justify-center gap-3 px-1.5 pt-6 lg:justify-start lg:px-0">
+          <div className="sticky bottom-0 flex items-center justify-center gap-3 bg-[#F3F5FC] px-1.5 py-6 lg:justify-start lg:px-0">
             <Button
               type="button"
               size="lg"
               variant="outline"
               className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
-              onClick={prevStep}
+              onClick={() => {
+                if (currentTabIndex === 0) return prevStep()
+                else return handlePrevTraveller()
+              }}
             >
-              Back
+              {currentTabIndex === 0 ? 'Back' : 'Previous Traveller'}
             </Button>
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
-              children={([_, isSubmitting]) => (
-                <Button
-                  onClick={scrollToFirstError}
-                  size="lg"
-                  className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
-                >
-                  {isSubmitting ? 'Processing...' : 'Request Full Quote'}
-                </Button>
-              )}
-            />
+
+            {currentTabIndex < totalTravelers - 1 ? (
+              <Button
+                type="button"
+                size="lg"
+                className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
+                onClick={handleNextTraveller}
+              >
+                Next Traveller
+              </Button>
+            ) : (
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                children={([canSubmit, isSubmitting]) => (
+                  <Button
+                    size="lg"
+                    className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
+                    onClick={handleTriggerValidation}
+                  >
+                    {isSubmitting ? 'Processing...' : 'Request Full Quote'}
+                  </Button>
+                )}
+              />
+            )}
           </div>
         </form>
       </div>
