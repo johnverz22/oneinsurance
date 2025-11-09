@@ -1,14 +1,11 @@
-type ErrorMap = Record<string, any>
-
-export function getSortedTravelerErrors(errors: ErrorMap) {
+export function getSortedTravelerErrors(errors: string[], currentTabIndex = 0) {
   const sortedErrors: Record<number, string[]> = {}
 
-  // Determine how many travelers exist from error keys
   const travelerIndexes = Array.from(
     new Set(
-      Object.keys(errors)
-        .map((key) => {
-          const match = key.match(/travelers\[(\d+)\]/)
+      errors
+        .map((error) => {
+          const match = error.match(/travelers\[(\d+)\]/)
           return match ? parseInt(match[1], 10) : null
         })
         .filter((i): i is number => i !== null)
@@ -29,12 +26,15 @@ export function getSortedTravelerErrors(errors: ErrorMap) {
       `travelers[${i}].address.city`,
       `travelers[${i}].address.zipCode`,
       `travelers[${i}].address.line1`,
-      `travelers[${i}].beneficiary.name`,
+      `travelers[${i}].beneficiary`,
+      `travelers[${i}].beneficiary.firstName`,
+      `travelers[${i}].beneficiary.middleName`,
+      `travelers[${i}].beneficiary.lastName`,
       `travelers[${i}].beneficiary.dateOfBirth`,
       `travelers[${i}].beneficiary.relationship`,
     ]
 
-    const travelerErrorKeys = Object.keys(errors).filter((key) =>
+    const travelerErrorKeys = errors.filter((key) =>
       key.startsWith(`travelers[${i}]`)
     )
 
@@ -48,5 +48,7 @@ export function getSortedTravelerErrors(errors: ErrorMap) {
     })
   }
 
-  return sortedErrors
+  const currentTabErrors = sortedErrors[currentTabIndex] ?? []
+
+  return { allErrors: sortedErrors, currentTabErrors }
 }

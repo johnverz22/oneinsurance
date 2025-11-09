@@ -293,7 +293,8 @@ export const personalInfoSchema = z
         .min(1, 'Address Line 2 is required')
         .max(40, 'Address Line 2 must not exceed 40 characters'),
     }),
-    beneficiary: beneficiarySchema.optional(),
+    hasBeneficiary: z.boolean(),
+    beneficiary: beneficiarySchema,
   })
   .superRefine((data, ctx) => {
     const validator = formatValidators[data.idType]
@@ -306,6 +307,25 @@ export const personalInfoSchema = z
           message:
             result.error.errors[0]?.message ||
             `Invalid format for ${data.idType}`,
+        })
+      }
+    }
+
+    if (data.hasBeneficiary) {
+      const b = data.beneficiary
+
+      if (
+        !b?.firstName ||
+        !b?.middleName ||
+        !b?.lastName ||
+        !b?.dateOfBirth ||
+        !b?.relationship
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['beneficiary'],
+          message:
+            'All beneficiary fields are required if you have a beneficiary',
         })
       }
     }
