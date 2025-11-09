@@ -17,7 +17,7 @@ export const transformToInvoiceData = (
 
   const customer = quoteData.PolicyCustomerList?.[0]
 
-  const basePremium = quoteData.BeforeVatPremium || 0
+  const basePremium = quoteData.GrossPremium || 0
   const lgt = quoteData.LGT || 0
   const vat = quoteData.DuePremium - quoteData.BeforeVatPremium || 0
   const processingFee = quoteData.GrossPremium - quoteData.BeforeVatPremium || 0
