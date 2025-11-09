@@ -92,6 +92,7 @@ export default function PaymentSelection() {
   const [showCardPaymentProcessing, setShowCardPaymentProcessing] =
     useState(false)
   const [isIssuingQuote, setIsIssuingQuote] = useState(false)
+  const [transactionStatus, setTransactionStatus] = useState(true)
 
   // Check for transaction completion on component mount
   useEffect(() => {
@@ -220,7 +221,6 @@ export default function PaymentSelection() {
   ) => {
     setIsProcessing(true)
     try {
-      // Step 1: Get payment authentication
       const authResponse = await getPaymentAuth()
       if (!authResponse?.access_token) {
         alert('Payment authentication failed. Please try again.')
@@ -228,46 +228,84 @@ export default function PaymentSelection() {
       }
 
       const echo = getEcho()
-      const channel = echo.channel('transaction-channel')
+      if (echo.connector.pusher.connection.state !== 'connected') {
+        echo.connect()
+      }
 
-      channel.listen(
-        '.transaction.message',
-        (data: PaymentConfirmationResponse) => {
-          if (data.code === 200) {
-            handleCardPaymentIssueQuote(paymentRequest)
-          } else {
-            toast.error(data.message)
-            setShowCardPaymentProcessing(false)
-          }
-          echo.disconnect()
+      const confirmationPromise = new Promise<PaymentConfirmationResponse>(
+        (resolve, reject) => {
+          const channel = echo.channel('transaction-channel')
+
+          const timeout = setTimeout(() => {
+            channel.stopListening('.transaction.message')
+            echo.disconnect()
+            reject(new Error('Payment confirmation timeout'))
+          }, 30000)
+
+          channel.listen(
+            '.transaction.message',
+            (data: PaymentConfirmationResponse) => {
+              clearTimeout(timeout)
+
+              if (data.code === 200 && transactionStatus) {
+                resolve(data)
+              } else {
+                reject(new Error(data.message))
+              }
+            }
+          )
         }
       )
 
       setShowCardPaymentProcessing(true)
 
-      // Step 2: Submit payment
       const paymentResult = await submitPayment({
-        data: paymentRequest,
+        data: {
+          ...paymentRequest,
+          merchant_transaction_id: generateTransactionId(),
+        },
         brand_token: authResponse.access_token,
-        access_token: authResponse.access_token,
       })
 
-      if (!paymentResult?.success) {
-        alert('Payment submission failed. Please try again.')
+      if (
+        !paymentResult?.success ||
+        !paymentResult.data.status_code.includes('OK')
+      ) {
+        const channel = echo.channel('transaction-channel')
+        channel.stopListening('.transaction.message')
+        echo.disconnect()
+
+        alert(
+          paymentResult?.message ||
+            'Payment submission failed. Please try again.'
+        )
         setShowCardPaymentProcessing(false)
+        setTransactionStatus(false)
         return
       }
 
+      const confirmationResponse = await confirmationPromise
+
+      const channel = echo.channel('transaction-channel')
+      channel.stopListening('.transaction.message')
+      echo.disconnect()
+
+      // Both payment and confirmation successful
       setPaymentSubmitResponse(paymentResult)
-
-      if (!paymentResult.success) {
-        alert(paymentResult.message || 'Payment failed. Please try again.')
-        setShowCardPaymentProcessing(false)
-        return
-      }
+      await handleCardPaymentIssueQuote(paymentRequest)
     } catch (error: any) {
-      alert(
-        error.response?.data?.message || 'Payment failed. Please try again.'
+      // Cleanup on error
+      try {
+        const echo = getEcho()
+        const channel = echo.channel('transaction-channel')
+        channel.stopListening('.transaction.message')
+        echo.disconnect()
+      } catch (cleanupError) {}
+
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          'Payment failed. Please try again.'
       )
     } finally {
       setIsProcessing(false)
@@ -291,7 +329,6 @@ export default function PaymentSelection() {
       const paymentResult = await submitPayment({
         data: paymentRequest,
         brand_token: authResponse.access_token,
-        access_token: authResponse.access_token,
       })
 
       if (

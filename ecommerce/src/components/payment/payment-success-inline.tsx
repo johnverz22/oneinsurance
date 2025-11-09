@@ -203,7 +203,7 @@ export function PaymentSuccessInline({
                       Total Amount
                     </span>
                     <span className="text-base font-bold text-gray-800">
-                      PHP {INVOICE_DATA.payment.total.toLocaleString()}
+                      PHP {INVOICE_DATA.payment.basePremium.toLocaleString()}
                     </span>
                   </div>
                 </div>
