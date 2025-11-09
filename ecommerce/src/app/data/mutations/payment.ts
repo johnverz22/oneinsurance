@@ -22,11 +22,9 @@ export function usePaymentSubmit() {
     mutationFn: async ({
       data,
       brand_token,
-      access_token,
     }: {
       data: PaymentSubmitRequest
       brand_token: string
-      access_token: string
     }) => {
       const token = `Bearer ${brand_token}`
       const response = await axios.post<PaymentSubmitResponse>(
