@@ -24,6 +24,9 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     | 'paymentSubmitResponse'
     | 'quoteRefetchCount'
     | 'refCode'
+    | 'issueQuoteResponse'
+    | 'selectedPaymentBrand'
+    | 'paymentBillingDetails'
   >,
   agentCode: string
 ) {

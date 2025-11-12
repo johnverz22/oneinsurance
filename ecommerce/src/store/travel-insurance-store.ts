@@ -7,9 +7,16 @@ import {
   TravelersInfoFormData,
   TravelInsuranceFormData,
 } from '@/types/travel-insurance/travel-insurance-request'
-import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
+import {
+  FullQuoteResponse,
+  IssueQuoteResponse,
+} from '@/types/travel-insurance/policy-types'
 import { TravelInsuranceApiResponse } from '@/types/plan'
-import { PaymentSubmitResponse } from '@/types/payment'
+import {
+  PaymentBrand,
+  PaymentSubmitRequest,
+  PaymentSubmitResponse,
+} from '@/types/payment'
 
 export type ClientRequest = {
   id?: string | undefined
@@ -28,6 +35,9 @@ export type TravelInsuranceStoreState = {
   isFormModified: boolean // Track if form has been modified since last search
   insurancePlans: TravelInsuranceApiResponse | null
   paymentSubmitResponse: PaymentSubmitResponse | null
+  issueQuoteResponse: IssueQuoteResponse | null
+  selectedPaymentBrand: PaymentBrand | null
+  paymentBillingDetails?: PaymentSubmitRequest | null
   quoteRefetchCount: number
 }
 
@@ -48,6 +58,9 @@ export type TravelInsuranceStoreActions = {
   setPaymentSubmitResponse: (response: PaymentSubmitResponse | null) => void
   incrementQuoteRefetchCount: () => void
   resetQuoteRefetchCount: () => void
+  setIssueQuoteResponse: (response: IssueQuoteResponse | null) => void
+  setSelectedPaymentBrand: (brand: PaymentBrand | null) => void
+  setPaymentBillingDetails: (details: PaymentSubmitRequest | null) => void
   setRefCode: (refCode: string | null) => void
 }
 
@@ -115,6 +128,9 @@ const initialState = {
   isFormModified: false,
   insurancePlans: null,
   paymentSubmitResponse: null,
+  issueQuoteResponse: null,
+  selectedPaymentBrand: null,
+  paymentBillingDetails: null,
   quoteRefetchCount: 0,
   refCode: null,
 } satisfies TravelInsuranceStoreState
@@ -182,6 +198,11 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
       incrementQuoteRefetchCount: () =>
         set((state) => ({ quoteRefetchCount: state.quoteRefetchCount + 1 })),
       resetQuoteRefetchCount: () => set({ quoteRefetchCount: 0 }),
+      setIssueQuoteResponse: (response) =>
+        set({ issueQuoteResponse: response }),
+      setSelectedPaymentBrand: (brand) => set({ selectedPaymentBrand: brand }),
+      setPaymentBillingDetails: (details) =>
+        set({ paymentBillingDetails: details }),
       setRefCode: (refCode) => set({ refCode }),
     }),
     {

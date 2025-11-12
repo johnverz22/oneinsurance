@@ -57,7 +57,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
           <Text style={styles.policyNo}>Policy #{cocData.policyNumber}</Text>
         </View>
-        <Image src="/images/logo.png" style={styles.logo} />
+        <Image src="/images/IFRC.png" style={styles.logo} />
       </View>
 
       <View style={styles.section}>
@@ -96,7 +96,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
                 <Text style={styles.customerName}>{c.name}</Text>
                 <Text style={styles.customerText}>{c.address}</Text>
                 <Text style={styles.customerText}>{c.email}</Text>
-                <Text style={styles.customerText}>{c.phone}</Text>
+                <Text style={styles.customerText}>(+63) {c.phone}</Text>
               </View>
             ))}
           </View>
@@ -137,12 +137,10 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
             </Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Effective Date</Text>
-            <Text style={styles.value}>{cocData.status.effectiveDate}</Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.label}>Expiry Date</Text>
-            <Text style={styles.value}>{cocData.status.expiryDate}</Text>
+            <Text style={styles.label}>Coverage Period</Text>
+            <Text style={styles.value}>
+              {cocData.status.effectiveDate} - {cocData.status.expiryDate}
+            </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Coverage Area</Text>
