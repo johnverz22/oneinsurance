@@ -34,12 +34,13 @@ export function PaymentSuccessInline({
   paymentSubmit,
 }: PaymentSuccessInlineProps) {
   const [showCovernote, setShowCoverNote] = useState(false)
-  const { travelersInfo } = useTravelInsuranceStore()
+  const { travelersInfo, paymentBillingDetails } = useTravelInsuranceStore()
 
   const INVOICE_DATA = transformToInvoiceData(
     policyData,
     quoteData,
-    paymentMethod
+    paymentMethod,
+    paymentBillingDetails!
   )
 
   const destinations = quoteData.TravelDetailList?.map((travel) => {
@@ -150,24 +151,18 @@ export function PaymentSuccessInline({
                   <p className="mb-3 text-xs font-medium text-gray-500">To</p>
                   <div className="text-sm">
                     <p className="font-bold text-gray-800">
-                      {quoteData.PolicyCustomerList?.[0]?.FirstName}{' '}
-                      {quoteData.PolicyCustomerList?.[0]?.LastName}
+                      {paymentBillingDetails?.first_name}{' '}
+                      {paymentBillingDetails?.last_name}
                     </p>
                     <p className="text-gray-600">
-                      {quoteData.PolicyCustomerList?.[0]?.AddressLine1},{' '}
-                      {getCityNameByCityCode(
-                        quoteData.PolicyCustomerList?.[0]?.City || ''
-                      )}
-                      ,{' '}
-                      {getProvinceNameByProvCode(
-                        quoteData.PolicyCustomerList?.[0]?.AddrProvince || ''
-                      )}
+                      {paymentBillingDetails?.address_line_one},{' '}
+                      {paymentBillingDetails?.address_line_two}
                     </p>
                     <p className="text-gray-600">
-                      {quoteData.PolicyCustomerList?.[0]?.Email}
+                      {paymentBillingDetails?.email}
                     </p>
                     <p className="text-gray-600">
-                      +63{travelersInfo[0].mobileNumber}
+                      {paymentBillingDetails?.phone}
                     </p>
                   </div>
                 </div>
@@ -202,7 +197,10 @@ export function PaymentSuccessInline({
                         </p>
                       </td>
                       <td className="py-4 text-right text-sm text-gray-600">
-                        PHP {INVOICE_DATA.payment.basePremium.toLocaleString()}
+                        PHP{' '}
+                        {INVOICE_DATA.payment.basePremium
+                          .toFixed(2)
+                          .toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
@@ -214,7 +212,10 @@ export function PaymentSuccessInline({
                       Total Amount
                     </span>
                     <span className="text-base font-bold text-gray-800">
-                      PHP {INVOICE_DATA.payment.basePremium.toLocaleString()}
+                      PHP{' '}
+                      {INVOICE_DATA.payment.basePremium
+                        .toFixed(2)
+                        .toLocaleString()}
                     </span>
                   </div>
                 </div>
