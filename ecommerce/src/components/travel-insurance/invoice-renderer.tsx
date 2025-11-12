@@ -203,14 +203,9 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
               </Text>
             </View>
             <View style={styles.statusItem}>
-              <Text style={styles.infoLabel}>Effective Date</Text>
+              <Text style={styles.infoLabel}>Coverage Period</Text>
               <Text style={styles.cellText}>
-                {invoiceData.status.effectiveDate}
-              </Text>
-            </View>
-            <View style={styles.statusItem}>
-              <Text style={styles.infoLabel}>Expiry Date</Text>
-              <Text style={styles.cellText}>
+                {invoiceData.status.effectiveDate} -{' '}
                 {invoiceData.status.expiryDate}
               </Text>
             </View>

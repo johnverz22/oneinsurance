@@ -137,12 +137,10 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
             </Text>
           </View>
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Effective Date</Text>
-            <Text style={styles.value}>{cocData.status.effectiveDate}</Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.label}>Expiry Date</Text>
-            <Text style={styles.value}>{cocData.status.expiryDate}</Text>
+            <Text style={styles.label}>Coverage Period</Text>
+            <Text style={styles.value}>
+              {cocData.status.effectiveDate} - {cocData.status.expiryDate}
+            </Text>
           </View>
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Coverage Area</Text>
