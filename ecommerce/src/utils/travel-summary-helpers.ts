@@ -3,7 +3,7 @@ import {
   FullQuoteResponse,
   IssueQuoteResponse,
 } from '@/types/travel-insurance/policy-types'
-import { PaymentBrand } from '@/types/payment'
+import { PaymentBrand, PaymentSubmitRequest } from '@/types/payment'
 import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
 import {
   getCityNameByCityCode,
@@ -13,19 +13,14 @@ import {
 export const transformToInvoiceData = (
   policyData: IssueQuoteResponse['data'],
   quoteData: FullQuoteResponse['data'],
-  paymentMethod: PaymentBrand
+  paymentMethod: PaymentBrand,
+  paymentBillingDetails: PaymentSubmitRequest
 ) => {
   const effectiveDate = new Date(quoteData.EffectiveDate)
   const expiryDate = new Date(quoteData.ExpiryDate)
   const calculatedTravelDays = differenceInDays(expiryDate, effectiveDate) + 1
 
-  const customer = quoteData.PolicyCustomerList?.[0]
-
   const basePremium = quoteData.GrossPremium || 0
-  const lgt = quoteData.LGT || 0
-  const vat = quoteData.DuePremium - quoteData.BeforeVatPremium || 0
-  const processingFee = quoteData.GrossPremium - quoteData.BeforeVatPremium || 0
-  const total = quoteData?.DuePremium ?? basePremium + lgt + vat + processingFee
 
   const destinations =
     quoteData.TravelDetailList && quoteData.TravelDetailList.length > 0
@@ -41,11 +36,11 @@ export const transformToInvoiceData = (
     proposalNumber: policyData.ProposalNo || '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
     customer: {
-      name: `${customer?.FirstName || ''} ${customer?.LastName || ''}`.trim(),
-      email: customer?.Email || '',
-      phone: customer?.Mobile || '',
+      name: `${paymentBillingDetails?.first_name || ''} ${paymentBillingDetails?.last_name || ''}`.trim(),
+      email: paymentBillingDetails?.email || '',
+      phone: paymentBillingDetails?.phone || '',
       address:
-        `${customer?.AddressLine1 || ''}, ${customer?.City || ''}`.trim(),
+        `${paymentBillingDetails?.address_line_one || ''}, ${paymentBillingDetails?.address_line_two || ''}`.trim(),
     },
     travel: {
       type: quoteData.TravelType || '',
@@ -61,10 +56,6 @@ export const transformToInvoiceData = (
     },
     payment: {
       basePremium: basePremium,
-      lgt: lgt,
-      vat: vat,
-      processingFee: processingFee,
-      total: total,
       method: paymentMethod.value || '',
     },
     status: {

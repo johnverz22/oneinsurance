@@ -8,6 +8,7 @@ import {
   PDFDownloadLink,
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
+import { PaymentSubmitRequest } from '@/types/payment'
 
 type InvoiceRendererProps = {
   invoiceData: {
@@ -34,10 +35,6 @@ type InvoiceRendererProps = {
     }
     payment: {
       basePremium: number
-      lgt: number
-      vat: number
-      processingFee: number
-      total: number
       method: string
     }
     status: {
@@ -125,61 +122,18 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
             </View>
             <Text style={[styles.cellText, styles.colUnits]}>1</Text>
             <Text style={[styles.cellText, styles.colPrice]}>
-              PHP {invoiceData.payment.basePremium.toLocaleString()}
+              PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
             </Text>
             <Text style={[styles.cellText, styles.colGST]}>0.00</Text>
             <Text style={[styles.cellText, styles.colAmount]}>
-              PHP {invoiceData.payment.basePremium.toLocaleString()}
+              PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
             </Text>
           </View>
-
-          {invoiceData.payment.lgt > 0 && (
-            <View style={styles.tableRow}>
-              <Text style={[styles.cellText, styles.colDescription]}>
-                Local Government Tax (LGT)
-              </Text>
-              <Text style={[styles.cellText, styles.colUnits]}>1</Text>
-              <Text style={[styles.cellText, styles.colPrice]}>
-                PHP {invoiceData.payment.lgt.toLocaleString()}
-              </Text>
-              <Text style={[styles.cellText, styles.colGST]}>0.00</Text>
-              <Text style={[styles.cellText, styles.colAmount]}>
-                PHP {invoiceData.payment.lgt.toLocaleString()}
-              </Text>
-            </View>
-          )}
-
-          <View style={styles.tableRow}>
-            <Text style={[styles.cellText, styles.colUnits]}>1</Text>
-            <Text style={[styles.cellText, styles.colPrice]}>
-              PHP {invoiceData.payment.vat.toLocaleString()}
-            </Text>
-            <Text style={[styles.cellText, styles.colGST]}>0.00</Text>
-            <Text style={[styles.cellText, styles.colAmount]}>
-              PHP {invoiceData.payment.vat.toLocaleString()}
-            </Text>
-          </View>
-
-          {invoiceData.payment.processingFee > 0 && (
-            <View style={styles.tableRow}>
-              <Text style={[styles.cellText, styles.colDescription]}>
-                Processing Fee
-              </Text>
-              <Text style={[styles.cellText, styles.colUnits]}>1</Text>
-              <Text style={[styles.cellText, styles.colPrice]}>
-                PHP {invoiceData.payment.processingFee.toLocaleString()}
-              </Text>
-              <Text style={[styles.cellText, styles.colGST]}>0.00</Text>
-              <Text style={[styles.cellText, styles.colAmount]}>
-                PHP {invoiceData.payment.processingFee.toLocaleString()}
-              </Text>
-            </View>
-          )}
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
             <Text style={styles.totalAmount}>
-              PHP {invoiceData.payment.total.toLocaleString()}
+              PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
             </Text>
           </View>
         </View>

@@ -77,6 +77,7 @@ export default function PaymentSelection() {
     resetForm,
     setIssueQuoteResponse,
     setSelectedPaymentBrand,
+    setPaymentBillingDetails,
     paymentSubmitResponse,
     coverageOption,
     issueQuoteResponse,
@@ -227,6 +228,7 @@ export default function PaymentSelection() {
   ) => {
     setIsProcessing(true)
     try {
+      setPaymentBillingDetails(paymentRequest)
       const authResponse = await getPaymentAuth()
       if (!authResponse?.access_token) {
         alert('Payment authentication failed. Please try again.')
@@ -324,6 +326,7 @@ export default function PaymentSelection() {
   ) => {
     setIsProcessing(true)
     try {
+      setPaymentBillingDetails(paymentRequest)
       // Step 1: Get payment authentication
       const authResponse = await getPaymentAuth()
       if (!authResponse?.access_token) {
