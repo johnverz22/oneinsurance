@@ -60,7 +60,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
               #{invoiceData.policyNumber}
             </Text>
           </View>
-          <Image style={styles.logo} src="/images/logo.png" />
+          <Image style={styles.logo} src="/images/IFRC.png" />
         </View>
 
         <View style={styles.infoSection}>
@@ -103,8 +103,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
               Description
             </Text>
             <Text style={[styles.headerText, styles.colUnits]}>Units</Text>
-            <Text style={[styles.headerText, styles.colPrice]}>Price</Text>
-            <Text style={[styles.headerText, styles.colGST]}>GST</Text>
+            <Text style={[styles.headerText, styles.colPrice]}>Premium</Text>
             <Text style={[styles.headerText, styles.colAmount]}>Amount</Text>
           </View>
 
@@ -151,9 +150,6 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           )}
 
           <View style={styles.tableRow}>
-            <Text style={[styles.cellText, styles.colDescription]}>
-              VAT (12%)
-            </Text>
             <Text style={[styles.cellText, styles.colUnits]}>1</Text>
             <Text style={[styles.cellText, styles.colPrice]}>
               PHP {invoiceData.payment.vat.toLocaleString()}

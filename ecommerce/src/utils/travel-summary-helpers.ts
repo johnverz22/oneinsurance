@@ -5,6 +5,10 @@ import {
 } from '@/types/travel-insurance/policy-types'
 import { PaymentBrand } from '@/types/payment'
 import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
+import {
+  getCityNameByCityCode,
+  getProvinceNameByProvCode,
+} from './address-util'
 
 export const transformToInvoiceData = (
   policyData: IssueQuoteResponse['data'],
@@ -97,8 +101,8 @@ export const transformToCOCData = (
       phone: customer?.Mobile ?? '',
       address: [
         customer?.AddressLine1,
-        customer?.City,
-        customer?.AddrProvince,
+        getCityNameByCityCode(customer?.City),
+        getProvinceNameByProvCode(customer?.AddrProvince),
         customer?.PostCode,
       ]
         .filter(Boolean)

@@ -10,6 +10,7 @@ import {
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { transformToCOCData } from '@/utils/travel-summary-helpers'
 import { GenerateAndDownloadCoverNote } from '../travel-insurance/coverage-of-confirmation-renderer'
+import { differenceInDays } from 'date-fns'
 
 interface coverNoteProps {
   policyData: IssueQuoteResponse['data']
@@ -20,7 +21,18 @@ export function CoverageOfConfirmation({
   policyData,
   quoteData,
 }: coverNoteProps) {
-  const { coverageOption } = useTravelInsuranceStore()
+  const { coverageOption, travelersInfo } = useTravelInsuranceStore()
+
+  if (quoteData.PolicyCustomerList) {
+    quoteData.PolicyCustomerList = quoteData.PolicyCustomerList.map(
+      (customer, index) => ({
+        ...customer,
+        Mobile: travelersInfo[index]?.mobileNumber,
+      })
+    )
+  }
+
+  console.info('quoteData with mobile numbers:', quoteData)
 
   const COC_DATA = transformToCOCData(policyData, quoteData, coverageOption)
 
@@ -49,8 +61,8 @@ export function CoverageOfConfirmation({
 
             <div className="relative h-16 w-40">
               <Image
-                src="/images/logo.png"
-                alt="Logo"
+                src="/images/IFRC.png"
+                alt="IFRC logo"
                 fill
                 className="object-contain"
               />
@@ -88,7 +100,9 @@ export function CoverageOfConfirmation({
                     <p className="text-gray-600">{customer.AddressLine1}</p>
                     <p className="text-gray-600">{customer.City}</p>
                     <p className="text-gray-600">{customer.Email}</p>
-                    <p className="text-gray-600">{customer.Mobile}</p>
+                    <p className="text-gray-600">
+                      (+63) {travelersInfo[i].mobileNumber}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -109,7 +123,11 @@ export function CoverageOfConfirmation({
                 </p>
                 <p>
                   <span className="font-semibold">Duration:</span>{' '}
-                  {quoteData.TravelDays} days
+                  {differenceInDays(
+                    new Date(quoteData.ExpiryDate),
+                    new Date(quoteData.EffectiveDate)
+                  ) + 1}{' '}
+                  days
                 </p>
               </div>
             </div>
@@ -172,15 +190,10 @@ export function CoverageOfConfirmation({
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500">
-                  Effective Date
+                  Coverage Period
                 </p>
                 <p className="mt-1 text-sm text-gray-800">
-                  {format(new Date(quoteData.EffectiveDate), 'MMM dd, yyyy')}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-gray-500">Expiry Date</p>
-                <p className="mt-1 text-sm text-gray-800">
+                  {format(new Date(quoteData.EffectiveDate), 'MMM dd, yyyy')} -{' '}
                   {format(new Date(quoteData.ExpiryDate), 'MMM dd, yyyy')}
                 </p>
               </div>
