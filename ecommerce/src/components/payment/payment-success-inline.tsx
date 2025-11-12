@@ -12,6 +12,11 @@ import { CoverageOfConfirmation } from './coverage-of-confirmation'
 import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import Image from 'next/image'
+import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import {
+  getCityNameByCityCode,
+  getProvinceNameByProvCode,
+} from '@/utils/address-util'
 
 interface PaymentSuccessInlineProps {
   onContinue: () => void
@@ -29,6 +34,7 @@ export function PaymentSuccessInline({
   paymentSubmit,
 }: PaymentSuccessInlineProps) {
   const [showCovernote, setShowCoverNote] = useState(false)
+  const { travelersInfo } = useTravelInsuranceStore()
 
   const INVOICE_DATA = transformToInvoiceData(
     policyData,
@@ -97,8 +103,8 @@ export function PaymentSuccessInline({
 
                 <div className="relative h-16 w-40">
                   <Image
-                    src="/images/logo.png"
-                    alt="Logo"
+                    src="/images/IFRC.png"
+                    alt="IFRC Logo"
                     className="object-contain"
                     fill
                   />
@@ -149,15 +155,20 @@ export function PaymentSuccessInline({
                     </p>
                     <p className="text-gray-600">
                       {quoteData.PolicyCustomerList?.[0]?.AddressLine1},{' '}
-                      {quoteData.PolicyCustomerList?.[0]?.City}
+                      {getCityNameByCityCode(
+                        quoteData.PolicyCustomerList?.[0]?.City || ''
+                      )}
+                      ,{' '}
+                      {getProvinceNameByProvCode(
+                        quoteData.PolicyCustomerList?.[0]?.AddrProvince || ''
+                      )}
                     </p>
                     <p className="text-gray-600">
                       {quoteData.PolicyCustomerList?.[0]?.Email}
                     </p>
                     <p className="text-gray-600">
-                      {quoteData.PolicyCustomerList?.[0]?.Mobile}
+                      +63{travelersInfo[0].mobileNumber}
                     </p>
-                    <p className="text-gray-600">traveler.com</p>
                   </div>
                 </div>
               </div>
@@ -233,21 +244,14 @@ export function PaymentSuccessInline({
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500">
-                      Effective Date
+                      Coverage Period
                     </p>
                     <p className="mt-1 text-sm text-gray-800">
                       {format(
                         new Date(quoteData.EffectiveDate),
                         'MMM dd, yyyy'
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-500">
-                      Expiry Date
-                    </p>
-                    <p className="mt-1 text-sm text-gray-800">
-                      {format(new Date(quoteData.ExpiryDate), 'MMM dd, yyyy')}
+                      )}{' '}
+                      - {format(new Date(quoteData.ExpiryDate), 'MMM dd, yyyy')}
                     </p>
                   </div>
                 </div>
@@ -261,7 +265,15 @@ export function PaymentSuccessInline({
               </div>
 
               <div className="flex gap-4 border-t bg-gray-50 p-8">
-                <GenerateAndDownloadInvoice invoiceData={INVOICE_DATA} />
+                <GenerateAndDownloadInvoice
+                  invoiceData={{
+                    ...INVOICE_DATA,
+                    customer: {
+                      ...INVOICE_DATA.customer,
+                      phone: `+63${travelersInfo[0].mobileNumber}`,
+                    },
+                  }}
+                />
               </div>
             </CardContent>
           </Card>

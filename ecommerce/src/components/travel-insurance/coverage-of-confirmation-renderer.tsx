@@ -96,7 +96,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
                 <Text style={styles.customerName}>{c.name}</Text>
                 <Text style={styles.customerText}>{c.address}</Text>
                 <Text style={styles.customerText}>{c.email}</Text>
-                <Text style={styles.customerText}>{c.phone}</Text>
+                <Text style={styles.customerText}>(+63) {c.phone}</Text>
               </View>
             ))}
           </View>
