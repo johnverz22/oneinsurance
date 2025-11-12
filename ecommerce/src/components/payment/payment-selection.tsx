@@ -61,14 +61,11 @@ interface PaymentSelectionProps {
 }
 
 export default function PaymentSelection() {
-  const [selectedBrand, setSelectedBrand] = useState<PaymentBrand | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<
     'all' | 'cards' | 'digital'
   >('all')
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const [issueQuoteResponse, setIssuQuoteResponse] =
-    useState<IssueQuoteResponse | null>(null)
   const { mutateAsync: issueQuote } = useIssueQuoteRequest()
   const { mutateAsync: submitPayment } = usePaymentSubmit()
   const { mutateAsync: getPaymentAuth } = usePaymentAuth()
@@ -78,8 +75,12 @@ export default function PaymentSelection() {
     prevStep,
     setPaymentSubmitResponse,
     resetForm,
+    setIssueQuoteResponse,
+    setSelectedPaymentBrand,
     paymentSubmitResponse,
     coverageOption,
+    issueQuoteResponse,
+    selectedPaymentBrand,
   } = useTravelInsuranceStore()
   const { agentCode } = useAgentCodeStore()
   const { apiResponse } = useFullQuoteResponseStore()
@@ -98,12 +99,17 @@ export default function PaymentSelection() {
   useEffect(() => {
     const transactionId = searchParams.get('transaction_id')
 
-    if (paymentSubmitResponse) {
+    if (!paymentSubmitResponse && transactionId) {
       processedTransactionRef.current = transactionId
       // setTransactionId(transactionId)
       handleTransactionCompletion()
     }
-  }, [searchParams])
+
+    if (paymentSubmitResponse) {
+      console.log('Payment submit response exists, showing success dialog')
+      setShowSuccessDialog(true)
+    }
+  }, [searchParams, paymentSubmitResponse])
 
   // Handle transaction completion when returning from redirect
   const handleTransactionCompletion = async () => {
@@ -125,11 +131,11 @@ export default function PaymentSelection() {
       })
 
       // Store the response and show success dialog
-      setIssuQuoteResponse(response)
+      setIssueQuoteResponse(response)
       setPolicyNo(response!.data.PolicyNo ?? '')
 
       // Set a generic digital payment brand for the success dialog
-      setSelectedBrand({
+      setSelectedPaymentBrand({
         value: 'Digital Payment',
         code: 'DIGITAL',
         image: '/payment-brands/digital-payment.png',
@@ -176,7 +182,7 @@ export default function PaymentSelection() {
   }
 
   const handleBrandSelect = (brand: PaymentBrand) => {
-    setSelectedBrand(brand)
+    setSelectedPaymentBrand(brand)
   }
 
   async function handleCardPaymentIssueQuote(
@@ -202,7 +208,7 @@ export default function PaymentSelection() {
     setShowCardPaymentProcessing(false)
 
     // Store the response and show success dialog
-    setIssuQuoteResponse(response)
+    setIssueQuoteResponse(response)
     setPolicyNo(response.data.PolicyNo ?? '')
     setShowSuccessDialog(true)
 
@@ -370,11 +376,11 @@ export default function PaymentSelection() {
   }
 
   // If showing success, render the success content instead of payment selection
-  if (showSuccessDialog && selectedBrand && issueQuoteResponse) {
+  if (showSuccessDialog && selectedPaymentBrand && issueQuoteResponse) {
     return (
       <PaymentSuccessInline
         onContinue={handleSuccessDialogContinue}
-        paymentMethod={selectedBrand}
+        paymentMethod={selectedPaymentBrand}
         policyData={issueQuoteResponse.data}
         quoteData={apiResponse.data}
         paymentSubmit={
@@ -453,7 +459,7 @@ export default function PaymentSelection() {
                     <CardContent>
                       <PaymentBrands
                         onBrandSelect={handleBrandSelect}
-                        selectedBrand={selectedBrand}
+                        selectedBrand={selectedPaymentBrand}
                         className="grid-cols-2 sm:grid-cols-3"
                       />
                     </CardContent>
@@ -468,7 +474,7 @@ export default function PaymentSelection() {
                     <CardContent>
                       <CardPaymentBrands
                         onBrandSelect={handleBrandSelect}
-                        selectedBrand={selectedBrand}
+                        selectedBrand={selectedPaymentBrand}
                         className="grid-cols-2 sm:grid-cols-3"
                       />
                     </CardContent>
@@ -483,7 +489,7 @@ export default function PaymentSelection() {
                     <CardContent>
                       <DigitalPaymentBrands
                         onBrandSelect={handleBrandSelect}
-                        selectedBrand={selectedBrand}
+                        selectedBrand={selectedPaymentBrand}
                         className="grid-cols-2 sm:grid-cols-3"
                       />
                     </CardContent>
@@ -494,7 +500,7 @@ export default function PaymentSelection() {
 
             {/* Right Side - Payment Form */}
             <div className="space-y-6">
-              {!selectedBrand ? (
+              {!selectedPaymentBrand ? (
                 // Placeholder when no payment method is selected
                 <Card className="h-full min-h-[500px]">
                   <CardContent className="flex h-full items-center justify-center p-8">
@@ -532,9 +538,9 @@ export default function PaymentSelection() {
                     <span>Complete your payment securely</span>
                   </div>
 
-                  {selectedBrand.is_card ? (
+                  {selectedPaymentBrand.is_card ? (
                     <CardPaymentForm
-                      selectedBrand={selectedBrand}
+                      selectedBrand={selectedPaymentBrand}
                       onSubmit={handleCardPaymentSubmit}
                       onBack={() => prevStep()}
                       isLoading={isProcessing}
@@ -544,7 +550,7 @@ export default function PaymentSelection() {
                     />
                   ) : (
                     <DigitalPaymentForm
-                      selectedBrand={selectedBrand}
+                      selectedBrand={selectedPaymentBrand}
                       onSubmit={handleDigitalPaymentSubmit}
                       onBack={() => prevStep()}
                       isLoading={isProcessing}
