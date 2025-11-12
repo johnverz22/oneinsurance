@@ -12,6 +12,11 @@ import { CoverageOfConfirmation } from './coverage-of-confirmation'
 import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import Image from 'next/image'
+import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import {
+  getCityNameByCityCode,
+  getProvinceNameByProvCode,
+} from '@/utils/address-util'
 
 interface PaymentSuccessInlineProps {
   onContinue: () => void
@@ -29,11 +34,13 @@ export function PaymentSuccessInline({
   paymentSubmit,
 }: PaymentSuccessInlineProps) {
   const [showCovernote, setShowCoverNote] = useState(false)
+  const { travelersInfo, paymentBillingDetails } = useTravelInsuranceStore()
 
   const INVOICE_DATA = transformToInvoiceData(
     policyData,
     quoteData,
-    paymentMethod
+    paymentMethod,
+    paymentBillingDetails!
   )
 
   const destinations = quoteData.TravelDetailList?.map((travel) => {
@@ -97,8 +104,8 @@ export function PaymentSuccessInline({
 
                 <div className="relative h-16 w-40">
                   <Image
-                    src="/images/logo.png"
-                    alt="Logo"
+                    src="/images/IFRC.png"
+                    alt="IFRC Logo"
                     className="object-contain"
                     fill
                   />
@@ -144,20 +151,19 @@ export function PaymentSuccessInline({
                   <p className="mb-3 text-xs font-medium text-gray-500">To</p>
                   <div className="text-sm">
                     <p className="font-bold text-gray-800">
-                      {quoteData.PolicyCustomerList?.[0]?.FirstName}{' '}
-                      {quoteData.PolicyCustomerList?.[0]?.LastName}
+                      {paymentBillingDetails?.first_name}{' '}
+                      {paymentBillingDetails?.last_name}
                     </p>
                     <p className="text-gray-600">
-                      {quoteData.PolicyCustomerList?.[0]?.AddressLine1},{' '}
-                      {quoteData.PolicyCustomerList?.[0]?.City}
+                      {paymentBillingDetails?.address_line_one},{' '}
+                      {paymentBillingDetails?.address_line_two}
                     </p>
                     <p className="text-gray-600">
-                      {quoteData.PolicyCustomerList?.[0]?.Email}
+                      {paymentBillingDetails?.email}
                     </p>
                     <p className="text-gray-600">
-                      {quoteData.PolicyCustomerList?.[0]?.Mobile}
+                      {paymentBillingDetails?.phone}
                     </p>
-                    <p className="text-gray-600">traveler.com</p>
                   </div>
                 </div>
               </div>
@@ -191,7 +197,10 @@ export function PaymentSuccessInline({
                         </p>
                       </td>
                       <td className="py-4 text-right text-sm text-gray-600">
-                        PHP {INVOICE_DATA.payment.basePremium.toLocaleString()}
+                        PHP{' '}
+                        {INVOICE_DATA.payment.basePremium
+                          .toFixed(2)
+                          .toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
@@ -203,7 +212,10 @@ export function PaymentSuccessInline({
                       Total Amount
                     </span>
                     <span className="text-base font-bold text-gray-800">
-                      PHP {INVOICE_DATA.payment.basePremium.toLocaleString()}
+                      PHP{' '}
+                      {INVOICE_DATA.payment.basePremium
+                        .toFixed(2)
+                        .toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -233,21 +245,14 @@ export function PaymentSuccessInline({
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500">
-                      Effective Date
+                      Coverage Period
                     </p>
                     <p className="mt-1 text-sm text-gray-800">
                       {format(
                         new Date(quoteData.EffectiveDate),
                         'MMM dd, yyyy'
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-500">
-                      Expiry Date
-                    </p>
-                    <p className="mt-1 text-sm text-gray-800">
-                      {format(new Date(quoteData.ExpiryDate), 'MMM dd, yyyy')}
+                      )}{' '}
+                      - {format(new Date(quoteData.ExpiryDate), 'MMM dd, yyyy')}
                     </p>
                   </div>
                 </div>
@@ -261,7 +266,15 @@ export function PaymentSuccessInline({
               </div>
 
               <div className="flex gap-4 border-t bg-gray-50 p-8">
-                <GenerateAndDownloadInvoice invoiceData={INVOICE_DATA} />
+                <GenerateAndDownloadInvoice
+                  invoiceData={{
+                    ...INVOICE_DATA,
+                    customer: {
+                      ...INVOICE_DATA.customer,
+                      phone: `+63${travelersInfo[0].mobileNumber}`,
+                    },
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
