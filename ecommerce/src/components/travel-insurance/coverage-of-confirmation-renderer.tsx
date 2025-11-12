@@ -57,7 +57,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
           <Text style={styles.policyNo}>Policy #{cocData.policyNumber}</Text>
         </View>
-        <Image src="/images/logo.png" style={styles.logo} />
+        <Image src="/images/IFRC.png" style={styles.logo} />
       </View>
 
       <View style={styles.section}>
