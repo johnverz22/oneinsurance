@@ -12,21 +12,15 @@ export default function AdminLayout({
     <div className="flex">
       <div className="h-full w-max">
         <Header
-          isNavigationVisible={false}
+          isNavigationVisible={true}
           contentContainerClassName="max-w-screen"
-        />
-        <AppSidebar
           navigations={ADMIN_NAVIGATIONS}
-          className="top-20"
-          isBrandVisible={false}
         />
       </div>
 
-      <SidebarInset>
-        <main className="mx-auto h-full w-full p-4 pt-28 lg:px-8 lg:pl-20">
-          {children}
-        </main>
-      </SidebarInset>
+      <main className="mx-auto h-full w-full p-4 pt-28 lg:px-8">
+        {children}
+      </main>
     </div>
   )
 }
