@@ -1,5 +1,5 @@
+import { QuickActionCard } from '@/components/dashboard/quick-action-card'
 import { Card, CardContent } from '@/components/ui/card'
-import { Database } from 'lucide-react'
 
 export default function DashboardPage() {
   return (
@@ -107,46 +107,30 @@ export default function DashboardPage() {
               icon="📋"
               title="Product Assesment"
               description="Assign products to agents"
+              destination="/coming-soon"
             />
             <QuickActionCard
               icon="💰"
               title="Commission Setup"
               description="Configure commission rates"
+              destination="/coming-soon"
             />
             <QuickActionCard
               icon="👥"
               title="Team Management"
               description="View agent hierarchies"
+              destination="/coming-soon"
             />
             <QuickActionCard
               icon="📊"
               title="Analytics Dashboard"
               description="View detailed reports"
+              destination="/coming-soon"
             />
           </div>
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function QuickActionCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: string
-  title: string
-  description: string
-}) {
-  return (
-    <Card className="border-[#B7B7B7]">
-      <CardContent className="flex flex-col items-center justify-center">
-        <p className="text-6xl">{icon}</p>
-        <p className="text-lg font-semibold">{title}</p>
-        <p className="text-muted-foreground text-sm">{description}</p>
-      </CardContent>
-    </Card>
   )
 }
 
