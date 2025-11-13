@@ -1,6 +1,7 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
 
 export function QuickActionCard({
   icon,
@@ -13,10 +14,12 @@ export function QuickActionCard({
   description: string
   destination: string
 }) {
+  const router = useRouter()
+
   return (
     <Card
       className="border-[#B7B7B7] hover:cursor-pointer hover:shadow-lg"
-      onClick={() => (window.location.href = destination)}
+      onClick={() => router.push(destination)}
     >
       <CardContent className="flex flex-col items-center justify-center">
         <p className="text-6xl">{icon}</p>
