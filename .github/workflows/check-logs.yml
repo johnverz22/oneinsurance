@@ -6,19 +6,20 @@ on:
 jobs:
   check-status:
     runs-on: self-hosted  
+
     steps:
       - name: Check directories
         run: |
           ls
-          
+
       - name: Check e-commerce logs
         run: |
-          pm2 logs oneinsurance --lines 100
-          
+          pm2 logs oneinsurance --nostream | tail -n 100
+
       - name: Check agent logs
         run: |
-          pm2 logs oneinsurance-agent --lines 100
-          
+          pm2 logs oneinsurance-agent --nostream | tail -n 100
+
       - name: Check admin logs
         run: |
-          pm2 logs oneinsurance-admin --lines 100
+          pm2 logs oneinsurance-admin --nostream | tail -n 100
