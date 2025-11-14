@@ -58,36 +58,36 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: build
-
+  
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: agent-build
-
-      - name: Clean previous deploy
+  
+      - name: Prepare deploy folder
         run: |
-          rm -rf .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env
-
+          DEPLOY_DIR="${{ github.workspace }}/deploy-agent"
+          mkdir -p "$DEPLOY_DIR"
+          rm -rf "$DEPLOY_DIR"/*
+  
       - name: Extract build
         run: |
-          tar -xzf agent-build.tar.gz
+          DEPLOY_DIR="${{ github.workspace }}/deploy-agent"
+          tar -xzf agent-build.tar.gz -C "$DEPLOY_DIR"
           rm agent-build.tar.gz
-
-      - name: Show downloaded files
-        run: ls -lah
-
+  
       - name: Use Node.js 22
         run: |
           source ~/.nvm/nvm.sh
           nvm use 22
-
+  
       - name: Restart app with PM2
         run: |
+          DEPLOY_DIR="${{ github.workspace }}/deploy-agent"
           pm2 delete oneinsurance-agent || true
-          PORT=4000 pm2 start "npx next start" --name "oneinsurance-agent"
+          PORT=4000 pm2 start "npx next start" --name "oneinsurance-agent" --cwd "$DEPLOY_DIR"
           pm2 save
-
 
   cleanup:
     runs-on: ubuntu-latest
