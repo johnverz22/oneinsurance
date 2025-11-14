@@ -7,10 +7,10 @@ jobs:
   check-status:
     runs-on: self-hosted  
     steps:
-      - name: Check directories
+      - name: Check directories and delete extra files
         run: |
+          ls | grep -v -E 'deploy-admin|deploy-agent|deploy-ecommerce' | xargs rm -rf
           ls
-          ls oneinsurance
           
       - name: Check e-commerce logs
         run: |
