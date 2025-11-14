@@ -65,36 +65,6 @@ jobs:
           name: ecommerce-build
           path: ecommerce/ecommerce-build.tar.gz
 
-
-  # deploy:
-  #   runs-on: self-hosted
-  #   needs: build
-
-  #   steps:
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: ecommerce-build
-
-  #     - name: Clean previous deploy
-  #       run: |
-  #         rm -rf .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env
-
-  #     - name: Extract build
-  #       run: |
-  #         tar -xzf ecommerce-build.tar.gz
-  #         rm ecommerce-build.tar.gz
-
-  #     - name: Use Node.js 22
-  #       run: |
-  #         source ~/.nvm/nvm.sh
-  #         nvm use 22
-
-  #     - name: Restart app with PM2
-  #       run: |
-  #         pm2 delete oneinsurance || true
-  #         pm2 start "npx next start" --name "oneinsurance"
-  #         pm2 save
   deploy:
     runs-on: self-hosted
     needs: build
