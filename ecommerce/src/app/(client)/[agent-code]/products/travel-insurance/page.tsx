@@ -42,7 +42,7 @@ function TravelInsurancePageSSR() {
   }, [])
 
   useEffect(() => {
-    if (clientRequest.id && hydrated && insurancePlans) {
+    if (hydrated && insurancePlans) {
       resetAvailForm()
       setFormModified(false)
       return

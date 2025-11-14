@@ -182,6 +182,8 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
           coverageOption: initialState.coverageOption,
           travelersInfo: initialState.travelersInfo,
           paymentSubmitResponse: initialState.paymentSubmitResponse,
+          clientRequest: initialState.clientRequest,
+          insurancePlans: initialState.insurancePlans,
         }),
 
       updateCoverageOption: (data) =>
