@@ -19,7 +19,7 @@ export const getEcho = (): Echo<'reverb'> => {
     window.Pusher = Pusher
 
     // Enable Pusher logging for debugging
-    // Pusher.logToConsole = true
+    Pusher.logToConsole = true
 
     const config = {
       broadcaster: 'reverb' as const,
