@@ -26,6 +26,7 @@ jobs:
         working-directory: ecommerce
         run: |
           cat <<EOF > .env
+          NEXT_PUBLIC_BASE_URL=${{ secrets.BASE_URL }}
           NEXT_PUBLIC_TOKEN=${{ secrets.NEXT_PUBLIC_TOKEN }}
           GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
           BASE_URL=${{ secrets.BASE_URL }}
