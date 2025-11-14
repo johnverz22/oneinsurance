@@ -22,6 +22,8 @@ export const useGetTravelQuote = (
           throw new Error('ClientRequestId not found.')
         }
 
+        return null
+
         if (insurancePlans) {
           return insurancePlans
         }
