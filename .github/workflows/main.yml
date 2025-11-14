@@ -66,36 +66,65 @@ jobs:
           path: ecommerce/ecommerce-build.tar.gz
 
 
+  # deploy:
+  #   runs-on: self-hosted
+  #   needs: build
+
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ecommerce-build
+
+  #     - name: Clean previous deploy
+  #       run: |
+  #         rm -rf .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env
+
+  #     - name: Extract build
+  #       run: |
+  #         tar -xzf ecommerce-build.tar.gz
+  #         rm ecommerce-build.tar.gz
+
+  #     - name: Use Node.js 22
+  #       run: |
+  #         source ~/.nvm/nvm.sh
+  #         nvm use 22
+
+  #     - name: Restart app with PM2
+  #       run: |
+  #         pm2 delete oneinsurance || true
+  #         pm2 start "npx next start" --name "oneinsurance"
+  #         pm2 save
   deploy:
     runs-on: self-hosted
     needs: build
-
+  
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: ecommerce-build
-
-      - name: Clean previous deploy
+  
+      - name: Prepare deploy folder
         run: |
-          rm -rf .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env
-
+          mkdir -p /var/www/oneinsurance
+          rm -rf /var/www/oneinsurance/*
+  
       - name: Extract build
         run: |
-          tar -xzf ecommerce-build.tar.gz
+          tar -xzf ecommerce-build.tar.gz -C /var/www/oneinsurance
           rm ecommerce-build.tar.gz
-
+  
       - name: Use Node.js 22
         run: |
           source ~/.nvm/nvm.sh
           nvm use 22
-
+  
       - name: Restart app with PM2
         run: |
           pm2 delete oneinsurance || true
-          pm2 start "npx next start" --name "oneinsurance"
+          pm2 start "npx next start" --name "oneinsurance" --cwd /var/www/oneinsurance
           pm2 save
-
 
   cleanup:
     runs-on: ubuntu-latest
