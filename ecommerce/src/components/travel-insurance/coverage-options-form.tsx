@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ChangeEvent, useMemo, useState, useEffect } from 'react'
+import { ChangeEvent, useMemo, useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { useForm } from '@tanstack/react-form'
 import {
@@ -10,7 +10,7 @@ import {
 } from '@/store/travel-insurance-store'
 import { useGetTravelQuote } from '@/app/data/queries/get-travel-quote'
 import { Skeleton } from '@/components/ui/skeleton'
-import { InsurancePlan } from '@/types/plan'
+import { InsurancePlan, TravelInsuranceApiResponse } from '@/types/plan'
 import { TravelInsurancePlan } from './insurance-plan'
 import ServerOffline from '../server-offline'
 import { Input } from '../ui/input'
@@ -18,6 +18,9 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { ArrowDownUp } from 'lucide-react'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { useAgentCodeStore } from '@/store/agent-code-store'
+import { getEcho } from '@/lib/echo'
+import axios from 'axios'
+import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
 
 function ServerConnectionIssue() {
   return (
@@ -72,8 +75,31 @@ export function CoverageOptionsForm() {
     resetForm,
     incrementQuoteRefetchCount,
     resetQuoteRefetchCount,
+    setInsurancePlans,
   } = useTravelInsuranceStore()
   const { agentCode } = useAgentCodeStore()
+
+  // refs for Echo instance, subscribed channel, and queue processing
+  const echoRef = useRef<any>(null)
+  const channelRef = useRef<any>(null)
+  const queue = useRef<any[]>([]) // Queue to store WebSocket responses
+  const isProcessing = useRef(false) // Flag to track if the queue is being processed
+
+  const closeEchoConnection = () => {
+    try {
+      if (clientRequest.id && echoRef.current) {
+        echoRef.current.leave?.(clientRequest.id)
+      }
+
+      const connector = echoRef.current?.connector as any
+      if (connector?.pusher?.disconnect) {
+        connector.pusher.disconnect()
+      }
+
+      channelRef.current = null
+      echoRef.current = null
+    } catch (err) {}
+  }
 
   const hasHydrated = useTravelInsuranceStore.persist?.hasHydrated()
   const [hasReachedLimit, setHasReachedLimit] = useState(false)
@@ -82,16 +108,85 @@ export function CoverageOptionsForm() {
     setClientRequest({ status: status })
   }
 
-  const {
-    data: travelQuotes,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetTravelQuote(
-    clientRequest?.id,
-    isEnabled && !hasReachedLimit,
-    setStatus
-  )
+  const [isLoading, setIsLoading] = useState(false) // Tracks loading state
+  const [isError, setIsError] = useState(false) // Tracks error state
+
+  useEffect(() => {
+    if (clientRequest.id !== undefined) {
+      const echo = getEcho()
+
+      if (echo.connector.pusher.connection.state !== 'connected') {
+        echo.connector.pusher.connect()
+      }
+
+      const processQueue = async () => {
+        if (isProcessing.current) return // Prevent multiple processors
+        isProcessing.current = true
+        setIsLoading(true) // Set loading state to true
+
+        while (queue.current.length > 0) {
+          const cacheKey = queue.current.shift() // Get the first item in the queue
+
+          try {
+            const response = await axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/quote/compare/${cacheKey}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+                },
+              }
+            )
+
+            const data = response.data as TravelCompareQuoteResponse
+            if (data.success === false) {
+              continue
+            }
+
+            // Retrieve the latest insurancePlans state
+            const currentPlans =
+              useTravelInsuranceStore.getState().insurancePlans
+
+            if (currentPlans === null || currentPlans === undefined) {
+              const newCompareQuote = {
+                success: data.success,
+                message: data.message,
+                data: [{ ...data.data }],
+              }
+              setInsurancePlans(newCompareQuote)
+              continue
+            }
+
+            // Create a new object and array to ensure immutability
+            const newCompareQuotes = {
+              ...currentPlans,
+              data: [...currentPlans.data, { ...data.data }],
+            }
+            setInsurancePlans(newCompareQuotes)
+          } catch (error) {
+            setIsError(true) // Set error state to true
+          }
+        }
+
+        isProcessing.current = false // Reset the processing flag
+        setIsLoading(false) // Set loading state to false
+      }
+
+      const channel = echo
+        .channel(clientRequest.id)
+        .listen('.insurance.plan.received', (e: any) => {
+          const cacheKey = e['cache_key']
+          queue.current.push(cacheKey) // Add the cacheKey to the queue
+          processQueue() // Start processing the queue
+        })
+      setClientRequest({ ...clientRequest, status: 'success' })
+      echoRef.current = echo
+      channelRef.current = channel
+    }
+
+    return () => {
+      closeEchoConnection()
+    }
+  }, [clientRequest.id])
 
   // Handle page unload to cancel ongoing requests
   useEffect(() => {
@@ -122,7 +217,7 @@ export function CoverageOptionsForm() {
   }
 
   const allTravelPlans = useMemo(() => {
-    const plans = travelQuotes?.data.flatMap(({ Plans, ...item }: any) =>
+    const plans = insurancePlans?.data.flatMap(({ Plans, ...item }: any) =>
       Plans.map((plan: any) => ({
         ...item,
         Plan: plan,
@@ -140,11 +235,7 @@ export function CoverageOptionsForm() {
           plan.Plan.CarrierPlanDesc.toLowerCase().includes(lowerFilter)
       )
       .slice()
-      .toSorted(
-        (a: any, b: any) =>
-          Number(b.Plan.DuePremium) - Number(a.Plan.DuePremium)
-      )
-  }, [travelQuotes?.data, debouncedSearchFilter])
+  }, [insurancePlans?.data, debouncedSearchFilter])
 
   const handleSelectPlan = (plan: InsurancePlan, carrierCode: string) => {
     if (!travelDetails.agreedToTerms) {
@@ -152,6 +243,8 @@ export function CoverageOptionsForm() {
       return
     }
     updateCoverageOption({ selectedPlan: plan, carrierCode })
+    // close websocket/echo connection before navigating away
+    closeEchoConnection()
     router.push(`/${agentCode}/products/travel-insurance/avail`)
   }
 
@@ -164,12 +257,14 @@ export function CoverageOptionsForm() {
       setHasReachedLimit(true)
       resetForm()
       removeStorage('travel-insurance-form')
+      // reached retry limit — ensure any open echo connection is closed
+      closeEchoConnection()
       return
     }
 
     // Only refetch if we have a valid client request ID
     if (clientRequest?.id) {
-      refetch()
+      // refetch()
     }
   }
 
@@ -185,7 +280,7 @@ export function CoverageOptionsForm() {
     return <ServerOffline onRefresh={handleRefetch} />
   }
 
-  const isPlansFetching = isLoading || !travelQuotes?.data?.[0].Plans
+  const isPlansFetching = isLoading || !insurancePlans?.data?.[0].Plans
 
   return (
     <div className="relative w-full overflow-hidden border-0">
@@ -269,7 +364,7 @@ export function CoverageOptionsForm() {
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
-        {!travelQuotes || !insurancePlans ? (
+        {!insurancePlans || !insurancePlans ? (
           <div className="min-h-screen">
             <div className="mx-auto w-full max-w-7xl space-y-4">
               <Skeleton className="h-16 w-full p-4" />
