@@ -107,12 +107,14 @@ jobs:
   
       - name: Prepare deploy folder
         run: |
-          mkdir -p /var/www/oneinsurance
-          rm -rf /var/www/oneinsurance/*
+          DEPLOY_DIR="${{ github.workspace }}/deploy-ecommerce"
+          mkdir -p "$DEPLOY_DIR"
+          rm -rf "$DEPLOY_DIR"/*
   
       - name: Extract build
         run: |
-          tar -xzf ecommerce-build.tar.gz -C /var/www/oneinsurance
+          DEPLOY_DIR="${{ github.workspace }}/deploy-ecommerce"
+          tar -xzf ecommerce-build.tar.gz -C "$DEPLOY_DIR"
           rm ecommerce-build.tar.gz
   
       - name: Use Node.js 22
@@ -122,8 +124,9 @@ jobs:
   
       - name: Restart app with PM2
         run: |
+          DEPLOY_DIR="${{ github.workspace }}/deploy-ecommerce"
           pm2 delete oneinsurance || true
-          pm2 start "npx next start" --name "oneinsurance" --cwd /var/www/oneinsurance
+          pm2 start "npx next start" --name "oneinsurance" --cwd "$DEPLOY_DIR"
           pm2 save
 
   cleanup:
