@@ -171,6 +171,8 @@ export default function QuotationPage() {
       <Card className="bg-background shadow-sm">
         <CardContent className="p-6">
           <DataTable<Quotation, unknown>
+            header="Quotations"
+            renderMode="table"
             columns={quotationColumns}
             data={QUOTATIONS}
             searchKey="name"
