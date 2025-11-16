@@ -77,7 +77,7 @@ const initialState = {
         DisplaySequence: 1,
         TravelCountry: 'JAPAN',
         PlaceOfOrgin: 'PHILIPPINES',
-        TravelCoverageArea: 'WORLD',
+        TravelCoverageArea: 'APAC',
       },
     ],
     departureDate: new Date(),
