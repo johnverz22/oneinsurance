@@ -245,8 +245,10 @@ export default function CommissionPage() {
       <Card className="bg-background shadow-sm">
         <CardContent className="p-6">
           <DataTable<Commission, unknown>
+            header="Commissions"
             columns={commissionColumns}
             data={COMMISSIONS}
+            renderMode="table"
             searchKey="name"
             enableRowSelection
             actions={[

@@ -4,6 +4,7 @@ import * as React from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -20,7 +21,6 @@ import {
   MoreHorizontal,
   Search,
 } from 'lucide-react'
-
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -49,6 +49,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { formatCapitalizeFirstLetter } from '@/utils/formatter'
+
+export interface DataTableTableMode {
+  renderMode: 'table'
+}
+
+export interface DataTableListMode<TData> {
+  renderMode: 'list'
+  containerClassName?: string
+  contentRenderer: (row: Row<TData>) => React.ReactNode
+}
+
+export interface DataTableHeaderProps {
+  header?: string
+  description?: string
+}
 
 export interface DataTableAction<TData> {
   label: string
@@ -57,26 +73,42 @@ export interface DataTableAction<TData> {
   variant?: 'default' | 'destructive' | 'ghost'
 }
 
-export interface DataTableProps<TData, TValue> {
+export interface DataTableBaseProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  customAction?: React.ReactNode
   searchKey?: string
   actions?: DataTableAction<TData>[]
   onRowClick?: (row: TData) => void
   enableRowSelection?: boolean
   enableColumnVisibility?: boolean
+  enableExport?: boolean
   pageSize?: number
+  alternateColors?: boolean
 }
 
+export type DataTableProps<
+  TData extends Record<string, any>,
+  TValue,
+> = DataTableHeaderProps &
+  DataTableBaseProps<TData, TValue> &
+  (DataTableTableMode | DataTableListMode<TData>)
+
 export function DataTable<TData extends Record<string, any>, TValue>({
+  header = '',
+  description = '',
   columns,
   data,
+  customAction,
   searchKey,
   actions,
   onRowClick,
   enableRowSelection = false,
-  enableColumnVisibility = true,
+  enableColumnVisibility = false,
+  enableExport = false,
   pageSize = 10,
+  alternateColors = false,
+  ...props
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -188,25 +220,32 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   }, [pageSize, table])
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-6 py-2.5">
       <div className="flex items-center justify-between gap-4">
-        {searchKey && (
-          <div className="relative max-w-sm flex-1">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-            <Input
-              placeholder={`Search by ${searchKey}...`}
-              value={
-                (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
-              }
-              onChange={(event) =>
-                table.getColumn(searchKey)?.setFilterValue(event.target.value)
-              }
-              className="pl-9"
-            />
-          </div>
-        )}
+        <div className="space-y-1.5">
+          <h3 className="text-base font-bold md:text-lg lg:text-xl">
+            {header}
+          </h3>
+          <p className="text-muted-foreground font-light">{description}</p>
+        </div>
 
         <div className="flex items-center gap-4">
+          {searchKey && (
+            <div className="relative flex-1 lg:w-md">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <Input
+                placeholder={`Search by ${formatCapitalizeFirstLetter(searchKey)}...`}
+                value={
+                  (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
+                }
+                onChange={(event) =>
+                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                }
+                className="pl-9"
+              />
+            </div>
+          )}
+
           {enableColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -236,71 +275,89 @@ export function DataTable<TData extends Record<string, any>, TValue>({
             </DropdownMenu>
           )}
 
-          <Button
-            onClick={() => exportToCSV(data)}
-            className="gap-2 rounded-full"
-          >
-            <ArrowUpRight />
-            Export
-          </Button>
+          {enableExport && (
+            <Button
+              onClick={() => exportToCSV(data)}
+              className="gap-2 rounded-full"
+            >
+              <ArrowUpRight />
+              Export
+            </Button>
+          )}
+
+          {customAction}
         </div>
       </div>
 
-      <div className="bg-background rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={() => onRowClick?.(row.original)}
-                  className={cn(
-                    'bg-background h-16',
-                    { 'cursor-pointer': onRowClick },
-                    { 'bg-gray-100 dark:bg-gray-900': index % 2 === 1 }
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+      <div className="bg-background rounded-ld">
+        {props.renderMode === 'list' ? (
+          <div className={cn('flex flex-wrap gap-3', props.containerClassName)}>
+            {table.getRowModel().rows.map((row) => {
+              return <div key={row.id}>{props.contentRenderer(row)}</div>
+            })}
+          </div>
+        ) : (
+          <Table>
+            <TableHeader className="border-t">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className="py-4 text-base font-bold"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={tableColumns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody className="border-b">
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row, index) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    onClick={() => onRowClick?.(row.original)}
+                    className={cn(
+                      'bg-background h-16',
+                      { 'cursor-pointer': onRowClick },
+                      {
+                        'bg-gray-100 dark:bg-gray-900':
+                          alternateColors && index % 2 === 1,
+                      }
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={tableColumns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       <div className="flex items-center justify-between px-2">
