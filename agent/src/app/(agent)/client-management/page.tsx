@@ -290,8 +290,10 @@ export default function ClientManagementPage() {
       <Card className="bg-background shadow-sm">
         <CardContent className="p-6">
           <DataTable<Client, unknown>
+            header="Clients"
             columns={columns}
             data={mockClients}
+            renderMode="table"
             searchKey="name"
             enableRowSelection
             actions={[
