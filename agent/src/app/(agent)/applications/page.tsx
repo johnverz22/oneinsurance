@@ -141,6 +141,7 @@ export default function ApplicationsPage() {
             columns={applicationColumns}
             data={APPLICATIONS}
             searchKey="name"
+            renderMode="table"
             enableRowSelection
             actions={[
               {

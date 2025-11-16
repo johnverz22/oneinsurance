@@ -63,17 +63,17 @@ export const Header = ({
   return (
     <header
       className={cn(
-        'bg-background fixed top-0 z-40 h-20 w-full border-b px-4 py-4 lg:px-8',
+        'bg-background fixed top-0 z-40 h-fit w-full px-4 py-8 lg:px-8',
         className
       )}
     >
       <div
         className={cn(
-          'mx-auto flex h-full max-w-7xl items-center justify-between',
+          'max-w-app relative mx-auto flex h-full items-center justify-between',
           contentContainerClassName
         )}
       >
-        <div className="flex items-center">
+        <div className="flex w-full items-center">
           <SidebarTrigger
             size="lg"
             variant="ghost"
@@ -85,7 +85,7 @@ export const Header = ({
           <Brand />
         </div>
 
-        <div className="flex h-full items-center gap-8">
+        <div className="flex h-full items-center gap-3">
           {isNavigationVisible && (
             <div
               className={cn('hidden items-center gap-8', {
@@ -139,26 +139,19 @@ export const Header = ({
             </div>
           )}
 
-          <ThemeToggle />
-
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <Button variant="secondary" size="icon" className="relative py-2">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
-              </Button>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="secondary"
-                    className="flex items-center gap-2 py-2"
+                    variant="ghost"
+                    className="text-primary flex items-center gap-4 py-2"
                   >
+                    <span className="text-sm">Welcome, {user?.name}</span>
                     <Avatar>
                       <AvatarImage src="https://github.com/shadcn.png" />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    <span className="text-sm">{user?.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -182,6 +175,8 @@ export const Header = ({
               <Link href="/sign-in">Login</Link>
             </Button>
           )}
+
+          <ThemeToggle />
         </div>
       </div>
     </header>
