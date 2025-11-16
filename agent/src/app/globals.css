@@ -4,6 +4,10 @@
 @custom-variant dark (&:is(.dark *));
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --max-w-app: 1596px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -137,4 +141,18 @@
     content: '*';
     @apply text-destructive ml-0.5;
   }
+}
+
+@utility max-w-app {
+  max-width: var(--max-w-app);
+}
+
+.no-visible-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.no-visible-scrollbar::-webkit-scrollbar {
+  display: none;
 }
