@@ -298,6 +298,13 @@ export function PersonalInfoForm() {
     }
   }
 
+  function fieldHasError(field: any) {
+    const isValid = field.state.meta.isTouched && !field.state.meta.isValid
+    const errorMessage = field.state.meta.errors[0]?.message
+
+    return isValid && errorMessage && errorMessage.length > 0
+  }
+
   return (
     <div className="relative w-full space-y-4 border-0">
       <div className="mx-auto w-full max-w-7xl">
@@ -408,33 +415,37 @@ export function PersonalInfoForm() {
                               <div className="grid gap-4 lg:grid-cols-3">
                                 <form.Field
                                   name={`travelers[${index}].firstName`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        First Name
-                                      </Label>
-                                      <Input
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].firstName`
-                                          ] = el
-                                        }}
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="h-12"
-                                        placeholder="Enter first name"
-                                      />
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                  children={(nameField) => {
+                                    const haveError = fieldHasError(nameField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          First Name
+                                        </Label>
+                                        <Input
+                                          value={nameField.state.value}
+                                          onChange={(e) =>
+                                            nameField.handleChange(
+                                              e.target.value
+                                            )
+                                          }
+                                          onBlur={nameField.handleBlur}
+                                          className={`h-12 ${
+                                            haveError
+                                              ? 'border-destructive'
+                                              : ''
+                                          }`}
+                                          placeholder="Enter first name"
+                                        />
+                                        <FieldInfo field={nameField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].middleName`}
-                                  children={(field) => (
+                                  children={(middleNameField) => (
                                     <div className="space-y-2">
                                       <div className="flex h-max justify-between">
                                         <Label className="text-primary block">
@@ -445,50 +456,59 @@ export function PersonalInfoForm() {
                                         </span>
                                       </div>
                                       <Input
-                                        value={field.state.value ?? ''}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
+                                        value={
+                                          middleNameField.state.value ?? ''
                                         }
-                                        onBlur={field.handleBlur}
+                                        onChange={(e) =>
+                                          middleNameField.handleChange(
+                                            e.target.value
+                                          )
+                                        }
+                                        onBlur={middleNameField.handleBlur}
                                         className="h-12"
                                         placeholder="Enter middle name"
                                       />
-                                      <FieldInfo field={field} />
+                                      <FieldInfo field={middleNameField} />
                                     </div>
                                   )}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].lastName`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        Last Name
-                                      </Label>
-                                      <Input
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].lastName`
-                                          ] = el
-                                        }}
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="h-12"
-                                        placeholder="Enter last name"
-                                      />
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                  children={(lastNameField) => {
+                                    const haveError =
+                                      fieldHasError(lastNameField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          Last Name
+                                        </Label>
+                                        <Input
+                                          value={lastNameField.state.value}
+                                          onChange={(e) =>
+                                            lastNameField.handleChange(
+                                              e.target.value
+                                            )
+                                          }
+                                          onBlur={lastNameField.handleBlur}
+                                          className={`h-12 ${
+                                            haveError
+                                              ? 'border-destructive'
+                                              : ''
+                                          }`}
+                                          placeholder="Enter last name"
+                                        />
+                                        <FieldInfo field={lastNameField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
                               </div>
 
                               <div className="grid gap-4 md:grid-cols-2">
                                 <form.Field
                                   name={`travelers[${index}].suffix`}
-                                  children={(field) => (
+                                  children={(sField) => (
                                     <div className="space-y-2">
                                       <div className="flex h-max justify-between">
                                         <Label className="text-primary block">
@@ -500,10 +520,10 @@ export function PersonalInfoForm() {
                                       </div>
 
                                       <Select
-                                        value={field.state.value}
+                                        value={sField.state.value}
                                         defaultValue="No Suffix"
                                         onValueChange={(value) =>
-                                          field.handleChange(value as any)
+                                          sField.handleChange(value as any)
                                         }
                                       >
                                         <SelectTrigger className="h-12 w-full">
@@ -520,7 +540,7 @@ export function PersonalInfoForm() {
                                           ))}
                                         </SelectContent>
                                       </Select>
-                                      <FieldInfo field={field} />
+                                      <FieldInfo field={sField} />
                                     </div>
                                   )}
                                 />
@@ -556,7 +576,7 @@ export function PersonalInfoForm() {
 
                                 <form.Field
                                   name={`travelers[${index}].dateOfBirth`}
-                                  children={(field) => {
+                                  children={(dobField) => {
                                     const isAdult =
                                       index < (travelDetails.noOfAdults || 0)
                                     const today = new Date()
@@ -565,25 +585,21 @@ export function PersonalInfoForm() {
                                       today.getFullYear() - 18
                                     )
 
+                                    const haveError = fieldHasError(dobField)
+
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
                                           Date of Birth
                                         </Label>
-                                        <div
-                                          ref={(el) => {
-                                            formErrorRefs.current[
-                                              `travelers[${index}].dateOfBirth`
-                                            ] = el
-                                          }}
-                                        >
+                                        <div>
                                           <DateTimePicker
                                             variant="date"
                                             value={
-                                              field.state.value ?? undefined
+                                              dobField.state.value ?? undefined
                                             }
                                             onChange={(value) =>
-                                              field.handleChange(value)
+                                              dobField.handleChange(value)
                                             }
                                             disabled={(date) => {
                                               if (isAdult) {
@@ -597,9 +613,10 @@ export function PersonalInfoForm() {
                                                 )
                                               }
                                             }}
+                                            className={`${haveError && 'border-destructive'}`}
                                           />
                                         </div>
-                                        <FieldInfo field={field} />
+                                        <FieldInfo field={dobField} />
                                       </div>
                                     )
                                   }}
@@ -607,58 +624,66 @@ export function PersonalInfoForm() {
 
                                 <form.Field
                                   name={`travelers[${index}].email`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        Email
-                                      </Label>
-                                      <Input
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].email`
-                                          ] = el
-                                        }}
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="h-12"
-                                        placeholder="johndoe@example.com"
-                                      />
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                  children={(emailField) => {
+                                    const haveError = fieldHasError(emailField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          Email
+                                        </Label>
+                                        <Input
+                                          value={emailField.state.value}
+                                          onChange={(e) =>
+                                            emailField.handleChange(
+                                              e.target.value
+                                            )
+                                          }
+                                          onBlur={emailField.handleBlur}
+                                          className={`h-12 ${
+                                            haveError
+                                              ? 'border-destructive'
+                                              : ''
+                                          }`}
+                                          placeholder="johndoe@example.com"
+                                        />
+                                        <FieldInfo field={emailField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].mobileNumber`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        Mobile Number
-                                      </Label>
-                                      <div className="dark:bg-input/30 border-muted-foreground/30 flex items-center gap-2 rounded-full border pl-2">
-                                        <span>+63</span>
-                                        <Input
-                                          ref={(el) => {
-                                            formErrorRefs.current[
-                                              `travelers[${index}].mobileNumber`
-                                            ] = el
-                                          }}
-                                          value={field.state.value}
-                                          onChange={(e) =>
-                                            field.handleChange(e.target.value)
-                                          }
-                                          onBlur={field.handleBlur}
-                                          className="h-12 rounded-l-none bg-none"
-                                          placeholder="9123456789"
-                                        />
-                                      </div>
+                                  children={(mobileField) => {
+                                    const haveError = fieldHasError(mobileField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          Mobile Number
+                                        </Label>
+                                        <div className="dark:bg-input/30 border-muted-foreground/30 flex items-center gap-2 rounded-full border pl-2">
+                                          <span>+63</span>
+                                          <Input
+                                            value={mobileField.state.value}
+                                            onChange={(e) =>
+                                              mobileField.handleChange(
+                                                e.target.value
+                                              )
+                                            }
+                                            onBlur={mobileField.handleBlur}
+                                            className={`h-12 rounded-l-none bg-none ${
+                                              haveError
+                                                ? 'border-destructive'
+                                                : ''
+                                            }`}
+                                            placeholder="9123456789"
+                                          />
+                                        </div>
 
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                        <FieldInfo field={mobileField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
@@ -675,14 +700,7 @@ export function PersonalInfoForm() {
                                           field.handleChange(value as any)
                                         }
                                       >
-                                        <SelectTrigger
-                                          ref={(el) => {
-                                            formErrorRefs.current[
-                                              `travelers[${index}].idType`
-                                            ] = el
-                                          }}
-                                          className="h-12 w-full"
-                                        >
+                                        <SelectTrigger className="h-12 w-full">
                                           <SelectValue placeholder="ID Type" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -704,10 +722,12 @@ export function PersonalInfoForm() {
 
                                 <form.Field
                                   name={`travelers[${index}].idNumber`}
-                                  children={(field) => {
+                                  children={(idNumberField) => {
                                     const idType = form.getFieldValue(
                                       `travelers[${index}].idType`
                                     )
+                                    const haveError =
+                                      fieldHasError(idNumberField)
 
                                     return (
                                       <div className="w-full space-y-2">
@@ -723,21 +743,18 @@ export function PersonalInfoForm() {
                                         </div>
 
                                         <Input
-                                          ref={(el) => {
-                                            formErrorRefs.current[
-                                              `travelers[${index}].idNumber`
-                                            ] = el
-                                          }}
-                                          value={field.state.value}
+                                          value={idNumberField.state.value}
                                           onChange={(e) =>
-                                            field.handleChange(e.target.value)
+                                            idNumberField.handleChange(
+                                              e.target.value
+                                            )
                                           }
-                                          onBlur={field.handleBlur}
-                                          className="h-12"
+                                          onBlur={idNumberField.handleBlur}
+                                          className={`h-12 ${haveError && 'border-destructive'}`}
                                           placeholder="Enter ID Number"
                                         />
 
-                                        <FieldInfo field={field} />
+                                        <FieldInfo field={idNumberField} />
                                       </div>
                                     )
                                   }}
@@ -745,187 +762,180 @@ export function PersonalInfoForm() {
 
                                 <form.Field
                                   name={`travelers[${index}].address.province`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        State / Province
-                                      </Label>
-                                      <Select
-                                        value={field.state.value}
-                                        onValueChange={(value) => {
-                                          field.handleChange(value)
-                                          setSelectedProvinceCode((prev) => ({
-                                            ...prev,
-                                            [index]: value,
-                                          }))
-                                        }}
-                                      >
-                                        <SelectTrigger
-                                          ref={(el) => {
-                                            formErrorRefs.current[
-                                              `travelers[${index}].address.province`
-                                            ] = el
+                                  children={(provinceField) => {
+                                    const haveError =
+                                      fieldHasError(provinceField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          State / Province
+                                        </Label>
+                                        <Select
+                                          value={provinceField.state.value}
+                                          onValueChange={(value) => {
+                                            provinceField.handleChange(value)
+                                            setSelectedProvinceCode((prev) => ({
+                                              ...prev,
+                                              [index]: value,
+                                            }))
                                           }}
-                                          className="h-12 w-full"
                                         >
-                                          <SelectValue placeholder="Select your province" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {provinces.map((prov) => {
-                                            return (
-                                              <SelectItem
-                                                value={prov.code}
-                                                key={prov.code}
-                                              >
-                                                {prov.province}
-                                              </SelectItem>
-                                            )
-                                          })}
-                                        </SelectContent>
-                                      </Select>
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                          <SelectTrigger
+                                            className={`h-12 w-full ${haveError && 'border-destructive'}`}
+                                          >
+                                            <SelectValue placeholder="Select your province" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {provinces.map((prov) => {
+                                              return (
+                                                <SelectItem
+                                                  value={prov.code}
+                                                  key={prov.code}
+                                                >
+                                                  {prov.province}
+                                                </SelectItem>
+                                              )
+                                            })}
+                                          </SelectContent>
+                                        </Select>
+                                        <FieldInfo field={provinceField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].address.city`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        City / Municipality
-                                      </Label>
-                                      <Select
-                                        value={field.state.value}
-                                        onValueChange={(value) => {
-                                          field.handleChange(value)
-                                          const zipCode =
-                                            getZipCodeByCityCode(value)
-                                          form.setFieldValue(
-                                            `travelers[${index}].address.zipCode`,
-                                            zipCode ? String(zipCode) : ''
-                                          )
-                                        }}
-                                        disabled={
-                                          !form.getFieldValue(
-                                            `travelers[${index}].address.province`
-                                          ) ||
-                                          form.getFieldValue(
-                                            `travelers[${index}].address.province`
-                                          ).length === 0
-                                        }
-                                      >
-                                        <SelectTrigger
-                                          ref={(el) => {
-                                            formErrorRefs.current[
-                                              `travelers[${index}].address.city`
-                                            ] = el
-                                          }}
-                                          className="h-12 w-full"
-                                        >
-                                          <SelectValue placeholder="Select your city/municipality" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {citiesMunicipalities
-                                            .filter(
-                                              (c) =>
-                                                c.provCode ===
-                                                selectedProvinceCode[index]
+                                  children={(cityField) => {
+                                    const haveError = fieldHasError(cityField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          City / Municipality
+                                        </Label>
+                                        <Select
+                                          value={cityField.state.value}
+                                          onValueChange={(value) => {
+                                            cityField.handleChange(value)
+                                            const zipCode =
+                                              getZipCodeByCityCode(value)
+                                            form.setFieldValue(
+                                              `travelers[${index}].address.zipCode`,
+                                              zipCode ? String(zipCode) : ''
                                             )
-                                            .map((city, cityIndex) => {
-                                              return (
-                                                <SelectItem
-                                                  value={city.cityCode}
-                                                  key={`${city.cityCode}-${cityIndex}`}
-                                                >
-                                                  {city.city}
-                                                </SelectItem>
+                                          }}
+                                          disabled={
+                                            !form.getFieldValue(
+                                              `travelers[${index}].address.province`
+                                            ) ||
+                                            form.getFieldValue(
+                                              `travelers[${index}].address.province`
+                                            ).length === 0
+                                          }
+                                        >
+                                          <SelectTrigger
+                                            className={`h-12 w-full ${haveError && 'border-destructive'}`}
+                                          >
+                                            <SelectValue placeholder="Select your city/municipality" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {citiesMunicipalities
+                                              .filter(
+                                                (c) =>
+                                                  c.provCode ===
+                                                  selectedProvinceCode[index]
                                               )
-                                            })}
-                                        </SelectContent>
-                                      </Select>
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                              .map((city, cityIndex) => {
+                                                return (
+                                                  <SelectItem
+                                                    value={city.cityCode}
+                                                    key={`${city.cityCode}-${cityIndex}`}
+                                                  >
+                                                    {city.city}
+                                                  </SelectItem>
+                                                )
+                                              })}
+                                          </SelectContent>
+                                        </Select>
+                                        <FieldInfo field={cityField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].address.zipCode`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        ZIP Code
-                                      </Label>
-                                      <Input
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].address.zipCode`
-                                          ] = el
-                                        }}
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
-                                        }
-                                        className="h-12"
-                                        placeholder="Enter ZIP Code"
-                                      />
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                  children={(zipField) => {
+                                    const haveError = fieldHasError(zipField)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          ZIP Code
+                                        </Label>
+                                        <Input
+                                          value={zipField.state.value}
+                                          onChange={(e) =>
+                                            zipField.handleChange(
+                                              e.target.value
+                                            )
+                                          }
+                                          className={`h-12 ${haveError && 'border-destructive'}`}
+                                          placeholder="Enter ZIP Code"
+                                        />
+                                        <FieldInfo field={zipField} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].address.line1`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        Address Line 1
-                                      </Label>
-                                      <Input
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].address.line1`
-                                          ] = el
-                                        }}
-                                        maxLength={45}
-                                        value={field.state.value}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="h-12"
-                                        placeholder="Enter full address line 1"
-                                      />
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                  children={(l1Field) => {
+                                    const haveError = fieldHasError(l1Field)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          Address Line 1
+                                        </Label>
+                                        <Input
+                                          maxLength={45}
+                                          value={l1Field.state.value}
+                                          onChange={(e) =>
+                                            l1Field.handleChange(e.target.value)
+                                          }
+                                          onBlur={l1Field.handleBlur}
+                                          className={`h-12 ${haveError && 'border-destructive'}`}
+                                          placeholder="Enter full address line 1"
+                                        />
+                                        <FieldInfo field={l1Field} />
+                                      </div>
+                                    )
+                                  }}
                                 />
 
                                 <form.Field
                                   name={`travelers[${index}].address.line2`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <Label className="text-primary block">
-                                        Address Line 2
-                                      </Label>
-                                      <Input
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].address.line2`
-                                          ] = el
-                                        }}
-                                        value={field.state.value ?? ''}
-                                        onChange={(e) =>
-                                          field.handleChange(e.target.value)
-                                        }
-                                        onBlur={field.handleBlur}
-                                        className="h-12"
-                                        placeholder="Enter full address line 2"
-                                        maxLength={45}
-                                      />
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                  children={(l2Field) => {
+                                    const haveError = fieldHasError(l2Field)
+                                    return (
+                                      <div className="space-y-2">
+                                        <Label className="text-primary block">
+                                          Address Line 2
+                                        </Label>
+                                        <Input
+                                          value={l2Field.state.value ?? ''}
+                                          onChange={(e) =>
+                                            l2Field.handleChange(e.target.value)
+                                          }
+                                          onBlur={l2Field.handleBlur}
+                                          className={`h-12 ${haveError && 'border-destructive'}`}
+                                          placeholder="Enter full address line 2"
+                                          maxLength={45}
+                                        />
+                                        <FieldInfo field={l2Field} />
+                                      </div>
+                                    )
+                                  }}
                                 />
                               </div>
 
@@ -980,171 +990,178 @@ export function PersonalInfoForm() {
                                       <div className="grid gap-4 md:grid-cols-3">
                                         <form.Field
                                           name={`travelers[${index}].beneficiary.firstName`}
-                                          children={(field) => (
-                                            <div className="space-y-2">
-                                              <Label className="text-primary block">
-                                                First Name
-                                              </Label>
-                                              <Input
-                                                ref={(el) => {
-                                                  formErrorRefs.current[
-                                                    `travelers[${index}].beneficiary.firstName`
-                                                  ] = el
-                                                }}
-                                                value={field.state.value ?? ''}
-                                                onChange={(e) =>
-                                                  field.handleChange(
-                                                    e.target.value
-                                                  )
-                                                }
-                                                onBlur={field.handleBlur}
-                                                className="h-12"
-                                                placeholder="Enter beneficiary first name"
-                                                disabled={!hasBeneficiary}
-                                                required={hasBeneficiary}
-                                              />
-                                              <FieldInfo field={field} />
-                                            </div>
-                                          )}
+                                          children={(fNameField) => {
+                                            const haveError =
+                                              fieldHasError(fNameField)
+                                            return (
+                                              <div className="space-y-2">
+                                                <Label className="text-primary block">
+                                                  First Name
+                                                </Label>
+                                                <Input
+                                                  value={
+                                                    fNameField.state.value ?? ''
+                                                  }
+                                                  onChange={(e) =>
+                                                    fNameField.handleChange(
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  onBlur={fNameField.handleBlur}
+                                                  className={`h-12 ${haveError && 'border-destructive'}`}
+                                                  placeholder="Enter beneficiary first name"
+                                                  disabled={!hasBeneficiary}
+                                                  required={hasBeneficiary}
+                                                />
+                                                <FieldInfo field={fNameField} />
+                                              </div>
+                                            )
+                                          }}
                                         />
                                         <form.Field
                                           name={`travelers[${index}].beneficiary.middleName`}
-                                          children={(field) => (
-                                            <div className="space-y-2">
-                                              <Label className="text-primary block">
-                                                Middle Name
-                                              </Label>
-                                              <Input
-                                                ref={(el) => {
-                                                  formErrorRefs.current[
-                                                    `travelers[${index}].beneficiary.middleName`
-                                                  ] = el
-                                                }}
-                                                value={field.state.value ?? ''}
-                                                onChange={(e) =>
-                                                  field.handleChange(
-                                                    e.target.value
-                                                  )
-                                                }
-                                                onBlur={field.handleBlur}
-                                                className="h-12"
-                                                placeholder="Enter beneficiary middle name"
-                                                disabled={!hasBeneficiary}
-                                              />
-                                              <FieldInfo field={field} />
-                                            </div>
-                                          )}
+                                          children={(mNameField) => {
+                                            const haveError =
+                                              fieldHasError(mNameField)
+                                            return (
+                                              <div className="space-y-2">
+                                                <Label className="text-primary block">
+                                                  Middle Name
+                                                </Label>
+                                                <Input
+                                                  value={
+                                                    mNameField.state.value ?? ''
+                                                  }
+                                                  onChange={(e) =>
+                                                    mNameField.handleChange(
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  onBlur={mNameField.handleBlur}
+                                                  className={`h-12 ${haveError && 'border-destructive'}`}
+                                                  placeholder="Enter beneficiary middle name"
+                                                  disabled={!hasBeneficiary}
+                                                />
+                                                <FieldInfo field={mNameField} />
+                                              </div>
+                                            )
+                                          }}
                                         />
                                         <form.Field
                                           name={`travelers[${index}].beneficiary.lastName`}
-                                          children={(field) => (
-                                            <div className="space-y-2">
-                                              <Label className="text-primary block">
-                                                Last Name
-                                              </Label>
-                                              <Input
-                                                ref={(el) => {
-                                                  formErrorRefs.current[
-                                                    `travelers[${index}].beneficiary.lastName`
-                                                  ] = el
-                                                }}
-                                                value={field.state.value ?? ''}
-                                                onChange={(e) =>
-                                                  field.handleChange(
-                                                    e.target.value
-                                                  )
-                                                }
-                                                onBlur={field.handleBlur}
-                                                className="h-12"
-                                                placeholder="Enter beneficiary last name"
-                                                disabled={!hasBeneficiary}
-                                                required={hasBeneficiary}
-                                              />
-                                              <FieldInfo field={field} />
-                                            </div>
-                                          )}
+                                          children={(lNameField) => {
+                                            const haveError =
+                                              fieldHasError(lNameField)
+                                            return (
+                                              <div className="space-y-2">
+                                                <Label className="text-primary block">
+                                                  Last Name
+                                                </Label>
+                                                <Input
+                                                  value={
+                                                    lNameField.state.value ?? ''
+                                                  }
+                                                  onChange={(e) =>
+                                                    lNameField.handleChange(
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  onBlur={lNameField.handleBlur}
+                                                  className={`h-12 ${haveError && 'border-destructive'}`}
+                                                  placeholder="Enter beneficiary last name"
+                                                  disabled={!hasBeneficiary}
+                                                  required={hasBeneficiary}
+                                                />
+                                                <FieldInfo field={lNameField} />
+                                              </div>
+                                            )
+                                          }}
                                         />
                                       </div>
 
                                       <div className="grid gap-4 md:grid-cols-2">
                                         <form.Field
                                           name={`travelers[${index}].beneficiary.dateOfBirth`}
-                                          children={(field) => (
-                                            <div className="space-y-2">
-                                              <Label className="text-primary block">
-                                                Date of Birth
-                                              </Label>
-                                              {hasBeneficiary ? (
-                                                <DateTimePicker
-                                                  variant="date"
-                                                  value={
-                                                    field.state.value ??
-                                                    undefined
-                                                  }
-                                                  onChange={(value) =>
-                                                    field.handleChange(value)
-                                                  }
-                                                  disabled={(date) =>
-                                                    date >= new Date()
-                                                  }
-                                                  required
-                                                />
-                                              ) : (
-                                                <DateTimePicker
-                                                  variant="date"
-                                                  value={
-                                                    field.state.value ??
-                                                    undefined
-                                                  }
-                                                  onChange={(value) =>
-                                                    field.handleChange(value)
-                                                  }
-                                                  disabled={() => true}
-                                                />
-                                              )}
-                                              <FieldInfo field={field} />
-                                            </div>
-                                          )}
+                                          children={(bdobField) => {
+                                            const haveError =
+                                              fieldHasError(bdobField)
+                                            return (
+                                              <div className="space-y-2">
+                                                <Label className="text-primary block">
+                                                  Date of Birth
+                                                </Label>
+                                                {hasBeneficiary ? (
+                                                  <DateTimePicker
+                                                    variant="date"
+                                                    value={
+                                                      bdobField.state.value ??
+                                                      undefined
+                                                    }
+                                                    onChange={(value) =>
+                                                      bdobField.handleChange(
+                                                        value
+                                                      )
+                                                    }
+                                                    disabled={(date) =>
+                                                      date >= new Date()
+                                                    }
+                                                    required
+                                                    className={`${haveError && 'border-destructive'}`}
+                                                  />
+                                                ) : (
+                                                  <DateTimePicker
+                                                    variant="date"
+                                                    value={
+                                                      bdobField.state.value ??
+                                                      undefined
+                                                    }
+                                                    onChange={(value) =>
+                                                      bdobField.handleChange(
+                                                        value
+                                                      )
+                                                    }
+                                                    disabled={() => true}
+                                                  />
+                                                )}
+                                                <FieldInfo field={bdobField} />
+                                              </div>
+                                            )
+                                          }}
                                         />
 
                                         <form.Field
                                           name={`travelers[${index}].beneficiary.relationship`}
-                                          children={(field) => (
-                                            <div className="space-y-2">
-                                              <Label className="text-primary block">
-                                                Relationship
-                                              </Label>
-                                              <Input
-                                                ref={(el) => {
-                                                  formErrorRefs.current[
-                                                    `travelers[${index}].beneficiary.relationship`
-                                                  ] = el
-                                                }}
-                                                value={field.state.value ?? ''}
-                                                onChange={(e) =>
-                                                  field.handleChange(
-                                                    e.target.value
-                                                  )
-                                                }
-                                                onBlur={field.handleBlur}
-                                                className="h-12"
-                                                placeholder="e.g., Spouse, Parent, Child"
-                                                disabled={!hasBeneficiary}
-                                                required={hasBeneficiary}
-                                              />
-                                              <FieldInfo field={field} />
-                                            </div>
-                                          )}
+                                          children={(rField) => {
+                                            const haveError =
+                                              fieldHasError(rField)
+                                            return (
+                                              <div className="space-y-2">
+                                                <Label className="text-primary block">
+                                                  Relationship
+                                                </Label>
+                                                <Input
+                                                  value={
+                                                    rField.state.value ?? ''
+                                                  }
+                                                  onChange={(e) =>
+                                                    rField.handleChange(
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  onBlur={rField.handleBlur}
+                                                  className={`h-12 ${haveError && 'border-destructive'}`}
+                                                  placeholder="e.g., Spouse, Parent, Child"
+                                                  disabled={!hasBeneficiary}
+                                                  required={hasBeneficiary}
+                                                />
+                                                <FieldInfo field={rField} />
+                                              </div>
+                                            )
+                                          }}
                                         />
                                       </div>
 
-                                      <div
-                                        ref={(el) => {
-                                          formErrorRefs.current[
-                                            `travelers[${index}].beneficiary`
-                                          ] = el
-                                        }}
-                                      >
+                                      <div>
                                         <form.Field
                                           name={`travelers[${index}].beneficiary`}
                                           children={(field) => (
