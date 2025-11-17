@@ -143,11 +143,7 @@ export default function Home() {
   ]
 
   useEffect(() => {
-    const hasRedirected = sessionStorage.getItem('hasRedirected')
-    if (!hasRedirected) {
-      sessionStorage.setItem('hasRedirected', 'true')
-      redirect(INSURANCES[0].checkoutLink)
-    }
+    redirect(INSURANCES[0].checkoutLink)
   }, [])
 
   return (

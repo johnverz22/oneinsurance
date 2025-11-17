@@ -222,7 +222,7 @@ export function PaymentSuccessInline({
 
                 <p className="mt-4 text-xs text-gray-500 italic">
                   Note: Policy coverage begins on the effective date. Please
-                  ensure payment is completed before departure.
+                  ensure payment is completed before departure. VAT inclusive
                 </p>
               </div>
 
