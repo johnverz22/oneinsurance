@@ -139,8 +139,8 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
         </View>
 
         <Text style={styles.note}>
-          Note: Policy coverage begins on the effective date. Please ensure
-          payment is completed before departure.
+          {`Note: Policy coverage begins on the effective date. Please ensure payment is completed before departure.
+          VAT Inclusive`}
         </Text>
 
         <View style={styles.statusSection}>
