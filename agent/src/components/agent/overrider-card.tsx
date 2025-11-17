@@ -21,7 +21,7 @@ export function OverriderCard({
     <div className="bg-background w-full space-y-4 rounded-2xl border p-10 shadow-2xs">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-200 font-bold text-white">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-200 font-bold text-white dark:text-black">
             {name
               .split(' ')
               .map((n) => n[0])
@@ -37,8 +37,8 @@ export function OverriderCard({
           className={cn(
             'px-3 py-1 text-sm',
             status === 'Active'
-              ? 'bg-green-100 text-green-600'
-              : 'text-muted-foreground bg-gray-100'
+              ? 'bg-green-100 text-green-600 dark:text-green-900'
+              : 'text-muted bg-muted-foreground'
           )}
         >
           {status}

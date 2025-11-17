@@ -1,9 +1,13 @@
 'use client'
 
 import { OverriderCard } from '@/components/agent/overrider-card'
+import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
 import { Overrider } from '@/types/agent/overrider'
+import { formatPHPAmount } from '@/utils/formatter'
 import { ColumnDef } from '@tanstack/react-table'
+import { TrendingDown, TrendingUp, User, Users2 } from 'lucide-react'
+import { useMemo } from 'react'
 
 const OVERRIDERS: Overrider[] = [
   {
@@ -121,21 +125,93 @@ const OVERRIDER_COLUMNS: ColumnDef<Overrider>[] = [
 ]
 
 const OverridersPage = () => {
+  const totalOverriders = OVERRIDERS.length
+  const activeOverriders = OVERRIDERS.filter((el) => el.status === 'Active')
+  const totalSales = OVERRIDERS.reduce(
+    (currentTotal, { totalSales }) => totalSales + currentTotal,
+    0
+  )
+  const monthlyDeductions = OVERRIDERS.reduce(
+    (currentTotal, { upline_deduction }) => upline_deduction + currentTotal,
+    0
+  )
+
   return (
-    <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
-      <DataTable<Overrider, unknown>
-        header="My Overriders"
-        description="Manage your recruited agents and track their performance"
-        data={OVERRIDERS}
-        columns={OVERRIDER_COLUMNS}
-        renderMode="list"
-        containerClassName="grid md:grid-cols-2 lg:grid-cols-3"
-        contentRenderer={(row) => <OverriderCard {...row.original} />}
-        searchKey="name"
-        actions={[]}
-        pageSize={5}
-        onRowClick={(client) => console.log('Clicked row:', client)}
-      />
+    <div className="relative mx-auto space-y-6 overflow-hidden">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/20 p-4">
+            <Users2
+              className="shrink-0 text-purple-300"
+              fill="var(--color-purple-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Total Overriders</h4>
+            <p className="text-lg text-purple-500 lg:text-xl">
+              {totalOverriders ?? 0}
+            </p>
+          </div>
+        </Card>
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 p-4">
+            <User
+              className="shrink-0 text-green-300"
+              fill="var(--color-green-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Active Overriders</h4>
+            <p className="text-lg text-green-500 lg:text-xl">
+              {activeOverriders.length ?? 0}
+            </p>
+          </div>
+        </Card>
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/20 p-4">
+            <TrendingUp
+              className="shrink-0 text-orange-300"
+              fill="var(--color-orange-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Total Sales Generated</h4>
+            <p className="text-lg text-orange-500 lg:text-xl">
+              {formatPHPAmount(totalSales)}
+            </p>
+          </div>
+        </Card>
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20 p-4">
+            <TrendingDown
+              className="shrink-0 text-red-300"
+              fill="var(--color-red-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Monthly Deductions</h4>
+            <p className="text-lg text-red-500 lg:text-xl">
+              {formatPHPAmount(monthlyDeductions)}
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+        <DataTable<Overrider, unknown>
+          header="My Overriders"
+          description="Manage your recruited agents and track their performance"
+          data={OVERRIDERS}
+          columns={OVERRIDER_COLUMNS}
+          renderMode="list"
+          containerClassName="grid md:grid-cols-2 lg:grid-cols-3"
+          contentRenderer={(row) => <OverriderCard {...row.original} />}
+          searchKey="name"
+          actions={[]}
+          pageSize={5}
+          onRowClick={(client) => console.log('Clicked row:', client)}
+        />
+      </div>
     </div>
   )
 }
