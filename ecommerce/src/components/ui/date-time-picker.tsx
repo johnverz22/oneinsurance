@@ -44,6 +44,7 @@ type CommonProps = {
   modal?: PopoverProps['modal']
   fromYear?: number
   toYear?: number
+  className?: string
 }
 
 type DateTimePickerProps = (SingleOrMultipleProps | RangeProps) & CommonProps
@@ -58,6 +59,7 @@ export const DateTimePicker = ({
   mode = 'single',
   fromYear,
   toYear,
+  className,
 }: DateTimePickerProps) => {
   const [date, setDate] = React.useState(value ?? defaultValue)
   const [isOpen, setIsOpen] = React.useState(false)
@@ -114,7 +116,8 @@ export const DateTimePicker = ({
           variant="outline"
           className={cn(
             'border-muted-foreground/30 h-12 w-full justify-start rounded-full border pl-3 text-left font-normal',
-            !date && 'text-muted-foreground'
+            !date && 'text-muted-foreground',
+            className
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
