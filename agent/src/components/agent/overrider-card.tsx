@@ -37,7 +37,7 @@ export function OverriderCard({
           className={cn(
             'px-3 py-1 text-sm',
             status === 'Active'
-              ? 'bg-green-100 text-green-600 dark:text-green-900'
+              ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
               : 'text-muted bg-muted-foreground'
           )}
         >
