@@ -101,7 +101,6 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
             </Text>
             <Text style={[styles.headerText, styles.colUnits]}>Units</Text>
             <Text style={[styles.headerText, styles.colPrice]}>Premium</Text>
-            <Text style={[styles.headerText, styles.colAmount]}>Amount</Text>
           </View>
 
           {/* Travel Insurance Coverage */}
@@ -124,10 +123,6 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
             <Text style={[styles.cellText, styles.colPrice]}>
               PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
             </Text>
-            <Text style={[styles.cellText, styles.colGST]}>0.00</Text>
-            <Text style={[styles.cellText, styles.colAmount]}>
-              PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
-            </Text>
           </View>
 
           <View style={styles.totalRow}>
@@ -139,8 +134,8 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
         </View>
 
         <Text style={styles.note}>
-          Note: Policy coverage begins on the effective date. Please ensure
-          payment is completed before departure.
+          {`Note: Policy coverage begins on the effective date. Please ensure payment is completed before departure.
+          VAT Inclusive`}
         </Text>
 
         <View style={styles.statusSection}>
@@ -259,12 +254,14 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e5e5',
     paddingBottom: 8,
     marginBottom: 10,
+    justifyContent: 'space-between',
   },
   tableRow: {
     flexDirection: 'row',
     paddingVertical: 8,
     borderBottomWidth: 0.5,
     borderBottomColor: '#f0f0f0',
+    justifyContent: 'space-between',
   },
   colDescription: {
     width: '40%',

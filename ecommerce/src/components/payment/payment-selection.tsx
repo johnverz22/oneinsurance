@@ -406,7 +406,9 @@ export default function PaymentSelection() {
       <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
         <CardHeader className="flex items-center justify-between -space-y-2 border-b pt-6">
           <div className="flex-1">
-            <h2 className="text-2xl font-black">Choose Your Payment Method</h2>
+            <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
+              Choose Your Payment Method
+            </h2>
             <p className="text-muted-foreground text-sm">
               Select which payment you will use
             </p>
