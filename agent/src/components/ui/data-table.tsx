@@ -221,7 +221,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   })
 
   const pageIndex = table.getState().pagination.pageIndex
-  const firstIndex = pageIndex * pageSize + 1
+  const firstIndex = pageIndex * table.getState().pagination.pageSize + 1
   const lastIndex = firstIndex + table.getPaginationRowModel().rows.length - 1
   const total = table.getFilteredRowModel().rows.length
 
