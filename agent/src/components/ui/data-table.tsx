@@ -18,6 +18,8 @@ import {
   ArrowUpDown,
   ArrowUpRight,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   MoreHorizontal,
   Search,
 } from 'lucide-react'
@@ -57,8 +59,9 @@ export interface DataTableTableMode {
 
 export interface DataTableListMode<TData> {
   renderMode: 'list'
-  containerClassName?: string
   contentRenderer: (row: Row<TData>) => React.ReactNode
+  containerClassName?: string
+  numColumns?: number
 }
 
 export interface DataTableHeaderProps {
@@ -110,6 +113,8 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   alternateColors = false,
   ...props
 }: DataTableProps<TData, TValue>) {
+  const numColumns = props.renderMode === 'list' ? (props.numColumns ?? 3) : 1
+
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -119,7 +124,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   const [rowSelection, setRowSelection] = React.useState({})
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize,
+    pageSize: props.renderMode === 'list' ? (props.numColumns ?? 3) * 2 : 10, // default table pageSize
   })
 
   // Add selection column if enabled
@@ -215,9 +220,20 @@ export function DataTable<TData extends Record<string, any>, TValue>({
     },
   })
 
+  const pageIndex = table.getState().pagination.pageIndex
+  const firstIndex = pageIndex * pageSize + 1
+  const lastIndex = firstIndex + table.getPaginationRowModel().rows.length - 1
+  const total = table.getFilteredRowModel().rows.length
+
+  const paginationOptions = React.useMemo(() => {
+    if (props.renderMode === 'table') return [5, 10, 20, 30, 40, 50]
+
+    return [2, 3, 4, 5, 6].map((el) => el * numColumns)
+  }, [props.renderMode])
+
   React.useEffect(() => {
-    table.setPageSize(pageSize)
-  }, [pageSize, table])
+    table.setPagination(pagination)
+  }, [pagination])
 
   return (
     <div className="w-full space-y-6 py-2.5">
@@ -370,7 +386,11 @@ export function DataTable<TData extends Record<string, any>, TValue>({
           )}
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex w-full items-center justify-between gap-6">
+          <div className="text-muted-foreground text-sm">
+            Showing {firstIndex}-{lastIndex} of {total}
+          </div>
+
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium">Rows per page</p>
             <Select
@@ -379,64 +399,62 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 table.setPageSize(Number(value))
               }}
             >
-              <SelectTrigger className="h-8 w-[70px]">
+              <SelectTrigger className="h-8 w-[70px] !rounded-md">
                 <SelectValue
                   placeholder={table.getState().pagination.pageSize}
+                  className="!rounded-md"
                 />
               </SelectTrigger>
-              <SelectContent side="top">
-                {[5, 10, 20, 30, 40, 50].map((pageSize) => (
+              <SelectContent side="top" className="rounded">
+                {paginationOptions.map((pageSize) => (
                   <SelectItem key={pageSize} value={`${pageSize}`}>
                     {pageSize}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 !rounded-md p-0"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <ChevronLeft />
+              </Button>
 
-            <div className="flex items-center gap-1">
-              {Array.from({ length: table.getPageCount() }, (_, i) => i).map(
-                (pageIndex) => (
-                  <Button
-                    key={pageIndex}
-                    variant={
-                      table.getState().pagination.pageIndex === pageIndex
-                        ? 'default'
-                        : 'outline'
-                    }
-                    size="sm"
-                    onClick={() => table.setPageIndex(pageIndex)}
-                    className="h-8 w-8 p-0"
-                  >
-                    {pageIndex + 1}
-                  </Button>
-                )
-              )}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: table.getPageCount() }, (_, i) => i).map(
+                  (pageIndex) => (
+                    <Button
+                      key={pageIndex}
+                      variant={
+                        table.getState().pagination.pageIndex === pageIndex
+                          ? 'default'
+                          : 'outline'
+                      }
+                      size="sm"
+                      onClick={() => table.setPageIndex(pageIndex)}
+                      className="h-8 w-8 !rounded-md p-0"
+                    >
+                      {pageIndex + 1}
+                    </Button>
+                  )
+                )}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 !rounded-md p-0"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <ChevronRight />
+              </Button>
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
-
-          <div className="text-muted-foreground text-sm">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
           </div>
         </div>
       </div>
