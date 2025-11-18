@@ -3,12 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { ChangeEvent, useMemo, useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { useForm } from '@tanstack/react-form'
 import {
   ClientRequest,
   useTravelInsuranceStore,
 } from '@/store/travel-insurance-store'
-import { useGetTravelQuote } from '@/app/data/queries/get-travel-quote'
 import { Skeleton } from '@/components/ui/skeleton'
 import { InsurancePlan, TravelInsuranceApiResponse } from '@/types/plan'
 import { TravelInsurancePlan } from './insurance-plan'
@@ -142,15 +140,23 @@ export function CoverageOptionsForm() {
               continue
             }
 
+            const cleanData = removeNullBenefitCodeItems(data)
+
+            if (cleanData.data.Plans.length === 0) {
+              isProcessing.current = false
+              setIsLoading(false)
+              continue
+            }
+
             // Retrieve the latest insurancePlans state
             const currentPlans =
               useTravelInsuranceStore.getState().insurancePlans
 
             if (currentPlans === null || currentPlans === undefined) {
               const newCompareQuote = {
-                success: data.success,
-                message: data.message,
-                data: [{ ...data.data }],
+                success: cleanData.success,
+                message: cleanData.message,
+                data: [{ ...cleanData.data }],
               }
               setInsurancePlans(newCompareQuote)
               continue
@@ -159,7 +165,7 @@ export function CoverageOptionsForm() {
             // Create a new object and array to ensure immutability
             const newCompareQuotes = {
               ...currentPlans,
-              data: [...currentPlans.data, { ...data.data }],
+              data: [...currentPlans.data, { ...cleanData.data }],
             }
             setInsurancePlans(newCompareQuotes)
           } catch (error) {
@@ -395,4 +401,36 @@ export function CoverageOptionsForm() {
       </div>
     </div>
   )
+}
+
+function removeNullBenefitCodeItems(
+  response: TravelCompareQuoteResponse
+): TravelCompareQuoteResponse {
+  // Create a deep copy to avoid mutating the original object
+  const cleanedResponse: TravelCompareQuoteResponse = JSON.parse(
+    JSON.stringify(response)
+  )
+
+  // Process each plan
+  cleanedResponse.data.Plans.forEach((plan) => {
+    // Filter out AddonBenefits with null BenefitCode
+    if (plan.AddonBenefits) {
+      plan.AddonBenefits = plan.AddonBenefits.filter(
+        (benefit) => benefit.BenefitCode !== null
+      )
+    }
+
+    // Filter out MainBenefits with null BenefitCode
+    if (plan.MainBenefits) {
+      plan.MainBenefits = plan.MainBenefits.filter(
+        (benefit) => benefit.BenefitCode !== null
+      )
+    }
+  })
+
+  cleanedResponse.data.Plans = cleanedResponse.data.Plans.filter(
+    (plan) => plan.MainBenefits && plan.MainBenefits.length > 0
+  )
+
+  return cleanedResponse
 }
