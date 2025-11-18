@@ -1,13 +1,16 @@
 'use client'
 
 import { OverriderCard } from '@/components/agent/overrider-card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
+import { cn } from '@/lib/utils'
 import { Overrider } from '@/types/agent/overrider'
 import { formatPHPAmount } from '@/utils/formatter'
 import { ColumnDef } from '@tanstack/react-table'
+import { format } from 'date-fns'
 import { TrendingDown, TrendingUp, User, Users2 } from 'lucide-react'
-import { useMemo } from 'react'
 
 const OVERRIDERS: Overrider[] = [
   {
@@ -78,49 +81,97 @@ const OVERRIDERS: Overrider[] = [
 ]
 
 const OVERRIDER_COLUMNS: ColumnDef<Overrider>[] = [
+  { accessorKey: 'name' },
+  { accessorKey: 'code' },
+  { accessorKey: 'status' },
+  { accessorKey: 'rank' },
+  { accessorKey: 'recruited' },
+  { accessorKey: 'lastSale' },
+  { accessorKey: 'totalSales' },
+  { accessorKey: 'salesCount' },
+  { accessorKey: 'overrider_commission' },
+  { accessorKey: 'upline_deduction' },
+  { accessorKey: 'authorizedProducts' },
+]
+
+const OVERRIDER_PERFORMANCE_COLUMNS: ColumnDef<Overrider>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-  },
-  {
-    accessorKey: 'code',
-    header: 'Code',
+    cell: ({ row }) => {
+      const { name, code } = row.original
+
+      return (
+        <div className="flex flex-col gap-0.5 py-4">
+          <h3 className="font-bold">{name}</h3>
+          <p className="text-muted-foreground">{code}</p>
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'status',
     header: 'Status',
-  },
-  {
-    accessorKey: 'rank',
-    header: 'Rank',
-  },
-  {
-    accessorKey: 'recruited',
-    header: 'Recruited',
-  },
-  {
-    accessorKey: 'lastSale',
-    header: 'Last Sale',
+    cell: ({ row }) => {
+      const status = row.original.status
+
+      return (
+        <Badge
+          variant="secondary"
+          className={cn(
+            'px-3 py-1 text-sm',
+            status === 'Active'
+              ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
+              : 'text-muted bg-muted-foreground'
+          )}
+        >
+          {status}
+        </Badge>
+      )
+    },
   },
   {
     accessorKey: 'totalSales',
-    header: 'Total Sales',
-  },
-  {
-    accessorKey: 'salesCount',
-    header: 'Sales Count',
+    header: 'Sales',
+    cell: ({ row }) => {
+      const { totalSales, salesCount } = row.original
+
+      return (
+        <div className="flex flex-col gap-0.5">
+          <h3 className="font-bold">{formatPHPAmount(totalSales)}</h3>
+          <p className="text-muted-foreground">{salesCount} sales</p>
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'overrider_commission',
-    header: 'Overrider Commission',
+    header: 'Their Commission',
+    cell: ({ row }) => {
+      const overriderCommission = row.original.overrider_commission
+
+      return (
+        <p className="text-green-600">{formatPHPAmount(overriderCommission)}</p>
+      )
+    },
   },
   {
     accessorKey: 'upline_deduction',
-    header: 'Upline Deduction',
+    header: 'Your Share',
+    cell: ({ row }) => {
+      const uplineDeduction = row.original.upline_deduction
+
+      return <p className="text-red-600">{formatPHPAmount(uplineDeduction)}</p>
+    },
   },
   {
-    accessorKey: 'authorizedProducts',
-    header: 'Authorized Products',
+    accessorKey: 'lastSale',
+    header: 'Last Active',
+    cell: ({ row }) => {
+      const lastSale = row.original.lastSale
+
+      return <p className="font-medium">{format(new Date(lastSale), 'P')}</p>
+    },
   },
 ]
 
@@ -204,8 +255,24 @@ const OverridersPage = () => {
           data={OVERRIDERS}
           columns={OVERRIDER_COLUMNS}
           renderMode="list"
-          containerClassName="grid md:grid-cols-2 lg:grid-cols-3"
+          numColumns={3}
+          containerClassName="grid lg:grid-cols-3"
           contentRenderer={(row) => <OverriderCard {...row.original} />}
+          customAction={
+            <Button className="h-11 min-w-32">Recruit New Agent</Button>
+          }
+          searchKey="name"
+          actions={[]}
+          onRowClick={(client) => console.log('Clicked row:', client)}
+        />
+      </div>
+
+      <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+        <DataTable<Overrider, unknown>
+          header="Overrider Performance Summary"
+          data={OVERRIDERS}
+          columns={OVERRIDER_PERFORMANCE_COLUMNS}
+          renderMode="table"
           searchKey="name"
           actions={[]}
           pageSize={5}
