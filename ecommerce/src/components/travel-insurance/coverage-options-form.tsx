@@ -127,7 +127,7 @@ export function CoverageOptionsForm() {
 
           try {
             const response = await axios.get(
-              `https://dev-one-insurance.intel-soln.com.ph/api/v1/quote/compare/${cacheKey}`,
+              `${process.env.NEXT_PUBLIC_BASE_URL}/quote/compare/${cacheKey}`,
               {
                 headers: {
                   Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
