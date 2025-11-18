@@ -14,7 +14,7 @@ export type TravelQuoteRequestArgs = {
 
 export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
   try {
-    const url = `/api/travel-insurance/init-compare`
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/compare-quote`
     const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
 
     const result = await axios.post<InitCompareQuote>(url, data, {
