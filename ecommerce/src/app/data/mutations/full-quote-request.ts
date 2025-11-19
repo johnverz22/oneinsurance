@@ -14,7 +14,7 @@ export function useFullQuoteRequest() {
       try {
         const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
         const response = await axios.post(
-          '/api/travel-insurance/full-quote-request',
+          `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/full-quote`,
           fullQuoteRequest,
           {
             headers: {

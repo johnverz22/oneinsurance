@@ -12,7 +12,7 @@ export const useLoadQuoteRequest = (policyNo?: string) => {
         }
 
         const response = await axios.post(
-          '/api/travel-insurance/load-quote',
+          `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/load-quote`,
           { Type: 'policy', PolicyNo: policyNo },
           {
             headers: {
