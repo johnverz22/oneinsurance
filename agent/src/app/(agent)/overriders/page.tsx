@@ -1,9 +1,16 @@
 'use client'
 
 import { OverriderCard } from '@/components/agent/overrider-card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
+import { cn } from '@/lib/utils'
 import { Overrider } from '@/types/agent/overrider'
+import { formatPHPAmount } from '@/utils/formatter'
 import { ColumnDef } from '@tanstack/react-table'
+import { format } from 'date-fns'
+import { TrendingDown, TrendingUp, User, Users2 } from 'lucide-react'
 
 const OVERRIDERS: Overrider[] = [
   {
@@ -74,68 +81,204 @@ const OVERRIDERS: Overrider[] = [
 ]
 
 const OVERRIDER_COLUMNS: ColumnDef<Overrider>[] = [
+  { accessorKey: 'name' },
+  { accessorKey: 'code' },
+  { accessorKey: 'status' },
+  { accessorKey: 'rank' },
+  { accessorKey: 'recruited' },
+  { accessorKey: 'lastSale' },
+  { accessorKey: 'totalSales' },
+  { accessorKey: 'salesCount' },
+  { accessorKey: 'overrider_commission' },
+  { accessorKey: 'upline_deduction' },
+  { accessorKey: 'authorizedProducts' },
+]
+
+const OVERRIDER_PERFORMANCE_COLUMNS: ColumnDef<Overrider>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-  },
-  {
-    accessorKey: 'code',
-    header: 'Code',
+    cell: ({ row }) => {
+      const { name, code } = row.original
+
+      return (
+        <div className="flex flex-col gap-0.5 py-4">
+          <h3 className="font-bold">{name}</h3>
+          <p className="text-muted-foreground">{code}</p>
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'status',
     header: 'Status',
-  },
-  {
-    accessorKey: 'rank',
-    header: 'Rank',
-  },
-  {
-    accessorKey: 'recruited',
-    header: 'Recruited',
-  },
-  {
-    accessorKey: 'lastSale',
-    header: 'Last Sale',
+    cell: ({ row }) => {
+      const status = row.original.status
+
+      return (
+        <Badge
+          variant="secondary"
+          className={cn(
+            'px-3 py-1 text-sm',
+            status === 'Active'
+              ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
+              : 'text-muted bg-muted-foreground'
+          )}
+        >
+          {status}
+        </Badge>
+      )
+    },
   },
   {
     accessorKey: 'totalSales',
-    header: 'Total Sales',
-  },
-  {
-    accessorKey: 'salesCount',
-    header: 'Sales Count',
+    header: 'Sales',
+    cell: ({ row }) => {
+      const { totalSales, salesCount } = row.original
+
+      return (
+        <div className="flex flex-col gap-0.5">
+          <h3 className="font-bold">{formatPHPAmount(totalSales)}</h3>
+          <p className="text-muted-foreground">{salesCount} sales</p>
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'overrider_commission',
-    header: 'Overrider Commission',
+    header: 'Their Commission',
+    cell: ({ row }) => {
+      const overriderCommission = row.original.overrider_commission
+
+      return (
+        <p className="text-green-600">{formatPHPAmount(overriderCommission)}</p>
+      )
+    },
   },
   {
     accessorKey: 'upline_deduction',
-    header: 'Upline Deduction',
+    header: 'Your Share',
+    cell: ({ row }) => {
+      const uplineDeduction = row.original.upline_deduction
+
+      return <p className="text-red-600">{formatPHPAmount(uplineDeduction)}</p>
+    },
   },
   {
-    accessorKey: 'authorizedProducts',
-    header: 'Authorized Products',
+    accessorKey: 'lastSale',
+    header: 'Last Active',
+    cell: ({ row }) => {
+      const lastSale = row.original.lastSale
+
+      return <p className="font-medium">{format(new Date(lastSale), 'P')}</p>
+    },
   },
 ]
 
 const OverridersPage = () => {
+  const totalOverriders = OVERRIDERS.length
+  const activeOverriders = OVERRIDERS.filter((el) => el.status === 'Active')
+  const totalSales = OVERRIDERS.reduce(
+    (currentTotal, { totalSales }) => totalSales + currentTotal,
+    0
+  )
+  const monthlyDeductions = OVERRIDERS.reduce(
+    (currentTotal, { upline_deduction }) => upline_deduction + currentTotal,
+    0
+  )
+
   return (
-    <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
-      <DataTable<Overrider, unknown>
-        header="My Overriders"
-        description="Manage your recruited agents and track their performance"
-        data={OVERRIDERS}
-        columns={OVERRIDER_COLUMNS}
-        renderMode="list"
-        containerClassName="grid md:grid-cols-2 lg:grid-cols-3"
-        contentRenderer={(row) => <OverriderCard {...row.original} />}
-        searchKey="name"
-        actions={[]}
-        pageSize={5}
-        onRowClick={(client) => console.log('Clicked row:', client)}
-      />
+    <div className="relative mx-auto space-y-6 overflow-hidden">
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/20 p-4">
+            <Users2
+              className="shrink-0 text-purple-300"
+              fill="var(--color-purple-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Total Overriders</h4>
+            <p className="text-lg text-purple-500 lg:text-xl">
+              {totalOverriders ?? 0}
+            </p>
+          </div>
+        </Card>
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 p-4">
+            <User
+              className="shrink-0 text-green-300"
+              fill="var(--color-green-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Active Overriders</h4>
+            <p className="text-lg text-green-500 lg:text-xl">
+              {activeOverriders.length ?? 0}
+            </p>
+          </div>
+        </Card>
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/20 p-4">
+            <TrendingUp
+              className="shrink-0 text-orange-300"
+              fill="var(--color-orange-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Total Sales Generated</h4>
+            <p className="text-lg text-orange-500 lg:text-xl">
+              {formatPHPAmount(totalSales)}
+            </p>
+          </div>
+        </Card>
+        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20 p-4">
+            <TrendingDown
+              className="shrink-0 text-red-300"
+              fill="var(--color-red-300)"
+            />
+          </div>
+          <div>
+            <h4 className="text-muted-foreground">Monthly Deductions</h4>
+            <p className="text-lg text-red-500 lg:text-xl">
+              {formatPHPAmount(monthlyDeductions)}
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+        <DataTable<Overrider, unknown>
+          header="My Overriders"
+          description="Manage your recruited agents and track their performance"
+          data={OVERRIDERS}
+          columns={OVERRIDER_COLUMNS}
+          renderMode="list"
+          numColumns={3}
+          containerClassName="grid lg:grid-cols-3"
+          contentRenderer={(row) => <OverriderCard {...row.original} />}
+          customAction={
+            <Button className="h-11 min-w-32">Recruit New Agent</Button>
+          }
+          searchKey="name"
+          actions={[]}
+          onRowClick={(client) => console.log('Clicked row:', client)}
+        />
+      </div>
+
+      <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+        <DataTable<Overrider, unknown>
+          header="Overrider Performance Summary"
+          data={OVERRIDERS}
+          columns={OVERRIDER_PERFORMANCE_COLUMNS}
+          renderMode="table"
+          searchKey="name"
+          actions={[]}
+          pageSize={5}
+          onRowClick={(client) => console.log('Clicked row:', client)}
+        />
+      </div>
     </div>
   )
 }

@@ -214,9 +214,7 @@ const MySalesPage = () => {
         actions={[]}
         pageSize={5}
         onRowClick={(client) => console.log('Clicked row:', client)}
-        customAction={
-          <Button className="rounded-full*/ h-11 min-w-32">New Sale</Button>
-        }
+        customAction={<Button className="h-11 min-w-32">New Sale</Button>}
       />
     </div>
   )

@@ -44,10 +44,11 @@ export default function AgentLayout({
   const queryClient = new QueryClient()
 
   const TABS = [
+    { value: '/', label: 'Overview', isAvailable: true },
     { value: '/my-sales', label: 'My Sales', isAvailable: true },
     { value: '/team-sales', label: 'Team Sales', isAvailable: true },
     { value: '/overriders', label: 'Overriders', isAvailable: true },
-    { value: '/my-products', label: 'My Products', isAvailable: false },
+    { value: '/products', label: 'My Products', isAvailable: true },
     { value: '/referral-links', label: 'Referral Links', isAvailable: false },
     { value: '/payments', label: 'Payments', isAvailable: false },
   ]
