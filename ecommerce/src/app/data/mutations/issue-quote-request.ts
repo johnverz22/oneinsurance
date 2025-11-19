@@ -17,7 +17,7 @@ export function useIssueQuoteRequest() {
       try {
         const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
         const response = await axios.post(
-          '/api/travel-insurance/issue-quote',
+          `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/issue-quote`,
           issueQuoteRequest,
           {
             headers: {

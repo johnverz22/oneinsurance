@@ -25,12 +25,19 @@ export function travelInsuranceSchemaToInitCompareQuote(
     return today.getFullYear() - dobDate.getFullYear()
   }
 
-  const travelDetailList = travelInsurance.travelDetailList.map((td) => ({
-    TravelCoverageArea: td.TravelCoverageArea,
-    PlaceOfOrgin: td.PlaceOfOrgin,
-    TravelCountry: td.TravelCountry,
-    DisplaySequence: td.DisplaySequence,
-  }))
+  const placeOfOrigin = travelInsurance.travelDetailList[0]?.PlaceOfOrgin
+  const travelCoverageArea =
+    travelInsurance.travelDetailList[0]?.TravelCoverageArea
+  const travelDetailList = [
+    {
+      TravelCoverageArea: travelCoverageArea,
+      PlaceOfOrgin: placeOfOrigin,
+      TravelCountry: travelInsurance.travelDetailList
+        .map((td) => td.TravelCountry)
+        .join(', '),
+      DisplaySequence: 1,
+    },
+  ]
 
   return {
     ProductCode: 'TRAVEL',
