@@ -193,20 +193,14 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     }
   })
 
-  const placeOfOrigin =
-    travelInsurance.travelDetails.travelDetailList[0]?.PlaceOfOrgin
-  const travelCoverageArea =
-    travelInsurance.travelDetails.travelDetailList[0]?.TravelCoverageArea
-  const travelDetailList = [
-    {
-      TravelCoverageArea: travelCoverageArea,
-      PlaceOfOrgin: placeOfOrigin,
-      TravelCountry: travelInsurance.travelDetails.travelDetailList
-        .map((td) => td.TravelCountry)
-        .join(', '),
-      DisplaySequence: 1,
-    },
-  ]
+  const travelDetailList = travelInsurance.travelDetails.travelDetailList.map(
+    (td) => ({
+      TravelCoverageArea: td.TravelCoverageArea,
+      PlaceOfOrgin: td.PlaceOfOrgin,
+      TravelCountry: td.TravelCountry,
+      DisplaySequence: td.DisplaySequence,
+    })
+  )
 
   return {
     AgentCode: agentCode,
