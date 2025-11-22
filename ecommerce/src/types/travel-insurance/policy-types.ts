@@ -44,7 +44,7 @@ export const PolicyRiskSchema = z.object({
   Mobile: z.string(),
   ParentElementType: z.string(),
   ParentPolicyElementId: z.number(),
-  PolicyCoverageList: z.array(z.lazy(() => PolicyCoverageSchema)),
+  PolicyCoverageList: z.array(z.lazy(() => PolicyCoverageSchema)).optional(),
   PolicyElementId: z.number(),
   PolicyId: z.string(),
   PolicyStatus: z.number(),

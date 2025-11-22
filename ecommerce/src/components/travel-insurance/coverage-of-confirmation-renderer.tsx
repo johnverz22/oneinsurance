@@ -8,6 +8,7 @@ import {
   PDFDownloadLink,
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
+import { Coverage } from '../payment/coverage-of-confirmation'
 
 type COCRendererProps = {
   cocData: {
@@ -32,10 +33,7 @@ type COCRendererProps = {
       plan: string
       coverageArea: string
     }
-    coverage: {
-      name: string
-      sumInsured: string | number
-    }[]
+    coverage: Coverage[]
     status: {
       issueDate: string
       status: string
@@ -117,7 +115,9 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
               i % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
             ]}
           >
-            <Text style={[styles.tableCell, styles.tdLeft]}>{item.name}</Text>
+            <Text style={[styles.tableCell, styles.tdLeft]}>
+              {item.coverageName}
+            </Text>
             <Text style={[styles.tableCell, styles.tdRight]}>
               {typeof item.sumInsured === 'number'
                 ? `PHP ${item.sumInsured.toLocaleString()}`

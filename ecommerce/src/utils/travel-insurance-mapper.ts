@@ -114,7 +114,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       MiddleName: traveler.middleName || '',
       Mobile: `+63${traveler.mobileNumber}`,
       PostCode: traveler.address.zipCode,
-      Suffix: traveler.suffix,
+      Suffix: traveler.suffix === 'No Suffix' ? '' : traveler.suffix,
       Title: traveler.gender === 'F' ? 'Miss' : 'Mister',
     } as PolicyCustomer)
   })
@@ -151,7 +151,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       PolicyCoverageList: policyCoverageList,
       PostCode: traveler.address.zipCode,
       ProductElementCode: 'R00001',
-      Suffix: traveler.suffix || '',
+      Suffix: traveler.suffix === 'No Suffix' ? '' : traveler.suffix,
     } as PolicyRisk)
 
     // If traveler has a beneficiary, add them as non-main insured with traveler's details
@@ -193,14 +193,20 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     }
   })
 
-  const travelDetailList = travelInsurance.travelDetails.travelDetailList.map(
-    (td) => ({
-      TravelCoverageArea: td.TravelCoverageArea,
-      PlaceOfOrgin: td.PlaceOfOrgin,
-      TravelCountry: td.TravelCountry,
-      DisplaySequence: td.DisplaySequence,
-    })
-  )
+  const placeOfOrigin =
+    travelInsurance.travelDetails.travelDetailList[0]?.PlaceOfOrgin
+  const travelCoverageArea =
+    travelInsurance.travelDetails.travelDetailList[0]?.TravelCoverageArea
+  const travelDetailList = [
+    {
+      TravelCoverageArea: travelCoverageArea,
+      PlaceOfOrgin: placeOfOrigin,
+      TravelCountry: travelInsurance.travelDetails.travelDetailList
+        .map((td) => td.TravelCountry)
+        .join(', '),
+      DisplaySequence: 1,
+    },
+  ]
 
   return {
     AgentCode: agentCode,

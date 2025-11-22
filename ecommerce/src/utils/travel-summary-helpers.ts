@@ -9,6 +9,7 @@ import {
   getCityNameByCityCode,
   getProvinceNameByProvCode,
 } from './address-util'
+import { Coverage } from '@/components/payment/coverage-of-confirmation'
 
 export const transformToInvoiceData = (
   policyData: IssueQuoteResponse['data'],
@@ -70,6 +71,7 @@ export const transformToInvoiceData = (
 export const transformToCOCData = (
   policyData: IssueQuoteResponse['data'],
   quoteData: FullQuoteResponse['data'],
+  coverages: Coverage[],
   coverageOption: CoverageOptionFormData
 ) => {
   const effectiveDate = new Date(quoteData.EffectiveDate)
@@ -100,14 +102,6 @@ export const transformToCOCData = (
         .join(', '),
     })) ?? []
 
-  const coverageList =
-    quoteData.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList?.map(
-      (c) => ({
-        name: c.CoverageName,
-        sumInsured: 'Included',
-      })
-    ) ?? []
-
   return {
     policyNumber: policyData?.PolicyNo ?? '',
     proposalNumber: quoteData?.ProposalNo ?? '',
@@ -129,7 +123,7 @@ export const transformToCOCData = (
       coverageArea: quoteData.TravelDetailList?.[0]?.TravelCoverageArea || '',
     },
 
-    coverage: coverageList,
+    coverage: coverages,
 
     status: {
       issueDate: format(new Date(), 'MMMM dd, yyyy'),

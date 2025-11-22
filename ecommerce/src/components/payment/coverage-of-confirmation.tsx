@@ -6,15 +6,56 @@ import { Card, CardContent } from '@/components/ui/card'
 import {
   IssueQuoteResponse,
   FullQuoteResponse,
+  PolicyCoverage,
 } from '@/types/travel-insurance/policy-types'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { transformToCOCData } from '@/utils/travel-summary-helpers'
 import { GenerateAndDownloadCoverNote } from '../travel-insurance/coverage-of-confirmation-renderer'
 import { differenceInDays } from 'date-fns'
+import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
 
 interface coverNoteProps {
   policyData: IssueQuoteResponse['data']
   quoteData: FullQuoteResponse['data']
+}
+
+export type Coverage = {
+  coverageName: string
+  sumInsured: string | number
+}
+
+// Add a utility function to map PolicyCoverageList to Coverage
+function mapPolicyCoverageListToCoverage(policyCoverageList: PolicyCoverage[]) {
+  return policyCoverageList.map((coverage) => ({
+    coverageName: coverage.CoverageName,
+    sumInsured: 'Included',
+  }))
+}
+
+// Add a utility function to map selectedPlan benefits to Coverage
+function mapSelectedPlanToCoverage(coverageOption: CoverageOptionFormData) {
+  const selectedPlan = coverageOption.selectedPlan
+  if (!selectedPlan || !selectedPlan.MainBenefits) return []
+
+  const coverageList: Coverage[] = selectedPlan.MainBenefits.map((benefit) => ({
+    coverageName: benefit.BenefitDesc ?? benefit.CoverageName ?? '',
+    sumInsured: benefit.Silimit || 'Included',
+  }))
+
+  coverageOption.selectedAddonBenefits?.forEach((addonCode) => {
+    const addonBenefit = selectedPlan.AddonBenefits.find(
+      (benefit) => benefit.BenefitCode === addonCode
+    )
+    if (addonBenefit) {
+      coverageList.push({
+        coverageName:
+          addonBenefit.BenefitDesc ?? addonBenefit.CoverageName ?? '',
+        sumInsured: addonBenefit.Silimit || 'Included',
+      })
+    }
+  })
+
+  return coverageList
 }
 
 export function CoverageOfConfirmation({
@@ -32,9 +73,20 @@ export function CoverageOfConfirmation({
     )
   }
 
-  console.info('quoteData with mobile numbers:', quoteData)
+  // Map PolicyCoverageList or fallback to selectedPlan
+  const coverageList = quoteData.PolicyLobList?.[0]?.PolicyRiskList?.[0]
+    ?.PolicyCoverageList
+    ? mapPolicyCoverageListToCoverage(
+        quoteData.PolicyLobList[0].PolicyRiskList[0].PolicyCoverageList
+      )
+    : mapSelectedPlanToCoverage(coverageOption)
 
-  const COC_DATA = transformToCOCData(policyData, quoteData, coverageOption)
+  const COC_DATA = transformToCOCData(
+    policyData,
+    quoteData,
+    coverageList,
+    coverageOption
+  )
 
   const destinations =
     quoteData.TravelDetailList && quoteData.TravelDetailList.length > 0
@@ -98,7 +150,8 @@ export function CoverageOfConfirmation({
                       {customer.FirstName} {customer.LastName}
                     </p>
                     <p className="text-gray-600">{customer.AddressLine1}</p>
-                    <p className="text-gray-600">{customer.City}</p>
+                    <p className="text-gray-600">{customer.AddressLine2}</p>
+                    <p className="text-gray-600">{customer.PostCode}</p>
                     <p className="text-gray-600">{customer.Email}</p>
                     <p className="text-gray-600">
                       (+63) {travelersInfo[i].mobileNumber}
@@ -146,21 +199,21 @@ export function CoverageOfConfirmation({
                 </tr>
               </thead>
               <tbody>
-                {quoteData.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList?.map(
-                  (coverage, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-gray-100 last:border-b-0"
-                    >
-                      <td className="py-4 text-sm font-medium text-gray-800">
-                        {coverage.CoverageName}
-                      </td>
-                      <td className="py-4 text-right text-sm text-gray-600">
-                        {'Included'}
-                      </td>
-                    </tr>
-                  )
-                )}
+                {coverageList.map((coverage, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-100 last:border-b-0"
+                  >
+                    <td className="py-4 text-sm font-medium text-gray-800">
+                      {coverage.coverageName}
+                    </td>
+                    <td className="py-4 text-right text-sm text-gray-600">
+                      {!isNaN(Number(coverage.sumInsured))
+                        ? `${coverage.sumInsured.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : coverage.sumInsured}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 
