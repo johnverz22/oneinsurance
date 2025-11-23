@@ -67,6 +67,7 @@ export interface DataTableListMode<TData> {
 export interface DataTableHeaderProps {
   header?: string
   description?: string
+  searchPlaceholder?: string
 }
 
 export interface DataTableAction<TData> {
@@ -80,7 +81,7 @@ export interface DataTableBaseProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   customAction?: React.ReactNode
-  searchKey?: string
+  searchKey?: keyof TData | Array<keyof TData>
   actions?: DataTableAction<TData>[]
   onRowClick?: (row: TData) => void
   enableRowSelection?: boolean
@@ -100,6 +101,7 @@ export type DataTableProps<
 export function DataTable<TData extends Record<string, any>, TValue>({
   header = '',
   description = '',
+  searchPlaceholder,
   columns,
   data,
   customAction,
@@ -124,8 +126,10 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   const [rowSelection, setRowSelection] = React.useState({})
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: props.renderMode === 'list' ? (props.numColumns ?? 3) * 2 : 10, // default table pageSize
+    pageSize: props.renderMode === 'list' ? (props.numColumns ?? 3) * 3 : 10, // default table pageSize
   })
+
+  const [globalFilter, setGlobalFilter] = React.useState<string>('')
 
   // Add selection column if enabled
   const tableColumns = React.useMemo(() => {
@@ -199,6 +203,27 @@ export function DataTable<TData extends Record<string, any>, TValue>({
     return cols
   }, [columns, actions, enableRowSelection])
 
+  const multiKeyGlobalFilter = <TData,>(
+    row: Row<TData>,
+    _columnId: string,
+    filterValue: string,
+    searchKey: keyof TData | Array<keyof TData>
+  ) => {
+    if (!filterValue) return true
+
+    const search = filterValue.toLowerCase()
+
+    // Normalize keys to array
+    const keys = Array.isArray(searchKey) ? searchKey : [searchKey]
+
+    return keys.some((key) => {
+      const raw = row.original[key]
+      if (raw == null) return false
+
+      return String(raw).toLowerCase().includes(search)
+    })
+  }
+
   const table = useReactTable({
     data,
     columns: tableColumns,
@@ -211,12 +236,17 @@ export function DataTable<TData extends Record<string, any>, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, colId, filterValue) => {
+      return multiKeyGlobalFilter(row, colId, filterValue, searchKey ?? [])
+    },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
       pagination,
+      globalFilter,
     },
   })
 
@@ -226,10 +256,39 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   const total = table.getFilteredRowModel().rows.length
 
   const paginationOptions = React.useMemo(() => {
-    if (props.renderMode === 'table') return [5, 10, 20, 30, 40, 50]
+    if (props.renderMode === 'table') return [5, 10, 30, 50]
 
-    return [2, 3, 4, 5, 6].map((el) => el * numColumns)
+    return [3, 5, 7, 9].map((el) => el * numColumns)
   }, [props.renderMode])
+
+  const filterPlaceholder = React.useMemo(() => {
+    if (searchPlaceholder) {
+      return `Search by ${searchPlaceholder} ...`
+    }
+
+    if (!searchKey) {
+      return 'Search...'
+    }
+
+    const keys = Array.isArray(searchKey) ? searchKey : [searchKey]
+
+    const formattedKeys = keys.map((key) =>
+      formatCapitalizeFirstLetter(String(key))
+    )
+
+    let keyString = ''
+
+    if (formattedKeys.length === 1) {
+      keyString = formattedKeys[0]
+    } else if (formattedKeys.length === 2) {
+      keyString = `${formattedKeys[0]} or ${formattedKeys[1]}`
+    } else {
+      const last = formattedKeys.pop()
+      keyString = `${formattedKeys.join(', ')}, and ${last}`
+    }
+
+    return `Search by ${keyString} ...`
+  }, [searchKey, searchPlaceholder])
 
   React.useEffect(() => {
     table.setPagination(pagination)
@@ -237,7 +296,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
   return (
     <div className="w-full space-y-6 py-2.5">
-      <div className="flex items-center justify-between gap-4">
+      <div className="border-muted-foreground/30 flex flex-col justify-between gap-4 border-b pt-2.5 pb-4 lg:flex-row lg:items-center">
         <div className="space-y-1.5">
           <h3 className="text-base font-bold md:text-lg lg:text-xl">
             {header}
@@ -250,13 +309,9 @@ export function DataTable<TData extends Record<string, any>, TValue>({
             <div className="relative flex-1 lg:w-md">
               <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
-                placeholder={`Search by ${formatCapitalizeFirstLetter(searchKey)}...`}
-                value={
-                  (table.getColumn(searchKey)?.getFilterValue() as string) ?? ''
-                }
-                onChange={(event) =>
-                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
-                }
+                placeholder={filterPlaceholder}
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -307,14 +362,28 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
       <div className="bg-background rounded-ld">
         {props.renderMode === 'list' ? (
-          <div className={cn('flex flex-wrap gap-3', props.containerClassName)}>
-            {table.getRowModel().rows.map((row) => {
-              return <div key={row.id}>{props.contentRenderer(row)}</div>
-            })}
-          </div>
+          <>
+            {total > 0 ? (
+              <div
+                className={cn(
+                  'grid gap-3',
+                  `lg:grid-cols-${props.numColumns}`,
+                  props.containerClassName
+                )}
+              >
+                {table.getRowModel().rows.map((row) => {
+                  return <div key={row.id}>{props.contentRenderer(row)}</div>
+                })}
+              </div>
+            ) : (
+              <div className="flex h-40 w-full items-center justify-center">
+                No results found.
+              </div>
+            )}
+          </>
         ) : (
           <Table>
-            <TableHeader className="border-t">
+            <TableHeader className="bg-muted-foreground/5 border-t">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -386,48 +455,53 @@ export function DataTable<TData extends Record<string, any>, TValue>({
           )}
         </div>
 
-        <div className="flex w-full items-center justify-between gap-6">
-          <div className="text-muted-foreground text-sm">
-            Showing {firstIndex}-{lastIndex} of {total}
-          </div>
+        <div className="flex w-full flex-col items-center justify-between gap-6 md:flex-row">
+          {total > 0 && (
+            <div className="text-muted-foreground text-sm">
+              Showing {firstIndex}-{lastIndex} of {total}
+            </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium">Rows per page</p>
-            <Select
-              value={`${table.getState().pagination.pageSize}`}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value))
-              }}
-            >
-              <SelectTrigger className="h-8 w-[70px] !rounded-md">
-                <SelectValue
-                  placeholder={table.getState().pagination.pageSize}
-                  className="!rounded-md"
-                />
-              </SelectTrigger>
-              <SelectContent side="top" className="rounded">
-                {paginationOptions.map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
+          {total > 0 && (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 !rounded-md p-0"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+              <p className="text-sm font-medium">Rows per page</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value) => {
+                  table.setPageSize(Number(value))
+                }}
               >
-                <ChevronLeft />
-              </Button>
+                <SelectTrigger className="h-8 w-[70px] !rounded-md">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                    className="!rounded-md"
+                  />
+                </SelectTrigger>
+                <SelectContent side="top" className="rounded">
+                  {paginationOptions.map((pageSize) => (
+                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              <div className="flex items-center gap-1">
-                {Array.from({ length: table.getPageCount() }, (_, i) => i).map(
-                  (pageIndex) => (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 !rounded-md p-0"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronLeft />
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from(
+                    { length: table.getPageCount() },
+                    (_, i) => i
+                  ).map((pageIndex) => (
                     <Button
                       key={pageIndex}
                       variant={
@@ -441,21 +515,21 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                     >
                       {pageIndex + 1}
                     </Button>
-                  )
-                )}
-              </div>
+                  ))}
+                </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 !rounded-md p-0"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <ChevronRight />
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 !rounded-md p-0"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  <ChevronRight />
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
