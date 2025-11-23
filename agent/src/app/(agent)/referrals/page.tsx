@@ -8,69 +8,14 @@ import { Referral } from '@/types/agent/product'
 import { ColumnDef } from '@tanstack/react-table'
 import { ReferralCard } from '@/components/agent/referral-card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PRODUCTS } from '../products/products'
 
-const REFERRALS: Referral[] = [
-  {
-    id: 'P-001',
-    description: 'Travel Insurance',
-    provider: 'OONA',
-    commissionRate: 30,
-    status: 'Active',
-    link: 'ref/P-001',
-    clicks: 320,
-    conversions: 24,
-  },
-  {
-    id: 'P-002',
-    description: 'Comprehensive Auto',
-    provider: 'OONA',
-    commissionRate: 25,
-    status: 'Active',
-    link: 'ref/P-002',
-    clicks: 190,
-    conversions: 15,
-  },
-  {
-    id: 'P-003',
-    description: 'Travel Insurance',
-    provider: 'MALAYAN',
-    commissionRate: 30,
-    status: 'Active',
-    link: 'ref/P-003',
-    clicks: 450,
-    conversions: 33,
-  },
-  {
-    id: 'P-004',
-    description: 'Travel Insurance',
-    provider: 'MALAYAN',
-    commissionRate: 25,
-    status: 'Active',
-    link: 'ref/P-004',
-    clicks: 270,
-    conversions: 18,
-  },
-  {
-    id: 'P-005',
-    description: 'Personal Accident',
-    provider: 'MICO',
-    commissionRate: 30,
-    status: 'Active',
-    link: 'ref/P-005',
-    clicks: 160,
-    conversions: 12,
-  },
-  {
-    id: 'P-006',
-    description: 'e-CTPL',
-    provider: 'OONA',
-    commissionRate: 25,
-    status: 'Active',
-    link: 'ref/P-006',
-    clicks: 310,
-    conversions: 19,
-  },
-]
+const REFERRALS: Referral[] = PRODUCTS.map((product, index) => ({
+  ...product,
+  id: product.code,
+  clicks: 16 + index * 8,
+  conversions: 9 + index * 5,
+}))
 
 const REFERRAL_COLUMNS: ColumnDef<Referral>[] = [
   { accessorKey: 'id' },

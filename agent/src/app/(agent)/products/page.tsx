@@ -4,51 +4,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { DataTable } from '@/components/ui/data-table'
 import { ProductCard } from '@/components/agent/product-card'
 import { Product } from '@/types/agent/product'
-
-const PRODUCTS: Product[] = [
-  {
-    code: 'P-001',
-    description: 'Travel Insurance',
-    provider: 'OONA',
-    commissionRate: 30,
-    status: 'Active',
-  },
-  {
-    code: 'P-002',
-    description: 'Comprehensive Auto',
-    provider: 'OONA',
-    commissionRate: 25,
-    status: 'Active',
-  },
-  {
-    code: 'P-003',
-    description: 'Travel Insurance',
-    provider: 'MALAYAN',
-    commissionRate: 30,
-    status: 'Active',
-  },
-  {
-    code: 'P-004',
-    description: 'Travel Insurance',
-    provider: 'MALAYAN',
-    commissionRate: 25,
-    status: 'Active',
-  },
-  {
-    code: 'P-005',
-    description: 'Personal Accident',
-    provider: 'MICO',
-    commissionRate: 30,
-    status: 'Active',
-  },
-  {
-    code: 'P-006',
-    description: 'e-CTPL',
-    provider: 'OONA',
-    commissionRate: 25,
-    status: 'Active',
-  },
-]
+import { PRODUCTS } from './products'
 
 const columns: ColumnDef<Product>[] = [
   { accessorKey: 'code' },
