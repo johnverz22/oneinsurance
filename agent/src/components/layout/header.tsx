@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, User } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/toggle'
 import {
   NavigationMenu,
@@ -16,7 +15,6 @@ import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { Brand } from '@/components/layout/brand'
 import { Button } from '@/components/ui/button'
-import { isSingedin } from '@/utils/is-sigin'
 import { NavigationItem } from '@/types/navigation'
 import {
   DropdownMenu,
@@ -78,7 +76,7 @@ export const Header = ({
             size="lg"
             variant="ghost"
             className={cn('h-10 w-10 rounded-full p-2', {
-              hidden: !isMobile,
+              hidden: isMobile ? !isNavigationVisible : true,
             })}
           />
 
@@ -145,16 +143,21 @@ export const Header = ({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="text-primary flex items-center gap-4 py-2"
+                    className="text-primary hover:bg-foreground/10 dark:hover:bg-foreground/10 flex items-center gap-4 py-2"
                   >
-                    <span className="text-sm">Welcome, {user?.name}</span>
+                    <span className="hidden text-sm md:inline">
+                      Welcome, {user?.name}
+                    </span>
                     <Avatar>
                       <AvatarImage src="https://github.com/shadcn.png" />
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="min-w-40">
+                  <p className="text-accent flex w-full border-b px-4 py-2.5 font-bold md:hidden">
+                    Welcome, {user?.name}!
+                  </p>
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem

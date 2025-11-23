@@ -4,19 +4,25 @@ import { cn } from '@/lib/utils'
 import { formatPHPAmount } from '@/utils/formatter'
 import { Overrider } from '@/types/agent/overrider'
 
-export function OverriderCard({
-  name,
-  code,
-  status,
-  rank,
-  recruited,
-  lastSale,
-  totalSales,
-  salesCount,
-  overrider_commission,
-  upline_deduction,
-  authorizedProducts,
-}: Overrider) {
+type OverriderCardProps = {
+  overrider: Overrider
+}
+
+export const OverriderCard = ({
+  overrider: {
+    name,
+    code,
+    status,
+    rank,
+    recruited,
+    lastSale,
+    totalSales,
+    salesCount,
+    overrider_commission,
+    upline_deduction,
+    authorizedProducts,
+  },
+}: OverriderCardProps) => {
   return (
     <div className="bg-background w-full space-y-4 rounded-2xl border p-10 shadow-2xs">
       <div className="flex items-center justify-between">

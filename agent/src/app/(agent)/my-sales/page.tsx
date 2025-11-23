@@ -151,6 +151,7 @@ const columns: ColumnDef<MySale>[] = [
   {
     accessorKey: 'product',
     header: 'Product',
+    cell: ({ row }) => <p className="font-bold">{row.original.product}</p>,
   },
   {
     accessorKey: 'customer',
@@ -204,13 +205,13 @@ const columns: ColumnDef<MySale>[] = [
 
 const MySalesPage = () => {
   return (
-    <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+    <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
       <DataTable<MySale, unknown>
         header="My Sales"
         data={MY_SALES}
         columns={columns}
         renderMode="table"
-        searchKey="product"
+        searchKey={['customer', 'product']}
         actions={[]}
         pageSize={5}
         onRowClick={(client) => console.log('Clicked row:', client)}

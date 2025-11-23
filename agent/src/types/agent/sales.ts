@@ -1,3 +1,5 @@
+import { Overrider } from '@/types/agent/overrider'
+
 type Product = 'Life' | 'Health' | 'Business' | 'Travel' | 'CPTL'
 
 type Status = 'Paid' | 'Pending' | 'New'
@@ -16,6 +18,7 @@ export type MySale = BaseSale & {
 }
 
 export type TeamSale = BaseSale & {
+  agent: Overrider['name']
   overrider_commission: number
   upline_deduction: number
 }
