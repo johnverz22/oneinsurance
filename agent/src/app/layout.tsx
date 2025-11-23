@@ -19,7 +19,7 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: 'E-commerce',
+  title: 'One Insurance',
   description: 'One Insurance',
 }
 

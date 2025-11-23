@@ -15,6 +15,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 3000,
     upline_deduction: 1500,
     date: new Date('2025-01-10'),
+    agent: 'Alice Santos',
   },
   {
     id: 'T-002',
@@ -24,6 +25,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 2000,
     upline_deduction: 1000,
     date: new Date('2025-01-15'),
+    agent: 'Brian Cruz',
   },
   {
     id: 'T-003',
@@ -33,6 +35,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 800,
     upline_deduction: 400,
     date: new Date('2025-01-20'),
+    agent: 'Erika Mendoza',
   },
   {
     id: 'T-004',
@@ -42,6 +45,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 6000,
     upline_deduction: 3000,
     date: new Date('2025-01-25'),
+    agent: 'Daniel Lim',
   },
   {
     id: 'T-005',
@@ -51,6 +55,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 5000,
     upline_deduction: 2500,
     date: new Date('2025-01-30'),
+    agent: 'Alice Santos',
   },
   {
     id: 'T-006',
@@ -60,6 +65,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 2500,
     upline_deduction: 1200,
     date: new Date('2025-02-02'),
+    agent: 'Brian Cruz',
   },
   {
     id: 'T-007',
@@ -69,6 +75,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 7500,
     upline_deduction: 3800,
     date: new Date('2025-02-10'),
+    agent: 'Daniel Lim',
   },
   {
     id: 'T-008',
@@ -78,6 +85,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 1800,
     upline_deduction: 900,
     date: new Date('2025-02-14'),
+    agent: 'Catherine Reyes',
   },
   {
     id: 'T-009',
@@ -87,6 +95,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 1000,
     upline_deduction: 500,
     date: new Date('2025-02-18'),
+    agent: 'Erika Mendoza',
   },
   {
     id: 'T-010',
@@ -96,6 +105,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 6000,
     upline_deduction: 3200,
     date: new Date('2025-02-25'),
+    agent: 'Alice Santos',
   },
   {
     id: 'T-011',
@@ -105,6 +115,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 2600,
     upline_deduction: 1300,
     date: new Date('2025-03-01'),
+    agent: 'Brian Cruz',
   },
   {
     id: 'T-012',
@@ -114,6 +125,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 7000,
     upline_deduction: 3500,
     date: new Date('2025-03-03'),
+    agent: 'Daniel Lim',
   },
   {
     id: 'T-013',
@@ -123,6 +135,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 2100,
     upline_deduction: 1050,
     date: new Date('2025-03-07'),
+    agent: 'Catherine Reyes',
   },
   {
     id: 'T-014',
@@ -132,6 +145,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 900,
     upline_deduction: 450,
     date: new Date('2025-03-09'),
+    agent: 'Erika Mendoza',
   },
   {
     id: 'T-015',
@@ -141,6 +155,7 @@ const TEAM_SALES: TeamSale[] = [
     overrider_commission: 4800,
     upline_deduction: 2400,
     date: new Date('2025-03-12'),
+    agent: 'Alice Santos',
   },
 ]
 
@@ -191,15 +206,14 @@ const TEAM_SALES_COLUMNS: ColumnDef<TeamSale>[] = [
 
 const TeamSalesPage = () => {
   return (
-    <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+    <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
       <DataTable<TeamSale, unknown>
         header="Team Sales (Overriders)"
         description="Sales from your recruited overriders"
         data={TEAM_SALES}
         columns={TEAM_SALES_COLUMNS}
         renderMode="table"
-        searchKey="product"
-        actions={[]}
+        searchKey={['agent', 'product']}
         pageSize={5}
         onRowClick={(client) => console.log('Clicked row:', client)}
       />
