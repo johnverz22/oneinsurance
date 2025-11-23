@@ -3,11 +3,11 @@ type BaseType = {
   status: 'Active' | 'Inactive'
   provider: 'OONA' | 'MALAYAN' | 'MICO'
   commissionRate: number
+  link: string
 }
 
 export type Referral = BaseType & {
   id: string
-  link: string
   clicks: number
   conversions: number
 }

@@ -3,9 +3,17 @@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Copy, ExternalLink, Share2, Loader2, Check } from 'lucide-react'
+import {
+  Copy,
+  ExternalLink,
+  Share2,
+  Loader2,
+  Check,
+  ArrowUpRight,
+} from 'lucide-react'
 import { BASE_REFERRAL_URL } from '@/constants/app'
 import { Referral } from '@/types/agent/product'
+import Link from 'next/link'
 
 type ReferralCardProps = {
   referral: Referral
@@ -45,17 +53,29 @@ export const ReferralCard = ({
           </div>
         </div>
 
-        <div className="mt-6 flex items-end gap-3">
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-end">
           <div className="w-full space-y-1.5">
             <p className="text-sm font-medium">Referral Link:</p>
             <Input value={link} readOnly />
           </div>
-          <Button
-            className="h-11 w-max min-w-24 bg-blue-600 px-6 text-white hover:bg-blue-700"
-            onClick={() => handleCopyLink()}
-          >
-            {isCopied ? <Check /> : 'Copy'}
-          </Button>
+
+          <div className="flex gap-3">
+            <Button
+              className="h-11 w-max min-w-24 bg-blue-600 px-6 text-white hover:bg-blue-700"
+              onClick={() => handleCopyLink()}
+            >
+              {isCopied ? <Check /> : 'Copy'}
+            </Button>
+            <Button
+              className="h-11 w-11 hover:bg-blue-700 hover:text-white dark:hover:bg-blue-700"
+              variant="outline"
+              asChild
+            >
+              <Link href={link} target="_blank">
+                <ArrowUpRight />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
