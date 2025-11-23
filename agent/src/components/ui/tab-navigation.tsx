@@ -40,9 +40,12 @@ export const TabNavigation = ({ tabs }: { tabs: Tab[] }) => {
     })
   }
 
-  const handleTabChange = (tab: Tab) => {
+  const handleTabChange = async (tab: Tab) => {
     router.push(tab.value)
-    centerTab(tab.value)
+
+    requestAnimationFrame(() => {
+      centerTab(tab.value)
+    })
   }
 
   const setupObservers = useCallback(() => {
