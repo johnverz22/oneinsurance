@@ -189,7 +189,7 @@ const OverridersPage = () => {
 
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/20 p-4">
             <Users2
@@ -248,7 +248,7 @@ const OverridersPage = () => {
         </Card>
       </div>
 
-      <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+      <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
         <DataTable<Overrider, unknown>
           header="My Overriders"
           description="Manage your recruited agents and track their performance"
@@ -256,8 +256,7 @@ const OverridersPage = () => {
           columns={OVERRIDER_COLUMNS}
           renderMode="list"
           numColumns={3}
-          containerClassName="grid lg:grid-cols-3"
-          contentRenderer={(row) => <OverriderCard {...row.original} />}
+          contentRenderer={(row) => <OverriderCard overrider={row.original} />}
           customAction={
             <Button className="h-11 min-w-32">Recruit New Agent</Button>
           }
@@ -267,7 +266,7 @@ const OverridersPage = () => {
         />
       </div>
 
-      <div className="border-muted-foreground/20 rounded-xl border px-6 py-3.5">
+      <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
         <DataTable<Overrider, unknown>
           header="Overrider Performance Summary"
           data={OVERRIDERS}

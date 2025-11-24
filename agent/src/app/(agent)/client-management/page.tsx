@@ -294,7 +294,7 @@ export default function ClientManagementPage() {
             columns={columns}
             data={mockClients}
             renderMode="table"
-            searchKey="name"
+            searchKey={['firstName', 'lastName']}
             enableRowSelection
             actions={[
               {
