@@ -1,16 +1,24 @@
 'use client'
 
-import { PaymentHistoryCard } from '@/components/agent/payment-history-card'
+import {
+  addDays,
+  addMonths,
+  format,
+  getDate,
+  getDaysInMonth,
+  setDate,
+} from 'date-fns'
+import { ColumnDef } from '@tanstack/react-table'
 import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
+import { PaymentHistoryCard } from '@/components/agent/payment-history-card'
 import { PaymentHistory } from '@/types/agent/payments'
-import { ColumnDef } from '@tanstack/react-table'
-import { Users2 } from 'lucide-react'
+import { formatPHPAmount } from '@/utils/formatter'
 
 const PAYMENT_HISTORY: PaymentHistory[] = [
   {
-    id: 'PAY-2024-010',
-    period: 'October 2024',
+    id: 'PAY-2025-010',
+    period: 'October 2025',
     salesCount: 3,
     status: 'Paid',
     grossCommission: {
@@ -30,16 +38,16 @@ const PAYMENT_HISTORY: PaymentHistory[] = [
     netPayment: {
       amount: 90000,
       method: 'GCash',
-      date: '2024-11-05',
+      date: '2025-11-05',
     },
     paymentStatus: {
-      dueDate: '2024-11-05',
-      paidDate: '2024-11-02',
+      dueDate: '2025-11-05',
+      paidDate: '2025-11-02',
     },
   },
   {
-    id: 'PAY-2024-009',
-    period: 'September 2024',
+    id: 'PAY-2025-009',
+    period: 'September 2025',
     salesCount: 4,
     status: 'Paid',
     grossCommission: {
@@ -59,16 +67,16 @@ const PAYMENT_HISTORY: PaymentHistory[] = [
     netPayment: {
       amount: 86000,
       method: 'Bank Transfer',
-      date: '2024-10-04',
+      date: '2025-10-04',
     },
     paymentStatus: {
-      dueDate: '2024-10-05',
-      paidDate: '2024-10-03',
+      dueDate: '2025-10-05',
+      paidDate: '2025-10-03',
     },
   },
   {
-    id: 'PAY-2024-008',
-    period: 'August 2024',
+    id: 'PAY-2025-008',
+    period: 'August 2025',
     salesCount: 5,
     status: 'Paid',
     grossCommission: {
@@ -88,16 +96,16 @@ const PAYMENT_HISTORY: PaymentHistory[] = [
     netPayment: {
       amount: 107000,
       method: 'Maya',
-      date: '2024-09-05',
+      date: '2025-09-05',
     },
     paymentStatus: {
-      dueDate: '2024-09-05',
-      paidDate: '2024-09-04',
+      dueDate: '2025-09-05',
+      paidDate: '2025-09-04',
     },
   },
   {
-    id: 'PAY-2024-007',
-    period: 'July 2024',
+    id: 'PAY-2025-007',
+    period: 'July 2025',
     salesCount: 2,
     status: 'Paid',
     grossCommission: {
@@ -117,16 +125,16 @@ const PAYMENT_HISTORY: PaymentHistory[] = [
     netPayment: {
       amount: 63000,
       method: 'Bank Transfer',
-      date: '2024-08-05',
+      date: '2025-08-05',
     },
     paymentStatus: {
-      dueDate: '2024-08-05',
-      paidDate: '2024-08-02',
+      dueDate: '2025-08-05',
+      paidDate: '2025-08-02',
     },
   },
   {
-    id: 'PAY-2024-006',
-    period: 'June 2024',
+    id: 'PAY-2025-006',
+    period: 'June 2025',
     salesCount: 4,
     status: 'Paid',
     grossCommission: {
@@ -146,16 +154,16 @@ const PAYMENT_HISTORY: PaymentHistory[] = [
     netPayment: {
       amount: 76000,
       method: 'GCash',
-      date: '2024-07-04',
+      date: '2025-07-04',
     },
     paymentStatus: {
-      dueDate: '2024-07-05',
-      paidDate: '2024-07-03',
+      dueDate: '2025-07-05',
+      paidDate: '2025-07-03',
     },
   },
   {
-    id: 'PAY-2024-005',
-    period: 'May 2024',
+    id: 'PAY-2025-005',
+    period: 'May 2025',
     salesCount: 3,
     status: 'Pending',
     grossCommission: {
@@ -175,10 +183,10 @@ const PAYMENT_HISTORY: PaymentHistory[] = [
     netPayment: {
       amount: 81000,
       method: 'GCash',
-      date: '2024-06-05',
+      date: '2025-06-05',
     },
     paymentStatus: {
-      dueDate: '2024-06-05',
+      dueDate: '2025-06-05',
       paidDate: undefined,
     },
   },
@@ -196,21 +204,94 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
   { accessorKey: 'paymentStatus.paidDate' },
 ]
 
+function getPaymentDates(today: Date = new Date()) {
+  const day = getDate(today)
+  const daysInMonth = getDaysInMonth(today)
+
+  let lastPayment: Date
+  let nextPayment: Date
+
+  if (day >= 15 && day < daysInMonth) {
+    lastPayment = setDate(today, 15)
+    nextPayment = setDate(today, daysInMonth >= 30 ? 30 : daysInMonth) // handle shorter months
+  } else if (day >= 30 || (day >= 28 && daysInMonth < 30)) {
+    // after 30th (or last day of short month)
+    lastPayment = setDate(today, daysInMonth >= 30 ? 30 : daysInMonth)
+    const nextMonth = addMonths(today, 1)
+    const daysInNextMonth = getDaysInMonth(nextMonth)
+    nextPayment = setDate(nextMonth, 15)
+  } else {
+    // before 15th
+    lastPayment = setDate(today, 1) // optional: or previous month's 30th
+    nextPayment = setDate(today, 15)
+  }
+
+  return {
+    lastPayment: format(lastPayment, 'PP'),
+    nextPayment: format(nextPayment, 'PP'),
+  }
+}
+
 const PaymentsPage = () => {
+  const totalEarnings = PAYMENT_HISTORY.reduce(
+    (current, history) => current + history.grossCommission.total,
+    0
+  )
+
+  const totalPaid = PAYMENT_HISTORY.reduce(
+    (current, history) =>
+      current + (history.status === 'Paid' ? history.grossCommission.total : 0),
+    0
+  )
+
+  const totalPending = PAYMENT_HISTORY.reduce(
+    (current, history) =>
+      current +
+      (history.status === 'Pending' ? history.grossCommission.total : 0),
+    0
+  )
+
+  const monthlyAverage = totalEarnings / PAYMENT_HISTORY.length
+  const { lastPayment, nextPayment } = getPaymentDates(new Date())
+
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-        <Card className="flex flex-row items-center gap-8 rounded-3xl px-12 py-5 shadow-2xs">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/20 p-4">
-            <Users2
-              className="shrink-0 text-purple-300"
-              fill="var(--color-purple-300)"
-            />
-          </div>
-          <div>
-            <h4 className="text-muted-foreground">Total Overriders</h4>
-            <p className="text-lg text-purple-500 lg:text-xl">0</p>
-          </div>
+      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-6">
+        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+          <h4 className="font-bold">Total Earnings</h4>
+          <p className="text-sm font-semibold lg:text-base">
+            {formatPHPAmount(totalEarnings)}
+          </p>
+        </Card>
+        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+          <h4 className="font-bold">Total Paid</h4>
+          <p className="text-sm font-semibold text-green-500 lg:text-base">
+            {formatPHPAmount(totalPaid)}
+          </p>
+        </Card>
+        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+          <h4 className="font-bold">Total Pending</h4>
+          <p className="text-sm font-semibold text-red-500 lg:text-base">
+            {formatPHPAmount(totalPending)}
+          </p>
+        </Card>
+        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+          <h4 className="font-bold">Last Payment</h4>
+          <p className="text-muted-foreground text-sm font-semibold lg:text-base">
+            {lastPayment}
+          </p>
+        </Card>
+        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+          <h4 className="font-bold">Next Payment</h4>
+          <p className="text-sm font-semibold text-blue-500 lg:text-base">
+            {nextPayment}
+          </p>
+        </Card>
+        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+          <h4 className="font-bold">Monthly Average</h4>
+          <p className="text-sm font-semibold text-purple-500 lg:text-base">
+            {formatPHPAmount(monthlyAverage)}
+          </p>
         </Card>
       </div>
 

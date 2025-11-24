@@ -30,7 +30,7 @@ export const ProfileOverview = () => {
   return (
     <Card>
       <CardContent className="flex w-full flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex w-full flex-1 items-center gap-5 xl:w-1/3">
+        <div className="flex w-full min-w-1/3 items-center gap-5 xl:w-1/3">
           <Avatar className="size-20">
             <AvatarImage src="https://github.com/shadcn.png" />
             <AvatarFallback>CN</AvatarFallback>
