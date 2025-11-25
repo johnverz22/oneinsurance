@@ -3,23 +3,24 @@
 import React, { useState } from 'react'
 import { Search, Filter, Plus } from 'lucide-react'
 import ProductsMainContent from './products-main-content'
+import AgentsMainContent from './agents-main-content'
 
 export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState('products')
 
   return (
-    <div className="min-h-screen">
+    <div className="mt-4 min-h-screen">
       <div className="mx-auto max-w-7xl">
         {/* Top Navigation & Actions Bar */}
-        <div className="mb-0 flex flex-col justify-between gap-4 md:flex-row md:items-end md:gap-0">
+        <div className="mb-0 flex flex-col-reverse justify-between gap-4 md:flex-row md:items-end md:gap-0">
           {/* Tabs */}
           <div className="flex items-end space-x-[-8px]">
             <button
               onClick={() => setActiveTab('products')}
               className={`relative z-20 rounded-t-2xl px-8 py-3 text-lg font-bold transition-all ${
                 activeTab === 'products'
-                  ? 'bg-white text-slate-800 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]'
-                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                  ? 'shadow-sm'
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700'
               }`}
             >
               Products
@@ -33,8 +34,8 @@ export default function ProductTabs() {
               onClick={() => setActiveTab('agents')}
               className={`relative z-10 rounded-t-2xl px-8 py-3 text-lg font-bold transition-all ${
                 activeTab === 'agents'
-                  ? 'bg-white text-slate-800 shadow-sm'
-                  : 'bg-gray-100 text-gray-300 hover:bg-gray-200'
+                  ? 'shadow-sm'
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700'
               }`}
             >
               Agents
@@ -67,9 +68,7 @@ export default function ProductTabs() {
         {activeTab === 'products' ? (
           <ProductsMainContent />
         ) : (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-500">
-            Agents tab content goes here.
-          </div>
+          <AgentsMainContent />
         )}
       </div>
     </div>
