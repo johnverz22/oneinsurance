@@ -102,25 +102,22 @@ export default function ProductsMainContent() {
   }
 
   return (
-    <div className="relative z-10 -mt-[1px] min-h-[600px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 border-gray-100 bg-white p-6 shadow-sm md:p-8">
+    <div className="relative z-10 -mt-[1px] min-h-[600px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-6 shadow-sm md:p-8">
       {/* Section Header */}
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-start">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">
-            Insurance Products
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <h2 className="text-xl font-bold">Insurance Products</h2>
+          <p className="text-muted-foreground mt-1 text-sm">
             Manage and organize all available insurance products for easy
             assignment and monitoring.
           </p>
         </div>
-
         <div className="relative min-w-[200px]">
-          <button className="w-full rounded-full border border-gray-300 bg-white px-4 py-2 pr-10 text-left text-sm text-gray-500 focus:ring-1 focus:ring-green-500 focus:outline-none">
+          <button className="text-muted-foreground w-full rounded-full border border-gray-300 px-4 py-2 pr-10 text-left text-sm focus:ring-1 focus:ring-green-500 focus:outline-none">
             Select Category
           </button>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="text-muted-foreground h-4 w-4" />
           </div>
         </div>
       </div>
@@ -130,12 +127,10 @@ export default function ProductsMainContent() {
         {products.map((product) => (
           <div
             key={product.id}
-            className="flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-5 transition-shadow duration-200 hover:shadow-md"
+            className="flex flex-col justify-between rounded-2xl border p-5 transition-shadow duration-200 hover:shadow-md"
           >
             <div className="mb-1 flex items-start justify-between">
-              <h3 className="text-lg font-bold text-slate-800">
-                {product.title}
-              </h3>
+              <h3 className="text-lg font-bold">{product.title}</h3>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   product.status === 'Active'
@@ -147,21 +142,25 @@ export default function ProductsMainContent() {
               </span>
             </div>
 
-            <p className="mb-4 text-sm text-gray-500">{product.company}</p>
+            <p className="text-muted-foreground mb-4 text-sm">
+              {product.company}
+            </p>
 
             <div className="mb-5 flex items-center gap-6 text-sm">
               <div>
-                <span className="font-bold text-slate-800">Price: </span>
-                <span className="text-gray-600">{product.price}</span>
+                <span className="font-bold">Price: </span>
+                <span className="text-muted-foreground">{product.price}</span>
               </div>
               <div>
-                <span className="font-bold text-slate-800">Commission: </span>
-                <span className="text-gray-600">{product.commission}</span>
+                <span className="font-bold">Commission: </span>
+                <span className="text-muted-foreground">
+                  {product.commission}
+                </span>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold text-slate-700">
+              <span className="text-muted-foreground text-sm font-semibold">
                 Assigned to:
               </span>
               <div className="flex -space-x-2">

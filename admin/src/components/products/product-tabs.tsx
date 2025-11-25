@@ -24,9 +24,8 @@ export default function ProductTabs() {
               }`}
             >
               Products
-              {/* This pseudo-element trick helps blend the active tab with the white content area */}
               {activeTab === 'products' && (
-                <div className="absolute bottom-[-10px] left-0 z-30 h-[10px] w-full bg-white" />
+                <div className="absolute bottom-[-10px] left-0 z-30 h-[10px] w-full" />
               )}
             </button>
 
