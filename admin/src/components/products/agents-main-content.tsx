@@ -83,7 +83,7 @@ export default function AgentsMainContent() {
   ]
 
   return (
-    <>
+    <div className="relative z-10 -mt-[1px] min-h-[600px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-6 shadow-sm md:p-8">
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-start">
         <div>
           <h2 className="text-xl font-bold">Agents & Teams</h2>
@@ -154,6 +154,6 @@ export default function AgentsMainContent() {
           </div>
         ))}
       </div>
-    </>
+    </div>
   )
 }
