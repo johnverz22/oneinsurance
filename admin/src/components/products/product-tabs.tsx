@@ -4,13 +4,14 @@ import React, { useState } from 'react'
 import { Search, Filter, Plus } from 'lucide-react'
 import ProductsMainContent from './products-main-content'
 import AgentsMainContent from './agents-main-content'
+import AssignProductDialog from './assign-product-dialog'
 
 export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState('products')
 
   return (
     <div className="mt-4 min-h-screen">
-      <div className="mx-auto max-w-7xl">
+      <div>
         {/* Top Navigation & Actions Bar */}
         <div className="mb-0 flex flex-col-reverse justify-between gap-4 md:flex-row md:items-end md:gap-0">
           {/* Tabs */}
@@ -57,10 +58,7 @@ export default function ProductTabs() {
               </div>
             </div>
 
-            <button className="flex w-full items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto">
-              <Plus className="mr-2 h-5 w-5" />
-              Assign Products
-            </button>
+            <AssignProductDialog />
           </div>
         </div>
 
