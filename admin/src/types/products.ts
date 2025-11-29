@@ -1,20 +1,8 @@
 import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
 import { z } from 'zod'
 
-export const ProviderSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  description: z.string(),
-  contact_email: z.string(),
-  contact_phone: z.string(),
-  address: z.string(),
-  website: z.string().url(),
-  logo: z.string().url().nullable(),
-  status: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  deleted_at: z.string().nullable(),
-})
+import { ProviderSchema } from '@/types/provider'
+import { AgentSchema } from './agents'
 
 export const ProductSchema = z.object({
   id: z.string().or(z.number()),
@@ -36,3 +24,13 @@ export const ProductsPaginatedResponseSchema =
 export type ProductsPaginatedResponse = z.infer<
   typeof ProductsPaginatedResponseSchema
 >
+
+export const ProductAssignmentSchema = z.object({
+  product: ProductSchema,
+  provider: ProviderSchema,
+  agents: z.array(AgentSchema),
+  commission_rate: z.string(),
+  status: z.string(),
+  price: z.string(),
+})
+export type ProductAssignment = z.infer<typeof ProductAssignmentSchema>

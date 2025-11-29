@@ -1,13 +1,109 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Search, Filter, Plus } from 'lucide-react'
 import ProductsMainContent from './products-main-content'
 import AgentsMainContent from './agents-main-content'
 import AssignProductDialog from './assign-product-dialog'
+import {
+  Product,
+  ProductAssignment,
+  ProductsPaginatedResponse,
+} from '@/types/products'
+import { AgentProduct } from '@/types/agents'
+import { useGetProducts } from '@/app/data/queries/products'
+import { useGetAgentProducts } from '@/app/data/queries/agents'
+
+function combineProductArrays(
+  agentCommissions: AgentProduct[],
+  productsWithProviders: Product[]
+): ProductAssignment[] {
+  // Create a map of products with their providers for quick lookup
+  const productProviderMap = new Map<number, Product>()
+  productsWithProviders.forEach((product) => {
+    productProviderMap.set(Number(product.id), product)
+  })
+
+  // Group agent commissions by product_id
+  const productAgentMap = new Map<number, AgentProduct[]>()
+  agentCommissions.forEach((commission) => {
+    const existing = productAgentMap.get(Number(commission.product_id)) || []
+    existing.push(commission)
+    productAgentMap.set(Number(commission.product_id), existing)
+  })
+
+  // Combine and map the data
+  const result: ProductAssignment[] = []
+
+  productAgentMap.forEach((commissions, productId) => {
+    const productWithProvider = productProviderMap.get(productId)
+
+    if (productWithProvider) {
+      // Extract unique agents for this product
+      const agents = commissions.map((c) => c.agent)
+
+      // Calculate average commission rate (or use first, depending on business logic)
+      const avgCommissionRate = (
+        commissions.reduce((sum, c) => sum + parseFloat(c.commission_rate), 0) /
+        commissions.length
+      ).toFixed(2)
+
+      // Determine overall status (you can customize this logic)
+      const allActive = commissions.every((c) => c.status === 'active')
+      const status = allActive ? 'active' : 'inactive'
+
+      result.push({
+        product: {
+          id: productWithProvider.id,
+          provider_id: productWithProvider.provider_id,
+          name: productWithProvider.name,
+          description: productWithProvider.description,
+          price: 0,
+          status: productWithProvider.status,
+          created_at: productWithProvider.created_at,
+          updated_at: productWithProvider.updated_at,
+          deleted_at: productWithProvider.deleted_at,
+          provider: productWithProvider.provider,
+        },
+        provider: productWithProvider.provider,
+        agents: agents,
+        commission_rate: avgCommissionRate,
+        status: status,
+        price: '0.00', // Set default or calculate based on your business logic
+      })
+    }
+  })
+
+  return result
+}
 
 export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState('products')
+  const [page, setPage] = useState(1)
+  const [productsAssignments, setProductsAssignments] = useState<
+    ProductAssignment[]
+  >([])
+
+  const {
+    data: products,
+    isLoading: productsLoading,
+    isError: productsError,
+  } = useGetProducts(page)
+  const {
+    data: agentProducts,
+    isLoading: agentProductsLoading,
+    isError: agentProductsError,
+  } = useGetAgentProducts()
+
+  useEffect(() => {
+    if (products && agentProducts) {
+      const combinedData = combineProductArrays(
+        agentProducts.data.data,
+        products.data.data
+      )
+      setProductsAssignments(combinedData)
+    }
+  }, [products, agentProducts])
 
   return (
     <div className="mt-4 min-h-screen">
@@ -63,7 +159,7 @@ export default function ProductTabs() {
         </div>
 
         {activeTab === 'products' ? (
-          <ProductsMainContent />
+          <ProductsMainContent productAssignments={productsAssignments} />
         ) : (
           <AgentsMainContent />
         )}
