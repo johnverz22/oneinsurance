@@ -24,7 +24,9 @@ import { Popover } from '../ui/popover'
 import { PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
 import { Product, ProductsPaginatedResponse } from '@/types/products'
 import { useSearchAgents } from '@/app/data/mutations/agents'
-import { AgentsResponse } from '@/types/agents'
+import { AgentsResponse, AssignProductAgentPayload } from '@/types/agents'
+import { toast } from 'sonner'
+import { useAssignProductsToAgent } from '@/app/data/mutations/products'
 
 const assignProductsSchema = z.object({
   products: z
@@ -63,6 +65,8 @@ export default function AssignProductDialog() {
   const [agentsSearchResults, setAgentsSearchResults] =
     useState<AgentsResponse>()
   const [productsPopoverOpen, setProductsPopoverOpen] = useState(false)
+  const { mutateAsync: assignProductsToAgent } = useAssignProductsToAgent()
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -78,8 +82,23 @@ export default function AssignProductDialog() {
       notes: '',
     } as AssignProductsForm,
     onSubmit: async ({ value }) => {
-      console.log('Form submitted:', value)
-      alert('Products assigned successfully!')
+      const result: AssignProductAgentPayload[] = []
+      value.products.forEach((product) => {
+        value.agents.forEach((agent) => {
+          result.push({
+            agent_id: agent.id,
+            product_id: product.id,
+            commission_rate: 25.0,
+            status: 'active',
+          })
+        })
+      })
+
+      result.forEach(async (payload) => {
+        await assignProductsToAgent(payload)
+      })
+      toast.success('Products assigned successfully!')
+      setDialogOpen(false)
     },
     validators: {
       onSubmit: assignProductsSchema,
@@ -111,12 +130,11 @@ export default function AssignProductDialog() {
   const { mutateAsync: searchAgents } = useSearchAgents()
 
   const handleDraftAssignment = () => {
-    console.log('Draft saved')
-    alert('Draft assignment saved!')
+    toast.info('Draft feature coming soon!')
   }
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <button className="flex w-full items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto">
           <Plus className="mr-2 h-5 w-5" />
