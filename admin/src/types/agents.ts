@@ -105,9 +105,9 @@ export type AgentProductAssignment = z.infer<
   typeof AgentProductAssignmentSchema
 >
 
-// {
-//     "agent_id": 8,
-//     "product_id": 1,
-//     "commission_rate": 25.00,
-//     "status": "active"
-// }
+export type AssignProductAgentPayload = {
+  agent_id: number
+  product_id: number
+  commission_rate: number
+  status: string
+}
