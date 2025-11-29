@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { AgentSchema } from '@/types/agents'
-import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
+import { createPaginatedResponseType } from '@/utils/create-response-type'
 
 export const ProviderSchema = z.object({
   id: z.number(),

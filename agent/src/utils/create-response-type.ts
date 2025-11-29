@@ -1,5 +1,13 @@
 import { z } from 'zod'
 
+export function createResponseType<T>(itemType: z.ZodType<T>) {
+  return z.object({
+    success: z.boolean(),
+    message: z.string(),
+    data: itemType,
+  })
+}
+
 export function createPaginatedResponseType<T>(itemType: z.ZodType<T>) {
   return z.object({
     success: z.boolean(),

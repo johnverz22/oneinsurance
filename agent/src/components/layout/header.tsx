@@ -53,7 +53,7 @@ export const Header = ({
   const navigations = isNavigationVisible
     ? (rest as WithNavigationProps).navigations
     : []
-  const { user, isAuthenticated } = useAgentAuthStore()
+  const { user, isAuthenticated, getInitials } = useAgentAuthStore()
   const { mutateAsync: logoutAgent } = useLogoutAgent()
 
   const { isMobile } = useSidebar()
@@ -149,8 +149,8 @@ export const Header = ({
                       Welcome, {user?.name}
                     </span>
                     <Avatar>
-                      <AvatarImage src="https://github.com/shadcn.png" />
-                      <AvatarFallback>CN</AvatarFallback>
+                      <AvatarImage src="" />
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
