@@ -16,5 +16,7 @@ export function useGetProducts(page: number = 1) {
       })
       return response.data
     },
+    refetchOnWindowFocus: false,
+    enabled: !!accessToken,
   })
 }
