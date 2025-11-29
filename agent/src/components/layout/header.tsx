@@ -158,7 +158,9 @@ export const Header = ({
                   <p className="text-accent flex w-full border-b px-4 py-2.5 font-bold md:hidden">
                     Welcome, {user?.name}!
                   </p>
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Link href="/profile">Profile</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async () => {
