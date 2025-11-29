@@ -38,6 +38,7 @@ type AgentAuthState = {
   clearUser: () => void
 
   // Helper methods
+  getInitials: () => string
   getAuthToken: () => string | null
   isTokenValid: () => boolean
   hasRole: (role: string) => boolean
@@ -108,6 +109,20 @@ export const useAgentAuthStore = create<AgentAuthState>()(
       },
 
       // Helper methods
+      getInitials: () => {
+        const { user } = get()
+
+        if (user) {
+          return user?.name
+            ?.split(' ')
+            .map((word) => word[0])
+            .join('')
+            .toUpperCase()
+        }
+
+        return ''
+      },
+
       getAuthToken: () => {
         const { accessToken, tokenType } = get()
         if (accessToken && tokenType) {
