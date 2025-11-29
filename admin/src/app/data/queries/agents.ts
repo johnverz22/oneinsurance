@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/store/auth-store'
-import { AgentsResponse } from '@/types/agents'
+import { AgentProductPaginatedResponse, AgentsResponse } from '@/types/agents'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -22,6 +22,33 @@ export function useGetAgents(page = 1) {
         return response.data
       } catch (error) {
         console.error('Error fetching agents:', error)
+        throw error
+      }
+    },
+    refetchOnWindowFocus: false,
+    enabled: !!accessToken,
+  })
+}
+
+export function useGetAgentProducts() {
+  const { accessToken } = useAuthStore()
+
+  return useQuery({
+    queryKey: ['agent-products'],
+    queryFn: async () => {
+      try {
+        const response = await axios.get<AgentProductPaginatedResponse>(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-products`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
+
+        return response.data
+      } catch (error) {
+        console.error('Error fetching agent products:', error)
         throw error
       }
     },
