@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
@@ -19,9 +19,20 @@ import { FieldInfo } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { ScrollArea } from '../ui/scroll-area'
+import { searchProducts, useGetProducts } from '@/app/data/queries/products'
+import { Popover } from '../ui/popover'
+import { PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
+import { Product, ProductsPaginatedResponse } from '@/types/products'
 
 const assignProductsSchema = z.object({
-  products: z.array(z.string()).min(1, 'Please select a product'),
+  products: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+      })
+    )
+    .min(1, 'Please select at least one product'),
   agents: z.array(z.string()).min(1, 'Please select an agent'),
   effectiveDate: z.string().min(1, 'Please select an effective date'),
   permissions: z.object({
@@ -36,6 +47,10 @@ const assignProductsSchema = z.object({
 type AssignProductsForm = z.infer<typeof assignProductsSchema>
 
 export default function AssignProductDialog() {
+  const [queryProducts, setQueryProducts] = useState('')
+  const [queryProductsDebounced, setQueryProductsDebounced] = useState('')
+  const [productsPopoverOpen, setProductsPopoverOpen] = useState(false)
+
   const form = useForm({
     defaultValues: {
       products: [],
@@ -57,6 +72,18 @@ export default function AssignProductDialog() {
       onSubmit: assignProductsSchema,
     },
   })
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (queryProducts.length > 0) {
+        setQueryProductsDebounced(queryProducts)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [queryProducts])
+
+  const { data: products } = searchProducts(queryProductsDebounced)
 
   const handleDraftAssignment = () => {
     console.log('Draft saved')
@@ -88,38 +115,104 @@ export default function AssignProductDialog() {
               {/* Product and Agent Selection Row */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Select Product/s */}
-                <form.Field
-                  name="products"
-                  validators={{
-                    onChange: assignProductsSchema.shape.products,
-                  }}
-                >
-                  {(field) => (
-                    <div>
-                      <Label
-                        htmlFor="products"
-                        className="mb-2 block text-sm font-medium"
-                      >
-                        Select Product/s
-                      </Label>
-                      <MultiSelect
-                        value={field.state.value}
-                        variant={'default'}
-                        onValueChange={(values) => {
-                          field.handleChange(values)
-                        }}
-                        options={[
-                          { value: 'product1', label: 'Product 1' },
-                          { value: 'product2', label: 'Product 2' },
-                          { value: 'product3', label: 'Product 3' },
-                        ]}
-                        placeholder="Select Product/s"
-                        className="w-full"
-                      />
-                      <FieldInfo field={field} />
-                    </div>
-                  )}
-                </form.Field>
+                <div className="flex flex-col gap-2">
+                  <form.Field
+                    name="products"
+                    validators={{
+                      onChange: assignProductsSchema.shape.products,
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <Label
+                          htmlFor={field.name}
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Select Product/s
+                        </Label>
+                        <Popover
+                          open={productsPopoverOpen}
+                          onOpenChange={setProductsPopoverOpen}
+                        >
+                          <PopoverTrigger asChild>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                placeholder="Search products..."
+                                value={queryProducts}
+                                onChange={(e) =>
+                                  setQueryProducts(e.target.value)
+                                }
+                                onFocus={() => {
+                                  if (queryProducts.trim().length > 0) {
+                                    setProductsPopoverOpen(true)
+                                  }
+                                }}
+                              />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="bg-card w-[300px] rounded-lg border-1 p-2 shadow-lg"
+                            onOpenAutoFocus={(e) => e.preventDefault()}
+                          >
+                            {products &&
+                              products.data.data.map((product) => (
+                                <div
+                                  key={product.id}
+                                  onClick={() => {
+                                    const currentProducts =
+                                      (field.state.value as {
+                                        id: number
+                                        name: string
+                                      }[]) || []
+                                    const pid = Number(product.id)
+                                    const isSelected = currentProducts.some(
+                                      (p) => p.id === pid
+                                    )
+                                    let updatedProducts: {
+                                      id: number
+                                      name: string
+                                    }[]
+                                    if (isSelected) {
+                                      updatedProducts = currentProducts.filter(
+                                        (p) => p.id !== pid
+                                      )
+                                    } else {
+                                      updatedProducts = [
+                                        ...currentProducts,
+                                        { id: pid, name: product.name },
+                                      ]
+                                    }
+                                    field.handleChange(updatedProducts)
+                                    setProductsPopoverOpen(false)
+                                  }}
+                                >
+                                  {product.name}
+                                </div>
+                              ))}
+                            {(!products ||
+                              products?.data.data.length === 0) && (
+                              <div>No products found.</div>
+                            )}
+                          </PopoverContent>
+                        </Popover>
+
+                        <FieldInfo field={field} />
+                      </div>
+                    )}
+                  </form.Field>
+                  <div className="flex flex-wrap gap-2">
+                    {form.getFieldValue('products').length > 0 &&
+                      form.getFieldValue('products').map((product) => (
+                        <div
+                          key={product.id}
+                          className="rounded-full border-2 px-2 py-1 text-sm"
+                        >
+                          {product.name}
+                        </div>
+                      ))}
+                  </div>
+                </div>
 
                 {/* Assign To */}
                 <form.Field
