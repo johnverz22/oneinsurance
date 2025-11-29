@@ -54,7 +54,7 @@ export function BankDetailsForm({
         e.preventDefault()
         form.handleSubmit()
       }}
-      className="flex flex-col space-y-6 p-12 py-8"
+      className="flex flex-col space-y-6 px-6 py-4 lg:px-12 lg:py-8"
     >
       <h3 className="border-b py-4 text-xl font-bold lg:text-2xl">
         {isEditForm ? 'Edit Bank Details' : 'Add Bank Details'}

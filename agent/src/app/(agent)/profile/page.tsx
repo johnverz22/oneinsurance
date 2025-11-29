@@ -39,14 +39,14 @@ const ProfilePage = () => {
           Profile Information
         </h3>
 
-        <div className="px-16 py-4">
+        <div className="px-4 py-4 lg:px-16">
           <div className="flex w-full flex-col gap-5">
             <Avatar className="size-32">
               <AvatarImage src="" />
               <AvatarFallback>{getInitials()}</AvatarFallback>
             </Avatar>
 
-            <div className="grid grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-2">
               <div className="space-y-0.5">
                 <p>Name</p>
                 <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
