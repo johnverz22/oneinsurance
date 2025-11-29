@@ -55,6 +55,7 @@ export const AddClientForm = ({ onAddClient }: AddClientFormProps) => {
 
   return (
     <DialogFormWrapper
+      showTrigger
       open={open}
       setOpen={setOpen}
       title="Add Client"

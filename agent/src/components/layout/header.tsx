@@ -53,7 +53,7 @@ export const Header = ({
   const navigations = isNavigationVisible
     ? (rest as WithNavigationProps).navigations
     : []
-  const { user, isAuthenticated } = useAgentAuthStore()
+  const { user, isAuthenticated, getInitials } = useAgentAuthStore()
   const { mutateAsync: logoutAgent } = useLogoutAgent()
 
   const { isMobile } = useSidebar()
@@ -149,8 +149,8 @@ export const Header = ({
                       Welcome, {user?.name}
                     </span>
                     <Avatar>
-                      <AvatarImage src="https://github.com/shadcn.png" />
-                      <AvatarFallback>CN</AvatarFallback>
+                      <AvatarImage src="" />
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -158,7 +158,9 @@ export const Header = ({
                   <p className="text-accent flex w-full border-b px-4 py-2.5 font-bold md:hidden">
                     Welcome, {user?.name}!
                   </p>
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Link href="/profile">Profile</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async () => {
