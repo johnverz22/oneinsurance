@@ -37,38 +37,19 @@ export default function AgentLayout({
     return null
   }
 
-  const queryClient = new QueryClient()
-
-  const TABS = [
-    { value: '/', label: 'Overview' },
-    { value: '/my-sales', label: 'My Sales' },
-    { value: '/team-sales', label: 'Team Sales' },
-    { value: '/overriders', label: 'Overriders' },
-    { value: '/products', label: 'My Products' },
-    { value: '/referrals', label: 'Referral Links' },
-    { value: '/payments', label: 'Payments' },
-  ] satisfies Tab[]
-
   return (
-    <div className="flex">
-      <QueryClientProvider client={queryClient}>
-        <div className="h-full w-max">
-          <Header
-            isLoggedIn={true}
-            isNavigationVisible={false}
-            contentContainerClassName="max-w-screen"
-          />
-        </div>
+    <div className="flex h-full w-full">
+      <Header
+        isLoggedIn={true}
+        isNavigationVisible={false}
+        contentContainerClassName="max-w-screen"
+      />
 
-        <SidebarInset>
-          <main className="bg-background max-w-app mx-auto h-full min-h-screen w-full space-y-6 p-4 pt-28 lg:px-8">
-            <ProfileOverview />
-            <TabNavigation tabs={TABS} />
-
-            {children}
-          </main>
-        </SidebarInset>
-      </QueryClientProvider>
+      <SidebarInset>
+        <main className="bg-background max-w-app mx-auto h-full min-h-screen w-full p-4 pt-28 lg:px-8">
+          {children}
+        </main>
+      </SidebarInset>
     </div>
   )
 }
