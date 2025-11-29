@@ -45,6 +45,7 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
 
   return (
     <DialogFormWrapper
+      showTrigger
       open={dialogOpen}
       setOpen={handleCloseDialog}
       title="Update Product"
