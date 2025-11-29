@@ -52,6 +52,8 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { formatCapitalizeFirstLetter } from '@/utils/formatter'
+import { Skeleton } from './skeleton'
+import { Card, CardContent } from './card'
 
 export interface DataTableTableMode {
   renderMode: 'table'
@@ -89,6 +91,7 @@ export interface DataTableBaseProps<TData, TValue> {
   enableExport?: boolean
   pageSize?: number
   alternateColors?: boolean
+  isLoading?: boolean
 }
 
 export type DataTableProps<
@@ -113,6 +116,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   enableExport = false,
   pageSize = 10,
   alternateColors = false,
+  isLoading = false,
   ...props
 }: DataTableProps<TData, TValue>) {
   const numColumns = props.renderMode === 'list' ? (props.numColumns ?? 3) : 1
@@ -361,7 +365,22 @@ export function DataTable<TData extends Record<string, any>, TValue>({
       </div>
 
       <div className="bg-background rounded-ld">
-        {props.renderMode === 'list' ? (
+        {isLoading ? (
+          <div className="grid gap-2 md:grid-cols-2">
+            {[1, 2].map((id) => (
+              <Card key={id}>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="bg-primary h-6 w-[50%] rounded-full" />
+                    <Skeleton className="bg-primary h-6 w-[10%] rounded-full" />
+                  </div>
+                  <Skeleton className="bg-primary mt-4 h-4 w-[30%] rounded-full" />
+                  <Skeleton className="bg-primary mt-4 h-6 w-[40%] rounded-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : props.renderMode === 'list' ? (
           <>
             {total > 0 ? (
               <div
