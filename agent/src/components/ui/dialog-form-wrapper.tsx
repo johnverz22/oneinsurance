@@ -11,12 +11,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
-export type DialogFormWrapperProps = {
+type BaseProps = {
   title: string
   open: boolean
   setOpen: (value: boolean) => void
   children: React.ReactNode
-  showTrigger?: boolean
   showTitle?: boolean
   icon?: React.ReactNode
   className?: string
@@ -24,17 +23,29 @@ export type DialogFormWrapperProps = {
   modal?: boolean
 }
 
+type NoTriggerProps = {
+  showTrigger: false
+}
+
+type ShowTriggerProps = {
+  showTrigger: true
+  customTrigger?: React.ReactNode
+}
+
+export type DialogFormWrapperProps = BaseProps &
+  (NoTriggerProps | ShowTriggerProps)
+
 export const DialogFormWrapper = ({
   title,
   open,
   setOpen,
   children,
   icon = <Plus />,
-  showTrigger = true,
   showTitle = true,
   className,
   contentContainerClassName,
   modal,
+  ...props
 }: DialogFormWrapperProps) => {
   return (
     <>
@@ -43,25 +54,26 @@ export const DialogFormWrapper = ({
       )}
 
       <Dialog open={open} onOpenChange={setOpen} modal={modal}>
-        {showTrigger && (
-          <div
-            className={cn(
-              'bg-muted-foreground/10 relative flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl border py-4 text-center',
-              className
-            )}
-          >
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-12 w-12 rounded-full"
-              >
-                {icon}
-              </Button>
-            </DialogTrigger>
-            {showTitle && <h3 className="text-sm font-semibold">{title}</h3>}
-          </div>
-        )}
+        {props.showTrigger &&
+          (props.customTrigger ?? (
+            <div
+              className={cn(
+                'bg-muted-foreground/10 relative flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl border py-4 text-center',
+                className
+              )}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 w-12 rounded-full"
+                >
+                  {icon}
+                </Button>
+              </DialogTrigger>
+              {showTitle && <h3 className="text-sm font-semibold">{title}</h3>}
+            </div>
+          ))}
 
         <DialogContent
           className={cn(
