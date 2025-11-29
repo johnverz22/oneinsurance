@@ -1,16 +1,36 @@
 'use client'
 
+import { useState } from 'react'
 import { useGetAccounts } from '@/app/data/queries/accounts'
+import { BankDetailsForm } from '@/components/accounts/bank-details-form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { DialogFormWrapper } from '@/components/ui/dialog-form-wrapper'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
+import { useEditAccountDetails } from '@/app/data/mutations/agent/accounts'
+import { BankDetailsFormValues, EWalletFormValues } from '@/types/account'
+import { EWalletForm } from '@/components/accounts/ewallet-details-form'
 
 const ProfilePage = () => {
+  const [isBankFormVisible, setBankFormVisible] = useState(false)
+  const [isEWalletFormVisible, setEWalletFormVisible] = useState(false)
+
   const { user, getInitials } = useAgentAuthStore()
-  const { data: accounts, isFetching: isAccountsFetching } = useGetAccounts()
+  const { data: accounts, isLoading: isAccountsFetching } = useGetAccounts()
+  const { mutateAsync: submitEditedDetails } = useEditAccountDetails()
+
+  const handleSubmitBankDetails = async (values: BankDetailsFormValues) => {
+    await submitEditedDetails({ type: 'bank', values })
+    setBankFormVisible(false)
+  }
+
+  const handleSubmitEWalletDetails = async (values: EWalletFormValues) => {
+    await submitEditedDetails({ type: 'ewallet', values })
+    setEWalletFormVisible(false)
+  }
 
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
@@ -70,9 +90,27 @@ const ProfilePage = () => {
                   <CardContent className="flex w-full flex-col gap-4 py-6 lg:px-16">
                     <div className="flex items-center justify-between gap-2">
                       <p>Bank Details</p>
-                      <Button variant="secondary" className="px-8">
-                        Edit
-                      </Button>
+
+                      <DialogFormWrapper
+                        title="Edit"
+                        showTrigger
+                        open={isBankFormVisible}
+                        setOpen={setBankFormVisible}
+                        customTrigger={
+                          <Button
+                            variant="secondary"
+                            className="px-8"
+                            onClick={() => setBankFormVisible(true)}
+                          >
+                            Edit
+                          </Button>
+                        }
+                      >
+                        <BankDetailsForm
+                          defaultValues={detail}
+                          onSubmit={handleSubmitBankDetails}
+                        />
+                      </DialogFormWrapper>
                     </div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
@@ -110,9 +148,26 @@ const ProfilePage = () => {
                   <CardContent className="flex w-full flex-col gap-4 py-6 lg:px-16">
                     <div className="flex items-center justify-between gap-2">
                       <p>E-Wallet</p>
-                      <Button variant="secondary" className="px-8">
-                        Edit
-                      </Button>
+                      <DialogFormWrapper
+                        title="Edit"
+                        showTrigger
+                        open={isEWalletFormVisible}
+                        setOpen={setEWalletFormVisible}
+                        customTrigger={
+                          <Button
+                            variant="secondary"
+                            className="px-8"
+                            onClick={() => setEWalletFormVisible(true)}
+                          >
+                            Edit
+                          </Button>
+                        }
+                      >
+                        <EWalletForm
+                          defaultValues={detail}
+                          onSubmit={handleSubmitEWalletDetails}
+                        />
+                      </DialogFormWrapper>
                     </div>
                     <div className="flex items-center gap-2">
                       <h2 className="text-lg font-bold md:text-xl lg:text-2xl">

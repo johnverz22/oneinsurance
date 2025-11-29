@@ -8,7 +8,7 @@ export function useGetAccounts() {
   const { accessToken } = useAgentAuthStore()
 
   return useQuery({
-    queryKey: ['agentAccounts'],
+    queryKey: ['agent-accounts'],
     queryFn: async () => {
       const url = `/api/accounts`
       const token = `Bearer ${accessToken}`
