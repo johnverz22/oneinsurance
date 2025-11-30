@@ -8,9 +8,10 @@ import AssignProductDialog from './assign-product-dialog'
 import {
   Product,
   ProductAssignment,
+  ProductCommissionInfo,
   ProductsPaginatedResponse,
 } from '@/types/products'
-import { AgentProduct } from '@/types/agents'
+import { AgentProduct, AgentProductAssignment } from '@/types/agents'
 import { useGetProducts } from '@/app/data/queries/products'
 import { useGetAgentProducts } from '@/app/data/queries/agents'
 
@@ -72,6 +73,62 @@ function combineProductArrays(
         price: '0.00', // Set default or calculate based on your business logic
       })
     }
+  })
+
+  return result
+}
+
+function mapToAgentProducts(
+  agentCommissions: AgentProduct[],
+  productsWithProviders: Product[]
+): AgentProductAssignment[] {
+  // Create a map of products with their providers for quick lookup
+  const productProviderMap = new Map<number, Product>()
+  productsWithProviders.forEach((product) => {
+    productProviderMap.set(Number(product.id), product)
+  })
+
+  // Group commissions by agent_id
+  const agentCommissionMap = new Map<number, AgentProduct[]>()
+  agentCommissions.forEach((commission) => {
+    const existing = agentCommissionMap.get(Number(commission.agent.id)) || []
+    existing.push(commission)
+    agentCommissionMap.set(Number(commission.agent.id), existing)
+  })
+
+  // Map to output format
+  const result: AgentProductAssignment[] = []
+
+  agentCommissionMap.forEach((commissions, agentId) => {
+    // Get the agent object (same for all commissions)
+    const agent = commissions[0].agent
+
+    // Get all products for this agent with provider info, including commission metadata
+    const products: ProductCommissionInfo[] = []
+    commissions.forEach((commission) => {
+      const productWithProvider = productProviderMap.get(
+        Number(commission.product_id)
+      )
+      if (productWithProvider) {
+        products.push({
+          product: productWithProvider,
+          commission_rate: commission.commission_rate,
+          commission_status: commission.status,
+          commission_id: (commission as any).id ?? 0,
+        })
+      }
+    })
+
+    // Calculate average commission rate for this agent
+    const avgCommissionRate = (
+      commissions.reduce((sum, c) => sum + parseFloat(c.commission_rate), 0) /
+      commissions.length
+    ).toFixed(2)
+
+    result.push({
+      agent: agent,
+      products: products,
+    })
   })
 
   return result

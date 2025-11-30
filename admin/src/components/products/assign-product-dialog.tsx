@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
@@ -19,10 +19,32 @@ import { FieldInfo } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { ScrollArea } from '../ui/scroll-area'
+import { searchProducts, useGetProducts } from '@/app/data/queries/products'
+import { Popover } from '../ui/popover'
+import { PopoverContent, PopoverTrigger } from '@radix-ui/react-popover'
+import { Product, ProductsPaginatedResponse } from '@/types/products'
+import { useSearchAgents } from '@/app/data/mutations/agents'
+import { AgentsResponse, AssignProductAgentPayload } from '@/types/agents'
+import { toast } from 'sonner'
+import { useAssignProductsToAgent } from '@/app/data/mutations/products'
 
 const assignProductsSchema = z.object({
-  products: z.array(z.string()).min(1, 'Please select a product'),
-  agents: z.array(z.string()).min(1, 'Please select an agent'),
+  products: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+      })
+    )
+    .min(1, 'Please select at least one product'),
+  agents: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+      })
+    )
+    .min(1, 'Please select at least one agent'),
   effectiveDate: z.string().min(1, 'Please select an effective date'),
   permissions: z.object({
     allowSellingProducts: z.boolean(),
@@ -36,6 +58,16 @@ const assignProductsSchema = z.object({
 type AssignProductsForm = z.infer<typeof assignProductsSchema>
 
 export default function AssignProductDialog() {
+  const [queryProducts, setQueryProducts] = useState('')
+  const [queryProductsDebounced, setQueryProductsDebounced] = useState('')
+  const [queryAgents, setQueryAgents] = useState('')
+  const [agentsPopoverOpen, setAgentsPopoverOpen] = useState(false)
+  const [agentsSearchResults, setAgentsSearchResults] =
+    useState<AgentsResponse>()
+  const [productsPopoverOpen, setProductsPopoverOpen] = useState(false)
+  const { mutateAsync: assignProductsToAgent } = useAssignProductsToAgent()
+  const [dialogOpen, setDialogOpen] = useState(false)
+
   const form = useForm({
     defaultValues: {
       products: [],
@@ -50,21 +82,59 @@ export default function AssignProductDialog() {
       notes: '',
     } as AssignProductsForm,
     onSubmit: async ({ value }) => {
-      console.log('Form submitted:', value)
-      alert('Products assigned successfully!')
+      const result: AssignProductAgentPayload[] = []
+      value.products.forEach((product) => {
+        value.agents.forEach((agent) => {
+          result.push({
+            agent_id: agent.id,
+            product_id: product.id,
+            commission_rate: 25.0,
+            status: 'active',
+          })
+        })
+      })
+
+      result.forEach(async (payload) => {
+        await assignProductsToAgent(payload)
+      })
+      toast.success('Products assigned successfully!')
+      setDialogOpen(false)
     },
     validators: {
       onSubmit: assignProductsSchema,
     },
   })
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (queryProducts.length > 0) {
+        setQueryProductsDebounced(queryProducts)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [queryProducts])
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (queryAgents.length > 0) {
+        const result = await searchAgents({ searchKey: queryAgents })
+        setAgentsSearchResults(result)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [queryAgents])
+
+  const { data: products } = searchProducts(queryProductsDebounced)
+  const { mutateAsync: searchAgents } = useSearchAgents()
+
   const handleDraftAssignment = () => {
-    console.log('Draft saved')
-    alert('Draft assignment saved!')
+    toast.info('Draft feature coming soon!')
   }
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <button className="flex w-full items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto">
           <Plus className="mr-2 h-5 w-5" />
@@ -88,70 +158,214 @@ export default function AssignProductDialog() {
               {/* Product and Agent Selection Row */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Select Product/s */}
-                <form.Field
-                  name="products"
-                  validators={{
-                    onChange: assignProductsSchema.shape.products,
-                  }}
-                >
-                  {(field) => (
-                    <div>
-                      <Label
-                        htmlFor="products"
-                        className="mb-2 block text-sm font-medium"
-                      >
-                        Select Product/s
-                      </Label>
-                      <MultiSelect
-                        value={field.state.value}
-                        variant={'default'}
-                        onValueChange={(values) => {
-                          field.handleChange(values)
-                        }}
-                        options={[
-                          { value: 'product1', label: 'Product 1' },
-                          { value: 'product2', label: 'Product 2' },
-                          { value: 'product3', label: 'Product 3' },
-                        ]}
-                        placeholder="Select Product/s"
-                        className="w-full"
-                      />
-                      <FieldInfo field={field} />
-                    </div>
-                  )}
-                </form.Field>
+                <div className="flex flex-col gap-2">
+                  <form.Field
+                    name="products"
+                    validators={{
+                      onChange: assignProductsSchema.shape.products,
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <Label
+                          htmlFor={field.name}
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Select Product/s
+                        </Label>
+                        <Popover
+                          open={productsPopoverOpen}
+                          onOpenChange={setProductsPopoverOpen}
+                        >
+                          <PopoverTrigger asChild>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                placeholder="Search products..."
+                                value={queryProducts}
+                                onChange={(e) =>
+                                  setQueryProducts(e.target.value)
+                                }
+                                onFocus={() => {
+                                  if (queryProducts.trim().length > 0) {
+                                    setProductsPopoverOpen(true)
+                                  }
+                                }}
+                              />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="bg-card w-[300px] rounded-lg border-1 p-2 shadow-lg"
+                            onOpenAutoFocus={(e) => e.preventDefault()}
+                          >
+                            {products &&
+                              products.data.data.map((product) => (
+                                <div
+                                  key={product.id}
+                                  onClick={() => {
+                                    const currentProducts =
+                                      (field.state.value as {
+                                        id: number
+                                        name: string
+                                      }[]) || []
+                                    const pid = Number(product.id)
+                                    const isSelected = currentProducts.some(
+                                      (p) => p.id === pid
+                                    )
+                                    let updatedProducts: {
+                                      id: number
+                                      name: string
+                                    }[]
+                                    if (isSelected) {
+                                      updatedProducts = currentProducts.filter(
+                                        (p) => p.id !== pid
+                                      )
+                                    } else {
+                                      updatedProducts = [
+                                        ...currentProducts,
+                                        { id: pid, name: product.name },
+                                      ]
+                                    }
+                                    field.handleChange(updatedProducts)
+                                    setProductsPopoverOpen(false)
+                                  }}
+                                >
+                                  {product.name}
+                                </div>
+                              ))}
+                            {(!products ||
+                              products?.data.data.length === 0) && (
+                              <div>No products found.</div>
+                            )}
+                          </PopoverContent>
+                        </Popover>
+
+                        <FieldInfo field={field} />
+                      </div>
+                    )}
+                  </form.Field>
+                  <div className="flex flex-wrap gap-2">
+                    {form.getFieldValue('products').length > 0 &&
+                      form.getFieldValue('products').map((product) => (
+                        <div
+                          key={product.id}
+                          className="rounded-full border-2 px-2 py-1 text-sm"
+                        >
+                          {product.name}
+                        </div>
+                      ))}
+                  </div>
+                </div>
 
                 {/* Assign To */}
-                <form.Field
-                  name="agents"
-                  validators={{
-                    onChange: assignProductsSchema.shape.agents,
-                  }}
-                >
-                  {(field) => (
-                    <div>
-                      <Label
-                        htmlFor="agents"
-                        className="mb-2 block text-sm font-medium"
-                      >
-                        Assign To
-                      </Label>
-                      <MultiSelect
-                        id="agents"
-                        value={field.state.value}
-                        onValueChange={(values) => field.handleChange(values)}
-                        options={[
-                          { value: 'agent1', label: 'Agent 1' },
-                          { value: 'agent2', label: 'Agent 2' },
-                          { value: 'agent3', label: 'Agent 3' },
-                        ]}
-                        placeholder="Search Agent..."
-                        className="w-full"
-                      />
-                      <FieldInfo field={field} />
-                    </div>
-                  )}
-                </form.Field>
+                <div className="flex flex-col gap-2">
+                  <form.Field
+                    name="agents"
+                    validators={{
+                      onChange: assignProductsSchema.shape.agents,
+                    }}
+                  >
+                    {(field) => (
+                      <div>
+                        <Label
+                          htmlFor={field.name}
+                          className="mb-2 block text-sm font-medium"
+                        >
+                          Select Agent/s
+                        </Label>
+                        <Popover
+                          open={agentsPopoverOpen}
+                          onOpenChange={setAgentsPopoverOpen}
+                        >
+                          <PopoverTrigger asChild>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                placeholder="Search agents..."
+                                value={queryAgents}
+                                onChange={(e) => setQueryAgents(e.target.value)}
+                                onFocus={() => {
+                                  if (queryAgents.trim().length > 0) {
+                                    setAgentsPopoverOpen(true)
+                                  }
+                                }}
+                              />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="bg-card w-[300px] rounded-lg border-1 p-2 shadow-lg"
+                            onOpenAutoFocus={(e) => e.preventDefault()}
+                          >
+                            {agentsSearchResults &&
+                              agentsSearchResults.data.data.map((agent) => (
+                                <div
+                                  key={agent.id}
+                                  onClick={() => {
+                                    const currentAgents =
+                                      (field.state.value as {
+                                        id: number
+                                        name: string
+                                      }[]) || []
+                                    const aid = Number(agent.id)
+                                    const isSelected = currentAgents.some(
+                                      (a) => a.id === aid
+                                    )
+                                    let updatedAgents: {
+                                      id: number
+                                      name: string
+                                    }[]
+                                    if (isSelected) {
+                                      updatedAgents = currentAgents.filter(
+                                        (a) => a.id !== aid
+                                      )
+                                    } else {
+                                      updatedAgents = [
+                                        ...currentAgents,
+                                        {
+                                          id: aid,
+                                          name: `${agent.first_name} ${agent.middle_name ?? ''} ${agent.last_name}`,
+                                        },
+                                      ]
+                                    }
+                                    field.handleChange(updatedAgents)
+                                    setAgentsPopoverOpen(false)
+                                  }}
+                                >
+                                  {agent.first_name} {agent.middle_name ?? ''}{' '}
+                                  {agent.last_name}
+                                </div>
+                              ))}
+                            {(!agentsSearchResults ||
+                              agentsSearchResults.data.data.length === 0) && (
+                              <div>No agents found.</div>
+                            )}
+                          </PopoverContent>
+                        </Popover>
+
+                        <FieldInfo field={field} />
+                      </div>
+                    )}
+                  </form.Field>
+                  <div className="flex flex-wrap gap-2">
+                    {form.getFieldValue('agents').length > 0 &&
+                      form.getFieldValue('agents').map((agent) => (
+                        <div
+                          key={agent.id}
+                          className="rounded-full border-2 px-2 py-1 text-sm"
+                          onClick={() => {
+                            const currentAgents = form.getFieldValue('agents')
+                            // Remove agent on click
+                            const updatedAgents = currentAgents.filter(
+                              (a) => a.id !== agent.id
+                            )
+                            form.setFieldValue('agents', updatedAgents)
+                          }}
+                        >
+                          {agent.name}
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
 
               {/* Effective Date */}

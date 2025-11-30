@@ -30,15 +30,15 @@ export function useGetAgents(page = 1) {
   })
 }
 
-export function useGetAgentProducts() {
+export function useGetAgentProducts(page: number = 1) {
   const { accessToken } = useAuthStore()
 
   return useQuery({
-    queryKey: ['agent-products'],
+    queryKey: ['agent-products', page],
     queryFn: async () => {
       try {
         const response = await axios.get<AgentProductPaginatedResponse>(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-products`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-products?page=${page}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
