@@ -5,10 +5,10 @@ import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { AccountsResponse } from '@/types/account'
 
 export function useGetAccounts() {
-  const { accessToken } = useAgentAuthStore()
+  const { accessToken, user } = useAgentAuthStore()
 
   return useQuery({
-    queryKey: ['agent-accounts'],
+    queryKey: ['agent-accounts', user?.id],
     queryFn: async () => {
       const url = `/api/accounts`
       const token = `Bearer ${accessToken}`
@@ -22,7 +22,7 @@ export function useGetAccounts() {
       return response.data
     },
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
     enabled: !!accessToken,
   })
 }
