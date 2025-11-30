@@ -1,13 +1,12 @@
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
-import { HEADERS } from '@/constants/api-header'
 import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
+import { HEADERS } from '@/constants/api-header'
 
 export async function POST(request: NextRequest) {
   const token = request.headers.get('Authorization')
-  console.log('🚀 ~ POST ~ token:', token)
   const body = await request.json()
-  console.log('🚀 ~ POST ~ body:', body)
+
   if (!token) {
     return NextResponse.json(
       { success: false, message: 'Unauthorized' },

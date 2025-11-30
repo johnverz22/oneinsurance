@@ -13,17 +13,17 @@ type EWalletType = {
   values: EWalletFormValues
 }
 
-type MutationArgs = BankType | EWalletType
+export type AccountMutationArgs = BankType | EWalletType
 
 export function useAddAccountDetails() {
-  const { accessToken } = useAgentAuthStore()
+  const { accessToken, user } = useAgentAuthStore()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['add-bank-details'],
-    mutationFn: async ({ values }: MutationArgs) => {
+    mutationKey: ['add-account-details'],
+    mutationFn: async ({ values }: AccountMutationArgs) => {
       const token = `Bearer ${accessToken}`
-      const response = await axios.post('/api/acounts/add', values, {
+      const response = await axios.post('/api/accounts/add', values, {
         headers: {
           Authorization: token,
         },
@@ -31,19 +31,21 @@ export function useAddAccountDetails() {
       return response.data
     },
     retry: false,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-accounts'] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['agent-accounts', user?.id],
+      })
     },
   })
 }
 
 export function useEditAccountDetails() {
-  const { accessToken } = useAgentAuthStore()
+  const { accessToken, user } = useAgentAuthStore()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['edit-bank-details'],
-    mutationFn: async ({ values }: MutationArgs) => {
+    mutationKey: ['edit-account-details'],
+    mutationFn: async ({ values }: AccountMutationArgs) => {
       const token = `Bearer ${accessToken}`
       const response = await axios.post('/api/accounts/edit', values, {
         headers: {
@@ -53,8 +55,10 @@ export function useEditAccountDetails() {
       return response.data
     },
     retry: false,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-accounts'] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['agent-accounts', user?.id],
+      })
     },
   })
 }
