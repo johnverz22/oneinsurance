@@ -90,7 +90,9 @@ export const AGENT_NAVIGATIONS = [
 ] satisfies NavigationItem[]
 
 export const ADMIN_NAVIGATIONS = [
+  { type: 'single', label: 'Dashboard', link: '/dashboard' },
   { type: 'single', label: 'Products', link: '/products' },
+  { type: 'single', label: 'Commissions', link: '/commissions' },
   { type: 'single', label: 'Agents', link: '/agents' },
   { type: 'single', label: 'Transactions', link: '/transactions' },
 ] satisfies NavigationItem[]
