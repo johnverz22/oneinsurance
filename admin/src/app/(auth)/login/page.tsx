@@ -30,7 +30,7 @@ export default function LoginPage() {
     // Check if agent is authenticated
     if (isAuthenticated && hydrated) {
       // Redirect to login page if not authenticated
-      router.push('/agents')
+      router.push('/dashboard')
       return
     }
   }, [isAuthenticated, router, hydrated])
