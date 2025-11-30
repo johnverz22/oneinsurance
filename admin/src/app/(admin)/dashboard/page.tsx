@@ -1,7 +1,25 @@
+'use client'
+
 import { QuickActionCard } from '@/components/dashboard/quick-action-card'
 import { Card, CardContent } from '@/components/ui/card'
+import { useAuthStore } from '@/store/auth-store'
+import { useEffect, useState } from 'react'
 
 export default function DashboardPage() {
+  const { isAuthenticated } = useAuthStore()
+  const [authChecking, setAuthChecking] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setAuthChecking(false)
+      if (!isAuthenticated) {
+        window.location.href = '/login'
+        window.location.href = '/login'
+      }
+    }, 250)
+
+    return () => clearTimeout(t)
+  }, [isAuthenticated])
   return (
     <div className="space-y-10">
       <div className="from-primary to-lilac space-y-2 rounded-lg bg-gradient-to-r px-2 py-4 text-white md:px-6 md:py-10 lg:px-10">
@@ -105,15 +123,15 @@ export default function DashboardPage() {
           <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
             <QuickActionCard
               icon="📋"
-              title="Product Assesment"
+              title="Product Assignment"
               description="Assign products to agents"
-              destination="/coming-soon"
+              destination="/products"
             />
             <QuickActionCard
               icon="💰"
               title="Commission Setup"
               description="Configure commission rates"
-              destination="/coming-soon"
+              destination="/commissions"
             />
             <QuickActionCard
               icon="👥"
