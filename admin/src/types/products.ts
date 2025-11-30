@@ -34,3 +34,11 @@ export const ProductAssignmentSchema = z.object({
   price: z.string(),
 })
 export type ProductAssignment = z.infer<typeof ProductAssignmentSchema>
+
+export const ProductCommisionInfoSchema = z.object({
+  product: ProductSchema,
+  commission_rate: z.string(),
+  commission_status: z.string(),
+  commission_id: z.number(),
+})
+export type ProductCommissionInfo = z.infer<typeof ProductCommisionInfoSchema>
