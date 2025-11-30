@@ -13,7 +13,7 @@ export function BankDetailsForm({
   onSubmit,
 }: {
   defaultValues?: BankDetailsFormValues
-  onSubmit: (values: BankDetailsFormValues) => void
+  onSubmit: (values: BankDetailsFormValues) => Promise<void>
 }) {
   const isEditForm = !!defaultValues?.id
 
@@ -44,7 +44,7 @@ export function BankDetailsForm({
         swift_code: value.swift_code,
       } satisfies BankDetailsFormValues
 
-      onSubmit(values)
+      await onSubmit(values)
     },
   })
 
