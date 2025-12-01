@@ -159,7 +159,12 @@ export const Header = ({
                     Welcome, {user?.name}!
                   </p>
                   <DropdownMenuItem className="cursor-pointer">
-                    <Link href="/profile">Profile</Link>
+                    <Button
+                      variant="ghost"
+                      onClick={() => (window.location.href = '/profile')}
+                    >
+                      Profile
+                    </Button>
                   </DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem
