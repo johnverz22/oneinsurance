@@ -168,27 +168,24 @@ export default function ProductTabs() {
         {/* Top Navigation & Actions Bar */}
         <div className="mb-0 flex flex-col-reverse justify-between gap-4 md:flex-row md:items-end md:gap-0">
           {/* Tabs */}
-          <div className="flex items-end space-x-[-8px]">
+          <div className="flex items-end">
             <button
               onClick={() => setActiveTab('products')}
-              className={`relative z-20 rounded-t-2xl px-8 py-3 text-lg font-bold transition-all ${
+              className={`relative rounded-t-2xl border-x border-t px-8 py-3 text-lg font-bold transition-all ${
                 activeTab === 'products'
-                  ? 'shadow-sm'
-                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700'
+                  ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-10 border-transparent bg-gray-100 text-gray-400 group-hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:group-hover:bg-gray-700'
               }`}
             >
               Products
-              {activeTab === 'products' && (
-                <div className="absolute bottom-[-10px] left-0 z-30 h-[10px] w-full" />
-              )}
             </button>
 
             <button
               onClick={() => setActiveTab('agents')}
-              className={`relative z-10 rounded-t-2xl px-8 py-3 text-lg font-bold transition-all ${
+              className={`relative rounded-t-2xl border-x border-t px-8 py-3 text-lg font-bold transition-all ${
                 activeTab === 'agents'
-                  ? 'shadow-sm'
-                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700'
+                  ? 'z-30 -ml-[1px] border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-20 -ml-[1px] border-transparent bg-gray-100 text-gray-400 group-hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:group-hover:bg-gray-700'
               }`}
             >
               Agents
