@@ -37,21 +37,17 @@ const assignProductsSchema = z.object({
       })
     )
     .min(1, 'Please select at least one product'),
-  agents: z
-    .array(
-      z.object({
-        id: z.number(),
-        name: z.string(),
-      })
-    )
-    .min(1, 'Please select at least one agent'),
+  agent: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+    })
+    .optional()
+    .refine((val) => val !== undefined && val?.id !== undefined, {
+      message: 'Please select an agent',
+    }),
   effectiveDate: z.string().min(1, 'Please select an effective date'),
-  permissions: z.object({
-    allowSellingProducts: z.boolean(),
-    viewSalesAnalytics: z.boolean(),
-    recruitOverriders: z.boolean(),
-    manageReferralLinks: z.boolean(),
-  }),
+  commissionRate: z.number().min(1, 'Commission rate must be at least 1'),
   notes: z.string().optional(),
 })
 
@@ -71,26 +67,19 @@ export default function AssignProductDialog() {
   const form = useForm({
     defaultValues: {
       products: [],
-      agents: [],
+      agent: undefined,
       effectiveDate: '',
-      permissions: {
-        allowSellingProducts: true,
-        viewSalesAnalytics: true,
-        recruitOverriders: true,
-        manageReferralLinks: true,
-      },
+      commissionRate: 30,
       notes: '',
     } as AssignProductsForm,
     onSubmit: async ({ value }) => {
       const result: AssignProductAgentPayload[] = []
       value.products.forEach((product) => {
-        value.agents.forEach((agent) => {
-          result.push({
-            agent_id: agent.id,
-            product_id: product.id,
-            commission_rate: 25.0,
-            status: 'active',
-          })
+        result.push({
+          agent_id: value.agent!.id,
+          product_id: product.id,
+          commission_rate: value.commissionRate,
+          status: 'active',
         })
       })
 
@@ -142,13 +131,13 @@ export default function AssignProductDialog() {
           Assign Products
         </button>
       </DialogTrigger>
-      <DialogContent className="max-h-[80%]">
-        <DialogHeader>
+      <DialogContent className="max-h-[90vh] p-0">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle></DialogTitle>
           <DialogDescription />
         </DialogHeader>
-        <ScrollArea className="max-h-[80%]">
-          <div className="mx-auto max-w-2xl overflow-y-auto rounded-lg shadow-sm">
+        <ScrollArea className="max-h-[calc(90vh-80px)]">
+          <div className="mx-auto max-w-2xl rounded-lg shadow-sm">
             {/* Header */}
             <div className="flex items-center justify-between border-b p-6">
               <h1 className="text-2xl font-semibold">Assign Products</h1>
@@ -282,9 +271,9 @@ export default function AssignProductDialog() {
                 {/* Assign To */}
                 <div className="flex flex-col gap-2">
                   <form.Field
-                    name="agents"
+                    name="agent"
                     validators={{
-                      onChange: assignProductsSchema.shape.agents,
+                      onChange: assignProductsSchema.shape.agent,
                     }}
                   >
                     {(field) => (
@@ -293,7 +282,7 @@ export default function AssignProductDialog() {
                           htmlFor={field.name}
                           className="mb-2 block text-sm font-medium"
                         >
-                          Select Agent/s
+                          Select Agent...
                         </Label>
                         <Popover
                           open={agentsPopoverOpen}
@@ -327,39 +316,15 @@ export default function AssignProductDialog() {
                                 <div
                                   key={agent.id}
                                   className={cn(
-                                    field.state.value.some(
-                                      (a) => a.id === agent.id
-                                    ) && 'bg-blue-500 text-white',
+                                    field.state.value?.id === agent.id &&
+                                      'bg-blue-500 text-white',
                                     'rounded-md px-4 py-2 hover:cursor-pointer hover:bg-blue-100 hover:text-black'
                                   )}
                                   onClick={() => {
-                                    const currentAgents =
-                                      (field.state.value as {
-                                        id: number
-                                        name: string
-                                      }[]) || []
-                                    const aid = Number(agent.id)
-                                    const isSelected = currentAgents.some(
-                                      (a) => a.id === aid
-                                    )
-                                    let updatedAgents: {
-                                      id: number
-                                      name: string
-                                    }[]
-                                    if (isSelected) {
-                                      updatedAgents = currentAgents.filter(
-                                        (a) => a.id !== aid
-                                      )
-                                    } else {
-                                      updatedAgents = [
-                                        ...currentAgents,
-                                        {
-                                          id: aid,
-                                          name: `${agent.first_name} ${agent.middle_name ?? ''} ${agent.last_name}`,
-                                        },
-                                      ]
-                                    }
-                                    field.handleChange(updatedAgents)
+                                    field.handleChange({
+                                      id: agent.id,
+                                      name: `${agent.first_name} ${agent.middle_name ?? ''} ${agent.last_name}`,
+                                    })
                                     setAgentsPopoverOpen(false)
                                   }}
                                 >
@@ -374,39 +339,15 @@ export default function AssignProductDialog() {
                                 <div
                                   key={agent.id}
                                   className={cn(
-                                    field.state.value.some(
-                                      (a) => a.id === agent.id
-                                    ) && 'bg-blue-500 text-white',
+                                    field.state.value?.id === agent.id &&
+                                      'bg-blue-500 text-white',
                                     'rounded-md px-4 py-2 hover:cursor-pointer hover:bg-blue-100 hover:text-black'
                                   )}
                                   onClick={() => {
-                                    const currentAgents =
-                                      (field.state.value as {
-                                        id: number
-                                        name: string
-                                      }[]) || []
-                                    const aid = Number(agent.id)
-                                    const isSelected = currentAgents.some(
-                                      (a) => a.id === aid
-                                    )
-                                    let updatedAgents: {
-                                      id: number
-                                      name: string
-                                    }[]
-                                    if (isSelected) {
-                                      updatedAgents = currentAgents.filter(
-                                        (a) => a.id !== aid
-                                      )
-                                    } else {
-                                      updatedAgents = [
-                                        ...currentAgents,
-                                        {
-                                          id: aid,
-                                          name: `${agent.first_name} ${agent.middle_name ?? ''} ${agent.last_name}`,
-                                        },
-                                      ]
-                                    }
-                                    field.handleChange(updatedAgents)
+                                    field.handleChange({
+                                      id: agent.id,
+                                      name: `${agent.first_name} ${agent.middle_name ?? ''} ${agent.last_name}`,
+                                    })
                                     setAgentsPopoverOpen(false)
                                   }}
                                 >
@@ -428,149 +369,87 @@ export default function AssignProductDialog() {
                     <form.Subscribe>
                       {(field) => {
                         return (
-                          field.values.agents.length > 0 &&
-                          field.values.agents.map((agent) => (
+                          field.values.agent && (
                             <div
-                              key={agent.id}
                               className="rounded-full border-2 px-2 py-1 text-sm hover:cursor-pointer"
                               onClick={() => {
-                                const currentAgents =
-                                  form.getFieldValue('agents')
-                                // Remove agent on click
-                                const updatedAgents = currentAgents.filter(
-                                  (a) => a.id !== agent.id
-                                )
-                                form.setFieldValue('agents', updatedAgents)
+                                form.setFieldValue('agent', undefined)
                               }}
                             >
-                              {agent.name}
+                              {field.values.agent.name}
                             </div>
-                          ))
+                          )
                         )
                       }}
                     </form.Subscribe>
                     {}
                   </div>
                 </div>
-              </div>
-
-              {/* Effective Date */}
-              <form.Field
-                name="effectiveDate"
-                validators={{
-                  onChange: assignProductsSchema.shape.effectiveDate,
-                }}
-              >
-                {(field) => (
-                  <div>
-                    <Label
-                      htmlFor="effectiveDate"
-                      className="mb-2 block text-sm font-medium"
-                    >
-                      Effective Date
-                    </Label>
-                    <div className="relative max-w-xs">
-                      <Input
-                        id="effectiveDate"
-                        type="date"
-                        placeholder="MM/DD/YYYY"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        className="w-full pr-10"
-                      />
-                      <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                {/* Effective Date */}
+                <form.Field
+                  name="effectiveDate"
+                  validators={{
+                    onChange: assignProductsSchema.shape.effectiveDate,
+                  }}
+                >
+                  {(field) => (
+                    <div>
+                      <Label
+                        htmlFor="effectiveDate"
+                        className="mb-2 block text-sm font-medium"
+                      >
+                        Effective Date
+                      </Label>
+                      <div className="relative max-w-xs">
+                        <Input
+                          id="effectiveDate"
+                          type="date"
+                          placeholder="MM/DD/YYYY"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          className="w-full pr-10"
+                        />
+                        <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      </div>
+                      <FieldInfo field={field} />
                     </div>
-                    <FieldInfo field={field} />
-                  </div>
-                )}
-              </form.Field>
+                  )}
+                </form.Field>
 
-              {/* Assignment Permissions */}
-              <div>
-                <h3 className="mb-3 text-sm font-medium">
-                  Assignment Permissions
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <form.Field name="permissions.allowSellingProducts">
-                    {(field) => (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="allowSellingProducts"
-                          checked={field.state.value}
-                          onCheckedChange={(checked) =>
-                            field.handleChange(!!checked)
+                {/* Commission Rate */}
+                <form.Field
+                  name="commissionRate"
+                  validators={{
+                    onChange: assignProductsSchema.shape.commissionRate,
+                  }}
+                >
+                  {(field) => (
+                    <div>
+                      <Label
+                        htmlFor="commissionRate"
+                        className="mb-2 block text-sm font-medium"
+                      >
+                        Commission Rate (%)
+                      </Label>
+                      <div className="relative max-w-xs">
+                        <Input
+                          id="commissionRate"
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          placeholder="30"
+                          value={field.state.value}
+                          onChange={(e) =>
+                            field.handleChange(Number(e.target.value))
                           }
+                          className="w-full"
                         />
-                        <label
-                          htmlFor="allowSellingProducts"
-                          className="cursor-pointer text-sm"
-                        >
-                          Allow selling products
-                        </label>
                       </div>
-                    )}
-                  </form.Field>
-
-                  <form.Field name="permissions.recruitOverriders">
-                    {(field) => (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="recruitOverriders"
-                          checked={field.state.value}
-                          onCheckedChange={(checked) =>
-                            field.handleChange(!!checked)
-                          }
-                        />
-                        <Label
-                          htmlFor="recruitOverriders"
-                          className="cursor-pointer text-sm"
-                        >
-                          Recruit overriders
-                        </Label>
-                      </div>
-                    )}
-                  </form.Field>
-
-                  <form.Field name="permissions.viewSalesAnalytics">
-                    {(field) => (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="viewSalesAnalytics"
-                          checked={field.state.value}
-                          onCheckedChange={(checked) =>
-                            field.handleChange(!!checked)
-                          }
-                        />
-                        <Label
-                          htmlFor="viewSalesAnalytics"
-                          className="cursor-pointer text-sm"
-                        >
-                          View sales analytics
-                        </Label>
-                      </div>
-                    )}
-                  </form.Field>
-
-                  <form.Field name="permissions.manageReferralLinks">
-                    {(field) => (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="manageReferralLinks"
-                          checked={field.state.value}
-                          onCheckedChange={(checked) =>
-                            field.handleChange(!!checked)
-                          }
-                        />
-                        <Label
-                          htmlFor="manageReferralLinks"
-                          className="cursor-pointer text-sm"
-                        >
-                          Manage referral links
-                        </Label>
-                      </div>
-                    )}
-                  </form.Field>
-                </div>
+                      <FieldInfo field={field} />
+                    </div>
+                  )}
+                </form.Field>
               </div>
 
               {/* Assignment Notes */}
@@ -603,7 +482,7 @@ export default function AssignProductDialog() {
                     </form.Subscribe>{' '}
                     products will be assigned to{' '}
                     <form.Subscribe>
-                      {(field) => field.values.agents.length}
+                      {(field) => field.values.agent?.name || 'N/A'}
                     </form.Subscribe>{' '}
                     agents
                   </li>
