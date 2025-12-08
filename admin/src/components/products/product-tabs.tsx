@@ -8,10 +8,13 @@ import AssignProductDialog from './assign-product-dialog'
 import {
   Product,
   ProductAssignment,
-  ProductCommissionInfo,
   ProductsPaginatedResponse,
 } from '@/types/products'
-import { AgentProduct, AgentProductAssignment } from '@/types/agents'
+import {
+  AgentProduct,
+  AgentProductAssignment,
+  ProductCommissionInfo,
+} from '@/types/agents'
 import { useGetProducts } from '@/app/data/queries/products'
 import { useGetAgentProducts } from '@/app/data/queries/agents'
 
