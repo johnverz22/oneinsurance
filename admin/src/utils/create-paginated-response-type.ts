@@ -27,3 +27,11 @@ export function createPaginatedResponseType<T>(itemType: z.ZodType<T>) {
     }),
   })
 }
+
+export function createResponseType<T>(itemType: z.ZodType<T>) {
+  return z.object({
+    success: z.boolean(),
+    message: z.string(),
+    data: itemType,
+  })
+}
