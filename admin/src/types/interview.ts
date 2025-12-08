@@ -1,5 +1,9 @@
-import { createResponseType } from '@/utils/create-paginated-response-type'
+import {
+  createPaginatedResponseType,
+  createResponseType,
+} from '@/utils/create-paginated-response-type'
 import { z } from 'zod'
+import { AgentSchema } from '@/types/agents'
 
 export type CreateInterviewRequest = {
   agent_id: number
@@ -64,4 +68,25 @@ export const CreateInterviewResponseSchema =
   )
 export type CreateInterviewResponse = z.infer<
   typeof CreateInterviewResponseSchema
+>
+
+export const InterviewSchema = z.object({
+  id: z.number(),
+  agent_id: z.number(),
+  admin_id: z.number(),
+  scheduled_at: z.string(),
+  status: z.enum(['pending', 'completed', 'canceled']),
+  notes: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  deleted_at: z.string().nullable(),
+  agent: AgentSchema,
+  admin: AgentSchema,
+})
+
+export type Interview = z.infer<typeof InterviewSchema>
+export const InterviewPaginatedResponseSchema =
+  createPaginatedResponseType<Interview>(InterviewSchema)
+export type InterviewPaginatedResponse = z.infer<
+  typeof InterviewPaginatedResponseSchema
 >
