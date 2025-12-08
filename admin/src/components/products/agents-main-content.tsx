@@ -1,11 +1,15 @@
 'use client'
 
 import { useGetAgentProducts } from '@/app/data/queries/agents'
-import { AgentProduct, AgentProductAssignment } from '@/types/agents'
-import { ProductCommissionInfo } from '@/types/products'
+import {
+  AgentProduct,
+  AgentProductAssignment,
+  ProductCommissionInfo,
+} from '@/types/agents'
 import { useEffect, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import PendingApplicants from './pending-applicants'
+import Interviews from './interviews'
 
 export default function AgentsMainContent() {
   const [agentProductAssignments, setAgentProductAssignments] = useState<
@@ -118,15 +122,7 @@ export default function AgentsMainContent() {
         </TabsContent>
 
         <TabsContent value="interviews">
-          <div className="rounded-lg border p-8 text-center">
-            <h3 className="mb-2 text-lg font-semibold">Interviews</h3>
-            <p className="text-muted-foreground text-sm">
-              Schedule and track agent interviews.
-            </p>
-            <div className="mt-6 text-sm text-gray-400">
-              No scheduled interviews.
-            </div>
-          </div>
+          <Interviews />
         </TabsContent>
       </Tabs>
     </div>
