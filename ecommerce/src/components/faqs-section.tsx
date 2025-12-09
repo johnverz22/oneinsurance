@@ -4,14 +4,15 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from './ui/accordion'
+} from '@/components/ui/accordion'
 
 interface FAQsSectionProps {
   faqs: FAQs[]
-  insuranceType: string
+  title: string
+  description?: string
 }
 
-export function FAQsSection({ faqs, insuranceType }: FAQsSectionProps) {
+export function FAQsSection({ faqs, title, description }: FAQsSectionProps) {
   return (
     <section className="mx-auto grid h-full max-w-7xl items-center gap-4 px-4 py-16">
       <div className="grid md:grid-cols-3 md:gap-6">
@@ -20,11 +21,9 @@ export function FAQsSection({ faqs, insuranceType }: FAQsSectionProps) {
             <h5>FAQs</h5>
           </div>
           <h2 className="text-lilac max-w-4/5 text-4xl font-bold lg:max-w-full">
-            Frequently Asked Questions
+            {title}
           </h2>
-          <p className="font-normal">
-            Find quick answers to common questions about our {insuranceType}.
-          </p>
+          <p className="font-normal">{description}</p>
         </div>
 
         <Accordion
@@ -37,7 +36,7 @@ export function FAQsSection({ faqs, insuranceType }: FAQsSectionProps) {
             <AccordionItem
               key={index}
               value={`item-${index + 1}`}
-              className="bg-muted-foreground/10 w-full gap-3 rounded-lg border px-4 py-4"
+              className="bg-muted-foreground/10 w-full gap-3 rounded-full border px-12 py-4"
               defaultChecked={index === 0}
             >
               <AccordionTrigger className="font-bold">

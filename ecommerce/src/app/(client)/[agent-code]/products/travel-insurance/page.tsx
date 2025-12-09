@@ -301,7 +301,11 @@ function TravelInsurancePageSSR() {
           </div>
         </div>
 
-        <FAQsSection faqs={TRAVEL_FAQS} insuranceType="Travel Insurance" />
+        <FAQsSection
+          faqs={TRAVEL_FAQS}
+          title="Frequently Asked Questions"
+          description="Find quick answers to common questions about our Travel Insurance."
+        />
       </div>
     </div>
   )
