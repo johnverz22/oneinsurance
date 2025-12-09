@@ -13,12 +13,6 @@ import {
   X,
   ArrowUpRight,
 } from 'lucide-react'
-import {
-  DataTable,
-  DataTableAction,
-  createSortableHeader,
-  exportToCSV,
-} from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetAgents } from '@/app/data/queries/agents'
 import { useSearchAgents } from '@/app/data/mutations/agents'
@@ -44,6 +38,7 @@ import { useUpdateAgent } from '@/app/data/mutations/agents'
 import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
+import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
 
 export default function AgentsPage() {
   const [page, setPage] = useState<number>(1)
@@ -85,97 +80,105 @@ export default function AgentsPage() {
   const columns = React.useMemo<ColumnDef<Agent, any>[]>(
     () => [
       {
+        accessorKey: 'id',
+        header: 'Agent ID',
+        cell: ({ row }) => <div className="font-medium">{row.original.id}</div>,
+      },
+      {
         accessorKey: 'first_name',
-        header: ({ column }) => createSortableHeader('Agent', column),
+        header: 'Agent',
         cell: ({ row }) => {
           const a = row.original
           return (
-            <div className="flex items-center gap-3">
-              <Avatar>
-                {a.avatar ? (
-                  <AvatarImage
-                    src={a.avatar}
-                    alt={`${a.first_name} ${a.last_name}`}
-                  />
-                ) : (
-                  <AvatarFallback>
-                    {a.first_name.charAt(0)}
-                    {a.last_name.charAt(0)}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div>
-                <div className="font-medium">
-                  {a.first_name} {a.last_name}
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  @
-                  {a.username ??
-                    `${a.first_name.toLowerCase()}.${a.last_name.toLowerCase()}`}
-                </div>
-              </div>
+            <div className="font-medium">
+              {a.first_name} {a.last_name}
             </div>
           )
         },
       },
       {
         accessorKey: 'email',
-        header: ({ column }) => createSortableHeader('Email', column),
+        header: 'Email',
       },
       {
         accessorKey: 'phone',
-        header: 'Phone',
-      },
-      {
-        accessorKey: 'designation',
-        header: 'Designation',
-      },
-      {
-        accessorKey: 'address',
-        header: 'Address',
+        header: 'Phone Number',
       },
       {
         accessorKey: 'status',
-        header: ({ column }) => createSortableHeader('Status', column),
-        cell: ({ row }) => (
-          <span
-            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-              row.original.status === 'active'
-                ? 'bg-green-100 text-green-800'
-                : row.original.status === 'pending'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-gray-100 text-gray-800'
-            }`}
-          >
-            {row.original.status}
-          </span>
-        ),
+        header: 'Status',
+        cell: ({ row }) => {
+          const status = row.original.status.toLowerCase()
+          return (
+            <span
+              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize ${
+                status === 'active'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                  : status === 'pending'
+                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                    : status === 'approved'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                      : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+              }`}
+            >
+              {status}
+            </span>
+          )
+        },
       },
     ],
     []
   )
 
-  // actions are now available inside the details dialog on row click
+  // Dynamic actions based on agent status
+  const getActionsForAgent = (agent: Agent): AgentDataTableAction<Agent>[] => {
+    const status = agent.status.toLowerCase()
 
-  const actions: DataTableAction<Agent>[] = [
-    {
-      label: 'Activate',
-      icon: <Check className="h-4 w-4" />,
-      onClick: (agent) => handleActivateClick(agent),
-      variant: 'default',
-    },
-    {
-      label: 'Update',
-      icon: <Edit2 className="h-4 w-4" />,
-      onClick: (agent: Agent) => handleUpdateClick(agent),
-    },
-    {
-      label: 'Delete',
-      icon: <Trash className="h-4 w-4" />,
-      onClick: (agent) => handleDeleteClick(agent),
-      variant: 'destructive',
-    },
-  ]
+    if (status === 'active') {
+      return [
+        {
+          label: 'View Documents',
+          icon: <Edit2 className="h-4 w-4" />,
+          onClick: (agent: Agent) => handleViewDocumentsClick(agent),
+        },
+        {
+          label: 'Deactivate',
+          icon: <Trash className="h-4 w-4" />,
+          onClick: (agent) => handleDeactivateClick(agent),
+          variant: 'destructive',
+        },
+      ]
+    } else if (status === 'pending') {
+      return [
+        {
+          label: 'Review Document',
+          icon: <Edit2 className="h-4 w-4" />,
+          onClick: (agent: Agent) => handleReviewDocumentClick(agent),
+        },
+        {
+          label: 'Send Sign Up Link',
+          icon: <Check className="h-4 w-4" />,
+          onClick: (agent) => handleSendSignUpLinkClick(agent),
+        },
+      ]
+    } else if (status === 'inactive') {
+      return [
+        {
+          label: 'Review Document',
+          icon: <Edit2 className="h-4 w-4" />,
+          onClick: (agent: Agent) => handleReviewDocumentClick(agent),
+        },
+        {
+          label: 'Activate',
+          icon: <Check className="h-4 w-4" />,
+          onClick: (agent) => handleActivateClick(agent),
+          variant: 'default',
+        },
+      ]
+    }
+
+    return []
+  }
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -232,6 +235,26 @@ export default function AgentsPage() {
       designation: 'Agent',
     })
     setIsUpdateOpen(true)
+  }
+
+  function handleViewDocumentsClick(agent: Agent) {
+    setSelectedToView(agent)
+    setIsDetailsOpen(true)
+  }
+
+  function handleDeactivateClick(agent: Agent) {
+    toast.info('Deactivate feature coming soon')
+    // TODO: Implement deactivate functionality
+  }
+
+  function handleReviewDocumentClick(agent: Agent) {
+    setSelectedToView(agent)
+    setIsDetailsOpen(true)
+  }
+
+  function handleSendSignUpLinkClick(agent: Agent) {
+    toast.info('Send Sign Up Link feature coming soon')
+    // TODO: Implement send sign up link functionality
   }
 
   async function handleConfirmDelete() {
@@ -386,25 +409,15 @@ export default function AgentsPage() {
 
   return (
     <div className="container mx-auto space-y-6 py-6">
-      <div>
-        <h1 className="text-3xl font-bold">Agents</h1>
-        <p className="text-muted-foreground">
-          Manage agents registered in the system
-        </p>
-      </div>
-
-      <Card>
+      <Card className="border-0 shadow-sm">
         <CardHeader>
-          <div className="flex items-center justify-between px-6">
-            {/* <CardTitle>Agent List</CardTitle> */}
-            {/* <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                New Agent
-              </Button>
-            </div> */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Agent Management</h1>
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div>
             {authChecking || isDataLoading ? (
               <div className="w-full space-y-2">
@@ -427,8 +440,8 @@ export default function AgentsPage() {
                 ))}
               </div>
             ) : (
-              <>
-                <div className="mb-4 flex justify-between">
+              <div className="p-6">
+                <div className="mb-6 flex justify-between">
                   <div className="flex w-[50%] items-center gap-2">
                     <Input
                       value={searchKey}
@@ -439,34 +452,22 @@ export default function AgentsPage() {
                         }
                       }}
                       placeholder="Search agents by name, email, or phone..."
-                      className="max-w-md rounded-full"
+                      className="max-w-md"
                     />
                     <Button
-                      className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
+                      className="from-primary to-lilac bg-gradient-to-r text-white"
                       onClick={handleSearchButtonClick}
                       disabled={!searchKey.trim()}
                     >
                       Search
                     </Button>
                     {isSearchMode && (
-                      <Button
-                        variant="outline"
-                        className="rounded-full"
-                        onClick={handleClearSearch}
-                      >
+                      <Button variant="outline" onClick={handleClearSearch}>
                         <X className="mr-2 h-4 w-4" />
                         Clear
                       </Button>
                     )}
                   </div>
-
-                  <Button
-                    onClick={() => exportToCSV(displayData?.data.data ?? [])}
-                    className="gap-2 rounded-full"
-                  >
-                    <ArrowUpRight />
-                    Export
-                  </Button>
                 </div>
 
                 {isSearchMode && (
@@ -474,11 +475,11 @@ export default function AgentsPage() {
                     Showing search results for "{searchQuery}"
                   </div>
                 )}
-                <DataTable
+                <AgentDataTable
                   columns={columns}
                   data={displayData?.data.data ?? []}
                   onRowClick={(row) => handleRowClick(row)}
-                  actions={actions}
+                  getRowActions={getActionsForAgent}
                   enableColumnVisibility={false}
                   enablePagination={false}
                 />
@@ -531,130 +532,91 @@ export default function AgentsPage() {
                   isUpdating
                 )}
 
-                {/* Server-driven pagination links */}
-                {!isSearchMode && (
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    {(() => {
-                      const links = displayData?.data.links ?? []
-
-                      // Separate prev/next from numbered pages
-                      const prevLink = links.find(
-                        (l: any) =>
-                          l.label.includes('Previous') ||
-                          l.label.includes('&laquo;')
+                {/* Simplified pagination */}
+                {!isSearchMode && displayData?.data && (
+                  <div className="mt-6 flex items-center justify-between border-t pt-4">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Showing {displayData.data.data.length} of{' '}
+                      {displayData.data.total} agents
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={displayData.data.current_page === 1}
+                        className="h-8 w-8 p-0"
+                      >
+                        ‹
+                      </Button>
+                      {Array.from(
+                        { length: displayData.data.last_page },
+                        (_, i) => i + 1
                       )
-                      const nextLink = links.find(
-                        (l: any) =>
-                          l.label.includes('Next') ||
-                          l.label.includes('&raquo;')
-                      )
-
-                      // Get only numbered page links
-                      const pageLinks = links.filter((l: any) => {
-                        const cleaned = l.label.replace(/[^0-9]/g, '')
-                        return cleaned !== '' && !isNaN(Number(cleaned))
-                      })
-
-                      // Find active page index
-                      const activePageIndex = pageLinks.findIndex(
-                        (l: any) => l.active
-                      )
-                      const totalPages = pageLinks.length
-
-                      // Calculate which pages to show (5 pages max)
-                      const maxPagesToShow = 5
-                      let startIndex = Math.max(
-                        0,
-                        activePageIndex - Math.floor(maxPagesToShow / 2)
-                      )
-                      let endIndex = Math.min(
-                        totalPages,
-                        startIndex + maxPagesToShow
-                      )
-
-                      // Adjust if we're near the end
-                      if (endIndex - startIndex < maxPagesToShow) {
-                        startIndex = Math.max(0, endIndex - maxPagesToShow)
-                      }
-
-                      const visiblePages = pageLinks.slice(startIndex, endIndex)
-
-                      return (
-                        <>
-                          {/* Previous button */}
-                          {prevLink && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                if (prevLink.url) {
-                                  try {
-                                    const u = new URL(prevLink.url)
-                                    const p = u.searchParams.get('page')
-                                    p && setPage(Number(p))
-                                  } catch (e) {}
-                                }
-                              }}
-                              disabled={!prevLink.url}
-                            >
-                              «
-                            </Button>
-                          )}
-
-                          {/* Page numbers */}
-                          {visiblePages.map((linkObj: any, idx: number) => {
-                            const { url, label: rawLabel, active } = linkObj
-                            const cleanedLabel = rawLabel.replace(/[^0-9]/g, '')
-
-                            let pageNum: number | null = null
-                            try {
-                              if (url) {
-                                const u = new URL(url)
-                                const p = u.searchParams.get('page')
-                                pageNum = p ? Number(p) : null
-                              }
-                            } catch (e) {
-                              pageNum = null
-                            }
-
+                        .filter((pageNum) => {
+                          const current = displayData.data.current_page
+                          return (
+                            pageNum === 1 ||
+                            pageNum === displayData.data.last_page ||
+                            (pageNum >= current - 1 && pageNum <= current + 1)
+                          )
+                        })
+                        .map((pageNum, idx, arr) => {
+                          if (idx > 0 && pageNum - arr[idx - 1] > 1) {
                             return (
-                              <Button
-                                key={`page-${cleanedLabel}-${idx}`}
-                                variant={active ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => pageNum && setPage(pageNum)}
-                                disabled={!url}
-                              >
-                                {cleanedLabel}
-                              </Button>
+                              <React.Fragment key={`ellipsis-${pageNum}`}>
+                                <span className="px-2 text-gray-400">...</span>
+                                <Button
+                                  variant={
+                                    pageNum === displayData.data.current_page
+                                      ? 'default'
+                                      : 'outline'
+                                  }
+                                  size="sm"
+                                  onClick={() => setPage(pageNum)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  {pageNum}
+                                </Button>
+                              </React.Fragment>
                             )
-                          })}
-
-                          {/* Next button */}
-                          {nextLink && (
+                          }
+                          return (
                             <Button
-                              variant="outline"
+                              key={pageNum}
+                              variant={
+                                pageNum === displayData.data.current_page
+                                  ? 'default'
+                                  : 'outline'
+                              }
                               size="sm"
-                              onClick={() => {
-                                if (nextLink.url) {
-                                  try {
-                                    const u = new URL(nextLink.url)
-                                    const p = u.searchParams.get('page')
-                                    p && setPage(Number(p))
-                                  } catch (e) {}
-                                }
-                              }}
-                              disabled={!nextLink.url}
+                              onClick={() => setPage(pageNum)}
+                              className="h-8 w-8 p-0"
                             >
-                              »
+                              {pageNum}
                             </Button>
-                          )}
-                        </>
-                      )
-                    })()}
+                          )
+                        })}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setPage((p) =>
+                            Math.min(displayData.data.last_page, p + 1)
+                          )
+                        }
+                        disabled={
+                          displayData.data.current_page ===
+                          displayData.data.last_page
+                        }
+                        className="h-8 w-8 p-0"
+                      >
+                        ›
+                      </Button>
+                    </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </CardContent>
@@ -877,109 +839,153 @@ function DetailsDialog(
 
   return (
     <AlertDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Agent details</AlertDialogTitle>
-          <AlertDialogDescription>
-            Details for{' '}
-            <strong>{`${agent.first_name} ${agent.last_name}`}</strong>
+      <AlertDialogContent className="max-w-4xl">
+        <AlertDialogHeader className="border-b pb-4">
+          <div className="flex items-center justify-between">
+            <AlertDialogTitle className="text-2xl font-bold text-green-700">
+              View Submitted Documents
+            </AlertDialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDetailsOpen(false)}
+              className="h-6 w-6"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <AlertDialogDescription className="text-sm">
+            Verify the documents uploaded by the agent before approving.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <ScrollArea className="relative h-full max-h-[70vh] pb-4">
-          <div className="grid gap-2 py-2">
-            <div className="flex items-center gap-4">
-              <Avatar>
-                {agent.avatar ? (
-                  <AvatarImage src={agent.avatar} alt={`${agent.first_name}`} />
-                ) : (
-                  <AvatarFallback>
-                    {agent.first_name?.charAt(0) ?? ''}
-                    {agent.last_name?.charAt(0) ?? ''}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div>
-                <div className="font-medium">
-                  {agent.first_name}{' '}
-                  {agent.middle_name ? `${agent.middle_name} ` : ''}
-                  {agent.last_name}
+        <ScrollArea className="max-h-[70vh]">
+          <div className="space-y-6 p-6">
+            {/* Agent Information */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold">Agent Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-gray-500">Agent ID:</Label>
+                  <div className="font-medium">
+                    AGT{String(agent.id).padStart(3, '0')}
+                  </div>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  Username: {agent.username ?? '-'}
+                <div>
+                  <Label className="text-xs text-gray-500">Name:</Label>
+                  <div className="font-medium">
+                    {agent.first_name} {agent.last_name}
+                  </div>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  Email: {agent.email}
+                <div>
+                  <Label className="text-xs text-gray-500">Email:</Label>
+                  <div className="font-medium">{agent.email}</div>
                 </div>
-                <div className="text-muted-foreground text-sm">
-                  Phone: {agent.phone ?? '-'}
+                <div>
+                  <Label className="text-xs text-gray-500">Phone Number:</Label>
+                  <div className="font-medium">{agent.phone ?? '-'}</div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Company ID</Label>
-                <div>{agent.company_id ?? '-'}</div>
+            {/* Bank Information */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold">Bank Information</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-gray-500">Bank Name:</Label>
+                  <div className="font-medium">-</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Bank Code:</Label>
+                  <div className="font-medium">-</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    SWIFT / BIC / Routing Number:
+                  </Label>
+                  <div className="font-medium">-</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    Account Holder Name:
+                  </Label>
+                  <div className="font-medium">-</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    Account Number:
+                  </Label>
+                  <div className="font-medium">-</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">Account Type:</Label>
+                  <div className="font-medium">-</div>
+                </div>
               </div>
-              <div>
-                <Label>Designation</Label>
-                <div>{agent.designation ?? '-'}</div>
-              </div>
-              <div className="col-span-2">
-                <Label>Job description</Label>
-                <div>{agent.job_description ?? '-'}</div>
-              </div>
-              <div>
-                <Label>Phone description</Label>
-                <div>{agent.phone_description ?? '-'}</div>
-              </div>
-              <div>
-                <Label>Telephone</Label>
-                <div>{agent.telephone ?? '-'}</div>
-              </div>
-              <div className="col-span-2">
-                <Label>Address</Label>
-                <div>{agent.address ?? '-'}</div>
-              </div>
-              <div>
-                <Label>Is super admin</Label>
-                <div>{agent.is_super_admin ? 'Yes' : 'No'}</div>
-              </div>
-              <div>
-                <Label>Birth date</Label>
-                <div>{agent.birth_date ?? '-'}</div>
-              </div>
-              <div>
-                <Label>Status</Label>
-                <div>{agent.status}</div>
+            </div>
+
+            {/* Verification Documents */}
+            <div>
+              <h3 className="mb-4 text-lg font-semibold">
+                Verification Documents
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-gray-500">ID Type:</Label>
+                  <div className="font-medium">-</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">ID Number:</Label>
+                  <div>
+                    <Button variant="link" className="h-auto p-0 text-blue-600">
+                      View ID
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    License Number:
+                  </Label>
+                  <div>
+                    <Button variant="link" className="h-auto p-0 text-blue-600">
+                      View License ID
+                    </Button>
+                  </div>
+                </div>
+                <div></div>
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    Certificate Number:
+                  </Label>
+                  <div>
+                    <Button variant="link" className="h-auto p-0 text-blue-600">
+                      View Certificate
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </ScrollArea>
 
-        <AlertDialogFooter className="z-10">
-          <div className="flex w-full flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="default"
-                onClick={() => handleActivateClick(agent)}
-              >
-                {agent.status === 'active' ? 'Activated' : 'Activate'}
-              </Button>
-              <Button onClick={() => handleUpdateClick(agent)}>Update</Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleDeleteClick(agent)}
-              >
-                Delete
-              </Button>
-            </div>
-            <div>
-              <AlertDialogCancel onClick={() => setIsDetailsOpen(false)}>
-                Close
-              </AlertDialogCancel>
-            </div>
+        <AlertDialogFooter className="border-t pt-4">
+          <div className="flex w-full justify-end">
+            <Button
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                if (agent.status.toLowerCase() === 'active') {
+                  handleDeleteClick(agent)
+                } else {
+                  handleActivateClick(agent)
+                }
+              }}
+            >
+              {agent.status.toLowerCase() === 'active'
+                ? 'Deactivate'
+                : 'Activate'}
+            </Button>
           </div>
         </AlertDialogFooter>
       </AlertDialogContent>
