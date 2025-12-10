@@ -139,21 +139,24 @@ function mapToAgentProducts(
 
 export default function ProductTabs() {
   const [activeTab, setActiveTab] = useState('products')
-  const [page, setPage] = useState(1)
+  const [productsPage, setProductsPage] = useState(1)
+  const [agentsPage, setAgentsPage] = useState(1)
   const [productsAssignments, setProductsAssignments] = useState<
     ProductAssignment[]
   >([])
+
+  const currentPage = activeTab === 'products' ? productsPage : agentsPage
 
   const {
     data: products,
     isLoading: productsLoading,
     isError: productsError,
-  } = useGetProducts(page)
+  } = useGetProducts(productsPage)
   const {
     data: agentProducts,
     isLoading: agentProductsLoading,
     isError: agentProductsError,
-  } = useGetAgentProducts()
+  } = useGetAgentProducts(agentsPage)
 
   useEffect(() => {
     if (products && agentProducts) {
@@ -219,6 +222,156 @@ export default function ProductTabs() {
           <ProductsMainContent productAssignments={productsAssignments} />
         ) : (
           <AgentsMainContent />
+        )}
+
+        {/* Pagination for Products */}
+        {activeTab === 'products' && products?.data && (
+          <div className="mt-6 flex items-center justify-between rounded-b-3xl border border-t-0 bg-white px-6 py-4 dark:bg-gray-900">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {products.data.data.length} of {products.data.total}{' '}
+              products
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setProductsPage((p) => Math.max(1, p - 1))}
+                disabled={products.data.current_page === 1}
+                className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                ‹
+              </button>
+              {Array.from({ length: products.data.last_page }, (_, i) => i + 1)
+                .filter((pageNum) => {
+                  const current = products.data.current_page
+                  return (
+                    pageNum === 1 ||
+                    pageNum === products.data.last_page ||
+                    (pageNum >= current - 1 && pageNum <= current + 1)
+                  )
+                })
+                .map((pageNum, idx, arr) => {
+                  if (idx > 0 && pageNum - arr[idx - 1] > 1) {
+                    return (
+                      <React.Fragment key={`ellipsis-${pageNum}`}>
+                        <span className="px-2 text-gray-400">...</span>
+                        <button
+                          onClick={() => setProductsPage(pageNum)}
+                          className={`flex h-8 w-8 items-center justify-center rounded border text-sm ${
+                            pageNum === products.data.current_page
+                              ? 'border-green-500 bg-green-500 text-white'
+                              : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      </React.Fragment>
+                    )
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setProductsPage(pageNum)}
+                      className={`flex h-8 w-8 items-center justify-center rounded border text-sm ${
+                        pageNum === products.data.current_page
+                          ? 'border-green-500 bg-green-500 text-white'
+                          : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              <button
+                onClick={() =>
+                  setProductsPage((p) =>
+                    Math.min(products.data.last_page, p + 1)
+                  )
+                }
+                disabled={
+                  products.data.current_page === products.data.last_page
+                }
+                className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination for Agents */}
+        {activeTab === 'agents' && agentProducts?.data && (
+          <div className="mt-6 flex items-center justify-between rounded-b-3xl border border-t-0 bg-white px-6 py-4 dark:bg-gray-900">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {agentProducts.data.data.length} of{' '}
+              {agentProducts.data.total} agents
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAgentsPage((p) => Math.max(1, p - 1))}
+                disabled={agentProducts.data.current_page === 1}
+                className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                ‹
+              </button>
+              {Array.from(
+                { length: agentProducts.data.last_page },
+                (_, i) => i + 1
+              )
+                .filter((pageNum) => {
+                  const current = agentProducts.data.current_page
+                  return (
+                    pageNum === 1 ||
+                    pageNum === agentProducts.data.last_page ||
+                    (pageNum >= current - 1 && pageNum <= current + 1)
+                  )
+                })
+                .map((pageNum, idx, arr) => {
+                  if (idx > 0 && pageNum - arr[idx - 1] > 1) {
+                    return (
+                      <React.Fragment key={`ellipsis-${pageNum}`}>
+                        <span className="px-2 text-gray-400">...</span>
+                        <button
+                          onClick={() => setAgentsPage(pageNum)}
+                          className={`flex h-8 w-8 items-center justify-center rounded border text-sm ${
+                            pageNum === agentProducts.data.current_page
+                              ? 'border-green-500 bg-green-500 text-white'
+                              : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      </React.Fragment>
+                    )
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setAgentsPage(pageNum)}
+                      className={`flex h-8 w-8 items-center justify-center rounded border text-sm ${
+                        pageNum === agentProducts.data.current_page
+                          ? 'border-green-500 bg-green-500 text-white'
+                          : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              <button
+                onClick={() =>
+                  setAgentsPage((p) =>
+                    Math.min(agentProducts.data.last_page, p + 1)
+                  )
+                }
+                disabled={
+                  agentProducts.data.current_page ===
+                  agentProducts.data.last_page
+                }
+                className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
+              >
+                ›
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
