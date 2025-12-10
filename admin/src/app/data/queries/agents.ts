@@ -55,5 +55,6 @@ export function useGetAgentProducts(page: number = 1) {
     },
     refetchOnWindowFocus: false,
     enabled: !!accessToken,
+    staleTime: 5 * 60 * 1000,
   })
 }
