@@ -24,27 +24,7 @@ export default function AuthLayout({
         {/* Left column: auth card (on large screens this will be on the left) */}
         <div className="flex min-h-screen w-full items-center justify-center px-4 py-8">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 sm:p-10 lg:max-w-[30rem] dark:bg-black">
-            <div className="mb-6 flex items-center justify-between">
-              <Image
-                src="/images/logo.png"
-                alt="Company Logo"
-                width={150}
-                height={100}
-                className="object-contain"
-              />
-
-              <Image
-                src="/images/IFRC.png"
-                alt="IFRC Logo"
-                width={100}
-                height={100}
-                className="object-contain"
-              />
-            </div>
-
-            <div className="flex w-full items-center justify-center">
-              {children}
-            </div>
+            {children}
           </div>
         </div>
 
