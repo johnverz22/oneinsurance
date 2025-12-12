@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from '@tanstack/react-form'
 import Link from 'next/link'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Lock, LockKeyhole, User } from 'lucide-react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,8 @@ import { useLoginAgent } from '@/app/data/mutations/agent/auth-agent'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { toast } from 'sonner'
 import { NotVerifiedEmailError } from '@/lib/errors'
+
+const INPUT_FIELD = 'bg-[#F3F5FC] border-0 dark:bg-[#1A1A1A] w-full'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -91,117 +93,137 @@ export default function LoginPage() {
   })
 
   return (
-    <div className="flex w-full flex-col justify-center gap-6">
-      <h1 className="from-primary to-lilac w-fit bg-gradient-to-r bg-clip-text py-2 text-3xl leading-tight font-black text-transparent md:text-4xl lg:text-5xl">
-        Log In
-      </h1>
+    <>
+      <div className="mb-6 flex items-center justify-center">
+        <Image
+          src="/images/logo.png"
+          alt="Company Logo"
+          width={150}
+          height={100}
+          className="object-contain"
+        />
+      </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-        className="w-full"
-      >
-        <div className="flex w-full flex-col gap-4">
-          {/* Email Field */}
-          <form.Field name="email">
-            {(field) => (
-              <div className="flex w-full flex-col gap-2">
-                <Label htmlFor={field.name} className="required-field">
-                  Email
-                </Label>
-                <Input
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                  }}
-                  placeholder="Enter your email address"
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-
-          {/* Password Field */}
-          <form.Field name="password">
-            {(field) => (
-              <div className="flex w-full flex-col gap-2">
-                <Label htmlFor={field.name} className="required-field">
-                  Password
-                </Label>
-                <PasswordInput
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                  }}
-                  placeholder="Enter your password"
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-
-          {/* Error Message */}
-          {loginError && (
-            <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm">
-              {loginError}
-            </div>
-          )}
-
-          <div className="text-muted-foreground flex justify-end text-sm">
-            <Link
-              href="/forgot-password"
-              className="hover:text-primary underline underline-offset-4"
-            >
-              Forgot your password?
-            </Link>
+      <div className="flex w-full items-center justify-center">
+        <div className="flex w-full flex-col justify-center gap-6">
+          <div className="flex w-full items-center justify-center">
+            <h1 className="from-primary to-lilac w-fit bg-gradient-to-r bg-clip-text py-2 text-3xl leading-tight font-black text-transparent md:text-4xl lg:text-5xl">
+              Log In
+            </h1>
           </div>
 
-          {/* Login Button */}
-          <div className="flex w-full justify-end">
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
-            >
-              {([canSubmit, isSubmitting]) => (
-                <Button
-                  type="submit"
-                  disabled={!canSubmit || isSubmitting || isLoading}
-                  className="from-primary to-lilac hover:from-primary/90 hover:to-lilac/90 focus:from-primary/90 focus:to-lilac/90 rounded-full bg-gradient-to-r text-white"
-                >
-                  {isSubmitting || isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <span className="px-5">Log in</span>
-                  )}
-                </Button>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
+            }}
+            className="w-full"
+          >
+            <div className="flex w-full flex-col gap-4">
+              {/* Email Field */}
+              <form.Field name="email">
+                {(field) => (
+                  <div className="flex w-full flex-col gap-2">
+                    <Label htmlFor={field.name} className="required-field">
+                      Email
+                    </Label>
+                    <div className="relative">
+                      <User className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                      <Input
+                        name={field.name}
+                        type="email"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value)
+                        }}
+                        placeholder="Enter your email address"
+                        disabled={isLoading}
+                        className={`${INPUT_FIELD} pl-10`}
+                      />
+                    </div>
+                    <FieldInfo field={field} />
+                  </div>
+                )}
+              </form.Field>
+
+              {/* Password Field */}
+              <form.Field name="password">
+                {(field) => (
+                  <div className="flex w-full flex-col gap-2">
+                    <Label htmlFor={field.name} className="required-field">
+                      Password
+                    </Label>
+                    <PasswordInput
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value)
+                      }}
+                      placeholder="Enter your password"
+                      disabled={isLoading}
+                      leftIcon={<LockKeyhole className="h-5 w-5" />}
+                      className={INPUT_FIELD}
+                    />
+                    <FieldInfo field={field} />
+                  </div>
+                )}
+              </form.Field>
+
+              {/* Error Message */}
+              {loginError && (
+                <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm">
+                  {loginError}
+                </div>
               )}
-            </form.Subscribe>
-          </div>
-        </div>
-      </form>
 
-      {/* Additional Actions */}
-      <div className="relative flex items-center justify-start py-4">
-        <div className="text-muted-foreground flex flex-col items-start gap-2 text-sm">
-          <p>
-            Don't have an account?{' '}
-            <Link
-              href="/signup"
-              className="hover:text-primary underline underline-offset-4"
-            >
-              Sign up now!
-            </Link>
-          </p>
+              <div className="text-muted-foreground flex justify-end text-sm">
+                <Link
+                  href="/forgot-password"
+                  className="hover:text-primary underline underline-offset-4"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+
+              {/* Login Button */}
+              <div className="flex w-full justify-end">
+                <form.Subscribe
+                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                >
+                  {([canSubmit, isSubmitting]) => (
+                    <Button
+                      type="submit"
+                      disabled={!canSubmit || isSubmitting || isLoading}
+                      className="from-primary to-lilac hover:from-primary/90 hover:to-lilac/90 focus:from-primary/90 focus:to-lilac/90 rounded-full bg-gradient-to-r text-white"
+                    >
+                      {isSubmitting || isLoading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <span className="px-12">Log in</span>
+                      )}
+                    </Button>
+                  )}
+                </form.Subscribe>
+              </div>
+            </div>
+          </form>
+
+          {/* Additional Actions */}
+          <div className="relative flex items-center justify-start py-4">
+            <div className="text-muted-foreground flex flex-col items-start gap-2 text-sm font-light">
+              <p>
+                Don't have an account?{' '}
+                <Link
+                  href="/signup"
+                  className="hover:text-primary text-blue-600 underline underline-offset-4"
+                >
+                  Sign up now!
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
