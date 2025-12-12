@@ -2,160 +2,175 @@ import {
   RegisterAgent,
   SuccesRegisterAgent,
   RegisterAgentValidationError,
+  BankDetails,
+  VerificationDocuments,
 } from '@/types/agent/auth'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
 type AgentRegistrationState = {
-  // Agent credentials being entered
+  step: number
   credentials: Partial<RegisterAgent>
+  registrationResult: SuccesRegisterAgent | null
+  isRegistering: boolean
+  registrationError: string | null
+  validationErrors: Record<string, string[]> | null
+  emailVerificationSent: boolean
+  isEmailVerified: boolean
+
+  bankDetails: BankDetails
+  verificationDocuments: VerificationDocuments
+}
+
+type AgentRegistrationActions = {
   setCredentials: (credentials: Partial<RegisterAgent>) => void
   updateCredentials: (field: keyof RegisterAgent, value: string) => void
   clearCredentials: () => void
-
-  // Registration result
-  registrationResult: SuccesRegisterAgent | null
   setRegistrationResult: (result: SuccesRegisterAgent) => void
   clearRegistrationResult: () => void
-
-  // Registration status
-  isRegistering: boolean
   setIsRegistering: (isRegistering: boolean) => void
-
-  // Registration error
-  registrationError: string | null
   setRegistrationError: (error: string | null) => void
-
-  // Validation errors (422)
-  validationErrors: Record<string, string[]> | null
   setValidationErrors: (errors: Record<string, string[]> | null) => void
   clearValidationErrors: () => void
   getFieldErrors: (fieldName: string) => string[]
-
-  // Email verification tracking
-  emailVerificationSent: boolean
   setEmailVerificationSent: (sent: boolean) => void
-  isEmailVerified: boolean
   setIsEmailVerified: (verified: boolean) => void
-
-  // Helper methods
   resetAll: () => void
-  isFormValid: () => boolean
+
+  increaseStep: () => void
+  decreaseStep: () => void
+  setBankDetails: (data: BankDetails) => void
+  setVerificationDocuments: (data: VerificationDocuments) => void
 }
 
-export const useAgentRegistrationStore = create<AgentRegistrationState>()(
+const initialState: AgentRegistrationState = {
+  step: 0,
+  credentials: {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+  },
+  registrationResult: null,
+  isRegistering: false,
+  registrationError: null,
+  validationErrors: null,
+  emailVerificationSent: false,
+  isEmailVerified: false,
+  bankDetails: {
+    bankName: '',
+    bankCode: '',
+    routingNumber: '',
+    accountHolderName: '',
+    accountNumber: '',
+    accountType: 'savings' as 'savings' | 'current',
+  },
+  verificationDocuments: {
+    idType: 'PAS' as any,
+    idNumber: '',
+    licenseNumber: '',
+    certificateNumber: '',
+    confirmInfo: false,
+    authorizeCompany: false,
+  },
+}
+
+export const useAgentRegistrationStore = create<
+  AgentRegistrationState & AgentRegistrationActions
+>()(
   persist(
     (set, get) => ({
       // Initial state
-      credentials: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        phone: '',
-      },
-      registrationResult: null,
-      isRegistering: false,
-      registrationError: null,
-      validationErrors: null,
-      emailVerificationSent: false,
-      isEmailVerified: false,
+      ...initialState,
 
       // Credentials management
-      setCredentials: (credentials) =>
+      setCredentials: (credentials: Partial<RegisterAgent>) =>
         set((state) => ({
           credentials: { ...state.credentials, ...credentials },
         })),
 
-      updateCredentials: (field, value) =>
+      updateCredentials: (field: keyof RegisterAgent, value: string) =>
         set((state) => ({
           credentials: { ...state.credentials, [field]: value },
         })),
 
       clearCredentials: () =>
         set({
-          credentials: {
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-            phone: '',
-          },
+          credentials: initialState.credentials,
         }),
 
       // Registration result management
-      setRegistrationResult: (result) => set({ registrationResult: result }),
+      setRegistrationResult: (result: SuccesRegisterAgent) =>
+        set({ registrationResult: result }),
       clearRegistrationResult: () => set({ registrationResult: null }),
 
       // Registration status management
-      setIsRegistering: (isRegistering) => set({ isRegistering }),
+      setIsRegistering: (isRegistering: boolean) => set({ isRegistering }),
 
       // Error management
-      setRegistrationError: (error) => set({ registrationError: error }),
+      setRegistrationError: (error: string | null) =>
+        set({ registrationError: error }),
 
       // Validation error management
-      setValidationErrors: (errors) => set({ validationErrors: errors }),
+      setValidationErrors: (errors: Record<string, string[]> | null) =>
+        set({ validationErrors: errors }),
       clearValidationErrors: () => set({ validationErrors: null }),
-      getFieldErrors: (fieldName) => {
+      getFieldErrors: (fieldName: string) => {
         const { validationErrors } = get()
         return validationErrors?.[fieldName] || []
       },
 
       // Email verification management
-      setEmailVerificationSent: (sent) => set({ emailVerificationSent: sent }),
-      setIsEmailVerified: (verified) => set({ isEmailVerified: verified }),
+      setEmailVerificationSent: (sent: boolean) =>
+        set({ emailVerificationSent: sent }),
+      setIsEmailVerified: (verified: boolean) =>
+        set({ isEmailVerified: verified }),
 
       // Helper methods
       resetAll: () =>
         set({
-          credentials: {
-            firstName: '',
-            lastName: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-            phone: '',
-          },
-          registrationResult: null,
-          isRegistering: false,
-          registrationError: null,
-          validationErrors: null,
-          emailVerificationSent: false,
-          isEmailVerified: false,
+          ...initialState,
         }),
 
-      isFormValid: () => {
-        const { credentials } = get()
-        return !!(
-          credentials.firstName &&
-          credentials.lastName &&
-          credentials.email &&
-          credentials.password &&
-          credentials.confirmPassword &&
-          credentials.phone &&
-          credentials.password === credentials.confirmPassword &&
-          credentials.email.includes('@') &&
-          credentials.phone.length >= 11
-        )
-      },
+      increaseStep: () =>
+        set((state) => ({
+          step: state.step + 1,
+        })),
+      decreaseStep: () =>
+        set((state) => ({
+          step: state.step - 1,
+        })),
+      setBankDetails: (data: BankDetails) =>
+        set((state) => ({
+          ...state,
+          bankDetails: { ...state.bankDetails, ...data },
+        })),
+      setVerificationDocuments: (data: VerificationDocuments) =>
+        set((state) => ({
+          ...state,
+          verificationDocuments: { ...state.verificationDocuments, ...data },
+        })),
     }),
     {
       name: 'agent-registration-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => sessionStorage),
       // Only persist credentials and registration result, not loading states
       partialize: (state) => ({
+        step: state.step,
         credentials: state.credentials,
         registrationResult: state.registrationResult,
         emailVerificationSent: state.emailVerificationSent,
         isEmailVerified: state.isEmailVerified,
+        bankDetails: state.bankDetails,
+        verificationDocuments: state.verificationDocuments,
       }),
     }
   )
 )
 
-// Helper function to clear the store from localStorage
+// Helper function to clear the store from sessionStorage
 export const clearAgentRegistrationStore = () => {
-  localStorage.removeItem('agent-registration-storage')
+  sessionStorage.removeItem('agent-registration-storage')
 }
