@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CommissionConfig } from '@/types/commission'
 import { Product } from '@/types/products'
 import { Value } from '@radix-ui/react-select'
 import { FieldApi, useForm } from '@tanstack/react-form'
@@ -10,7 +11,7 @@ import { toast } from 'sonner'
 import z from 'zod'
 
 interface ProductCommisionConfigurationProps {
-  selectedProduct: Product | null
+  selectedCommissionConfig: CommissionConfig | null
 }
 
 const commisionConfigurationSchema = z.object({
@@ -53,21 +54,21 @@ type CommisionConfigurationFormData = z.infer<
 >
 
 export default function ProductCommisionConfiguration({
-  selectedProduct,
+  selectedCommissionConfig,
 }: ProductCommisionConfigurationProps) {
-  const DUMMY_PRICE = 15000
-  const [baseCommission, setBaseCommission] = useState(DUMMY_PRICE * 0.3)
-
   const form = useForm({
     defaultValues: {
-      base_commission: 30,
-      agent: 15,
-      agent_overrider: 10,
-      admin: 15,
-      admin_overrider: 10,
-      digitech: 25,
-      referral: 5,
-      referral_overrider: 10,
+      base_commission: Number(selectedCommissionConfig?.base_commission) ?? 30,
+      agent: Number(selectedCommissionConfig?.agent_commission) ?? 15,
+      agent_overrider:
+        Number(selectedCommissionConfig?.agent_overriders_commission) ?? 10,
+      admin: Number(selectedCommissionConfig?.ifrc_admin) ?? 15,
+      admin_overrider:
+        Number(selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
+      digitech: Number(selectedCommissionConfig?.ifrc_digitech) ?? 25,
+      referral: Number(selectedCommissionConfig?.digitech_referral) ?? 5,
+      referral_overrider:
+        Number(selectedCommissionConfig?.digitech_overriders) ?? 10,
     },
     validators: {
       onSubmit: commisionConfigurationSchema,
@@ -79,7 +80,7 @@ export default function ProductCommisionConfiguration({
 
   return (
     <div>
-      {!selectedProduct ? (
+      {!selectedCommissionConfig ? (
         <div className="text-center">
           Select a product to configure commissions
         </div>
@@ -98,7 +99,7 @@ export default function ProductCommisionConfiguration({
                 <div className="space-y-3">
                   <div>
                     <p className="text-xl font-bold">
-                      {selectedProduct.name} by {selectedProduct.provider.name}
+                      {selectedCommissionConfig?.product.name}
                     </p>
                     <p className="text-base font-light">
                       Overall commision percentage for this product
@@ -121,9 +122,6 @@ export default function ProductCommisionConfiguration({
                               onChange={(e) => {
                                 const commissionRate = Number(e.target.value)
                                 field.handleChange(commissionRate)
-                                const calculatedBaseCommission =
-                                  (commissionRate / 100) * DUMMY_PRICE
-                                setBaseCommission(calculatedBaseCommission)
                               }}
                               onBlur={field.handleBlur}
                               value={field.state.value.toString()}
@@ -142,9 +140,11 @@ export default function ProductCommisionConfiguration({
 
                 <div>
                   <p className="text-xl font-bold">
-                    ₱ {selectedProduct.price ?? DUMMY_PRICE.toFixed(2)}
+                    ₱ {selectedCommissionConfig.product.price ?? 'N/A'}
                   </p>
-                  <p className="text-muted-foreground text-base">Total</p>
+                  <p className="text-muted-foreground text-right text-base">
+                    Total
+                  </p>
                 </div>
               </div>
 
@@ -364,7 +364,7 @@ export default function ProductCommisionConfiguration({
               <p className="text-xl font-bold">Commission Simulator</p>
               <p className="text-base font-light">
                 Preview how commissions will be distributed for a ₱{' '}
-                {DUMMY_PRICE.toFixed(2)} sale
+                {selectedCommissionConfig?.product.price ?? 0} sale
               </p>
             </div>
             <form.Subscribe>
@@ -383,7 +383,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.agent / 100) *
-                              baseCommission
+                              field.values.base_commission
                             ).toFixed(2)}
                           </p>
                         </div>
@@ -393,7 +393,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.agent / 100) *
-                              baseCommission *
+                              field.values.base_commission *
                               (field.values.agent_overrider / 100)
                             ).toFixed(2)}
                           </p>
@@ -405,7 +405,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.admin / 100) *
-                              baseCommission
+                              field.values.base_commission
                             ).toFixed(2)}
                           </p>
                         </div>
@@ -415,7 +415,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.admin / 100) *
-                              baseCommission *
+                              field.values.base_commission *
                               (field.values.admin_overrider / 100)
                             ).toFixed(2)}
                           </p>
@@ -426,8 +426,10 @@ export default function ProductCommisionConfiguration({
                         <p className="font-bold">
                           ₱{' '}
                           {(
-                            (field.values.agent / 100) * baseCommission +
-                            (field.values.admin / 100) * baseCommission
+                            (field.values.agent / 100) *
+                              field.values.base_commission +
+                            (field.values.admin / 100) *
+                              field.values.base_commission
                           ).toFixed(2)}
                         </p>
                       </div>
@@ -446,7 +448,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.digitech / 100) *
-                              baseCommission
+                              field.values.base_commission
                             ).toFixed(2)}
                           </p>
                         </div>
@@ -457,7 +459,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.referral / 100) *
-                              baseCommission
+                              field.values.base_commission
                             ).toFixed(2)}
                           </p>
                         </div>
@@ -467,7 +469,7 @@ export default function ProductCommisionConfiguration({
                             ₱{' '}
                             {(
                               (field.values.referral / 100) *
-                              baseCommission *
+                              field.values.base_commission *
                               (field.values.referral_overrider / 100)
                             ).toFixed(2)}
                           </p>
@@ -478,8 +480,10 @@ export default function ProductCommisionConfiguration({
                         <p className="font-bold">
                           ₱{' '}
                           {(
-                            (field.values.digitech / 100) * baseCommission +
-                            (field.values.referral / 100) * baseCommission
+                            (field.values.digitech / 100) *
+                              field.values.base_commission +
+                            (field.values.referral / 100) *
+                              field.values.base_commission
                           ).toFixed(2)}
                         </p>
                       </div>
@@ -488,20 +492,28 @@ export default function ProductCommisionConfiguration({
                 )
               }}
             </form.Subscribe>
-            <div className="flex items-center justify-between rounded-lg bg-gray-200 p-4 text-black">
-              <div>
-                <p className="text-xl font-bold">
-                  Total Commission (₱ {DUMMY_PRICE.toFixed(2)} sale):
-                </p>
-                <p className="font-light">
-                  Effective commision Rate:{' '}
-                  {(baseCommission / DUMMY_PRICE) * 100}%
-                </p>
-              </div>
-              <div>
-                <p>₱ {baseCommission.toFixed(2)}</p>
-              </div>
-            </div>
+            <form.Subscribe>
+              {(field) => (
+                <div className="flex items-center justify-between rounded-lg bg-gray-200 p-4 text-black">
+                  <div>
+                    <p className="text-xl font-bold">
+                      Total Commission (₱{' '}
+                      {selectedCommissionConfig?.product.price ?? 0} sale):
+                    </p>
+                    <p className="font-light">
+                      Effective commision Rate:{' '}
+                      {(field.values.base_commission /
+                        (selectedCommissionConfig?.product.price ?? 1)) *
+                        100}
+                      %
+                    </p>
+                  </div>
+                  <div>
+                    <p>₱ {field.values.base_commission.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
+            </form.Subscribe>
           </div>
 
           <div>
