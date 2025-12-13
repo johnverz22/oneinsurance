@@ -1,17 +1,16 @@
 'use client'
 
-import { useGetAgents } from '@/app/data/queries/agents'
+import { useGetApplicants } from '@/app/data/queries/applicant'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { CalendarIcon } from 'lucide-react'
-import { Agent } from '@/types/agents'
+import { Applicant } from '@/types/applicant'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Calendar } from '../ui/calendar'
+import { Calendar } from '@/components/ui/calendar'
 import { useForm } from '@tanstack/react-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
 import { FieldInfo } from '@/components/ui/form'
 import { useCreateInterview } from '@/app/data/mutations/interview'
@@ -31,12 +30,14 @@ const scheduleInterviewSchema = z.object({
 
 export default function PendingApplicants() {
   const [page, setPage] = useState(1)
-  const [selectedApplicant, setSelectedApplicant] = useState<Agent | null>(null)
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
+    null
+  )
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const { mutateAsync: createInterview } = useCreateInterview()
   const { user } = useAuthStore()
 
-  const { data: agentsData } = useGetAgents(page)
+  const { data: applicantsData } = useGetApplicants({ page })
 
   const form = useForm({
     defaultValues: {
@@ -77,14 +78,12 @@ export default function PendingApplicants() {
     },
   })
 
-  const pendingApplicants = agentsData?.data.data.filter(
-    (agent) => agent.status.toLowerCase() === 'pending'
-  )
+  const pendingApplicants = applicantsData?.data.data
 
-  const totalPages = agentsData?.data.last_page || 1
-  const currentPage = agentsData?.data.current_page || 1
+  const totalPages = applicantsData?.data.last_page || 1
+  const currentPage = applicantsData?.data.current_page || 1
 
-  const handleJoinInterview = (applicant: Agent) => {
+  const handleJoinInterview = (applicant: Applicant) => {
     // TODO: Implement join interview logic
     toast.info('Join interview feature coming soon!')
   }
@@ -116,22 +115,13 @@ export default function PendingApplicants() {
                   }`}
                   onClick={() => setSelectedApplicant(applicant)}
                 >
-                  <h3 className="text-base font-bold">
-                    {applicant.first_name} {applicant.middle_name ?? ''}{' '}
-                    {applicant.last_name}
-                  </h3>
+                  <h3 className="text-base font-bold">{applicant.name}</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {applicant.email}
                   </p>
-                  {applicant.email_verified_at ? (
-                    <span className="mt-2 inline-block text-xs text-blue-600 dark:text-blue-400">
-                      Email Verified
-                    </span>
-                  ) : (
-                    <span className="mt-2 inline-block text-xs text-orange-600 dark:text-orange-400">
-                      Awaiting Review
-                    </span>
-                  )}
+                  <span className="mt-2 inline-block text-xs text-orange-600 dark:text-orange-400">
+                    {applicant.application_type} - {applicant.status}
+                  </span>
                 </div>
               ))}
             </div>
@@ -184,9 +174,7 @@ export default function PendingApplicants() {
                         Name:
                       </Label>
                       <p className="text-sm dark:text-gray-200">
-                        {selectedApplicant.first_name}{' '}
-                        {selectedApplicant.middle_name ?? ''}{' '}
-                        {selectedApplicant.last_name}
+                        {selectedApplicant.name}
                       </p>
                     </div>
                     <div>
@@ -202,15 +190,15 @@ export default function PendingApplicants() {
                         Phone Number:
                       </Label>
                       <p className="text-sm dark:text-gray-200">
-                        {selectedApplicant.phone || '09123456789'}
+                        {selectedApplicant.contact_number}
                       </p>
                     </div>
                     <div>
                       <Label className="text-sm text-gray-500 dark:text-gray-400">
-                        Address:
+                        Application Type:
                       </Label>
                       <p className="text-sm dark:text-gray-200">
-                        {selectedApplicant.address || 'Manila, Philippines'}
+                        {selectedApplicant.application_type}
                       </p>
                     </div>
                   </div>
