@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { ProviderSchema } from '@/types/provider'
 import { AgentSchema } from '@/types/agents'
+import { createResponseSchema } from './base-api-response'
 
 export const ProductSchema = z.object({
   id: z.string().or(z.number()),
@@ -34,3 +35,17 @@ export const ProductAssignmentSchema = z.object({
   price: z.string(),
 })
 export type ProductAssignment = z.infer<typeof ProductAssignmentSchema>
+
+
+export const CreateProductRequestSchema = z.object({
+  insuremo_reference_id: z.string().nullable(),
+  provider_id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  price: z.number(),
+  status: z.string(),
+})
+export type CreateProductRequest = z.infer<typeof CreateProductRequestSchema>
+
+export const CreateProductResponseSchema = createResponseSchema(ProductSchema)
+export type CreateProductResponse = z.infer<typeof CreateProductResponseSchema>

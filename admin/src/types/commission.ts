@@ -1,34 +1,3 @@
-/*
-{
-                "id": 1,
-                "product_id": 1,
-                "base_commission": "15.50",
-                "agent_commission": "8.00",
-                "agent_overriders_commission": "2.50",
-                "ifrc_admin": "1.00",
-                "ifrc_overrider_commission": "1.50",
-                "ifrc_digitech": "0.75",
-                "digitech_referral": "1.00",
-                "digitech_overriders": "0.75",
-                "effectivity_date": "2025-01-01T00:00:00.000000Z",
-                "status": "active",
-                "created_at": "2025-12-12T14:23:50.000000Z",
-                "updated_at": "2025-12-12T14:23:50.000000Z",
-                "deleted_at": null,
-                "product": {
-                    "id": 1,
-                    "insuremo_reference_id": null,
-                    "provider_id": 1,
-                    "name": "Family Health Care Plan",
-                    "description": "Complete health insurance coverage for the entire family including hospitalization, outpatient, and emergency services",
-                    "status": "active",
-                    "created_at": "2025-11-27T00:20:44.000000Z",
-                    "updated_at": "2025-11-27T00:20:44.000000Z",
-                    "deleted_at": null
-                }
-            }
-*/
-
 import { z } from "zod";
 import { ProductSchema } from "./products";
 import { createPaginatedResponseType } from "@/utils/create-paginated-response-type";
@@ -73,3 +42,22 @@ export const CommissionConfigUpdateRequestSchema = z.object({
 export type CommissionConfigUpdateRequest = z.infer<typeof CommissionConfigUpdateRequestSchema>;
 export const CommissionConfigUpdateResponseSchema = createResponseSchema(CommissionConfigSchema);
 export type CommissionConfigUpdateResponse = z.infer<typeof CommissionConfigUpdateResponseSchema>;
+
+
+export const CreateCommitionConfigRequestSchema = z.object({
+  product_id: z.number(),
+  base_commission: z.number(),
+  agent_commission: z.number(),
+  agent_overriders_commission: z.number(),
+  ifrc_admin: z.number(),
+  ifrc_overrider_commission: z.number(),
+  ifrc_digitech: z.number(),
+  digitech_referral: z.number(),
+  digitech_overriders: z.number(),
+  effectivity_date: z.string(),
+  status: z.string(),
+})
+export type CreateCommitionConfigRequest = z.infer<typeof CreateCommitionConfigRequestSchema>;
+
+export const CreateCommitionConfigResponseSchema = createResponseSchema(CommissionConfigSchema);
+export type CreateCommitionConfigResponse = z.infer<typeof CreateCommitionConfigResponseSchema>;
