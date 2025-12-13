@@ -32,6 +32,7 @@
 import { z } from "zod";
 import { ProductSchema } from "./products";
 import { createPaginatedResponseType } from "@/utils/create-paginated-response-type";
+import { createResponseSchema } from "./base-api-response";
 
 export const CommissionConfigSchema = z.object({
   id: z.number(),
@@ -56,3 +57,19 @@ export type CommissionConfig = z.infer<typeof CommissionConfigSchema>;
 
 export const CommissionConfigPaginatedResponseSchema = createPaginatedResponseType<CommissionConfig>(CommissionConfigSchema);
 export type CommissionConfigPaginatedResponse = z.infer<typeof CommissionConfigPaginatedResponseSchema>;
+
+export const CommissionConfigUpdateRequestSchema = z.object({
+  base_commission: z.string(),
+  agent_commission: z.string(),
+  agent_overriders_commission: z.string(),
+  ifrc_admin: z.string(),
+  ifrc_overrider_commission: z.string(),
+  ifrc_digitech: z.string(),
+  digitech_referral: z.string(),
+  digitech_overriders: z.string(),
+  status: z.string(),
+})
+
+export type CommissionConfigUpdateRequest = z.infer<typeof CommissionConfigUpdateRequestSchema>;
+export const CommissionConfigUpdateResponseSchema = createResponseSchema(CommissionConfigSchema);
+export type CommissionConfigUpdateResponse = z.infer<typeof CommissionConfigUpdateResponseSchema>;

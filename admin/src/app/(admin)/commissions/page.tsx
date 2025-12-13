@@ -16,7 +16,7 @@ export default function CommissionsPage() {
   const [selectedCommissionConfig, setSelectedCommissionConfig] = useState<CommissionConfig | null>(null)
   const [perPage, setPerPage] = useState(15)
   const [page, setPage] = useState(1)
-  const {data: commissions, isLoading, isError} = useGetCommissionConfiguration(perPage, page);
+  const {data: commissions, isLoading, isError, refetch} = useGetCommissionConfiguration(perPage, page);
 
   return (
     <>
@@ -88,7 +88,10 @@ export default function CommissionsPage() {
 
         {/* Product Commission configuration */}
         <div className="col-span-2 min-h-screen rounded-2xl border-2 p-6">
-          <ProductCommisionConfiguration selectedCommissionConfig={selectedCommissionConfig} />
+          <ProductCommisionConfiguration 
+            selectedCommissionConfig={selectedCommissionConfig} 
+            onUpdateSuccess={() => refetch()}
+          />
         </div>
       </div>
     </>

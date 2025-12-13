@@ -1,8 +1,12 @@
+import { useUpdateCommissionConfiguration } from '@/app/data/mutations/commission'
 import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CommissionConfig } from '@/types/commission'
+import {
+  CommissionConfig,
+  CommissionConfigUpdateRequest,
+} from '@/types/commission'
 import { Product } from '@/types/products'
 import { Value } from '@radix-ui/react-select'
 import { FieldApi, useForm } from '@tanstack/react-form'
@@ -12,50 +16,70 @@ import z from 'zod'
 
 interface ProductCommisionConfigurationProps {
   selectedCommissionConfig: CommissionConfig | null
+  onUpdateSuccess?: () => void
 }
 
 const commisionConfigurationSchema = z.object({
   base_commission: z
     .number()
-    .min(1, 'Base commission must be at least 1%')
+    .min(0, 'Base commission must be at least 0%')
     .max(30, 'Base commission cannot exceed 30%'),
   agent: z
     .number()
-    .min(1, 'Agent commission must be at least 1%')
+    .min(0, 'Agent commission must be at least 0%')
     .max(15, 'Agent commission cannot exceed 15%'),
   agent_overrider: z
     .number()
-    .min(1, 'Agent overrider commission must be at least 1%')
+    .min(0, 'Agent overrider commission must be at least 0%')
     .max(10, 'Agent overrider commission cannot exceed 10%'),
   admin: z
     .number()
-    .min(1, 'IFRC Admin commission must be at least 1%')
+    .min(0, 'IFRC Admin commission must be at least 0%')
     .max(15, 'IFRC Admin commission cannot exceed 15%'),
   admin_overrider: z
     .number()
-    .min(1, 'IFRC Admin overrider commission must be at least 1%')
+    .min(0, 'IFRC Admin overrider commission must be at least 0%')
     .max(10, 'IFRC Admin overrider commission cannot exceed 10%'),
 
   digitech: z
     .number()
-    .min(1, 'IFRC Digitech commission must be at least 1%')
+    .min(0, 'IFRC Digitech commission must be at least 0%')
     .max(25, 'IFRC Digitech commission cannot exceed 25%'),
   referral: z
     .number()
-    .min(1, 'Referral commission must be at least 1%')
+    .min(0, 'Referral commission must be at least 0%')
     .max(5, 'Referral commission cannot exceed 5%'),
   referral_overrider: z
     .number()
-    .min(1, 'Referral overrider commission must be at least 1%')
+    .min(0, 'Referral overrider commission must be at least 0%')
     .max(10, 'Referral overrider commission cannot exceed 10%'),
 })
 type CommisionConfigurationFormData = z.infer<
   typeof commisionConfigurationSchema
 >
 
+function mapFormDataToCommissionConfigUpdateRequest(
+  formData: CommisionConfigurationFormData
+): CommissionConfigUpdateRequest {
+  return {
+    base_commission: formData.base_commission.toLocaleString(),
+    agent_commission: formData.agent.toLocaleString(),
+    agent_overriders_commission: formData.agent_overrider.toLocaleString(),
+    ifrc_admin: formData.admin.toLocaleString(),
+    ifrc_overrider_commission: formData.admin_overrider.toLocaleString(),
+    ifrc_digitech: formData.digitech.toLocaleString(),
+    digitech_referral: formData.referral.toLocaleString(),
+    digitech_overriders: formData.referral_overrider.toLocaleString(),
+    status: 'active',
+  } satisfies CommissionConfigUpdateRequest
+}
+
 export default function ProductCommisionConfiguration({
   selectedCommissionConfig,
+  onUpdateSuccess,
 }: ProductCommisionConfigurationProps) {
+  const { mutateAsync: updateConfingCommission } =
+    useUpdateCommissionConfiguration()
   const form = useForm({
     defaultValues: {
       base_commission: Number(selectedCommissionConfig?.base_commission) ?? 30,
@@ -74,7 +98,19 @@ export default function ProductCommisionConfiguration({
       onSubmit: commisionConfigurationSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submitted with values:', value)
+      const updateRequestData =
+        mapFormDataToCommissionConfigUpdateRequest(value)
+      const response = await updateConfingCommission({
+        data: updateRequestData,
+        commissionConfigId: selectedCommissionConfig!.id,
+      })
+
+      if (response.success) {
+        toast.success(response.message || 'Commission configuration updated successfully!')
+        onUpdateSuccess?.()
+      } else {
+        toast.error(response.message || 'Failed to update commission configuration.')
+      }
     },
   })
 
@@ -369,6 +405,27 @@ export default function ProductCommisionConfiguration({
             </div>
             <form.Subscribe>
               {(field) => {
+                const baseCommissionTotal =
+                  (field.values.base_commission / 100) *
+                  (selectedCommissionConfig?.product.price ?? 0)
+                const agentCommissionTotal =
+                  (field.values.agent / 100) * baseCommissionTotal
+                const agentOverriderTotal =
+                  (field.values.agent_overrider / 100) * agentCommissionTotal
+
+                const adminCommissionTotal =
+                  (field.values.admin / 100) * baseCommissionTotal
+                const adminOverriderTotal =
+                  (field.values.admin_overrider / 100) * adminCommissionTotal
+
+                const digitechCommissionTotal =
+                  (field.values.digitech / 100) * baseCommissionTotal
+
+                const referralCommissionTotal =
+                  (field.values.referral / 100) * baseCommissionTotal
+                const referralOverriderTotal =
+                  (field.values.referral_overrider / 100) *
+                  referralCommissionTotal
                 return (
                   <div className="grid items-start gap-4 md:grid-cols-2">
                     <div className="flex h-full flex-col justify-between space-y-4">
@@ -380,44 +437,26 @@ export default function ProductCommisionConfiguration({
                         <div className="flex w-[100%] items-center justify-between rounded-full bg-[#EFF6FF] p-4 text-[#437AEE]">
                           <p>Agent/Advisor</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.agent / 100) *
-                              field.values.base_commission
-                            ).toFixed(2)}
+                            ₱ {agentCommissionTotal.toFixed(2)}
                           </p>
                         </div>
                         <div className="flex w-[85%] items-center justify-between rounded-full bg-[#F0FDF4] p-4 text-[#24A34A]">
                           <p>Overrider</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.agent / 100) *
-                              field.values.base_commission *
-                              (field.values.agent_overrider / 100)
-                            ).toFixed(2)}
+                            ₱ {agentOverriderTotal.toFixed(2)}
                           </p>
                         </div>
 
                         <div className="flex w-[100%] items-center justify-between rounded-full bg-[#F5F0FC] p-4 text-[#9636EA]">
                           <p>IFRC Admin</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.admin / 100) *
-                              field.values.base_commission
-                            ).toFixed(2)}
+                            ₱ {adminCommissionTotal.toFixed(2)}
                           </p>
                         </div>
                         <div className="flex w-[85%] items-center justify-between rounded-full bg-[#FFF7ED] p-4 text-[#F08548]">
                           <p>Overrider</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.admin / 100) *
-                              field.values.base_commission *
-                              (field.values.admin_overrider / 100)
-                            ).toFixed(2)}
+                            ₱ {adminOverriderTotal.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -426,10 +465,7 @@ export default function ProductCommisionConfiguration({
                         <p className="font-bold">
                           ₱{' '}
                           {(
-                            (field.values.agent / 100) *
-                              field.values.base_commission +
-                            (field.values.admin / 100) *
-                              field.values.base_commission
+                            agentCommissionTotal + adminCommissionTotal
                           ).toFixed(2)}
                         </p>
                       </div>
@@ -445,33 +481,20 @@ export default function ProductCommisionConfiguration({
                         <div className="flex w-[100%] items-center justify-between rounded-full bg-[#F5F0FC] p-4 text-[#9636EA]">
                           <p>IFRC DigiTech</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.digitech / 100) *
-                              field.values.base_commission
-                            ).toFixed(2)}
+                            ₱ {digitechCommissionTotal.toFixed(2)}
                           </p>
                         </div>
 
                         <div className="flex w-[100%] items-center justify-between rounded-full bg-[#EFF6FF] p-4 text-[#437AEE]">
                           <p>Referral</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.referral / 100) *
-                              field.values.base_commission
-                            ).toFixed(2)}
+                            ₱ {referralCommissionTotal.toFixed(2)}
                           </p>
                         </div>
                         <div className="flex w-[85%] items-center justify-between rounded-full bg-[#FFF7ED] p-4 text-[#F08548]">
                           <p>Overrider</p>
                           <p className="font-bold">
-                            ₱{' '}
-                            {(
-                              (field.values.referral / 100) *
-                              field.values.base_commission *
-                              (field.values.referral_overrider / 100)
-                            ).toFixed(2)}
+                            ₱ {referralOverriderTotal.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -480,10 +503,7 @@ export default function ProductCommisionConfiguration({
                         <p className="font-bold">
                           ₱{' '}
                           {(
-                            (field.values.digitech / 100) *
-                              field.values.base_commission +
-                            (field.values.referral / 100) *
-                              field.values.base_commission
+                            digitechCommissionTotal + referralCommissionTotal
                           ).toFixed(2)}
                         </p>
                       </div>
@@ -501,11 +521,7 @@ export default function ProductCommisionConfiguration({
                       {selectedCommissionConfig?.product.price ?? 0} sale):
                     </p>
                     <p className="font-light">
-                      Effective commision Rate:{' '}
-                      {(field.values.base_commission /
-                        (selectedCommissionConfig?.product.price ?? 1)) *
-                        100}
-                      %
+                      Effective commision Rate: {field.values.base_commission}%
                     </p>
                   </div>
                   <div>
