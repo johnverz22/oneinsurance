@@ -7,9 +7,6 @@ import {
   ProductCommissionInfo,
 } from '@/types/agents'
 import { useEffect, useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import PendingApplicants from './pending-applicants'
-import Interviews from './interviews'
 import {
   AlertDialog,
   AlertDialogContent,
