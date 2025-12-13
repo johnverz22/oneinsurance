@@ -2,12 +2,9 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect } from 'react'
 import Marquee from 'react-fast-marquee'
-import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, ArrowRight } from 'lucide-react'
-import { FeaturedCard } from '@/components/featured-card'
 import { InsuranceCard } from '@/components/insurance-card'
 import { TestimonialCard } from '@/components/testimonial-card'
 import { BlogCard } from '@/components/blog-card'
@@ -142,9 +139,9 @@ export default function Home() {
     },
   ]
 
-  useEffect(() => {
-    redirect(INSURANCES[0].checkoutLink)
-  }, [])
+  // useEffect(() => {
+  //   redirect(INSURANCES[0].checkoutLink)
+  // }, [])
 
   return (
     <div className="relative h-full w-full">
@@ -399,7 +396,7 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="mx-auto h-full max-w-7xl px-4 py-16">
+      <section className="mx-auto h-full max-w-7xl px-4 py-16 pb-24">
         <div className="grid gap-12 lg:grid-cols-2">
           {/* Left Side - Header */}
           <div className="space-y-6">
