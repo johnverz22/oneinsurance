@@ -1,14 +1,63 @@
-export interface Commission {
-  id: number
-  name: string
-  policyId: number
-  type: 'Life' | 'Health' | 'Business' | 'Travel' | 'CPTL'
-  commission: number
-  status: 'Paid' | 'Pending' | 'Clawback'
-  paidOn: Date
-}
+import { z } from "zod";
+import { ProductSchema } from "./products";
+import { createPaginatedResponseType } from "@/utils/create-paginated-response-type";
+import { createResponseSchema } from "./base-api-response";
 
-export interface MonthlyPerformance {
-  month: string
-  commission: number
-}
+export const CommissionConfigSchema = z.object({
+  id: z.number(),
+  product_id: z.number(),
+  base_commission: z.string(),
+  agent_commission: z.string(),
+  agent_overriders_commission: z.string(),
+  ifrc_admin: z.string(),
+  ifrc_overrider_commission: z.string(),
+  ifrc_digitech: z.string(),
+  digitech_referral: z.string(),
+  digitech_overriders: z.string(),
+  effectivity_date: z.string(),
+  status: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  deleted_at: z.string().nullable(),
+  product: ProductSchema,
+});
+
+export type CommissionConfig = z.infer<typeof CommissionConfigSchema>;
+
+export const CommissionConfigPaginatedResponseSchema = createPaginatedResponseType<CommissionConfig>(CommissionConfigSchema);
+export type CommissionConfigPaginatedResponse = z.infer<typeof CommissionConfigPaginatedResponseSchema>;
+
+export const CommissionConfigUpdateRequestSchema = z.object({
+  base_commission: z.string(),
+  agent_commission: z.string(),
+  agent_overriders_commission: z.string(),
+  ifrc_admin: z.string(),
+  ifrc_overrider_commission: z.string(),
+  ifrc_digitech: z.string(),
+  digitech_referral: z.string(),
+  digitech_overriders: z.string(),
+  status: z.string(),
+})
+
+export type CommissionConfigUpdateRequest = z.infer<typeof CommissionConfigUpdateRequestSchema>;
+export const CommissionConfigUpdateResponseSchema = createResponseSchema(CommissionConfigSchema);
+export type CommissionConfigUpdateResponse = z.infer<typeof CommissionConfigUpdateResponseSchema>;
+
+
+export const CreateCommitionConfigRequestSchema = z.object({
+  product_id: z.number(),
+  base_commission: z.number(),
+  agent_commission: z.number(),
+  agent_overriders_commission: z.number(),
+  ifrc_admin: z.number(),
+  ifrc_overrider_commission: z.number(),
+  ifrc_digitech: z.number(),
+  digitech_referral: z.number(),
+  digitech_overriders: z.number(),
+  effectivity_date: z.string(),
+  status: z.string(),
+})
+export type CreateCommitionConfigRequest = z.infer<typeof CreateCommitionConfigRequestSchema>;
+
+export const CreateCommitionConfigResponseSchema = createResponseSchema(CommissionConfigSchema);
+export type CreateCommitionConfigResponse = z.infer<typeof CreateCommitionConfigResponseSchema>;

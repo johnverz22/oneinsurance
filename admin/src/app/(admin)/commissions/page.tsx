@@ -9,10 +9,14 @@ import { Search } from 'lucide-react'
 import { useState } from 'react'
 import ProductCommisionConfiguration from './product-configuration'
 import { cn } from '@/lib/utils'
+import { useGetCommissionConfiguration } from '@/app/data/queries/commission'
+import { CommissionConfig } from '@/types/commission'
 
 export default function CommissionsPage() {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const { data: products, isLoading, isError } = useGetProducts()
+  const [selectedCommissionConfig, setSelectedCommissionConfig] = useState<CommissionConfig | null>(null)
+  const [perPage, setPerPage] = useState(15)
+  const [page, setPage] = useState(1)
+  const {data: commissions, isLoading, isError, refetch} = useGetCommissionConfiguration(perPage, page);
 
   return (
     <>
@@ -45,35 +49,35 @@ export default function CommissionsPage() {
               <div className="space-y-2">
                 {isLoading && <p>Loading products...</p>}
                 {isError && <p>Error loading products.</p>}
-                {products &&
-                  products.data.data.map((product) => (
+                {commissions &&
+                  commissions.data.data.map((commission) => (
                     <div
-                      key={product.id}
+                      key={commission.id}
                       className={cn(
                         'flex min-h-36 flex-col justify-between rounded-2xl border-2 border-gray-400 p-4 hover:shadow-lg',
                         {
                           'border-blue-500 shadow-lg':
-                            selectedProduct?.id === product.id,
+                            selectedCommissionConfig?.id === commission.id,
                         }
                       )}
-                      onClick={() => setSelectedProduct(product)}
+                      onClick={() => setSelectedCommissionConfig(commission)}
                     >
                       <div>
                         <p className="text-lg font-bold tracking-wide">
-                          {product.provider.name}
+                        {commission.product.name}
                         </p>
-                        <p className="text-sm font-light">{product.name}</p>
+                        <p className="text-sm font-light">{commission.product.name}</p>
                         <p className="text-sm">
                           <span className="font-bold">Price: </span>
                           <span className="font-light">
-                            ₱ {product.price ?? 'N/A'}
+                            ₱ {commission.product.price ?? 'N/A'}
                           </span>
                         </p>
                       </div>
 
                       <p className="text-sm">
                         <span className="font-bold">Base Commision: </span>
-                        <span className="font-light">30%</span>
+                        <span className="font-light">{commission.base_commission}</span>
                       </p>
                     </div>
                   ))}
@@ -84,7 +88,10 @@ export default function CommissionsPage() {
 
         {/* Product Commission configuration */}
         <div className="col-span-2 min-h-screen rounded-2xl border-2 p-6">
-          <ProductCommisionConfiguration selectedProduct={selectedProduct} />
+          <ProductCommisionConfiguration 
+            selectedCommissionConfig={selectedCommissionConfig} 
+            onUpdateSuccess={() => refetch()}
+          />
         </div>
       </div>
     </>
