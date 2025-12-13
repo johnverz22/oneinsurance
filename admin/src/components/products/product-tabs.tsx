@@ -36,46 +36,47 @@ function combineProductArrays(
     productAgentMap.set(Number(commission.product_id), existing)
   })
 
-  // Combine and map the data
+  // Combine and map the data - iterate through ALL products
   const result: ProductAssignment[] = []
 
-  productAgentMap.forEach((commissions, productId) => {
-    const productWithProvider = productProviderMap.get(productId)
+  productsWithProviders.forEach((productWithProvider) => {
+    const productId = Number(productWithProvider.id)
+    const commissions = productAgentMap.get(productId) || []
 
-    if (productWithProvider) {
-      // Extract unique agents for this product
-      const agents = commissions.map((c) => c.agent)
+    // Extract agents for this product (empty array if no assignments)
+    const agents = commissions.map((c) => c.agent)
 
-      // Calculate average commission rate (or use first, depending on business logic)
-      const avgCommissionRate = (
-        commissions.reduce((sum, c) => sum + parseFloat(c.commission_rate), 0) /
-        commissions.length
-      ).toFixed(2)
+    // Calculate average commission rate (or use '0.00' if no commissions)
+    const avgCommissionRate = commissions.length > 0
+      ? (
+          commissions.reduce((sum, c) => sum + parseFloat(c.commission_rate), 0) /
+          commissions.length
+        ).toFixed(2)
+      : '0.00'
 
-      // Determine overall status (you can customize this logic)
-      const allActive = commissions.every((c) => c.status === 'active')
-      const status = allActive ? 'active' : 'inactive'
+    // Determine overall status
+    const allActive = commissions.length === 0 || commissions.every((c) => c.status === 'active')
+    const status = allActive ? 'active' : 'inactive'
 
-      result.push({
-        product: {
-          id: productWithProvider.id,
-          provider_id: productWithProvider.provider_id,
-          name: productWithProvider.name,
-          description: productWithProvider.description,
-          price: 0,
-          status: productWithProvider.status,
-          created_at: productWithProvider.created_at,
-          updated_at: productWithProvider.updated_at,
-          deleted_at: productWithProvider.deleted_at,
-          provider: productWithProvider.provider,
-        },
+    result.push({
+      product: {
+        id: productWithProvider.id,
+        provider_id: productWithProvider.provider_id,
+        name: productWithProvider.name,
+        description: productWithProvider.description,
+        price: 0,
+        status: productWithProvider.status,
+        created_at: productWithProvider.created_at,
+        updated_at: productWithProvider.updated_at,
+        deleted_at: productWithProvider.deleted_at,
         provider: productWithProvider.provider,
-        agents: agents,
-        commission_rate: avgCommissionRate,
-        status: status,
-        price: '0.00', // Set default or calculate based on your business logic
-      })
-    }
+      },
+      provider: productWithProvider.provider,
+      agents: agents,
+      commission_rate: avgCommissionRate,
+      status: status,
+      price: '0.00', // Set default or calculate based on your business logic
+    })
   })
 
   return result

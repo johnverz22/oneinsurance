@@ -1,3 +1,4 @@
+import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
 import { z } from 'zod'
 
 export const ProviderSchema = z.object({
@@ -15,3 +16,6 @@ export const ProviderSchema = z.object({
   deleted_at: z.string().nullable(),
 })
 export type Provider = z.infer<typeof ProviderSchema>
+
+export const ProvidersPaginatedResponseSchema = createPaginatedResponseType<Provider>(ProviderSchema)
+export type ProvidersPaginatedResponse = z.infer<typeof ProvidersPaginatedResponseSchema>
