@@ -3,13 +3,16 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../ui/button'
 import { ProductAssignment } from '@/types/products'
+import CreateProductDialog from './create-product-dialog'
 
 interface ProductsMainContentProps {
   productAssignments: ProductAssignment[]
+  onProductCreated?: () => void
 }
 
 export default function ProductsMainContent({
   productAssignments,
+  onProductCreated,
 }: ProductsMainContentProps) {
   return (
     <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-4 shadow-sm sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
@@ -22,12 +25,15 @@ export default function ProductsMainContent({
             assignment and monitoring.
           </p>
         </div>
-        <div className="relative w-full sm:w-auto sm:min-w-[200px]">
-          <button className="text-muted-foreground w-full rounded-full border border-gray-300 px-4 py-2 pr-10 text-left text-sm focus:ring-1 focus:ring-green-500 focus:outline-none">
-            Select Category
-          </button>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-            <ChevronDown className="text-muted-foreground h-4 w-4" />
+        <div className="flex gap-3">
+          <CreateProductDialog onSuccess={onProductCreated} />
+          <div className="relative w-full sm:w-auto sm:min-w-[200px]">
+            <button className="text-muted-foreground w-full rounded-full border border-gray-300 px-4 py-2 pr-10 text-left text-sm focus:ring-1 focus:ring-green-500 focus:outline-none">
+              Select Category
+            </button>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <ChevronDown className="text-muted-foreground h-4 w-4" />
+            </div>
           </div>
         </div>
       </div>
@@ -80,17 +86,23 @@ export default function ProductsMainContent({
                 <span className="text-muted-foreground text-xs font-semibold whitespace-nowrap sm:text-sm">
                   Assigned to:
                 </span>
-                <div className="flex -space-x-2">
-                  {assignment.agents.map((agent, index) => (
-                    <div
-                      key={index}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full border-2 bg-blue-300 text-xs font-bold sm:h-8 sm:w-8`}
-                      title={agent.first_name + ' ' + agent.last_name}
-                    >
-                      {agent.first_name.charAt(0).toUpperCase()}
-                    </div>
-                  ))}
-                </div>
+                {assignment.agents.length > 0 ? (
+                  <div className="flex -space-x-2">
+                    {assignment.agents.map((agent, index) => (
+                      <div
+                        key={index}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full border-2 bg-blue-300 text-xs font-bold sm:h-8 sm:w-8`}
+                        title={agent.first_name + ' ' + agent.last_name}
+                      >
+                        {agent.first_name.charAt(0).toUpperCase()}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-gray-400 italic sm:text-sm">
+                    No agents assigned
+                  </span>
+                )}
               </div>
             </div>
           ))}
