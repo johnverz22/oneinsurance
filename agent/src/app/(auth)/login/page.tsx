@@ -207,21 +207,6 @@ export default function LoginPage() {
               </div>
             </div>
           </form>
-
-          {/* Additional Actions */}
-          <div className="relative flex items-center justify-start py-4">
-            <div className="text-muted-foreground flex flex-col items-start gap-2 text-sm font-light">
-              <p>
-                Don't have an account?{' '}
-                <Link
-                  href="/signup"
-                  className="hover:text-primary text-blue-600 underline underline-offset-4"
-                >
-                  Sign up now!
-                </Link>
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </>
