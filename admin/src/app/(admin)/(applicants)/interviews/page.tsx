@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Clock, User } from 'lucide-react'
 import { format } from 'date-fns'
 
-export default function Interviews() {
+export default function InterviewsPage() {
   const [page, setPage] = useState(1)
   const { data: interviewsData, isLoading, error } = useGetInterviews(page)
 
