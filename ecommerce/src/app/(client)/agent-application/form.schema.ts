@@ -4,8 +4,12 @@ export const applyFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().min(7, 'Invalid phone number'),
-  message: z.string().optional(),
+  contact_number: z
+    .string({ required_error: 'Contact Number is required' })
+    .min(10, 'Invalid phone number')
+    .max(11, 'Invalid phone number'),
+  application_type: z.enum(['agent']),
+  notes: z.string(),
 })
 
 export type ApplyFormValues = z.infer<typeof applyFormSchema>
