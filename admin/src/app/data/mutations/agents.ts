@@ -3,6 +3,7 @@ import { AgentsResponse } from '@/types/agents'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
+import { handleApiError } from '@/utils/handle-api-error'
 
 export function useDeleteAgent() {
   const { accessToken } = useAuthStore()
@@ -10,14 +11,18 @@ export function useDeleteAgent() {
   return useMutation({
     mutationKey: ['delete-agent'],
     mutationFn: async (agentId: number) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`
-      const response = await axios.delete(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      try {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`
+        const response = await axios.delete(url, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
 
-      return response.data
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
     },
   })
 }
@@ -27,19 +32,23 @@ export function useActivateAgent() {
   return useMutation({
     mutationKey: ['activate-agent'],
     mutationFn: async (agentId: number) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/activate-account`
-      const response = await axios.post(
-        url,
-        { user_id: agentId },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      )
+      try {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/activate-account`
+        const response = await axios.post(
+          url,
+          { user_id: agentId },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
 
-      console.log('Activate Agent Response:', response.data)
-      return response.data
+        console.log('Activate Agent Response:', response.data)
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
     },
   })
 }
@@ -55,14 +64,18 @@ export function useUpdateAgent() {
       agentId: number
       payload: any
     }) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`
-      const response = await axios.put(url, payload, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      try {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`
+        const response = await axios.put(url, payload, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
 
-      return response.data
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
     },
   })
 }
@@ -88,16 +101,7 @@ export function useSearchAgents() {
 
         return response.data
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          switch (error.response?.status) {
-            case 401:
-              alert('Session expired. Please log in again.')
-              removeLocalStorage('admin-auth-storage')
-              window.location.href = '/login'
-              break
-          }
-        }
-        throw error
+        handleApiError(error)
       }
     },
     retry: false,

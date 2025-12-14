@@ -3,6 +3,7 @@ import { CreateProductRequest, CreateProductResponse } from '@/types/products'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { headers } from 'next/headers'
+import { handleApiError } from '@/utils/handle-api-error'
 
 export function useAssignProductsToAgent() {
   const { accessToken } = useAuthStore()
@@ -10,16 +11,20 @@ export function useAssignProductsToAgent() {
   return useMutation({
     mutationKey: ['assign-products-to-agent'],
     mutationFn: async (payload: any) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-products`
-      const token = `Bearer ${accessToken}`
+      try {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-products`
+        const token = `Bearer ${accessToken}`
 
-      const response = await axios.post(url, payload, {
-        headers: {
-          Authorization: token,
-        },
-      })
+        const response = await axios.post(url, payload, {
+          headers: {
+            Authorization: token,
+          },
+        })
 
-      return response.data
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
     },
   })
 }
@@ -29,15 +34,19 @@ export function useCreateProduct() {
   return useMutation({
     mutationKey: ['create-product'],
     mutationFn: async (payload: CreateProductRequest) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/products`
-      const token = `Bearer ${accessToken}`
-      const response = await axios.post<CreateProductResponse>(url, payload, {
-        headers: {
-          Authorization: token,
-        },
-      })
+      try {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/products`
+        const token = `Bearer ${accessToken}`
+        const response = await axios.post<CreateProductResponse>(url, payload, {
+          headers: {
+            Authorization: token,
+          },
+        })
 
-      return response.data
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
     },
   })
 }
