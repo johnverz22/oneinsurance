@@ -3,6 +3,7 @@ import { TransactionsResponse } from '@/types/transactions'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
+import { handleApiError } from '@/utils/handle-api-error'
 
 export function useGetTransactions(page = 1) {
   const { accessToken } = useAuthStore()
@@ -20,14 +21,7 @@ export function useGetTransactions(page = 1) {
 
         return response.data
       } catch (error) {
-        if (axios.isAxiosError(error)) {
-          switch (error.response?.status) {
-            case 401:
-              alert('Session expired. Please log in again.')
-              removeLocalStorage('admin-auth-storage')
-              window.location.href = '/login'
-              break
-          }
+        handleApiError(error)
         }
         throw error
       }

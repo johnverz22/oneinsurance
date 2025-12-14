@@ -3,6 +3,7 @@ import { AgentProductPaginatedResponse, AgentsResponse } from '@/types/agents'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import { handleApiError } from '@/utils/handle-api-error'
 
 export function useGetAgents(page = 1) {
   const { accessToken } = useAuthStore()
@@ -21,8 +22,7 @@ export function useGetAgents(page = 1) {
 
         return response.data
       } catch (error) {
-        console.error('Error fetching agents:', error)
-        throw error
+        handleApiError(error)
       }
     },
     refetchOnWindowFocus: false,
@@ -49,8 +49,7 @@ export function useGetAgentProducts(page: number = 1) {
 
         return response.data
       } catch (error) {
-        console.error('Error fetching agent products:', error)
-        throw error
+        handleApiError(error)
       }
     },
     refetchOnWindowFocus: false,
