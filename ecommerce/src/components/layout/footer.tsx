@@ -52,7 +52,7 @@ export const Footer = () => {
           <Brand className="text-2xl" />
 
           <div className="space-y-1.5">
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex items-center justify-center gap-3 lg:justify-end">
               <Button
                 variant="ghost"
                 size="icon"
@@ -118,7 +118,7 @@ export const Footer = () => {
               </Button>
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-8">
               <Button
                 variant="link"
                 className="text-foreground w-full !p-0 lg:!text-left"

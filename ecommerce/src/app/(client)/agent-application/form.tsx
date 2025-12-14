@@ -1,29 +1,51 @@
 'use client'
 
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 import { useForm } from '@tanstack/react-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { applyFormSchema, ApplyFormValues } from './form.schema'
+import { useCreateAgentApplication } from '@/app/data/mutations/application'
+import { Textarea } from '@/components/ui/textarea'
 import { FieldInfo } from '@/components/ui/form'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 
 export const ApplyForm = () => {
+  const router = useRouter()
+  const { mutateAsync: createAgentApplication } = useCreateAgentApplication()
+
   const form = useForm({
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
-      phone: '',
-      message: '',
+      application_type: 'agent',
+      contact_number: '',
+      notes: '',
     } as ApplyFormValues,
     validators: {
       onSubmit: applyFormSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submitted:', value)
+      try {
+        const { firstName, lastName, ...rest } = value
+        const fullName = `${firstName} ${lastName}`
+
+        const values = { ...rest, name: fullName }
+        await createAgentApplication({ values })
+        form.reset()
+
+        toast.success(
+          'Application submitted successfully. We’ll be in touch soon.'
+        )
+      } catch (error: unknown) {
+        console.log('Failed to submit application:', error)
+
+        const message =
+          error instanceof Error ? error?.message : 'Something went wrong'
+        toast.error(message)
+      }
     },
   })
 
@@ -88,7 +110,7 @@ export const ApplyForm = () => {
         )}
       </form.Field>
 
-      <form.Field name="phone">
+      <form.Field name="contact_number">
         {(field) => (
           <div className="space-y-2.5">
             <Label className="text-gray-500">Phone</Label>
@@ -105,17 +127,19 @@ export const ApplyForm = () => {
         )}
       </form.Field>
 
-      <form.Field name="message">
+      <form.Field name="notes">
         {(field) => (
           <div className="space-y-2.5">
             <Label className="text-gray-500">Message</Label>
-            <Input
+            <Textarea
               placeholder="Message"
               value={field.state.value}
-              className="text-black"
+              className="rounded-2xl text-black"
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
             />
+
+            <FieldInfo field={field} />
           </div>
         )}
       </form.Field>
