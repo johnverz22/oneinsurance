@@ -23,10 +23,8 @@ export function useGetTransactions(page = 1) {
       } catch (error) {
         handleApiError(error)
         }
-        throw error
-      }
-    },
-    refetchOnWindowFocus: false,
-    enabled: !!accessToken,
+      },
+      refetchOnWindowFocus: false,
+      enabled: !!accessToken,
   })
 }
