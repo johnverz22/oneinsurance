@@ -29,26 +29,24 @@ export const ApplyForm = () => {
       onSubmit: applyFormSchema,
     },
     onSubmit: async ({ value }) => {
-      // try {
-      //   const { firstName, lastName, ...rest } = value
-      //   const fullName = `${firstName} ${lastName}`
+      try {
+        const { firstName, lastName, ...rest } = value
+        const fullName = `${firstName} ${lastName}`
 
-      //   const values = { ...rest, name: fullName }
-      //   await createAgentApplication({ values })
-      //   form.reset()
-
-      await delay(2000)
+        const values = { ...rest, name: fullName }
+        await createAgentApplication({ values })
+        form.reset()
 
         toast.success(
           'Application submitted successfully. We’ll be in touch soon.'
         )
-      // } catch (error: unknown) {
-      //   console.log('Failed to submit application:', error)
+      } catch (error: unknown) {
+        console.log('Failed to submit application:', error)
 
-      //   const message =
-      //     error instanceof Error ? error?.message : 'Something went wrong'
-      //   toast.error(message)
-      // }
+        const message =
+          error instanceof Error ? error?.message : 'Something went wrong'
+        toast.error(message)
+      }
     },
   })
 
