@@ -3,7 +3,12 @@
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useForm } from '@tanstack/react-form'
-import { applyFormSchema, ApplyFormValues } from './form.schema'
+import {
+  AgentSignUpFormSchema,
+  AgentSignUpFormValues,
+  applyFormSchema,
+  ApplyFormValues as gentSignUpFormValues,
+} from './form.schema'
 import { useCreateAgentApplication } from '@/app/data/mutations/application'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldInfo } from '@/components/ui/form'
@@ -20,20 +25,24 @@ export const ApplyForm = () => {
       firstName: '',
       lastName: '',
       email: '',
-      application_type: 'agent',
-      contact_number: '',
-      notes: '',
-    } as ApplyFormValues,
+      password: '',
+      confirmPassword: '',
+      phone: '',
+      // application_type: 'agent',
+      // contact_number: '',
+      // notes: '',
+    } as AgentSignUpFormValues,
     validators: {
-      onSubmit: applyFormSchema,
+      onSubmit: AgentSignUpFormSchema,
+      onChange: AgentSignUpFormSchema,
     },
     onSubmit: async ({ value }) => {
       try {
-        const { firstName, lastName, ...rest } = value
-        const fullName = `${firstName} ${lastName}`
+        // const { firstName, lastName, ...rest } = value
+        // const fullName = `${firstName} ${lastName}`
 
-        const values = { ...rest, name: fullName }
-        await createAgentApplication({ values })
+        // const values = { ...rest, name: fullName }
+        await createAgentApplication({ values: value })
         form.reset()
 
         toast.success(
@@ -110,7 +119,7 @@ export const ApplyForm = () => {
         )}
       </form.Field>
 
-      <form.Field name="contact_number">
+      <form.Field name="phone">
         {(field) => (
           <div className="space-y-2.5">
             <Label className="text-gray-500">Phone</Label>
@@ -127,7 +136,39 @@ export const ApplyForm = () => {
         )}
       </form.Field>
 
-      <form.Field name="notes">
+      <form.Field name="password">
+        {(field) => (
+          <div className="space-y-2.5">
+            <Label className="text-gray-500">Password</Label>
+            <Input
+            type='password'
+              placeholder="Password"
+              value={field.state.value}
+              className="text-black"
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            <FieldInfo field={field} />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="confirmPassword">
+        {(field) => (
+          <div className="space-y-2.5">
+            <Label className="text-gray-500">Confirm Password</Label>
+            <Input
+            type='password'
+              placeholder="Confirm Password"
+              value={field.state.value}
+              className="text-black"
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            <FieldInfo field={field} />
+          </div>
+        )}
+      </form.Field>
+      {/* <form.Field name="notes">
         {(field) => (
           <div className="space-y-2.5">
             <Label className="text-gray-500">Message</Label>
@@ -142,7 +183,7 @@ export const ApplyForm = () => {
             <FieldInfo field={field} />
           </div>
         )}
-      </form.Field>
+      </form.Field> */}
 
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
