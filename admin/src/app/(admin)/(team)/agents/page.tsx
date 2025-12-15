@@ -39,6 +39,7 @@ import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
+import { useGetApplicants } from '@/app/data/queries/applicant'
 
 export default function AgentsPage() {
   const [page, setPage] = useState<number>(1)
@@ -61,8 +62,50 @@ export default function AgentsPage() {
     null
   )
 
+  const {
+    data: applicants,
+    isFetching: isFetchingApplicants,
+    isLoading: isLoadingApplicants,
+  } = useGetApplicants({page: page})
+
   const { mutateAsync: searchAgents, isPending: isSearching } =
     useSearchAgents()
+
+  // Combine agents and applicants into one list
+  const combinedData = React.useMemo(() => {
+    const agents = agentsData?.data.data || []
+    const applicantsList = applicants?.data.data || []
+    
+    // Transform applicants to match agent structure
+    const transformedApplicants: Agent[] = applicantsList.map((applicant) => ({
+      id: applicant.id,
+      company_id: null,
+      role: 2,
+      username: null,
+      first_name: applicant.name.split(' ')[0] || applicant.name,
+      last_name: applicant.name.split(' ').slice(1).join(' ') || '',
+      middle_name: null,
+      designation: null,
+      job_description: null,
+      avatar: null,
+      email: applicant.email,
+      email_verified_at: null,
+      status: 'For Interview',
+      phone: applicant.contact_number,
+      phone_verified_at: null,
+      phone_description: null,
+      telephone: null,
+      address: null,
+      is_super_admin: 0,
+      birth_date: null,
+      created_at: applicant.created_at,
+      updated_at: applicant.updated_at,
+      deleted_at: applicant.deleted_at,
+    } as Agent))
+
+    const result = [...agents, ...transformedApplicants]
+    return result
+  }, [agentsData, applicants])
 
   useEffect(() => {
     // Small delay to let zustand persist/hydrate and avoid redirect flicker
@@ -118,7 +161,9 @@ export default function AgentsPage() {
                     ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
                     : status === 'approved'
                       ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                      : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                      : status === 'for interview'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
               }`}
             >
               {status}
@@ -134,7 +179,15 @@ export default function AgentsPage() {
   const getActionsForAgent = (agent: Agent): AgentDataTableAction<Agent>[] => {
     const status = agent.status.toLowerCase()
 
-    if (status === 'active') {
+    if (status === 'for interview') {
+      return [
+        {
+          label: 'Send Signup link',
+          icon: <Check className="h-4 w-4" />,
+          onClick: (agent: Agent) => handleSendSignUpLinkClick(agent),
+        },
+      ]
+    } else if (status === 'active') {
       return [
         {
           label: 'View Documents',
@@ -405,7 +458,9 @@ export default function AgentsPage() {
 
   // Determine which data to display
   const displayData = isSearchMode ? searchResults : agentsData
-  const isDataLoading = isSearchMode ? isSearching : isFetching || isLoading
+  const isDataLoading = isSearchMode 
+    ? isSearching 
+    : isFetching || isLoading || isFetchingApplicants || isLoadingApplicants
 
   return (
     <div className="container mx-auto space-y-6 py-6">
@@ -477,11 +532,12 @@ export default function AgentsPage() {
                 )}
                 <AgentDataTable
                   columns={columns}
-                  data={displayData?.data.data ?? []}
+                  data={isSearchMode ? (displayData?.data.data ?? []) : combinedData}
                   onRowClick={(row) => handleRowClick(row)}
                   getRowActions={getActionsForAgent}
                   enableColumnVisibility={false}
                   enablePagination={false}
+                  pageSize={1000}
                 />
 
                 {/* Delete confirmation dialog */}
@@ -536,8 +592,9 @@ export default function AgentsPage() {
                 {!isSearchMode && displayData?.data && (
                   <div className="mt-6 flex items-center justify-between border-t pt-4">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Showing {displayData.data.data.length} of{' '}
-                      {displayData.data.total} agents
+                      Showing {combinedData.length} total (
+                      {displayData.data.data.length} agents,{' '}
+                      {applicants?.data.data.length || 0} applicants)
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
