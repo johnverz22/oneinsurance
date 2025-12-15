@@ -3,18 +3,14 @@
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useForm } from '@tanstack/react-form'
-import {
-  AgentSignUpFormSchema,
-  AgentSignUpFormValues,
-  applyFormSchema,
-  ApplyFormValues as gentSignUpFormValues,
-} from './form.schema'
+import { applyFormSchema, ApplyFormValues } from './form.schema'
 import { useCreateAgentApplication } from '@/app/data/mutations/application'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldInfo } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { delay } from '@/utils/delay'
 
 export const ApplyForm = () => {
   const router = useRouter()
@@ -25,36 +21,34 @@ export const ApplyForm = () => {
       firstName: '',
       lastName: '',
       email: '',
-      password: '',
-      confirmPassword: '',
-      phone: '',
-      // application_type: 'agent',
-      // contact_number: '',
-      // notes: '',
-    } as AgentSignUpFormValues,
+      application_type: 'agent',
+      contact_number: '',
+      notes: '',
+    } as ApplyFormValues,
     validators: {
-      onSubmit: AgentSignUpFormSchema,
-      onChange: AgentSignUpFormSchema,
+      onSubmit: applyFormSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        // const { firstName, lastName, ...rest } = value
-        // const fullName = `${firstName} ${lastName}`
+      // try {
+      //   const { firstName, lastName, ...rest } = value
+      //   const fullName = `${firstName} ${lastName}`
 
-        // const values = { ...rest, name: fullName }
-        await createAgentApplication({ values: value })
-        form.reset()
+      //   const values = { ...rest, name: fullName }
+      //   await createAgentApplication({ values })
+      //   form.reset()
+
+      await delay(2000)
 
         toast.success(
           'Application submitted successfully. We’ll be in touch soon.'
         )
-      } catch (error: unknown) {
-        console.log('Failed to submit application:', error)
+      // } catch (error: unknown) {
+      //   console.log('Failed to submit application:', error)
 
-        const message =
-          error instanceof Error ? error?.message : 'Something went wrong'
-        toast.error(message)
-      }
+      //   const message =
+      //     error instanceof Error ? error?.message : 'Something went wrong'
+      //   toast.error(message)
+      // }
     },
   })
 
@@ -119,7 +113,7 @@ export const ApplyForm = () => {
         )}
       </form.Field>
 
-      <form.Field name="phone">
+      <form.Field name="contact_number">
         {(field) => (
           <div className="space-y-2.5">
             <Label className="text-gray-500">Phone</Label>
@@ -136,39 +130,7 @@ export const ApplyForm = () => {
         )}
       </form.Field>
 
-      <form.Field name="password">
-        {(field) => (
-          <div className="space-y-2.5">
-            <Label className="text-gray-500">Password</Label>
-            <Input
-            type='password'
-              placeholder="Password"
-              value={field.state.value}
-              className="text-black"
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-            <FieldInfo field={field} />
-          </div>
-        )}
-      </form.Field>
-      <form.Field name="confirmPassword">
-        {(field) => (
-          <div className="space-y-2.5">
-            <Label className="text-gray-500">Confirm Password</Label>
-            <Input
-            type='password'
-              placeholder="Confirm Password"
-              value={field.state.value}
-              className="text-black"
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-            <FieldInfo field={field} />
-          </div>
-        )}
-      </form.Field>
-      {/* <form.Field name="notes">
+      <form.Field name="notes">
         {(field) => (
           <div className="space-y-2.5">
             <Label className="text-gray-500">Message</Label>
@@ -183,7 +145,7 @@ export const ApplyForm = () => {
             <FieldInfo field={field} />
           </div>
         )}
-      </form.Field> */}
+      </form.Field>
 
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
