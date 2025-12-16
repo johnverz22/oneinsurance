@@ -33,13 +33,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useActivateAgent, useDeleteAgent } from '@/app/data/mutations/agents'
+import { useActivateAgent, useDeleteAgent, useSendSignupLink } from '@/app/data/mutations/agents'
 import { useUpdateAgent } from '@/app/data/mutations/agents'
+import { AxiosError } from 'axios'
 import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
-import { useGetApplicants } from '@/app/data/queries/applicant'
+
 
 export default function AgentsPage() {
   const [page, setPage] = useState<number>(1)
@@ -52,7 +53,9 @@ export default function AgentsPage() {
   } = useGetAgents(page)
   const deleteMutation = useDeleteAgent()
   const activateMutation = useActivateAgent()
+  const sendSignupLinkMutation = useSendSignupLink()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isSendingSignupLink, setIsSendingSignupLink] = useState(false)
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
@@ -62,50 +65,15 @@ export default function AgentsPage() {
     null
   )
 
-  const {
-    data: applicants,
-    isFetching: isFetchingApplicants,
-    isLoading: isLoadingApplicants,
-  } = useGetApplicants({page: page})
+
 
   const { mutateAsync: searchAgents, isPending: isSearching } =
     useSearchAgents()
 
-  // Combine agents and applicants into one list
-  const combinedData = React.useMemo(() => {
-    const agents = agentsData?.data.data || []
-    const applicantsList = applicants?.data.data || []
-    
-    // Transform applicants to match agent structure
-    const transformedApplicants: Agent[] = applicantsList.map((applicant) => ({
-      id: applicant.id,
-      company_id: null,
-      role: 2,
-      username: null,
-      first_name: applicant.name.split(' ')[0] || applicant.name,
-      last_name: applicant.name.split(' ').slice(1).join(' ') || '',
-      middle_name: null,
-      designation: null,
-      job_description: null,
-      avatar: null,
-      email: applicant.email,
-      email_verified_at: null,
-      status: 'For Interview',
-      phone: applicant.contact_number,
-      phone_verified_at: null,
-      phone_description: null,
-      telephone: null,
-      address: null,
-      is_super_admin: 0,
-      birth_date: null,
-      created_at: applicant.created_at,
-      updated_at: applicant.updated_at,
-      deleted_at: applicant.deleted_at,
-    } as Agent))
-
-    const result = [...agents, ...transformedApplicants]
-    return result
-  }, [agentsData, applicants])
+  // Get agents data
+  const agentsOnly = React.useMemo(() => {
+    return agentsData?.data.data || []
+  }, [agentsData])
 
   useEffect(() => {
     // Small delay to let zustand persist/hydrate and avoid redirect flicker
@@ -182,7 +150,7 @@ export default function AgentsPage() {
     if (status === 'for interview') {
       return [
         {
-          label: 'Send Signup link',
+          label: isSendingSignupLink ? 'Sending...' : 'Send Signup link',
           icon: <Check className="h-4 w-4" />,
           onClick: (agent: Agent) => handleSendSignUpLinkClick(agent),
         },
@@ -209,7 +177,7 @@ export default function AgentsPage() {
           onClick: (agent: Agent) => handleReviewDocumentClick(agent),
         },
         {
-          label: 'Send Sign Up Link',
+          label: isSendingSignupLink ? 'Sending...' : 'Send Sign Up Link',
           icon: <Check className="h-4 w-4" />,
           onClick: (agent) => handleSendSignUpLinkClick(agent),
         },
@@ -305,9 +273,41 @@ export default function AgentsPage() {
     setIsDetailsOpen(true)
   }
 
-  function handleSendSignUpLinkClick(agent: Agent) {
-    toast.info('Send Sign Up Link feature coming soon')
-    // TODO: Implement send sign up link functionality
+  async function handleSendSignUpLinkClick(agent: Agent) {
+    if (!agent.email) {
+      toast.error('Agent email is required to send signup link')
+      return
+    }
+
+    try {
+      setIsSendingSignupLink(true)
+      const response = await sendSignupLinkMutation.mutateAsync({ 
+        email: agent.email 
+      })
+      toast.success(response?.message ?? `Signup link sent to ${agent.email}`)
+    } catch (error) {
+      // Handle validation errors from the API
+      if (error instanceof AxiosError && error.response?.data) {
+        const errorData = error.response.data
+        
+        // Handle validation errors with specific field messages
+        if (errorData.errors?.email && Array.isArray(errorData.errors.email)) {
+          const emailError = errorData.errors.email[0]
+          toast.error(emailError)
+        } else if (errorData.message) {
+          toast.error(errorData.message)
+        } else if (errorData.success === false) {
+          toast.error('Validation error occurred. Please check the details.')
+        } else {
+          toast.error('Failed to send signup link. Please try again.')
+        }
+      } else {
+        console.error('Unexpected error:', error)
+        toast.error('Failed to send signup link. Please try again.')
+      }
+    } finally {
+      setIsSendingSignupLink(false)
+    }
   }
 
   async function handleConfirmDelete() {
@@ -460,7 +460,7 @@ export default function AgentsPage() {
   const displayData = isSearchMode ? searchResults : agentsData
   const isDataLoading = isSearchMode 
     ? isSearching 
-    : isFetching || isLoading || isFetchingApplicants || isLoadingApplicants
+    : isFetching || isLoading
 
   return (
     <div className="container mx-auto space-y-6 py-6">
@@ -532,7 +532,7 @@ export default function AgentsPage() {
                 )}
                 <AgentDataTable
                   columns={columns}
-                  data={isSearchMode ? (displayData?.data.data ?? []) : combinedData}
+                  data={isSearchMode ? (displayData?.data.data ?? []) : agentsOnly}
                   onRowClick={(row) => handleRowClick(row)}
                   getRowActions={getActionsForAgent}
                   enableColumnVisibility={false}
@@ -592,9 +592,7 @@ export default function AgentsPage() {
                 {!isSearchMode && displayData?.data && (
                   <div className="mt-6 flex items-center justify-between border-t pt-4">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Showing {combinedData.length} total (
-                      {displayData.data.data.length} agents,{' '}
-                      {applicants?.data.data.length || 0} applicants)
+                      Showing {agentsOnly.length} agents
                     </div>
                     <div className="flex items-center gap-2">
                       <Button

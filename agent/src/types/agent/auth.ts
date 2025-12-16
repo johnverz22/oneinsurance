@@ -73,10 +73,13 @@ export const RegistrationSchema = RegisterAgentBaseSchema.superRefine(
 )
 export type OnboardingV2 = z.infer<typeof RegistrationSchema>
 
-export const RegisterAgentSchema = RegisterAgentBaseSchema.pick({
+export const RegisterAgentSchema = RegisterAgentBaseSchema.extend({
+  token: z.string().min(10, 'Invalid invitation token').max(200, 'Invalid invitation token format'),
+}).pick({
   firstName: true,
   lastName: true,
   email: true,
+  token: true,
   password: true,
   confirmPassword: true,
   phone: true,

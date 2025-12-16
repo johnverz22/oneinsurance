@@ -1,7 +1,7 @@
 'use client'
 
 import { useForm } from '@tanstack/react-form'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import {
   RegisterAgentBaseSchema,
@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import {
   useRegisterAgent,
-  useSendEmailVerification,
 } from '@/app/data/mutations/agent/auth-agent'
 import Link from 'next/link'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
@@ -28,21 +27,21 @@ const INPUT_FIELD = 'bg-[#F3F5FC] border-0 dark:bg-[#1A1A1A] w-full'
 
 export default function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { mutateAsync: registerAgent } = useRegisterAgent()
-  const { mutateAsync: sendEmailVerification } = useSendEmailVerification()
 
   const {
     credentials,
-    setCredentials,
     setIsRegistering,
     setRegistrationError,
+    setRegistrationSuccess,
     setValidationErrors,
     clearValidationErrors,
     getFieldErrors,
-    increaseStep,
     registrationResult,
     isRegistering,
     registrationError,
+    registrationSuccess,
     validationErrors,
   } = useAgentRegistrationStore()
   const { isAuthenticated } = useAgentAuthStore()
@@ -53,18 +52,44 @@ export default function SignupForm() {
     }
   }, [isAuthenticated, router])
 
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (!token) {
+      setRegistrationError('Invalid or missing invitation token. Please use the signup link provided in your invitation email.')
+    } else if (token.length < 10) {
+      setRegistrationError('Invalid invitation token format. Please use the correct signup link provided in your invitation email.')
+    } else {
+      clearValidationErrors()
+    }
+  }, [searchParams, setRegistrationError, clearValidationErrors])
+
   const form = useForm({
-    defaultValues: credentials as RegisterAgent,
+    defaultValues: {
+      ...credentials,
+      token: searchParams.get('token') || '',
+      email: '',
+    } as RegisterAgent,
     validators: {
       onChange: RegisterAgentSchema,
     },
     onSubmit: async ({ value }) => {
       try {
+        setIsRegistering(true)
         clearValidationErrors()
-        setCredentials(value)
-        increaseStep()
+        
+        // Step 1: Register the agent
+        const registrationResponse = await registerAgent({ data: value })
+        
+        if (registrationResponse.success) {
+          // Registration succeeded - clear any errors and show success
+          clearValidationErrors()
+          setRegistrationSuccess('Account created successfully! Redirecting to login...')
+          setTimeout(() => {
+            router.push('/login')
+          }, 1500)
+        }
       } catch (error: any) {
-        console.error('Registration error:', error)
+        console.error('Registration/Login error:', error)
 
         // Check if it's a 422 validation error
         if (error.status === 422 || error.response?.status === 422) {
@@ -74,7 +99,7 @@ export default function SignupForm() {
 
             if (errorData) {
               // It's a validation error, store field-specific errors
-              setValidationErrors(errorData.error.errors)
+              setValidationErrors(errorData.error?.errors || errorData.errors)
               setRegistrationError(
                 errorData.message || 'Please fix the validation errors below.'
               )
@@ -104,6 +129,7 @@ export default function SignupForm() {
 
   return (
     <div className="flex w-full flex-col justify-center gap-6">
+
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -164,6 +190,16 @@ export default function SignupForm() {
             </form.Field>
           </div>
 
+          <form.Field name="token">
+            {(field) => (
+              <input
+                type="hidden"
+                name={field.name}
+                value={field.state.value}
+              />
+            )}
+          </form.Field>
+
           <form.Field name="email">
             {(field) => (
               <div className="flex w-full flex-col gap-2">
@@ -176,9 +212,9 @@ export default function SignupForm() {
                   onChange={(e) => {
                     field.handleChange(e.target.value)
                   }}
-                  placeholder="Enter Email"
+                  placeholder="Enter your email"
                   className={cn(
-                    getFieldErrors('firstName').length > 0
+                    getFieldErrors('email').length > 0
                       ? 'border-destructive'
                       : '',
                     INPUT_FIELD
@@ -188,6 +224,8 @@ export default function SignupForm() {
               </div>
             )}
           </form.Field>
+
+
 
           <form.Field name="phone">
             {(field) => (
@@ -266,6 +304,12 @@ export default function SignupForm() {
             )}
           </form.Field>
 
+          {registrationSuccess && (
+            <div className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 rounded-md p-3 text-sm">
+              {registrationSuccess}
+            </div>
+          )}
+
           {registrationError && (
             <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm">
               {registrationError}
@@ -278,19 +322,22 @@ export default function SignupForm() {
             </div>
           )}
 
-          {registrationResult && (
-            <div className="rounded-md bg-green-50 p-3 text-sm text-green-600">
-              Registration successful! Welcome,{' '}
-              {registrationResult.data.first_name}!
-            </div>
-          )}
+
 
           <div className="flex w-full justify-end">
             <Button
               type="submit"
+              disabled={isRegistering || !searchParams.get('token')}
               className="from-primary to-lilac hover:from-primary/90 hover:to-lilac/90 focus:from-primary/90 focus:to-lilac/90 rounded-full bg-gradient-to-r text-white"
             >
-              <span className="px-5">Next</span>
+              {isRegistering ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span className="px-3">Creating Account...</span>
+                </>
+              ) : (
+                <span className="px-5">Create Account</span>
+              )}
             </Button>
           </div>
         </div>

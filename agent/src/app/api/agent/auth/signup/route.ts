@@ -8,14 +8,18 @@ export async function POST(req: NextRequest) {
   if (!body) {
     return NextResponse.json({ message: 'No data provided' }, { status: 400 })
   }
-  if (!(body satisfies RegisterAgent)) {
+  
+  // Basic validation for required fields
+  if (!body.firstName || !body.lastName || !body.email || !body.password || !body.confirmPassword || !body.phone || !body.token) {
     return NextResponse.json(
-      { message: 'Invalid data provided' },
+      { message: 'Missing required fields' },
       { status: 400 }
     )
   }
 
   try {
+    console.log('Registration request body:', { ...body, password: '[HIDDEN]' })
+    
     const response = await axios.post<SuccesRegisterAgent>(
       `${process.env.BASE_URL}/agents/register`,
       {
@@ -25,6 +29,7 @@ export async function POST(req: NextRequest) {
         password: body.password,
         password_confirmation: body.confirmPassword,
         phone: body.phone,
+        invitation_token: body.token,
       }
     )
     return NextResponse.json(response.data, { status: response.status })
