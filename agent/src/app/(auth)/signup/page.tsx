@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 // import BankDetailsForm from './bank-details-form'
 // import VerificationDocumentsForm from './verification-documents-form'
 import SignupForm from './signup-form'
@@ -33,7 +33,9 @@ export default function SignUpPage() {
         </h1>
         <p>Complete your account registration</p>
       </div>
-      <SignupForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignupForm />
+      </Suspense>
     </div>
   )
 }
