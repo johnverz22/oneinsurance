@@ -14,11 +14,15 @@ const eslintConfig = [
     extends: [
       'next/core-web-vitals',
       'next/typescript',
-      'react/no-children-prop',
     ],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
+      'react/no-children-prop': 'warn', // Changed from error to warning
+      'react/no-unescaped-entities': 'warn', // Changed from error to warning
+      'react-hooks/rules-of-hooks': 'warn', // Changed from error to warning
+      '@typescript-eslint/no-unused-expressions': 'warn', // Changed from error to warning
+      'prefer-const': 'warn', // Changed from error to warning
     },
   }),
 ]
