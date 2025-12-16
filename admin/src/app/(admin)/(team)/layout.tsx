@@ -19,6 +19,7 @@ export default function TeamLayout({
     { value: '/leaderboard', label: 'Leaderboard' },
     { value: '/teams', label: 'Teams' },
     { value: '/agents', label: 'Agents' },
+    { value: '/applicants', label: 'Applicants' },
   ] satisfies Tab[]
 
   const { query, setQuery } = useTeamSearchStore()

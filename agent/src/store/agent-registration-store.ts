@@ -14,6 +14,7 @@ type AgentRegistrationState = {
   registrationResult: SuccesRegisterAgent | null
   isRegistering: boolean
   registrationError: string | null
+  registrationSuccess: string | null
   validationErrors: Record<string, string[]> | null
   emailVerificationSent: boolean
   isEmailVerified: boolean
@@ -30,6 +31,7 @@ type AgentRegistrationActions = {
   clearRegistrationResult: () => void
   setIsRegistering: (isRegistering: boolean) => void
   setRegistrationError: (error: string | null) => void
+  setRegistrationSuccess: (success: string | null) => void
   setValidationErrors: (errors: Record<string, string[]> | null) => void
   clearValidationErrors: () => void
   getFieldErrors: (fieldName: string) => string[]
@@ -49,6 +51,7 @@ const initialState: AgentRegistrationState = {
     firstName: '',
     lastName: '',
     email: '',
+    token: '',
     password: '',
     confirmPassword: '',
     phone: '',
@@ -56,6 +59,7 @@ const initialState: AgentRegistrationState = {
   registrationResult: null,
   isRegistering: false,
   registrationError: null,
+  registrationSuccess: null,
   validationErrors: null,
   emailVerificationSent: false,
   isEmailVerified: false,
@@ -111,7 +115,11 @@ export const useAgentRegistrationStore = create<
 
       // Error management
       setRegistrationError: (error: string | null) =>
-        set({ registrationError: error }),
+        set({ registrationError: error, registrationSuccess: null }),
+
+      // Success management
+      setRegistrationSuccess: (success: string | null) =>
+        set({ registrationSuccess: success, registrationError: null }),
 
       // Validation error management
       setValidationErrors: (errors: Record<string, string[]> | null) =>
