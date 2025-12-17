@@ -8,29 +8,49 @@ import { Check, X } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetApplicants } from '@/app/data/queries/applicant'
 import { useSendSignupLink } from '@/app/data/mutations/agents'
-import { Applicant, ApplicantPaginatedResponse } from '@/types/applicant'
+import {
+  Applicant,
+  ApplicantPaginatedResponse,
+  UpdateApplicantStatusRequest,
+} from '@/types/applicant'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
-import { AgentDataTable, AgentDataTableAction } from '../agents/agent-data-table'
+import {
+  AgentDataTable,
+  AgentDataTableAction,
+} from '../agents/agent-data-table'
 import { AxiosError } from 'axios'
+import { StatusUpdateDialog } from './status-dialog'
+import { useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
 
 export default function ApplicantsPage() {
   const [page, setPage] = useState<number>(1)
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [searchResults, setSearchResults] = useState<ApplicantPaginatedResponse | null>(null)
+  const [searchResults, setSearchResults] =
+    useState<ApplicantPaginatedResponse | null>(null)
   const [isSendingSignupLink, setIsSendingSignupLink] = useState(false)
-  
+  const [isUpdateStatusDialogOpen, setIsUpdateStatusDialogOpen] =
+    useState(false)
+  const [selectedApplicant, setSelectedApplicant] = useState({
+    applicant: null as Applicant | null,
+    status: '' as 'approved' | 'rejected' | '',
+  })
+
   const {
     data: applicantsData,
     isFetching,
     isLoading,
     error,
     refetch,
-  } = useGetApplicants({ page: page, search: isSearchMode ? searchKey : undefined })
-  
+  } = useGetApplicants({
+    page: page,
+    search: isSearchMode ? searchKey : undefined,
+  })
+  const { mutateAsync: updateApplicantStatus } = useUpdateApplicantStatus()
+
   const sendSignupLinkMutation = useSendSignupLink()
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
@@ -51,17 +71,17 @@ export default function ApplicantsPage() {
       {
         accessorKey: 'id',
         header: 'Applicant ID',
-        cell: ({ row }) => <div className="font-medium">APP{String(row.original.id).padStart(3, '0')}</div>,
+        cell: ({ row }) => (
+          <div className="font-medium">
+            APP{String(row.original.id).padStart(3, '0')}
+          </div>
+        ),
       },
       {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => {
-          return (
-            <div className="font-medium">
-              {row.original.name}
-            </div>
-          )
+          return <div className="font-medium">{row.original.name}</div>
         },
       },
       {
@@ -106,7 +126,9 @@ export default function ApplicantsPage() {
   )
 
   // Actions for applicants
-  const getActionsForApplicant = (applicant: Applicant): AgentDataTableAction<Applicant>[] => {
+  const getActionsForApplicant = (
+    applicant: Applicant
+  ): AgentDataTableAction<Applicant>[] => {
     const status = applicant.status.toLowerCase()
 
     if (status === 'pending') {
@@ -114,7 +136,20 @@ export default function ApplicantsPage() {
         {
           label: isSendingSignupLink ? 'Sending...' : 'Send Signup Link',
           icon: <Check className="h-4 w-4" />,
-          onClick: (applicant: Applicant) => handleSendSignUpLinkClick(applicant),
+          onClick: (applicant: Applicant) =>
+            handleSendSignUpLinkClick(applicant),
+        },
+        {
+          label: 'Approve Application',
+          icon: <Check className="h-4 w-4" />,
+          onClick: (applicant: Applicant) =>
+            handleStatusUpdateClick(applicant, 'approved'),
+        },
+        {
+          label: 'Reject Application',
+          icon: <X className="h-4 w-4 text-red-500" />,
+          onClick: (applicant: Applicant) =>
+            handleStatusUpdateClick(applicant, 'rejected'),
         },
       ]
     }
@@ -130,15 +165,17 @@ export default function ApplicantsPage() {
 
     try {
       setIsSendingSignupLink(true)
-      const response = await sendSignupLinkMutation.mutateAsync({ 
-        email: applicant.email 
+      const response = await sendSignupLinkMutation.mutateAsync({
+        email: applicant.email,
       })
-      toast.success(response?.message ?? `Signup link sent to ${applicant.email}`)
+      toast.success(
+        response?.message ?? `Signup link sent to ${applicant.email}`
+      )
       await refetch()
     } catch (error) {
       if (error instanceof AxiosError && error.response?.data) {
         const errorData = error.response.data
-        
+
         if (errorData.errors?.email && Array.isArray(errorData.errors.email)) {
           const emailError = errorData.errors.email[0]
           toast.error(emailError)
@@ -155,6 +192,43 @@ export default function ApplicantsPage() {
       }
     } finally {
       setIsSendingSignupLink(false)
+    }
+  }
+
+  async function handleStatusUpdateClick(
+    applicant: Applicant,
+    status: 'approved' | 'rejected'
+  ) {
+    setSelectedApplicant({ applicant, status })
+    setIsUpdateStatusDialogOpen(true)
+  }
+
+  async function handleUpdateStatusSubmit(notes: string) {
+    try {
+      const updateResponse = await updateApplicantStatus({
+        data: {
+          status: selectedApplicant.status,
+          notes: notes,
+        } as UpdateApplicantStatusRequest,
+        applicantId: selectedApplicant.applicant?.id as number,
+      })
+      console.log(updateResponse)
+      if (updateResponse.success) {
+        toast.success(
+          `Applicant ${
+            selectedApplicant.status === 'approved' ? 'approved' : 'rejected'
+          } successfully.`
+        )
+        setIsUpdateStatusDialogOpen(false)
+        await refetch()
+      } else {
+        toast.error('Failed to update applicant status. Please try again.') 
+      }
+    } catch (error: any) {
+      const message = error instanceof AxiosError ? Object.entries(error.response?.data?.errors || {})
+    .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+    .join("\n") : 'An unexpected error occurred.';
+      toast.error(message)
     }
   }
 
@@ -188,7 +262,9 @@ export default function ApplicantsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Applicant Management</h1>
-              <p className="text-muted-foreground">Manage and review job applicants</p>
+              <p className="text-muted-foreground">
+                Manage and review job applicants
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -349,6 +425,14 @@ export default function ApplicantsPage() {
           </div>
         </CardContent>
       </Card>
+      <StatusUpdateDialog
+        isOpen={isUpdateStatusDialogOpen}
+        status={selectedApplicant.status}
+        submitStatus={async (notes: string) => {
+          await handleUpdateStatusSubmit(notes)
+        }}
+        onClose={(isOpen: boolean) => setIsUpdateStatusDialogOpen(isOpen)}
+      />
     </div>
   )
 }
