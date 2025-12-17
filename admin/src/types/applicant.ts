@@ -1,5 +1,6 @@
 import { createPaginatedResponseType } from "@/utils/create-paginated-response-type";
 import {z} from "zod";
+import { createResponseSchema } from "./base-api-response";
 
 /*
 {
@@ -32,3 +33,12 @@ export type Applicant = z.infer<typeof ApplicantSchema>;
 
 export const ApplicantPaginatedResponseSchema = createPaginatedResponseType<Applicant>(ApplicantSchema);
 export type ApplicantPaginatedResponse = z.infer<typeof ApplicantPaginatedResponseSchema>;
+
+export const UpdateApplicantStatusRequestSchema = z.object({
+    status: z.string(),
+    notes: z.string().optional(),
+})
+export type UpdateApplicantStatusRequest = z.infer<typeof UpdateApplicantStatusRequestSchema>;
+
+export const UpdateApplicantStatusResponseSchema = createResponseSchema(ApplicantSchema);
+export type UpdateApplicantStatusResponse = z.infer<typeof UpdateApplicantStatusResponseSchema>;
