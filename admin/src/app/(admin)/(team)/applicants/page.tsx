@@ -23,7 +23,7 @@ import {
 } from '../agents/agent-data-table'
 import { AxiosError } from 'axios'
 import { StatusUpdateDialog } from './status-dialog'
-import { useResendSignUpInvite, useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
+import { useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
 
 export default function ApplicantsPage() {
   const [page, setPage] = useState<number>(1)
@@ -50,7 +50,6 @@ export default function ApplicantsPage() {
     search: isSearchMode ? searchKey : undefined,
   })
   const { mutateAsync: updateApplicantStatus } = useUpdateApplicantStatus()
-  const { mutateAsync: resendSignUpLink } = useResendSignUpInvite()
 
   const sendSignupLinkMutation = useSendSignupLink()
   const { isAuthenticated } = useAuthStore()
@@ -172,17 +171,8 @@ export default function ApplicantsPage() {
         const errorData = error.response.data
 
         if (errorData.errors?.email && Array.isArray(errorData.errors.email)) {
-          const response = await resendSignUpLink(applicant.id)
-          if (response && response.success) {
-            toast.success(
-              response.message || `Signup link resent to ${applicant.email}`
-            )
-            await refetch()
-            return
-          } else {
-            toast.error('Failed to resend signup link. Please try again.')
-            return
-          }
+          const emailError = errorData.errors.email[0]
+          toast.error(`${emailError} Use Invitations Page to resend.`)
         } else if (errorData.message) {
           toast.error(errorData.message)
         } else if (errorData.success === false) {
