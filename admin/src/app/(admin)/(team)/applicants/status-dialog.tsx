@@ -16,21 +16,21 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useState } from 'react'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 
 type StatusUpdateDialogProps = {
   isOpen: boolean
-  status: string
-  submitStatus: (notes: string) => void
+  submitStatus: (status: string, notes: string) => void
   onClose?: (isOpen: boolean) => void
 }
 
 export function StatusUpdateDialog({
   isOpen,
-  status,
   submitStatus,
   onClose,
 }: StatusUpdateDialogProps) {
   const [notes, setNotes] = useState('')
+  const [status, setStatus] = useState('')
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   const handleSubmitClick = () => {
@@ -41,7 +41,7 @@ export function StatusUpdateDialog({
     setNotes('')
     setIsConfirmOpen(false)
     onClose?.(false)
-    submitStatus(notes)
+    submitStatus(status, notes)
   }
 
   const handleCancel = () => {
@@ -55,20 +55,35 @@ export function StatusUpdateDialog({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {status == "approved" ? "Approve" : "Reject"} Applicant Status
+              Update Applicant's Status
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-4">
-            <label htmlFor="notes" className="font-medium">
-              Notes (optional)
-            </label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="rounded border p-2"
-            />
+          <div className='space-y-4'>
+            <div className='flex flex-col gap-2'>
+              <label htmlFor="status">Status</label>
+              <Select value={status} onValueChange={(value) => setStatus(value)}>
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="approved">Approve</SelectItem>
+                  <SelectItem value="rejected">Reject</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="notes" className="font-medium">
+                Notes (optional)
+              </label>
+              <textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="rounded border p-2"
+              />
+            </div>
           </div>
+
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" onClick={handleCancel}>
               Cancel
