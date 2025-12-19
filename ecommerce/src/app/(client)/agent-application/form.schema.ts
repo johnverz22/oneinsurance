@@ -8,7 +8,7 @@ export const applyFormSchema = z.object({
     .string({ required_error: 'Contact Number is required' })
     .min(10, 'Invalid phone number')
     .max(11, 'Invalid phone number'),
-  application_type: z.enum(['agent']),
+  application_type: z.enum(['agent', 'referral']),
   notes: z.string(),
 })
 

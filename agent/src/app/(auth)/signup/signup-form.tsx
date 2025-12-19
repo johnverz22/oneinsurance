@@ -20,8 +20,11 @@ import {
 } from '@/app/data/mutations/agent/auth-agent'
 import Link from 'next/link'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useGetSignUpAutoFill } from '@/app/data/mutations/signup'
+import { toast } from 'sonner'
+import type { AgentSignUpAutoFillResponse } from '@/types/agent/auth'
 
 const INPUT_FIELD = 'bg-[#F3F5FC] border-0 dark:bg-[#1A1A1A] w-full'
 
@@ -29,6 +32,8 @@ export default function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { mutateAsync: registerAgent } = useRegisterAgent()
+  const { mutateAsync: getSignUpAutoFill, isPending: isLoadingAutoFill } = useGetSignUpAutoFill()
+  const [autofillData, setAutofillData] = useState<AgentSignUpAutoFillResponse | null>(null)
 
   const {
     credentials,
@@ -60,14 +65,29 @@ export default function SignupForm() {
       setRegistrationError('Invalid invitation token format. Please use the correct signup link provided in your invitation email.')
     } else {
       clearValidationErrors()
+      // Fetch autofill data
+      getSignUpAutoFill(token)
+        .then((response) => {
+          setAutofillData(response)
+        })
+        .catch((error) => {
+          console.error('Failed to fetch autofill data:', error)
+          toast.error('Failed to load your information. Please enter your details manually.', {
+            description: error.response?.data?.message || error.message || 'An error occurred',
+          })
+        })
     }
-  }, [searchParams, setRegistrationError, clearValidationErrors])
+  }, [searchParams, setRegistrationError, clearValidationErrors, getSignUpAutoFill, setAutofillData])
 
   const form = useForm({
     defaultValues: {
-      ...credentials,
       token: searchParams.get('token') || '',
-      email: '',
+      email: autofillData?.data?.email || '',
+      firstName: autofillData?.data?.first_name || '',
+      lastName: autofillData?.data?.last_name || '',
+      phone: autofillData?.data?.contact_number || '',
+      password: '',
+      confirmPassword: '',
     } as RegisterAgent,
     validators: {
       onChange: RegisterAgentSchema,
@@ -129,6 +149,12 @@ export default function SignupForm() {
 
   return (
     <div className="flex w-full flex-col justify-center gap-6">
+      {isLoadingAutoFill && (
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading your information...</span>
+        </div>
+      )}
 
       <form
         onSubmit={(e) => {

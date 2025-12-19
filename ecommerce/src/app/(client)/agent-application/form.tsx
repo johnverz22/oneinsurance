@@ -11,6 +11,18 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { delay } from '@/utils/delay'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const roleMap: Record<string, string> = {
+  agent: 'Agent',
+  referral: 'Referral',
+}
 
 export const ApplyForm = () => {
   const router = useRouter()
@@ -21,7 +33,7 @@ export const ApplyForm = () => {
       firstName: '',
       lastName: '',
       email: '',
-      application_type: 'agent',
+      application_type: '' as any,
       contact_number: '',
       notes: '',
     } as ApplyFormValues,
@@ -30,11 +42,7 @@ export const ApplyForm = () => {
     },
     onSubmit: async ({ value }) => {
       try {
-        const { firstName, lastName, ...rest } = value
-        const fullName = `${firstName} ${lastName}`
-
-        const values = { ...rest, name: fullName }
-        await createAgentApplication({ values })
+        await createAgentApplication(value)
         form.reset()
 
         toast.success(
@@ -122,6 +130,30 @@ export const ApplyForm = () => {
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
             />
+
+            <FieldInfo field={field} />
+          </div>
+        )}
+      </form.Field>
+      
+      <form.Field name="application_type">
+        {(field) => (
+          <div className="space-y-2.5">
+            <Label className="text-gray-500">Role</Label>
+            <Select
+              onValueChange={(value) => field.handleChange(value as any)}
+              value={field.state.value}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {roleMap[field.state.value] || 'Select Role'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="agent">Agent</SelectItem>
+                <SelectItem value="referral">Referral</SelectItem>
+              </SelectContent>
+            </Select>
 
             <FieldInfo field={field} />
           </div>
