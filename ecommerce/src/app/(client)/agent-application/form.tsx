@@ -42,11 +42,7 @@ export const ApplyForm = () => {
     },
     onSubmit: async ({ value }) => {
       try {
-        const { firstName, lastName, ...rest } = value
-        const fullName = `${firstName} ${lastName}`
-
-        const values = { ...rest, name: fullName }
-        await createAgentApplication({ values })
+        await createAgentApplication(value)
         form.reset()
 
         toast.success(
