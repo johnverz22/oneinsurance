@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { formatValidators, PhilippineIdType } from '@/types/id-types'
+import { createResponseSchema } from '../base-api-response'
 
 export const RegisterAgentBaseSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -22,7 +23,7 @@ export const RegisterAgentBaseSchema = z.object({
       'The password field must contain at least one symbol.'
     ),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
-  phone: z.string().regex(/^[0-9]\d{10}$/, 'Invalid phone number'),
+  phone: z.string().regex(/^([0-9]\d{10}|\+63\s\d{3}\s\d{3}\s\d{4})$/, 'Invalid phone number'),
 
   // bank details
   bankName: z.string().min(1, 'Please enter your bank name'),
@@ -243,4 +244,19 @@ export const ResetPasswordValidationErrorSchema = z.object({
 })
 export type ResetPasswordValidationError = z.infer<
   typeof ResetPasswordValidationErrorSchema
+>
+
+export const AgentSignUpAutoFillSchema = z.object({
+  first_name: z.string().min(1),
+  last_name: z.string().min(1),
+  email: z.string().email(),
+  contact_number: z.string().min(1),
+  application_type: z.string().min(1),
+})
+export type AgentSignUpAutoFill = z.infer<typeof AgentSignUpAutoFillSchema>
+export const AgentSignUpAutoFillResponseSchema = createResponseSchema(
+  AgentSignUpAutoFillSchema
+)
+export type AgentSignUpAutoFillResponse = z.infer<
+  typeof AgentSignUpAutoFillResponseSchema
 >
