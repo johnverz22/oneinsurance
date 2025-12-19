@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, KeyboardEvent, ClipboardEvent, useEffect } from 'react'
+import { useState, useRef, KeyboardEvent, ClipboardEvent, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { useVerifyOTP, useResendOTP } from '@/app/data/mutations/otp'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 
-export default function OTPPage() {
+function OTPContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState<string | null>(null)
@@ -230,5 +230,17 @@ export default function OTPPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function OTPPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+      </div>
+    }>
+      <OTPContent />
+    </Suspense>
   )
 }
