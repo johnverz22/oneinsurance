@@ -21,6 +21,7 @@ import { useLoginAgent } from '@/app/data/mutations/agent/auth-agent'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { toast } from 'sonner'
 import { NotVerifiedEmailError } from '@/lib/errors'
+import { useSendOTP } from '@/app/data/mutations/otp'
 
 const INPUT_FIELD = 'bg-[#F3F5FC] border-0 dark:bg-[#1A1A1A] w-full'
 
@@ -29,6 +30,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
   const { mutateAsync: loginAgent } = useLoginAgent()
+  const { mutateAsync: sendOTP } = useSendOTP()
   const { login, isAuthenticated } = useAgentAuthStore()
   const [hydrated, setHydrated] = useState(false)
 
@@ -60,14 +62,23 @@ export default function LoginPage() {
 
         const result = (await loginAgent({ data: value })) as LoginAgentResponse
 
-        // Store authentication data in the store
-        login(result)
-
-        // Handle successful login
-        toast.success(`Welcome back, ${result.data.user.name}!`)
-
-        // Redirect to agent dashboard
-        router.push('/')
+        // Send OTP after successful login validation
+        try {
+          await sendOTP(value.email)
+          toast.success('OTP has been sent to your email')
+          
+          // Store auth data temporarily in sessionStorage to complete after OTP
+          sessionStorage.setItem('pending_auth', JSON.stringify(result))
+          
+          // Redirect to OTP page with email
+          router.push(`/otp?email=${encodeURIComponent(value.email)}`)
+        } catch (otpError: any) {
+          if (otpError?.response?.status === 404) {
+            toast.error('User not found.')
+          } else {
+            toast.error('Failed to send OTP. Please try again.')
+          }
+        }
       } catch (error: any) {
         if (error instanceof NotVerifiedEmailError) {
           setLoginError(error.message)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { useEffect, Suspense } from 'react'
 // import BankDetailsForm from './bank-details-form'
@@ -8,15 +8,22 @@ import { useEffect, Suspense } from 'react'
 import SignupForm from './signup-form'
 // import { useAgentRegistrationStore } from '@/store/agent-registration-store'
 
-export default function SignUpPage() {
+function SignUpContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { isAuthenticated } = useAgentAuthStore()
+  const token = searchParams.get('token')
 
   useEffect(() => {
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
     if (isAuthenticated) {
       router.push('/')
     }
-  }, [isAuthenticated, router])
+  }, [token, isAuthenticated, router])
 
   // Comment out multi-step forms for now - simplified to single step
   // const onboardingStepPages = [
@@ -33,9 +40,15 @@ export default function SignUpPage() {
         </h1>
         <p>Complete your account registration</p>
       </div>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SignupForm />
-      </Suspense>
+      <SignupForm />
     </div>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignUpContent />
+    </Suspense>
   )
 }
