@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Check, RefreshCcwDot, X } from 'lucide-react'
+import { Check, Loader2, RefreshCcwDot, X } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetApplicants } from '@/app/data/queries/applicant'
 import { useSendSignupLink } from '@/app/data/mutations/agents'
@@ -23,7 +23,7 @@ import {
 } from '../agents/agent-data-table'
 import { AxiosError } from 'axios'
 import { StatusUpdateDialog } from './status-dialog'
-import { useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
+import { useResendSignUpInvite, useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
 
 export default function ApplicantsPage() {
   const [page, setPage] = useState<number>(1)
@@ -32,6 +32,7 @@ export default function ApplicantsPage() {
   const [searchResults, setSearchResults] =
     useState<ApplicantPaginatedResponse | null>(null)
   const [isSendingSignupLink, setIsSendingSignupLink] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isUpdateStatusDialogOpen, setIsUpdateStatusDialogOpen] =
     useState(false)
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
@@ -49,6 +50,7 @@ export default function ApplicantsPage() {
     search: isSearchMode ? searchKey : undefined,
   })
   const { mutateAsync: updateApplicantStatus } = useUpdateApplicantStatus()
+  const { mutateAsync: resendSignUpLink } = useResendSignUpInvite()
 
   const sendSignupLinkMutation = useSendSignupLink()
   const { isAuthenticated } = useAuthStore()
@@ -170,8 +172,17 @@ export default function ApplicantsPage() {
         const errorData = error.response.data
 
         if (errorData.errors?.email && Array.isArray(errorData.errors.email)) {
-          const emailError = errorData.errors.email[0]
-          toast.error(emailError)
+          const response = await resendSignUpLink(applicant.id)
+          if (response && response.success) {
+            toast.success(
+              response.message || `Signup link resent to ${applicant.email}`
+            )
+            await refetch()
+            return
+          } else {
+            toast.error('Failed to resend signup link. Please try again.')
+            return
+          }
         } else if (errorData.message) {
           toast.error(errorData.message)
         } else if (errorData.success === false) {
@@ -195,6 +206,7 @@ export default function ApplicantsPage() {
 
   async function handleUpdateStatusSubmit(status: string, notes: string) {
     try {
+      setIsUpdatingStatus(true)
       const updateResponse = await updateApplicantStatus({
         data: {
           status: status,
@@ -221,6 +233,8 @@ export default function ApplicantsPage() {
               .join('\n')
           : 'An unexpected error occurred.'
       toast.error(message)
+    } finally {
+      setIsUpdatingStatus(false)
     }
   }
 
@@ -249,6 +263,17 @@ export default function ApplicantsPage() {
 
   return (
     <div className="container mx-auto space-y-6 py-6">
+      {/* Loading Indicator */}
+      {(isSendingSignupLink || isUpdatingStatus) && (
+        <div className="fixed left-0 right-0 top-0 z-50 flex items-center justify-center bg-blue-500 px-4 py-3 text-white shadow-lg">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          <span className="font-medium">
+            {isSendingSignupLink
+              ? 'Sending signup link...'
+              : 'Updating applicant status...'}
+          </span>
+        </div>
+      )}
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
