@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Check, X } from 'lucide-react'
+import { Check, RefreshCcwDot, X } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetApplicants } from '@/app/data/queries/applicant'
 import { useSendSignupLink } from '@/app/data/mutations/agents'
@@ -34,10 +34,9 @@ export default function ApplicantsPage() {
   const [isSendingSignupLink, setIsSendingSignupLink] = useState(false)
   const [isUpdateStatusDialogOpen, setIsUpdateStatusDialogOpen] =
     useState(false)
-  const [selectedApplicant, setSelectedApplicant] = useState({
-    applicant: null as Applicant | null,
-    status: '' as 'approved' | 'rejected' | '',
-  })
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(
+    null
+  )
 
   const {
     data: applicantsData,
@@ -140,16 +139,10 @@ export default function ApplicantsPage() {
             handleSendSignUpLinkClick(applicant),
         },
         {
-          label: 'Approve Application',
-          icon: <Check className="h-4 w-4" />,
+          label: 'Update Application Status',
+          icon: <RefreshCcwDot className="h-4 w-4" />,
           onClick: (applicant: Applicant) =>
-            handleStatusUpdateClick(applicant, 'approved'),
-        },
-        {
-          label: 'Reject Application',
-          icon: <X className="h-4 w-4 text-red-500" />,
-          onClick: (applicant: Applicant) =>
-            handleStatusUpdateClick(applicant, 'rejected'),
+            handleStatusUpdateClick(applicant),
         },
       ]
     }
@@ -195,39 +188,38 @@ export default function ApplicantsPage() {
     }
   }
 
-  async function handleStatusUpdateClick(
-    applicant: Applicant,
-    status: 'approved' | 'rejected'
-  ) {
-    setSelectedApplicant({ applicant, status })
+  async function handleStatusUpdateClick(applicant: Applicant) {
+    setSelectedApplicant(applicant)
     setIsUpdateStatusDialogOpen(true)
   }
 
-  async function handleUpdateStatusSubmit(notes: string) {
+  async function handleUpdateStatusSubmit(status: string, notes: string) {
     try {
       const updateResponse = await updateApplicantStatus({
         data: {
-          status: selectedApplicant.status,
+          status: status,
           notes: notes,
         } as UpdateApplicantStatusRequest,
-        applicantId: selectedApplicant.applicant?.id as number,
+        applicantId: selectedApplicant?.id as number,
       })
       console.log(updateResponse)
       if (updateResponse.success) {
-        toast.success(
-          `Applicant ${
-            selectedApplicant.status === 'approved' ? 'approved' : 'rejected'
-          } successfully.`
-        )
+        toast.success(`Applicant ${status} successfully.`)
         setIsUpdateStatusDialogOpen(false)
         await refetch()
       } else {
-        toast.error('Failed to update applicant status. Please try again.') 
+        toast.error('Failed to update applicant status. Please try again.')
       }
     } catch (error: any) {
-      const message = error instanceof AxiosError ? Object.entries(error.response?.data?.errors || {})
-    .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
-    .join("\n") : 'An unexpected error occurred.';
+      const message =
+        error instanceof AxiosError
+          ? Object.entries(error.response?.data?.errors || {})
+              .map(
+                ([key, value]) =>
+                  `${key}: ${Array.isArray(value) ? value.join(', ') : value}`
+              )
+              .join('\n')
+          : 'An unexpected error occurred.'
       toast.error(message)
     }
   }
@@ -427,9 +419,8 @@ export default function ApplicantsPage() {
       </Card>
       <StatusUpdateDialog
         isOpen={isUpdateStatusDialogOpen}
-        status={selectedApplicant.status}
-        submitStatus={async (notes: string) => {
-          await handleUpdateStatusSubmit(notes)
+        submitStatus={async (status: string, notes: string) => {
+          await handleUpdateStatusSubmit(status, notes)
         }}
         onClose={(isOpen: boolean) => setIsUpdateStatusDialogOpen(isOpen)}
       />
