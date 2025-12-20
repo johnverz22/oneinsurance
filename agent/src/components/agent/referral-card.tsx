@@ -18,17 +18,15 @@ import Link from 'next/link'
 type ReferralCardProps = {
   referral: Referral
   isCopied: boolean
-  agentCode: string
   onCopyLink: (referral: Referral) => void
 }
 
 export const ReferralCard = ({
   referral,
   isCopied,
-  agentCode,
   onCopyLink,
 }: ReferralCardProps) => {
-  const link = `${BASE_REFERRAL_URL}/${agentCode}/${referral.link}`
+  const link = `${BASE_REFERRAL_URL}${referral.link}`
 
   const handleCopyLink = () => {
     onCopyLink({ ...referral, link })
@@ -40,7 +38,7 @@ export const ReferralCard = ({
         <div className="flex w-full items-start justify-between gap-3">
           <div className="space-y-1.5">
             <h3 className="text-base font-semibold md:text-lg lg:text-xl">
-              {referral.description} by {referral.provider}
+              {referral.description}
             </h3>
             <p className="text-sm font-medium">
               Commission Rate:{' '}
