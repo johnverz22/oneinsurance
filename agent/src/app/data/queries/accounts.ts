@@ -19,7 +19,11 @@ export function useGetAccounts() {
         },
       })
 
-      return response.data
+      const result = response.data
+      const hasAccounts =
+        result.data.bank_details.length > 0 || result.data.e_wallets.length > 0
+
+      return { ...result, data: result.data, hasAccounts }
     },
     refetchOnWindowFocus: false,
     refetchOnMount: true,

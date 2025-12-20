@@ -18,54 +18,15 @@ const columns: ColumnDef<Product>[] = [
   { accessorKey: 'status' },
 ]
 
-function mapAgentProductToMappedProduct(
-  input: AgentProduct,
-  providerName?: string
-): Product {
-  const code = `P-${String(input.product_id).padStart(3, '0')}`
-
-  const link = `products/${input.product.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')}`
-
-  const status = input.status.charAt(0).toUpperCase() + input.status.slice(1)
-
-  return {
-    code,
-    description: input.product.name,
-    provider: (providerName as any) || 'OONA',
-    commissionRate: parseFloat(input.commission_rate),
-    status: status as any,
-    link,
-  }
-}
-
 const MyProductsPage = () => {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const { data, isError } = useGetProducts()
-
-  useEffect(() => {
-    async function fetchData() {
-      await delay(3000)
-      if (data) {
-        const mappedProducts = data.data.data.map((agentProducts) => {
-          return mapAgentProductToMappedProduct(agentProducts)
-        })
-        setProducts(mappedProducts)
-        setIsLoading(false)
-      }
-    }
-    fetchData()
-  }, [data])
+  const { data, isLoading } = useGetProducts()
 
   return (
     <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
       <DataTable<Product, unknown>
         header="Assigned Products"
         description="Products you're auhorized to sell"
-        data={products}
+        data={data ?? []}
         columns={columns}
         renderMode="list"
         numColumns={2}
