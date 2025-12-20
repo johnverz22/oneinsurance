@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { useGetAccounts } from '@/app/data/queries/accounts'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { BankDetailsFormValues, EWalletFormValues } from '@/types/account'
@@ -18,7 +19,7 @@ import {
   useEditAccountDetails,
 } from '@/app/data/mutations/agent/accounts'
 import { HoverDropdownButton } from '@/components/ui/hover-dropdown-button'
-import { Plus } from 'lucide-react'
+import { DocumentsSection } from './documents-section'
 
 type AccountDetailsForm = Partial<AccountMutationArgs> & {
   isVisible?: boolean
@@ -26,7 +27,11 @@ type AccountDetailsForm = Partial<AccountMutationArgs> & {
 
 const ProfilePage = () => {
   const { user, getInitials } = useAgentAuthStore()
-  const { data: accounts, isFetching: isAccountsFetching } = useGetAccounts()
+  const {
+    data: accounts,
+    isFetching: isAccountsFetching,
+    isSuccess,
+  } = useGetAccounts()
   const { mutateAsync: submitEditedDetails } = useEditAccountDetails()
   const { mutateAsync: submitNewDetails } = useAddAccountDetails()
 
@@ -36,6 +41,15 @@ const ProfilePage = () => {
       values: undefined,
       isVisible: false,
     })
+
+  const hasAccounts = useMemo(() => {
+    if (!isSuccess) return false
+
+    return (
+      accounts.data.bank_details.length > 0 ||
+      accounts.data.e_wallets.length > 0
+    )
+  }, [])
 
   const handleOpenAccountsForm = (data: AccountDetailsForm) => {
     setAccountDetailsForm({
@@ -79,7 +93,7 @@ const ProfilePage = () => {
               <AvatarFallback>{getInitials()}</AvatarFallback>
             </Avatar>
 
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="grid gap-3 lg:grid-cols-3">
               <div className="space-y-0.5">
                 <p>Name</p>
                 <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
@@ -87,15 +101,24 @@ const ProfilePage = () => {
                 </h2>
               </div>
               <div className="space-y-0.5">
-                <p>Phone</p>
+                <p>Email</p>
                 <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
                   {user?.email}
+                </h2>
+              </div>
+              <div className="space-y-0.5">
+                <p>Phone</p>
+                <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
+                  {user?.phone}
                 </h2>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <DocumentsSection />
+
       <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
         <div className="flex items-center justify-between border-b">
           <h3 className="py-4 text-xl font-bold lg:text-2xl">
@@ -126,7 +149,7 @@ const ProfilePage = () => {
                 </Card>
               ))}
             </>
-          ) : (
+          ) : hasAccounts ? (
             <>
               <div className="space-y-4">
                 {accounts?.data.bank_details.map((detail) => (
@@ -232,6 +255,10 @@ const ProfilePage = () => {
                 ))}
               </div>
             </>
+          ) : (
+            <div className="text-muted-foreground col-span-2 py-12 text-center text-lg">
+              No accounts found.
+            </div>
           )}
         </div>
 

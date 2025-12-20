@@ -23,7 +23,9 @@ export const RegisterAgentBaseSchema = z.object({
       'The password field must contain at least one symbol.'
     ),
   confirmPassword: z.string().min(1, 'Please confirm your password'),
-  phone: z.string().regex(/^([0-9]\d{10}|\+63\s\d{3}\s\d{3}\s\d{4})$/, 'Invalid phone number'),
+  phone: z
+    .string()
+    .regex(/^([0-9]\d{10}|\+63\s\d{3}\s\d{3}\s\d{4})$/, 'Invalid phone number'),
 
   // bank details
   bankName: z.string().min(1, 'Please enter your bank name'),
@@ -75,24 +77,29 @@ export const RegistrationSchema = RegisterAgentBaseSchema.superRefine(
 export type OnboardingV2 = z.infer<typeof RegistrationSchema>
 
 export const RegisterAgentSchema = RegisterAgentBaseSchema.extend({
-  token: z.string().min(10, 'Invalid invitation token').max(200, 'Invalid invitation token format'),
-}).pick({
-  firstName: true,
-  lastName: true,
-  email: true,
-  token: true,
-  password: true,
-  confirmPassword: true,
-  phone: true,
-}).superRefine((data, ctx) => {
-  if (data.password !== data.confirmPassword) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'The password field confirmation does not match.',
-      path: ['confirmPassword'],
-    })
-  }
+  token: z
+    .string()
+    .min(10, 'Invalid invitation token')
+    .max(200, 'Invalid invitation token format'),
 })
+  .pick({
+    firstName: true,
+    lastName: true,
+    email: true,
+    token: true,
+    password: true,
+    confirmPassword: true,
+    phone: true,
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'The password field confirmation does not match.',
+        path: ['confirmPassword'],
+      })
+    }
+  })
 export type RegisterAgent = z.infer<typeof RegisterAgentSchema>
 
 // Extract only bank-related fields
@@ -171,6 +178,7 @@ export const LoginAgentResponseSchema = z.object({
       id: z.number(),
       name: z.string(),
       email: z.string().email(),
+      phone: z.string(),
       role: z.string(),
       designation: z.string(),
       status: z.string(),
