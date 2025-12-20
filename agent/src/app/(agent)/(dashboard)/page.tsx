@@ -5,9 +5,11 @@ import { PerformanceChart } from '@/components/dashboard/performance-chart'
 import { CommissionOverview } from '@/components/dashboard/comission-overview'
 import { ClientActivity } from '@/components/dashboard/client-activity'
 import { QuickActions } from '@/components/dashboard/quick-actions'
+import { redirect } from 'next/navigation'
 
-// MAIN APP COMPONENT /////////////////////////////////////////////////////////
 const App: FC = () => {
+  return redirect('/my-sales')
+
   return (
     <div className="font-san min-h-screen">
       {/* Main Content */}
