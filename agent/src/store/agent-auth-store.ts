@@ -8,6 +8,7 @@ type AgentUser = {
   email: string
   role: string
   designation: string
+  phone: string
   status: string
   created_at: string
   updated_at: string
