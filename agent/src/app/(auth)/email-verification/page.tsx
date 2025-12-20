@@ -103,8 +103,8 @@ function EmailVerificationContent() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4">
-      <div className="flex w-fit max-w-lg flex-col items-center gap-8 rounded-2xl bg-white p-10 shadow-lg">
+    <div className="flex max-h-screen w-full items-center justify-center overflow-hidden px-4">
+      <div className="flex w-fit max-w-lg flex-col items-center gap-8 rounded-2xl bg-white p-10">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className={`rounded-full p-4 ${getStatusBgColor()}`}>
@@ -211,7 +211,7 @@ export default function EmailVerificationPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen w-full items-center justify-center px-4">
+        <div className="flex h-screen w-full items-center justify-center overflow-hidden px-4">
           <div className="flex w-fit max-w-lg flex-col items-center gap-8 rounded-2xl bg-white p-10 shadow-lg">
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="rounded-full bg-blue-50 p-4">
