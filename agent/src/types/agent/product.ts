@@ -1,7 +1,6 @@
 type BaseType = {
   description: string
   status: 'Active' | 'Inactive'
-  provider: 'OONA' | 'MALAYAN' | 'MICO'
   commissionRate: number
   link: string
 }
