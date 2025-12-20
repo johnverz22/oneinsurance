@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,6 +14,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  PaginationState,
+  OnChangeFn,
 } from '@tanstack/react-table'
 import {
   ArrowUpDown,
@@ -22,6 +25,7 @@ import {
   ChevronRight,
   MoreHorizontal,
   Search,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -79,6 +83,42 @@ export interface DataTableAction<TData> {
   variant?: 'default' | 'destructive' | 'ghost'
 }
 
+export interface PaginatedResponse<T> {
+  current_page: number
+  data: T[]
+  first_page_url: string
+  from: number
+  last_page: number
+  last_page_url: string
+  links: Array<{
+    url: string | null
+    label: string
+    active: boolean
+  }>
+  next_page_url: string | null
+  path: string
+  per_page: number
+  prev_page_url: string | null
+  to: number
+  total: number
+}
+
+export interface ServerSidePaginationConfig {
+  enabled: true
+  paginatedResponse: PaginatedResponse<any>
+  onPaginationChange: (page: number, pageSize: number) => void
+  onSearchChange?: (search: string) => void
+  onSortingChange?: (sorting: SortingState) => void
+}
+
+export interface ClientSidePaginationConfig {
+  enabled?: false
+}
+
+export type PaginationConfig =
+  | ServerSidePaginationConfig
+  | ClientSidePaginationConfig
+
 export interface DataTableBaseProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -92,6 +132,7 @@ export interface DataTableBaseProps<TData, TValue> {
   pageSize?: number
   alternateColors?: boolean
   isLoading?: boolean
+  pagination?: PaginationConfig
 }
 
 export type DataTableProps<
@@ -117,9 +158,25 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   pageSize = 10,
   alternateColors = false,
   isLoading = false,
+  pagination: paginationConfig,
   ...props
 }: DataTableProps<TData, TValue>) {
   const numColumns = props.renderMode === 'list' ? (props.numColumns ?? 3) : 1
+  const isServerSide = paginationConfig?.enabled === true
+
+  // Extract server-side pagination data
+  const serverPageCount = isServerSide
+    ? paginationConfig.paginatedResponse.last_page
+    : 0
+  const serverTotal = isServerSide
+    ? paginationConfig.paginatedResponse.total
+    : 0
+  const serverCurrentPage = isServerSide
+    ? paginationConfig.paginatedResponse.current_page
+    : 1
+  const serverPerPage = isServerSide
+    ? paginationConfig.paginatedResponse.per_page
+    : pageSize
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -128,12 +185,80 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: props.renderMode === 'list' ? (props.numColumns ?? 3) * 3 : 10, // default table pageSize
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: isServerSide ? serverCurrentPage - 1 : 0,
+    pageSize: isServerSide
+      ? serverPerPage
+      : props.renderMode === 'list'
+        ? (props.numColumns ?? 3) * 3
+        : pageSize,
   })
 
   const [globalFilter, setGlobalFilter] = React.useState<string>('')
+  const [pendingSearch, setPendingSearch] = React.useState<string>('')
+
+  // Sync pending search with global filter on mount for client-side
+  React.useEffect(() => {
+    if (!isServerSide) {
+      setPendingSearch(globalFilter)
+    }
+  }, [globalFilter, isServerSide])
+
+  // Handle search input change
+  const handleSearchInputChange = (value: string) => {
+    if (isServerSide) {
+      setPendingSearch(value)
+    } else {
+      setGlobalFilter(value)
+    }
+  }
+
+  // Handle search apply (server-side only)
+  const handleSearchApply = () => {
+    if (isServerSide && paginationConfig.onSearchChange) {
+      setGlobalFilter(pendingSearch)
+      paginationConfig.onSearchChange(pendingSearch)
+      // Reset to first page on search
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+    }
+  }
+
+  // Handle search clear
+  const handleSearchClear = () => {
+    setPendingSearch('')
+    setGlobalFilter('')
+    if (isServerSide && paginationConfig.onSearchChange) {
+      paginationConfig.onSearchChange('')
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+    }
+  }
+
+  // Handle server-side pagination changes
+  const handlePaginationChange: OnChangeFn<PaginationState> = (updater) => {
+    const newPagination =
+      typeof updater === 'function' ? updater(pagination) : updater
+
+    setPagination(newPagination)
+
+    if (isServerSide) {
+      paginationConfig.onPaginationChange(
+        newPagination.pageIndex + 1,
+        newPagination.pageSize
+      )
+    }
+  }
+
+  // Handle server-side sorting changes
+  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
+    const newSorting =
+      typeof updater === 'function' ? updater(sorting) : updater
+
+    setSorting(newSorting)
+
+    if (isServerSide && paginationConfig.onSortingChange) {
+      paginationConfig.onSortingChange(newSorting)
+    }
+  }
 
   // Add selection column if enabled
   const tableColumns = React.useMemo(() => {
@@ -231,19 +356,27 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   const table = useReactTable({
     data,
     columns: tableColumns,
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // Server-side configuration
+    manualPagination: isServerSide,
+    manualSorting: isServerSide,
+    manualFiltering: isServerSide,
+    pageCount: isServerSide ? serverPageCount : undefined,
+    // Client-side configuration
+    getPaginationRowModel: isServerSide ? undefined : getPaginationRowModel(),
+    getSortedRowModel: isServerSide ? undefined : getSortedRowModel(),
+    getFilteredRowModel: isServerSide ? undefined : getFilteredRowModel(),
+    globalFilterFn: isServerSide
+      ? undefined
+      : (row, colId, filterValue) => {
+          return multiKeyGlobalFilter(row, colId, filterValue, searchKey ?? [])
+        },
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onPaginationChange: setPagination,
+    onPaginationChange: handlePaginationChange,
     onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: (row, colId, filterValue) => {
-      return multiKeyGlobalFilter(row, colId, filterValue, searchKey ?? [])
-    },
     state: {
       sorting,
       columnFilters,
@@ -255,15 +388,24 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   })
 
   const pageIndex = table.getState().pagination.pageIndex
-  const firstIndex = pageIndex * table.getState().pagination.pageSize + 1
-  const lastIndex = firstIndex + table.getPaginationRowModel().rows.length - 1
-  const total = table.getFilteredRowModel().rows.length
+  const pageSize_internal = table.getState().pagination.pageSize
+
+  // Calculate display indices
+  const firstIndex = isServerSide
+    ? paginationConfig.paginatedResponse.from || 0
+    : pageIndex * pageSize_internal + 1
+  const lastIndex = isServerSide
+    ? paginationConfig.paginatedResponse.to || 0
+    : firstIndex + table.getPaginationRowModel().rows.length - 1
+  const total = isServerSide
+    ? serverTotal
+    : table.getFilteredRowModel().rows.length
 
   const paginationOptions = React.useMemo(() => {
     if (props.renderMode === 'table') return [5, 10, 30, 50]
 
     return [3, 5, 7, 9].map((el) => el * numColumns)
-  }, [props.renderMode])
+  }, [props.renderMode, numColumns])
 
   const filterPlaceholder = React.useMemo(() => {
     if (searchPlaceholder) {
@@ -294,10 +436,6 @@ export function DataTable<TData extends Record<string, any>, TValue>({
     return `Search by ${keyString} ...`
   }, [searchKey, searchPlaceholder])
 
-  React.useEffect(() => {
-    table.setPagination(pagination)
-  }, [pagination])
-
   return (
     <div className="w-full space-y-6 py-2.5">
       <div className="border-muted-foreground/30 flex flex-col justify-between gap-4 border-b pt-2.5 pb-4 lg:flex-row lg:items-center">
@@ -311,13 +449,49 @@ export function DataTable<TData extends Record<string, any>, TValue>({
         <div className="flex items-center gap-4">
           {searchKey && (
             <div className="relative flex-1 lg:w-md">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              {!isServerSide && (
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              )}
               <Input
                 placeholder={filterPlaceholder}
-                value={globalFilter}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-9"
+                value={isServerSide ? pendingSearch : globalFilter}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && isServerSide) {
+                    handleSearchApply()
+                  }
+                }}
+                className={cn('pl-4', { 'pl-9': !isServerSide })}
               />
+            </div>
+          )}
+
+          {searchKey && isServerSide && (
+            <div className="flex gap-1.5">
+              <Button
+                onClick={handleSearchApply}
+                disabled={isLoading}
+                size="lg"
+                className="h-11 w-11"
+              >
+                <Search />
+              </Button>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <Button
+                  onClick={handleSearchClear}
+                  disabled={isLoading || pendingSearch === ''}
+                  variant="outline"
+                  size="lg"
+                  className="h-11 w-11"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </motion.div>
             </div>
           )}
 
@@ -520,19 +694,19 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                   {Array.from(
                     { length: table.getPageCount() },
                     (_, i) => i
-                  ).map((pageIndex) => (
+                  ).map((pageIdx) => (
                     <Button
-                      key={pageIndex}
+                      key={pageIdx}
                       variant={
-                        table.getState().pagination.pageIndex === pageIndex
+                        table.getState().pagination.pageIndex === pageIdx
                           ? 'default'
                           : 'outline'
                       }
                       size="sm"
-                      onClick={() => table.setPageIndex(pageIndex)}
+                      onClick={() => table.setPageIndex(pageIdx)}
                       className="h-8 w-8 !rounded-md p-0"
                     >
-                      {pageIndex + 1}
+                      {pageIdx + 1}
                     </Button>
                   ))}
                 </div>
