@@ -40,7 +40,7 @@ export default function AgentLayout({
   return (
     <div className="flex h-full w-full">
       <Header
-        isLoggedIn={true}
+        isLoggedIn={isAuthenticated}
         isNavigationVisible={false}
         contentContainerClassName="max-w-screen"
       />
