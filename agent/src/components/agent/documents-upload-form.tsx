@@ -298,7 +298,7 @@ export function DocumentUploadForm() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="from-primary to-tertiary w-full rounded-full bg-gradient-to-r text-white"
+              className="from-primary to-lilac w-full rounded-full bg-gradient-to-r text-white"
             >
               {isSubmitting ? (
                 <>

@@ -17,7 +17,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex w-full items-start justify-between gap-3">
           <div className="space-y-1.5">
             <h3 className="text-base font-semibold md:text-lg lg:text-xl">
-              {product.description} by {product.provider}
+              {product.description}
             </h3>
             <p className="text-sm font-medium">
               Commission Rate:{' '}
