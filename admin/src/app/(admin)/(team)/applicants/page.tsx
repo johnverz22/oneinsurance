@@ -81,7 +81,7 @@ export default function ApplicantsPage() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => {
-          return <div className="font-medium">{row.original.name}</div>
+          return <div className="font-medium">{row.original.first_name} {row.original.last_name}</div>
         },
       },
       {
