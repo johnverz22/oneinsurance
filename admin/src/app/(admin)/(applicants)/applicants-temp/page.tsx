@@ -115,7 +115,7 @@ export default function PendingApplicants() {
                   }`}
                   onClick={() => setSelectedApplicant(applicant)}
                 >
-                  <h3 className="text-base font-bold">{applicant.name}</h3>
+                  <h3 className="text-base font-bold">{applicant.first_name} {applicant.last_name}</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {applicant.email}
                   </p>
@@ -174,7 +174,7 @@ export default function PendingApplicants() {
                         Name:
                       </Label>
                       <p className="text-sm dark:text-gray-200">
-                        {selectedApplicant.name}
+                        {selectedApplicant.first_name} {selectedApplicant.last_name}
                       </p>
                     </div>
                     <div>

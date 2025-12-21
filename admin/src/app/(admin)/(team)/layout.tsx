@@ -34,8 +34,8 @@ export default function TeamLayout({
   return (
     <div className="relative h-full w-full space-y-6">
       <PageHeader
-        title="Team Management & Performance"
-        subTitle="View agent hierarchies, track team performance, and manage overrider relationships"
+        title="Agents & Applicants Management"
+        subTitle="Manage your agents and applicants efficiently"
       />
       <div className="flex items-center justify-between">
         <TabNavigation tabs={TABS} />
