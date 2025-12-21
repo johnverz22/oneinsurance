@@ -57,7 +57,7 @@ export default function LoginPage() {
         toast.success(`Welcome back, ${result.data.user.name}!`)
 
         // Redirect to admin inquiries
-        router.push('/agents')
+        router.push('/')
       } catch (error: any) {
         console.error('Login error:', error)
 
