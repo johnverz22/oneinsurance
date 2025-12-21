@@ -2,24 +2,10 @@ import { createPaginatedResponseType } from "@/utils/create-paginated-response-t
 import {z} from "zod";
 import { createResponseSchema } from "./base-api-response";
 
-/*
-{
-                "id": 1,
-                "name": "John Doe",
-                "email": "john.doe@example.com",
-                "contact_number": "+63 912 345 6789",
-                "application_type": "agent",
-                "status": "pending",
-                "notes": "Experienced insurance agent with 5 years in the industry",
-                "created_at": "2025-12-10T11:55:44.000000Z",
-                "updated_at": "2025-12-10T11:55:44.000000Z",
-                "deleted_at": null
-            }
-*/
-
 export const ApplicantSchema = z.object({
     id: z.number(),
-    name: z.string(),
+    first_name: z.string(),
+    last_name: z.string(),
     email: z.string().email(),
     contact_number: z.string(),
     application_type: z.string(),

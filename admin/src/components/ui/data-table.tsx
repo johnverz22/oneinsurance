@@ -196,14 +196,20 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
   return (
     <div className="w-full space-y-4">
-      <div className="bg-background rounded-md border">
+      <div className="bg-background rounded-4xl border-1 p-5">
+        <div className="mb-4">
+          <span className="text-xl font-bold tracking-wide">
+            Payment Transaction
+          </span>
+        </div>
+
         <Table>
-          <TableHeader>
+          <TableHeader className="border-y-2">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="py-4 font-bold">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -223,11 +229,9 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={() => onRowClick?.(row.original)}
-                  className={cn(
-                    'bg-background h-16',
-                    { 'cursor-pointer': onRowClick },
-                    { 'bg-gray-100 dark:bg-gray-900': index % 2 === 1 }
-                  )}
+                  className={cn('h-16 border-0', {
+                    'cursor-pointer': onRowClick,
+                  })}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -317,46 +321,22 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 }
 
 // Helper function to create sortable column header
-export function createSortableHeader<TData>(label: string, column: any) {
+export function createSortableHeader<TData>(
+  label: string,
+  column: any,
+  className?: string
+) {
   return (
     <Button
       variant="ghost"
+      className={cn(
+        'hover:bg-transparent dark:hover:bg-transparent',
+        className
+      )}
       onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
     >
       {label}
       <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   )
-}
-
-export function exportToCSV<T extends Record<string, any>>(
-  data: T[],
-  filename = 'data.csv'
-) {
-  if (!data?.length) return
-
-  const headers = Object.keys(data[0])
-  const escapeCSV = (value: any) => {
-    if (value == null) return ''
-    const stringValue =
-      value instanceof Date ? value.toISOString() : String(value)
-    return /[",\n]/.test(stringValue)
-      ? `"${stringValue.replace(/"/g, '""')}"`
-      : stringValue
-  }
-
-  const csvRows = [
-    headers.join(','),
-    ...data.map((row) => headers.map((h) => escapeCSV(row[h])).join(',')),
-  ]
-
-  const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n')
-  const encodedUri = encodeURI(csvContent)
-
-  const link = document.createElement('a')
-  link.href = encodedUri
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
 }
