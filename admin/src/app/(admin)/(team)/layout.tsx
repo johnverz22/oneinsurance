@@ -15,9 +15,9 @@ export default function TeamLayout({
   children: React.ReactNode
 }>) {
   const TABS = [
-    { value: '/hierarchy', label: 'Hierarchy' },
-    { value: '/leaderboard', label: 'Leaderboard' },
-    { value: '/teams', label: 'Teams' },
+    // { value: '/hierarchy', label: 'Hierarchy' },
+    // { value: '/leaderboard', label: 'Leaderboard' },
+    // { value: '/teams', label: 'Teams' },
     { value: '/agents', label: 'Agents' },
     { value: '/applicants', label: 'Applicants' },
     { value: '/invitations', label: 'Invitations' },
