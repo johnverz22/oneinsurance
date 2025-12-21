@@ -18,7 +18,6 @@ import {
   DataTable,
   DataTableAction,
   createSortableHeader,
-  exportToCSV,
 } from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
@@ -30,6 +29,8 @@ import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { format } from '@/lib/utils'
+import { MultiSelect } from '@/components/ui/multi-select'
+import PaymentSummary from '@/components/transactions/payment-summary'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -42,6 +43,7 @@ export default function TransactionsPage() {
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
   const searchMutation = useSearchTransaction()
 
   useEffect(() => {
@@ -60,11 +62,13 @@ export default function TransactionsPage() {
     () => [
       {
         accessorKey: 'proposal_number',
-        header: ({ column }) => createSortableHeader('Proposal Number', column),
+        header: ({ column }) =>
+          createSortableHeader('Proposal Number', column, 'font-bold'),
       },
       {
         accessorKey: 'policy_id',
-        header: ({ column }) => createSortableHeader('Policy ID', column),
+        header: ({ column }) =>
+          createSortableHeader('Policy ID', column, 'font-bold'),
       },
       {
         accessorKey: 'merchant_transaction_id',
@@ -73,23 +77,20 @@ export default function TransactionsPage() {
       },
       {
         accessorKey: 'amount',
-        header: ({ column }) => createSortableHeader('Amount', column),
+        header: ({ column }) =>
+          createSortableHeader('Amount', column, 'font-bold'),
         cell: ({ row }) => {
           const amount = row.original.amount
           if (amount === null) return '-'
           return typeof amount === 'string'
-            ? `₱${parseFloat(amount).toFixed(2)}`
+            ? `₱ ${parseFloat(amount).toFixed(2)}`
             : `₱${amount.toFixed(2)}`
         },
       },
       {
-        accessorKey: 'transaction_status',
-        header: 'Transaction Status',
-        cell: ({ row }) => row.original.transaction_status ?? '-',
-      },
-      {
         accessorKey: 'status',
-        header: ({ column }) => createSortableHeader('Status', column),
+        header: ({ column }) =>
+          createSortableHeader('Status', column, 'font-bold'),
         cell: ({ row }) => (
           <span
             className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
@@ -102,14 +103,14 @@ export default function TransactionsPage() {
                     : 'bg-gray-100 text-gray-800'
             }`}
           >
-            {row.original.status}
+            {row.original.status.toUpperCase()}
           </span>
         ),
       },
       {
         accessorKey: 'transaction_date',
         header: ({ column }) =>
-          createSortableHeader('Transaction Date', column),
+          createSortableHeader('Transaction Date', column, 'font-bold'),
         cell: ({ row }) => {
           const date = row.original.transaction_date
           return date ? new Date(date).toLocaleString() : '-'
@@ -162,229 +163,233 @@ export default function TransactionsPage() {
   return (
     <div className="container mx-auto space-y-6 py-6">
       <div>
-        <h1 className="text-3xl font-bold">Transactions</h1>
+        <h1 className="text-3xl font-bold">Payment History</h1>
         <p className="text-muted-foreground">
-          View all transactions processed in the system
+          Track commission payments, status, and transaction details
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between px-6">
-            {/* Placeholder for header content */}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div>
-            {authChecking || isDataLoading ? (
-              <div className="w-full space-y-2">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-background flex items-center gap-4 rounded-md border p-3"
-                  >
-                    <div className="h-10 w-10">
-                      <Skeleton className="h-10 w-10" />
-                    </div>
-                    <div className="flex-1">
-                      <Skeleton className="mb-2 h-4 w-1/3" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                    <div className="w-24">
-                      <Skeleton className="h-6 w-full" />
-                    </div>
-                  </div>
-                ))}
+      <PaymentSummary
+        totalPayments={transactionsData?.data.total ?? 0}
+        totalAmount={289250}
+        paid={109_000}
+        pending={172_000}
+        failed={7_750}
+        avgProcessing={3.2}
+      />
+
+      <div>
+        {authChecking || isDataLoading ? (
+          <div className="w-full space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-background flex items-center gap-4 rounded-md border p-3"
+              >
+                <div className="h-10 w-10">
+                  <Skeleton className="h-10 w-10" />
+                </div>
+                <div className="flex-1">
+                  <Skeleton className="mb-2 h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <div className="w-24">
+                  <Skeleton className="h-6 w-full" />
+                </div>
               </div>
-            ) : (
-              <>
-                <div className="mb-4 flex justify-between">
-                  <div className="flex w-[50%] items-center gap-2">
-                    <Input
-                      value={searchKey}
-                      onChange={(e) => setSearchKey(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleSearchButtonClick()
-                        }
-                      }}
-                      placeholder="Search by proposal number, policy ID, transaction ID..."
-                      className="max-w-md rounded-full"
-                    />
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 flex justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={searchKey}
+                    onChange={(e) => setSearchKey(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearchButtonClick()
+                      }
+                    }}
+                    placeholder="Search by proposal number, policy ID, transaction ID..."
+                    className="max-w-md rounded-full"
+                  />
+                  <Button
+                    className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
+                    onClick={handleSearchButtonClick}
+                    disabled={!searchKey.trim()}
+                  >
+                    Search
+                  </Button>
+                  {isSearchMode && (
                     <Button
-                      className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
-                      onClick={handleSearchButtonClick}
-                      disabled={!searchKey.trim()}
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={handleClearSearch}
                     >
-                      Search
+                      <X className="mr-2 h-4 w-4" />
+                      Clear
                     </Button>
-                    {isSearchMode && (
+                  )}
+                </div>
+                <div>
+                  <MultiSelect
+                    id="status"
+                    options={[
+                      { value: 'pending', label: 'Pending' },
+                      { value: 'completed', label: 'Completed' },
+                      { value: 'failed', label: 'Failed' },
+                    ]}
+                    placeholder="Status"
+                    className="w-full"
+                    value={selectedStatuses}
+                    onValueChange={setSelectedStatuses}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {isSearchMode && (
+              <div className="text-muted-foreground mb-4 text-sm">
+                Showing search results for "{searchKey}"
+              </div>
+            )}
+            <DataTable
+              columns={columns}
+              data={displayData?.data?.data ?? []}
+              actions={actions}
+              enableColumnVisibility={false}
+              enablePagination={false}
+              pageSize={1000}
+            />
+
+            {/* Details dialog (shadcn Dialog) */}
+            {ViewTransactionDetails(
+              isDetailsOpen,
+              setIsDetailsOpen,
+              selectedTransaction
+            )}
+
+            {/* Server-driven pagination links */}
+            <div className="mt-4 flex items-center justify-end gap-2">
+              {(() => {
+                const links = transactionsData?.data.links ?? []
+
+                // Separate prev/next from numbered pages
+                const prevLink = links.find(
+                  (l: any) =>
+                    l.label.includes('Previous') || l.label.includes('&laquo;')
+                )
+                const nextLink = links.find(
+                  (l: any) =>
+                    l.label.includes('Next') || l.label.includes('&raquo;')
+                )
+
+                // Get only numbered page links
+                const pageLinks = links.filter((l: any) => {
+                  const cleaned = l.label.replace(/[^0-9]/g, '')
+                  return cleaned !== '' && !isNaN(Number(cleaned))
+                })
+
+                // Find active page index
+                const activePageIndex = pageLinks.findIndex(
+                  (l: any) => l.active
+                )
+                const totalPages = pageLinks.length
+
+                // Calculate which pages to show (5 pages max)
+                const maxPagesToShow = 5
+                let startIndex = Math.max(
+                  0,
+                  activePageIndex - Math.floor(maxPagesToShow / 2)
+                )
+                let endIndex = Math.min(totalPages, startIndex + maxPagesToShow)
+
+                // Adjust if we're near the end
+                if (endIndex - startIndex < maxPagesToShow) {
+                  startIndex = Math.max(0, endIndex - maxPagesToShow)
+                }
+
+                const visiblePages = pageLinks.slice(startIndex, endIndex)
+
+                return (
+                  <>
+                    {/* Previous button */}
+                    {prevLink && (
                       <Button
                         variant="outline"
-                        className="rounded-full"
-                        onClick={handleClearSearch}
+                        size="sm"
+                        onClick={() => {
+                          if (prevLink.url) {
+                            try {
+                              const u = new URL(prevLink.url)
+                              const p = u.searchParams.get('page')
+                              p && setPage(Number(p))
+                            } catch (e) {}
+                          }
+                        }}
+                        disabled={!prevLink.url}
                       >
-                        <X className="mr-2 h-4 w-4" />
-                        Clear
+                        «
                       </Button>
                     )}
-                  </div>
 
-                  <Button
-                    onClick={() => exportToCSV(displayData?.data?.data ?? [])}
-                    className="gap-2 rounded-full"
-                  >
-                    <ArrowUpRight />
-                    Export
-                  </Button>
-                </div>
+                    {/* Page numbers */}
+                    {visiblePages.map((linkObj: any, idx: number) => {
+                      const { url, label: rawLabel, active } = linkObj
+                      const cleanedLabel = rawLabel.replace(/[^0-9]/g, '')
 
-                {isSearchMode && (
-                  <div className="text-muted-foreground mb-4 text-sm">
-                    Showing search results for "{searchKey}"
-                  </div>
-                )}
-                <DataTable
-                  columns={columns}
-                  data={displayData?.data?.data ?? []}
-                  actions={actions}
-                  enableColumnVisibility={false}
-                  enablePagination={false}
-                  pageSize={1000}
-                />
+                      let pageNum: number | null = null
+                      try {
+                        if (url) {
+                          const u = new URL(url)
+                          const p = u.searchParams.get('page')
+                          pageNum = p ? Number(p) : null
+                        }
+                      } catch (e) {
+                        pageNum = null
+                      }
 
-                {/* Details dialog (shadcn Dialog) */}
-                {ViewTransactionDetails(
-                  isDetailsOpen,
-                  setIsDetailsOpen,
-                  selectedTransaction
-                )}
+                      return (
+                        <Button
+                          key={`page-${cleanedLabel}-${idx}`}
+                          variant={active ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => pageNum && setPage(pageNum)}
+                          disabled={!url}
+                        >
+                          {cleanedLabel}
+                        </Button>
+                      )
+                    })}
 
-                {/* Server-driven pagination links */}
-                <div className="mt-4 flex items-center justify-end gap-2">
-                  {(() => {
-                    const links = transactionsData?.data.links ?? []
-
-                    // Separate prev/next from numbered pages
-                    const prevLink = links.find(
-                      (l: any) =>
-                        l.label.includes('Previous') ||
-                        l.label.includes('&laquo;')
-                    )
-                    const nextLink = links.find(
-                      (l: any) =>
-                        l.label.includes('Next') || l.label.includes('&raquo;')
-                    )
-
-                    // Get only numbered page links
-                    const pageLinks = links.filter((l: any) => {
-                      const cleaned = l.label.replace(/[^0-9]/g, '')
-                      return cleaned !== '' && !isNaN(Number(cleaned))
-                    })
-
-                    // Find active page index
-                    const activePageIndex = pageLinks.findIndex(
-                      (l: any) => l.active
-                    )
-                    const totalPages = pageLinks.length
-
-                    // Calculate which pages to show (5 pages max)
-                    const maxPagesToShow = 5
-                    let startIndex = Math.max(
-                      0,
-                      activePageIndex - Math.floor(maxPagesToShow / 2)
-                    )
-                    let endIndex = Math.min(
-                      totalPages,
-                      startIndex + maxPagesToShow
-                    )
-
-                    // Adjust if we're near the end
-                    if (endIndex - startIndex < maxPagesToShow) {
-                      startIndex = Math.max(0, endIndex - maxPagesToShow)
-                    }
-
-                    const visiblePages = pageLinks.slice(startIndex, endIndex)
-
-                    return (
-                      <>
-                        {/* Previous button */}
-                        {prevLink && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (prevLink.url) {
-                                try {
-                                  const u = new URL(prevLink.url)
-                                  const p = u.searchParams.get('page')
-                                  p && setPage(Number(p))
-                                } catch (e) {}
-                              }
-                            }}
-                            disabled={!prevLink.url}
-                          >
-                            «
-                          </Button>
-                        )}
-
-                        {/* Page numbers */}
-                        {visiblePages.map((linkObj: any, idx: number) => {
-                          const { url, label: rawLabel, active } = linkObj
-                          const cleanedLabel = rawLabel.replace(/[^0-9]/g, '')
-
-                          let pageNum: number | null = null
-                          try {
-                            if (url) {
-                              const u = new URL(url)
+                    {/* Next button */}
+                    {nextLink && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (nextLink.url) {
+                            try {
+                              const u = new URL(nextLink.url)
                               const p = u.searchParams.get('page')
-                              pageNum = p ? Number(p) : null
-                            }
-                          } catch (e) {
-                            pageNum = null
+                              p && setPage(Number(p))
+                            } catch (e) {}
                           }
-
-                          return (
-                            <Button
-                              key={`page-${cleanedLabel}-${idx}`}
-                              variant={active ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => pageNum && setPage(pageNum)}
-                              disabled={!url}
-                            >
-                              {cleanedLabel}
-                            </Button>
-                          )
-                        })}
-
-                        {/* Next button */}
-                        {nextLink && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (nextLink.url) {
-                                try {
-                                  const u = new URL(nextLink.url)
-                                  const p = u.searchParams.get('page')
-                                  p && setPage(Number(p))
-                                } catch (e) {}
-                              }
-                            }}
-                            disabled={!nextLink.url}
-                          >
-                            »
-                          </Button>
-                        )}
-                      </>
-                    )
-                  })()}
-                </div>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                        }}
+                        disabled={!nextLink.url}
+                      >
+                        »
+                      </Button>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
