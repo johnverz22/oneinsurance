@@ -2,10 +2,36 @@
 
 import { useRouter } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '../ui/button'
+import { Button } from '@/components/ui/button'
 
-export const LockedProfilePrompt = () => {
+type ProfileState = 'locked' | 'incomplete'
+
+interface ProfileStateConfig {
+  title: string
+  description: string
+  buttonLabel?: string
+  redirectUrl?: string
+}
+
+export const CONFIG_BY_TYPE: Record<ProfileState, ProfileStateConfig> = {
+  locked: {
+    title: 'Profile Locked',
+    description:
+      'Your account is currently locked and pending admin approval. You’ll receive a confirmation email once your profile has been activated.',
+  },
+
+  incomplete: {
+    title: 'Complete Your Profile',
+    description:
+      'Your profile setup is not finished yet. Please complete the required information to continue.',
+    buttonLabel: 'Finish profile setup',
+    redirectUrl: '/profile',
+  },
+}
+
+export const LockedProfilePrompt = ({ state }: { state: ProfileState }) => {
   const router = useRouter()
+  const config = CONFIG_BY_TYPE[state]
 
   return (
     <div className="relative mx-auto h-full w-full max-w-7xl overflow-hidden">
@@ -56,21 +82,19 @@ export const LockedProfilePrompt = () => {
             className="w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-xl"
           >
             <h2 className="text-lg font-semibold text-gray-900">
-              Profile Locked
+              {config.title}
             </h2>
 
-            <p className="mt-2 text-sm text-gray-600">
-              Your account is currently locked and waiting for admin activation.
-              Please wait for the confirmation email once your profile is
-              approved.
-            </p>
+            <p className="mt-2 text-sm text-gray-600">{config.description}</p>
 
-            <Button
-              onClick={() => router.replace('/profile')}
-              className="from-primary to-lilac my-2.5 w-full rounded-full bg-gradient-to-r text-white"
-            >
-              Finish profile setup
-            </Button>
+            {config.redirectUrl && (
+              <Button
+                onClick={() => router.replace(config.redirectUrl!)}
+                className="from-primary to-lilac my-2.5 w-full rounded-full bg-gradient-to-r text-white"
+              >
+                {config.buttonLabel}
+              </Button>
+            )}
           </div>
         </div>
       </div>

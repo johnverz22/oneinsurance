@@ -5,6 +5,7 @@ import { Tab, TabNavigation } from '@/components/ui/tab-navigation'
 import { PageLoader } from '@/components/page-loader'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { LockedProfilePrompt } from '@/components/accounts/locked-profile-prompt'
+import { useGetAccounts } from '@/app/data/queries/accounts'
 
 export default function DashboardLayout({
   children,
@@ -12,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { user } = useAgentAuthStore()
+  const { data } = useGetAccounts()
 
   const TABS = [
     // { value: '/', label: 'Overview' },
@@ -23,12 +25,19 @@ export default function DashboardLayout({
     { value: '/payments', label: 'Payments' },
   ] satisfies Tab[]
 
-  if (!user) {
+  if (!user || !data) {
     return <PageLoader />
   }
 
-  if (user.status !== 'active') {
-    return <LockedProfilePrompt />
+  const profileState =
+    user.status !== 'active'
+      ? 'locked'
+      : !data.hasAccounts
+        ? 'incomplete'
+        : null
+
+  if (profileState) {
+    return <LockedProfilePrompt state={profileState} />
   }
 
   return (
