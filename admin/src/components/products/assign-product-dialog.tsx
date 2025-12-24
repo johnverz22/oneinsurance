@@ -185,7 +185,7 @@ export default function AssignProductDialog() {
                             </div>
                           </PopoverTrigger>
                           <PopoverContent
-                            className="bg-card w-[300px] rounded-lg border-1 p-2 shadow-lg"
+                            className="z-[9999] w-[300px] rounded-lg border bg-white p-2 shadow-lg dark:bg-gray-950"
                             onOpenAutoFocus={(e) => e.preventDefault()}
                           >
                             {products &&
