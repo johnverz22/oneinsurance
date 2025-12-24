@@ -15,7 +15,7 @@ export default function Home() {
       if (!isAuthenticated) {
         window.location.href = '/login'
       } else {
-        window.location.href = '/'
+        window.location.href = '/dashboard'
       }
     }, 250)
 
