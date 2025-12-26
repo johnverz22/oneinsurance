@@ -31,6 +31,8 @@ import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { format } from '@/lib/utils'
 import { MultiSelect } from '@/components/ui/multi-select'
 import PaymentSummary from '@/components/transactions/payment-summary'
+import { exportToCSV } from '@/utils/export-to-csv'
+import { Download } from 'lucide-react'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -144,6 +146,16 @@ export default function TransactionsPage() {
     searchMutation.reset()
   }
 
+  function handleExportToCSV(): void {
+    const dataToExport = displayData?.data?.data ?? []
+    if (dataToExport.length === 0) {
+      toast.info('No data to export')
+      return
+    }
+    exportToCSV(dataToExport, 'payments-export.csv')
+    toast.success('Data exported successfully')
+  }
+
   // Details dialog state
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [selectedTransaction, setSelectedTransaction] =
@@ -202,7 +214,7 @@ export default function TransactionsPage() {
         ) : (
           <>
             <div className="mb-4 flex justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-1 items-center gap-2">
                 <div className="flex items-center gap-2">
                   <Input
                     value={searchKey}
@@ -248,6 +260,14 @@ export default function TransactionsPage() {
                   />
                 </div>
               </div>
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={handleExportToCSV}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export to CSV
+              </Button>
             </div>
 
             {isSearchMode && (
