@@ -40,6 +40,8 @@ import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
+import { exportToCSV } from '@/utils/export-to-csv'
+import { Download } from 'lucide-react'
 
 
 export default function AgentsPage() {
@@ -462,6 +464,24 @@ export default function AgentsPage() {
     ? isSearching 
     : isFetching || isLoading
 
+  function handleExportToCSV(): void {
+    const dataToExport = isSearchMode 
+      ? (searchResults?.data.data ?? []) 
+      : agentsOnly
+
+    if (dataToExport.length === 0) {
+      toast.info('No agents to export')
+      return
+    }
+
+    const filename = isSearchMode 
+      ? `agents-search-${new Date().toISOString().split('T')[0]}.csv`
+      : `agents-${new Date().toISOString().split('T')[0]}.csv`
+
+    exportToCSV(dataToExport, filename)
+    toast.success(`Exported ${dataToExport.length} agent(s) to CSV`)
+  }
+
   return (
     <div className="container mx-auto space-y-6 py-6">
       <Card className="border-0 shadow-sm">
@@ -497,7 +517,7 @@ export default function AgentsPage() {
             ) : (
               <div className="p-6">
                 <div className="mb-6 flex justify-between">
-                  <div className="flex w-[50%] items-center gap-2">
+                  <div className="flex flex-1 items-center gap-2">
                     <Input
                       value={searchKey}
                       onChange={(e) => setSearchKey(e.target.value)}
@@ -523,6 +543,13 @@ export default function AgentsPage() {
                       </Button>
                     )}
                   </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleExportToCSV}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export to CSV
+                  </Button>
                 </div>
 
                 {isSearchMode && (
