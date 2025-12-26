@@ -1,10 +1,13 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Search, Filter, Plus } from 'lucide-react'
+import { Search, Filter, Plus, Download } from 'lucide-react'
 import ProductsMainContent from './products-main-content'
 import AgentsMainContent from './agents-main-content'
 import AssignProductDialog from './assign-product-dialog'
+import { exportToCSV } from '@/utils/export-to-csv'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import {
   Product,
   ProductAssignment,
@@ -169,6 +172,41 @@ export default function ProductTabs() {
     }
   }, [products, agentProducts])
 
+  const handleExportProducts = () => {
+    if (!productsAssignments || productsAssignments.length === 0) {
+      toast.info('No products data to export')
+      return
+    }
+    const exportData = productsAssignments.map(assignment => ({
+      product_id: assignment.product.id,
+      product_name: assignment.product.name,
+      provider: assignment.provider.name,
+      status: assignment.status,
+      assigned_agents: assignment.agents.length,
+      avg_commission_rate: assignment.commission_rate,
+      description: assignment.product.description,
+    }))
+    exportToCSV(exportData, 'products-export.csv')
+    toast.success('Products data exported successfully')
+  }
+
+  const handleExportAgents = () => {
+    if (!agentProducts?.data?.data || agentProducts.data.data.length === 0) {
+      toast.info('No agents data to export')
+      return
+    }
+    const exportData = agentProducts.data.data.map(agentProduct => ({
+      agent_id: agentProduct.agent.id,
+      agent_name: `${agentProduct.agent.first_name} ${agentProduct.agent.last_name}`,
+      agent_email: agentProduct.agent.email,
+      product_id: agentProduct.product_id,
+      commission_rate: agentProduct.commission_rate,
+      status: agentProduct.status,
+    }))
+    exportToCSV(exportData, 'agent-products-export.csv')
+    toast.success('Agent products data exported successfully')
+  }
+
   return (
     <div className="mt-2 min-h-screen sm:mt-4">
       <div>
@@ -214,6 +252,15 @@ export default function ProductTabs() {
                 <Filter className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+
+            <Button
+              variant="outline"
+              onClick={activeTab === 'products' ? handleExportProducts : handleExportAgents}
+              className="rounded-full"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export to CSV
+            </Button>
 
             <AssignProductDialog />
           </div>
