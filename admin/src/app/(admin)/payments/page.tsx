@@ -15,10 +15,10 @@ import {
 } from '@/components/ui/dialog'
 import { ArrowUpRight, X, Eye } from 'lucide-react'
 import {
-  DataTable,
-  DataTableAction,
+  PaymentDataTable,
+  PaymentDataTableAction,
   createSortableHeader,
-} from '@/components/ui/data-table'
+} from '@/components/transactions/payment-data-table'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransaction } from '@/app/data/mutations/transactions'
@@ -121,7 +121,7 @@ export default function TransactionsPage() {
     []
   )
 
-  const actions: DataTableAction<Transaction>[] = [
+  const actions: PaymentDataTableAction<Transaction>[] = [
     {
       label: 'View Details',
       icon: <Eye className="h-4 w-4" />,
@@ -255,7 +255,7 @@ export default function TransactionsPage() {
                 Showing search results for "{searchKey}"
               </div>
             )}
-            <DataTable
+            <PaymentDataTable
               columns={columns}
               data={displayData?.data?.data ?? []}
               actions={actions}
