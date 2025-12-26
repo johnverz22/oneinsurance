@@ -52,18 +52,18 @@ import {
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
-export interface DataTableAction<TData> {
+export interface PaymentDataTableAction<TData> {
   label: string
   icon?: React.ReactNode
   onClick: (row: TData) => void
   variant?: 'default' | 'destructive' | 'ghost'
 }
 
-export interface DataTableProps<TData, TValue> {
+export interface PaymentDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   searchKey?: string
-  actions?: DataTableAction<TData>[]
+  actions?: PaymentDataTableAction<TData>[]
   onRowClick?: (row: TData) => void
   enableRowSelection?: boolean
   enableColumnVisibility?: boolean
@@ -71,7 +71,7 @@ export interface DataTableProps<TData, TValue> {
   enablePagination?: boolean
 }
 
-export function DataTable<TData extends Record<string, any>, TValue>({
+export function PaymentDataTable<TData extends Record<string, any>, TValue>({
   columns,
   data,
   searchKey,
@@ -81,7 +81,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   enableColumnVisibility = true,
   pageSize = 10,
   enablePagination = true,
-}: DataTableProps<TData, TValue>) {
+}: PaymentDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
