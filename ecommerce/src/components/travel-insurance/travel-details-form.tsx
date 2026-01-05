@@ -609,10 +609,10 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
           >
-            {(field) => (
+            {([canSubmit, isSubmitting]) => (
               <Button
                 type="submit"
-                disabled={!isDetailsFormState.canSubmit}
+                disabled={!canSubmit || isSubmitting}
                 onClick={(e) => {
                   e.preventDefault()
                   form.handleSubmit()
