@@ -612,7 +612,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
             {(field) => (
               <Button
                 type="submit"
-                disabled={!form.state.canSubmit}
+                disabled={!isDetailsFormState.canSubmit}
                 onClick={(e) => {
                   e.preventDefault()
                   form.handleSubmit()
