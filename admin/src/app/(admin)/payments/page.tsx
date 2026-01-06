@@ -2,18 +2,11 @@
 
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Eye, Download, X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { ArrowUpRight, X, Eye } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { MultiSelect } from '@/components/ui/multi-select'
+import { ProcessPaymentDialog } from '@/components/transactions/process-payment-dialog'
 import {
   PaymentDataTable,
   PaymentDataTableAction,
@@ -24,15 +17,95 @@ import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransaction } from '@/app/data/mutations/transactions'
 import { Transaction } from '@/types/transactions'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Input } from '@/components/ui/input'
 import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
-import { removeLocalStorage } from '@/utils/remove-session-storage'
-import { format } from '@/lib/utils'
-import { MultiSelect } from '@/components/ui/multi-select'
 import PaymentSummary from '@/components/transactions/payment-summary'
 import { exportToCSV } from '@/utils/export-to-csv'
-import { Download } from 'lucide-react'
+import { PayoutDataTable } from '@/components/transactions/payout-data-table'
+
+// Mock data based on design
+const mockPaymentData: Transaction[] = [
+  {
+    id: 1,
+    agent_id: 1,
+    agent_code_used: 'AGT-001 | 3 sales',
+    proposal_number: 'PAY-2024-001',
+    policy_id: 'POL-001',
+    merchant_transaction_id: '1234',
+    amount: 90000,
+    customer_id: 1,
+    transaction_status: 'completed',
+    status: 'completed',
+    transaction_date: '2024-11-02T00:00:00Z',
+    created_at: '2024-10-01T00:00:00Z',
+    updated_at: '2024-11-02T00:00:00Z',
+    deleted_at: null,
+  },
+  {
+    id: 2,
+    agent_id: 2,
+    agent_code_used: 'AGT-002 | 3 sales',
+    proposal_number: 'PAY-2024-002',
+    policy_id: 'POL-002',
+    merchant_transaction_id: '09171234567',
+    amount: 37000,
+    customer_id: 2,
+    transaction_status: 'pending',
+    status: 'pending',
+    transaction_date: '2024-11-08T00:00:00Z',
+    created_at: '2024-10-01T00:00:00Z',
+    updated_at: '2024-10-01T00:00:00Z',
+    deleted_at: null,
+  },
+  {
+    id: 3,
+    agent_id: 3,
+    agent_code_used: 'AGT-003 | 3 sales',
+    proposal_number: 'PAY-2024-003',
+    policy_id: 'POL-003',
+    merchant_transaction_id: '5678',
+    amount: 135500,
+    customer_id: 3,
+    transaction_status: 'processing',
+    status: 'cancelled',
+    transaction_date: '2024-11-06T00:00:00Z',
+    created_at: '2024-10-01T00:00:00Z',
+    updated_at: '2024-10-01T00:00:00Z',
+    deleted_at: null,
+  },
+  {
+    id: 4,
+    agent_id: 4,
+    agent_code_used: 'AGT-004 | 3 sales',
+    proposal_number: 'PAY-2024-004',
+    policy_id: 'POL-004',
+    merchant_transaction_id: '09181234567',
+    amount: 19000,
+    customer_id: 4,
+    transaction_status: 'completed',
+    status: 'completed',
+    transaction_date: '2024-10-30T00:00:00Z',
+    created_at: '2024-10-01T00:00:00Z',
+    updated_at: '2024-10-30T00:00:00Z',
+    deleted_at: null,
+  },
+  {
+    id: 5,
+    agent_id: 5,
+    agent_code_used: 'AGT-005 | 3 sales',
+    proposal_number: 'PAY-2024-005',
+    policy_id: 'POL-005',
+    merchant_transaction_id: '9012',
+    amount: 7750,
+    customer_id: 5,
+    transaction_status: 'failed',
+    status: 'failed',
+    transaction_date: '2024-10-28T00:00:00Z',
+    created_at: '2024-10-01T00:00:00Z',
+    updated_at: '2024-10-28T00:00:00Z',
+    deleted_at: null,
+  },
+]
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -46,6 +119,7 @@ export default function TransactionsPage() {
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
   const searchMutation = useSearchTransaction()
 
   useEffect(() => {
@@ -182,7 +256,7 @@ export default function TransactionsPage() {
       </div>
 
       <PaymentSummary
-        totalPayments={transactionsData?.data.total ?? 0}
+        totalPayments={5}
         totalAmount={289250}
         paid={109_000}
         pending={172_000}
@@ -191,7 +265,7 @@ export default function TransactionsPage() {
       />
 
       <div>
-        {authChecking || isDataLoading ? (
+        {authChecking ? (
           <div className="w-full space-y-2">
             {[...Array(5)].map((_, i) => (
               <div
@@ -217,33 +291,14 @@ export default function TransactionsPage() {
               <div className="flex flex-1 items-center gap-2">
                 <div className="flex items-center gap-2">
                   <Input
-                    value={searchKey}
-                    onChange={(e) => setSearchKey(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSearchButtonClick()
-                      }
-                    }}
                     placeholder="Search by proposal number, policy ID, transaction ID..."
                     className="max-w-md rounded-full"
                   />
                   <Button
                     className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
-                    onClick={handleSearchButtonClick}
-                    disabled={!searchKey.trim()}
                   >
                     Search
                   </Button>
-                  {isSearchMode && (
-                    <Button
-                      variant="outline"
-                      className="rounded-full"
-                      onClick={handleClearSearch}
-                    >
-                      <X className="mr-2 h-4 w-4" />
-                      Clear
-                    </Button>
-                  )}
                 </div>
                 <div>
                   <MultiSelect
@@ -255,257 +310,43 @@ export default function TransactionsPage() {
                     ]}
                     placeholder="Status"
                     className="w-full"
-                    value={selectedStatuses}
-                    onValueChange={setSelectedStatuses}
+                    value={[]}
+                    onValueChange={() => {}}
                   />
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="rounded-full"
-                onClick={handleExportToCSV}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export to CSV
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
+                  onClick={() => setIsProcessPaymentOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Process Payment
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export to CSV
+                </Button>
+              </div>
             </div>
 
-            {isSearchMode && (
-              <div className="text-muted-foreground mb-4 text-sm">
-                Showing search results for "{searchKey}"
-              </div>
-            )}
-            <PaymentDataTable
-              columns={columns}
-              data={displayData?.data?.data ?? []}
-              actions={actions}
-              enableColumnVisibility={false}
-              enablePagination={false}
-              pageSize={1000}
+            <PayoutDataTable 
+              data={mockPaymentData}
+              onViewDetails={(transaction) => {
+                console.log('View details:', transaction)
+              }}
             />
 
-            {/* Details dialog (shadcn Dialog) */}
-            {ViewTransactionDetails(
-              isDetailsOpen,
-              setIsDetailsOpen,
-              selectedTransaction
-            )}
-
-            {/* Server-driven pagination links */}
-            <div className="mt-4 flex items-center justify-end gap-2">
-              {(() => {
-                const links = transactionsData?.data.links ?? []
-
-                // Separate prev/next from numbered pages
-                const prevLink = links.find(
-                  (l: any) =>
-                    l.label.includes('Previous') || l.label.includes('&laquo;')
-                )
-                const nextLink = links.find(
-                  (l: any) =>
-                    l.label.includes('Next') || l.label.includes('&raquo;')
-                )
-
-                // Get only numbered page links
-                const pageLinks = links.filter((l: any) => {
-                  const cleaned = l.label.replace(/[^0-9]/g, '')
-                  return cleaned !== '' && !isNaN(Number(cleaned))
-                })
-
-                // Find active page index
-                const activePageIndex = pageLinks.findIndex(
-                  (l: any) => l.active
-                )
-                const totalPages = pageLinks.length
-
-                // Calculate which pages to show (5 pages max)
-                const maxPagesToShow = 5
-                let startIndex = Math.max(
-                  0,
-                  activePageIndex - Math.floor(maxPagesToShow / 2)
-                )
-                let endIndex = Math.min(totalPages, startIndex + maxPagesToShow)
-
-                // Adjust if we're near the end
-                if (endIndex - startIndex < maxPagesToShow) {
-                  startIndex = Math.max(0, endIndex - maxPagesToShow)
-                }
-
-                const visiblePages = pageLinks.slice(startIndex, endIndex)
-
-                return (
-                  <>
-                    {/* Previous button */}
-                    {prevLink && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (prevLink.url) {
-                            try {
-                              const u = new URL(prevLink.url)
-                              const p = u.searchParams.get('page')
-                              p && setPage(Number(p))
-                            } catch (e) {}
-                          }
-                        }}
-                        disabled={!prevLink.url}
-                      >
-                        «
-                      </Button>
-                    )}
-
-                    {/* Page numbers */}
-                    {visiblePages.map((linkObj: any, idx: number) => {
-                      const { url, label: rawLabel, active } = linkObj
-                      const cleanedLabel = rawLabel.replace(/[^0-9]/g, '')
-
-                      let pageNum: number | null = null
-                      try {
-                        if (url) {
-                          const u = new URL(url)
-                          const p = u.searchParams.get('page')
-                          pageNum = p ? Number(p) : null
-                        }
-                      } catch (e) {
-                        pageNum = null
-                      }
-
-                      return (
-                        <Button
-                          key={`page-${cleanedLabel}-${idx}`}
-                          variant={active ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => pageNum && setPage(pageNum)}
-                          disabled={!url}
-                        >
-                          {cleanedLabel}
-                        </Button>
-                      )
-                    })}
-
-                    {/* Next button */}
-                    {nextLink && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (nextLink.url) {
-                            try {
-                              const u = new URL(nextLink.url)
-                              const p = u.searchParams.get('page')
-                              p && setPage(Number(p))
-                            } catch (e) {}
-                          }
-                        }}
-                        disabled={!nextLink.url}
-                      >
-                        »
-                      </Button>
-                    )}
-                  </>
-                )
-              })()}
-            </div>
+            <ProcessPaymentDialog
+              open={isProcessPaymentOpen}
+              onOpenChange={setIsProcessPaymentOpen}
+            />
           </>
         )}
       </div>
     </div>
-  )
-}
-function ViewTransactionDetails(
-  isDetailsOpen: boolean,
-  setIsDetailsOpen: React.Dispatch<React.SetStateAction<boolean>>,
-  selectedTransaction: {
-    status: 'pending' | 'completed' | 'failed' | 'cancelled'
-    id: number
-    agent_id: number
-    agent_code_used: string
-    proposal_number: string
-    policy_id: string
-    merchant_transaction_id: string | null
-    amount: string | number | null
-    customer_id: number | null
-    transaction_status: string | null
-    transaction_date: string | null
-    created_at: string
-    updated_at: string
-    deleted_at: string | null
-  } | null
-) {
-  return (
-    <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Transaction Details</DialogTitle>
-          <DialogDescription>
-            Details for the selected transaction
-          </DialogDescription>
-        </DialogHeader>
-
-        {selectedTransaction ? (
-          <div className="space-y-2 py-2">
-            <div>
-              <strong>Proposal Number:</strong>{' '}
-              {selectedTransaction.proposal_number}
-            </div>
-            <div>
-              <strong>Policy ID:</strong> {selectedTransaction.policy_id}
-            </div>
-            <div>
-              <strong>Merchant Transaction ID:</strong>{' '}
-              {selectedTransaction.merchant_transaction_id ?? '-'}
-            </div>
-            <div>
-              <strong>Amount:</strong>{' '}
-              {selectedTransaction.amount !== null
-                ? `₱${typeof selectedTransaction.amount === 'string' ? parseFloat(selectedTransaction.amount).toFixed(2) : selectedTransaction.amount.toFixed(2)}`
-                : '-'}
-            </div>
-            <div>
-              <strong>Status:</strong> {selectedTransaction.status}
-            </div>
-            <div>
-              <strong>Transaction Status:</strong>{' '}
-              {selectedTransaction.transaction_status ?? '-'}
-            </div>
-            <div>
-              <strong>Transaction Date:</strong>{' '}
-              {selectedTransaction.transaction_date
-                ? new Date(
-                    selectedTransaction.transaction_date
-                  ).toLocaleString()
-                : '-'}
-            </div>
-            <div>
-              <strong>Agent Code Used:</strong>{' '}
-              {selectedTransaction.agent_code_used}
-            </div>
-            <div>
-              <strong>Customer ID:</strong>{' '}
-              {selectedTransaction.customer_id ?? '-'}
-            </div>
-            <div>
-              <strong>Created At:</strong>{' '}
-              {selectedTransaction.created_at
-                ? new Date(selectedTransaction.created_at).toLocaleString()
-                : '-'}
-            </div>
-            <div>
-              <strong>Updated At:</strong>{' '}
-              {selectedTransaction.updated_at
-                ? new Date(selectedTransaction.updated_at).toLocaleString()
-                : '-'}
-            </div>
-          </div>
-        ) : (
-          <div>No transaction selected</div>
-        )}
-
-        <DialogFooter>
-          <Button onClick={() => setIsDetailsOpen(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
