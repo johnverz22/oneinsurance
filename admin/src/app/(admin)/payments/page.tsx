@@ -2,10 +2,11 @@
 
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Eye, Download, X } from 'lucide-react'
+import { Eye, Download, X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MultiSelect } from '@/components/ui/multi-select'
+import { ProcessPaymentDialog } from '@/components/transactions/process-payment-dialog'
 import {
   PaymentDataTable,
   PaymentDataTableAction,
@@ -118,6 +119,7 @@ export default function TransactionsPage() {
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
   const searchMutation = useSearchTransaction()
 
   useEffect(() => {
@@ -313,13 +315,22 @@ export default function TransactionsPage() {
                   />
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="rounded-full"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export to CSV
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
+                  onClick={() => setIsProcessPaymentOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Process Payment
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export to CSV
+                </Button>
+              </div>
             </div>
 
             <PayoutDataTable 
@@ -327,6 +338,11 @@ export default function TransactionsPage() {
               onViewDetails={(transaction) => {
                 console.log('View details:', transaction)
               }}
+            />
+
+            <ProcessPaymentDialog
+              open={isProcessPaymentOpen}
+              onOpenChange={setIsProcessPaymentOpen}
             />
           </>
         )}
