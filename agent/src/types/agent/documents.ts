@@ -1,14 +1,7 @@
 import { z } from 'zod'
-
-const ID_TYPES = [
-  'passport',
-  'drivers_license',
-  'national_id',
-  'residence_permit',
-] as const
+import { createAPIResponseSchema } from '../base-api-response'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
-
 const ALLOWED_FILE_TYPES = [
   'image/jpeg',
   'image/jpg',
@@ -18,58 +11,13 @@ const ALLOWED_FILE_TYPES = [
 ]
 
 export const documentDraftSchema = z.object({
-  fullName: z.string(),
-  documentNumber: z.string(),
-  idType: z.enum(ID_TYPES).optional(),
-  expiryDate: z.coerce.date(),
+  fileName: z.string(),
+  tag: z.string(),
   file: z.instanceof(File).optional(),
 })
 
 export const documentFinalSchema = documentDraftSchema.superRefine(
   (data, ctx) => {
-    if (!data.fullName || data.fullName.length < 2) {
-      ctx.addIssue({
-        path: ['fullName'],
-        message: 'Full name must be at least 2 characters',
-        code: z.ZodIssueCode.custom,
-      })
-    }
-
-    if (!data.documentNumber || data.documentNumber.length < 5) {
-      ctx.addIssue({
-        path: ['documentNumber'],
-        message: 'Document number must be at least 5 characters',
-        code: z.ZodIssueCode.custom,
-      })
-    }
-
-    if (!data.idType) {
-      ctx.addIssue({
-        path: ['idType'],
-        message: 'Please select an ID type',
-        code: z.ZodIssueCode.custom,
-      })
-    }
-
-    if (!data.expiryDate) {
-      ctx.addIssue({
-        path: ['expiryDate'],
-        message: 'Expiry date is required',
-        code: z.ZodIssueCode.custom,
-      })
-    } else {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-
-      if (data.expiryDate <= today) {
-        ctx.addIssue({
-          path: ['expiryDate'],
-          message: 'Document must not be expired',
-          code: z.ZodIssueCode.custom,
-        })
-      }
-    }
-
     if (!data.file) {
       ctx.addIssue({
         path: ['file'],
@@ -96,5 +44,28 @@ export const documentFinalSchema = documentDraftSchema.superRefine(
   }
 )
 
+export const DocumentSchema = z.object({
+  id: z.number(),
+  file_id: z.string(),
+  file_name: z.string(),
+  original_name: z.string(),
+  mime_type: z.string(),
+  size: z.number(),
+  folder_id: z.number().nullable(),
+  web_view_link: z.string().url(),
+  web_content_link: z.string().url(),
+  is_public: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+})
+export const ListDocumentsDataSchema = z.object({
+  files: z.array(DocumentSchema),
+})
+export const ListDocumentsResponseSchema = createAPIResponseSchema(
+  ListDocumentsDataSchema
+)
+
+export type Document = z.infer<typeof DocumentSchema>
+export type ListDocumentsResponse = z.infer<typeof ListDocumentsResponseSchema>
 export type DocumentDraftFormSchema = z.infer<typeof documentDraftSchema>
 export type DocumentFinalFormSchema = z.infer<typeof documentFinalSchema>
