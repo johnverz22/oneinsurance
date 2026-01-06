@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { FileText, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DialogFormWrapper } from '@/components/ui/dialog-form-wrapper'
 import { DocumentUploadForm } from '@/components/agent/documents-upload-form'
+import { DocumentsList } from '@/components/agent/document-list'
 
 export const DocumentsSection = () => {
   const [documentDetailsForm, setDocumentDetailsForm] = useState({
@@ -26,9 +27,7 @@ export const DocumentsSection = () => {
         </Button>
       </div>
 
-      <div className="text-muted-foreground col-span-2 py-12 text-center text-lg">
-        No documents found.
-      </div>
+      <DocumentsList />
 
       <DialogFormWrapper
         title={'Add'}
@@ -38,7 +37,11 @@ export const DocumentsSection = () => {
           setDocumentDetailsForm((prev) => ({ ...prev, isVisible: value }))
         }
       >
-        <DocumentUploadForm />
+        <DocumentUploadForm
+          onSuccess={() =>
+            setDocumentDetailsForm((prev) => ({ ...prev, isVisible: false }))
+          }
+        />
       </DialogFormWrapper>
     </div>
   )

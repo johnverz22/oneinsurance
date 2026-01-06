@@ -8,32 +8,26 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Upload, FileText, X, CheckCircle2 } from 'lucide-react'
-import { DateTimePicker } from '@/components/ui/date-time-picker'
 import {
   DocumentDraftFormSchema,
   documentDraftSchema,
   documentFinalSchema,
 } from '@/types/agent/documents'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { cn } from '@/lib/utils'
+import { useUploadDocument } from '@/app/data/mutations/agent/documents'
 
-export function DocumentUploadForm() {
+type DocumentUploadFormProps = {
+  onSuccess: () => void
+}
+
+export function DocumentUploadForm({ onSuccess }: DocumentUploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+  const { mutateAsync: uploadDocument } = useUploadDocument()
 
   const form = useForm({
     defaultValues: {
-      fullName: '',
-      documentNumber: '',
-      idType: undefined,
-      expiryDate: new Date(),
+      fileName: '',
+      tag: '',
       file: undefined,
     } as DocumentDraftFormSchema,
     validators: {
@@ -41,27 +35,20 @@ export function DocumentUploadForm() {
       onSubmit: documentFinalSchema,
     },
     onSubmit: async ({ value }) => {
-      setIsSubmitting(true)
+      try {
+        await uploadDocument({ ...value, file: selectedFile! })
+        toast.success('Document uploaded successfully.')
 
-      // Simulate upload
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+        form.reset()
+        setSelectedFile(null)
+        onSuccess()
+      } catch (error: unknown) {
+        console.log('Failed to upload document:', error)
 
-      console.log('Form submitted:', {
-        fullName: value.fullName,
-        documentNumber: value.documentNumber,
-        idType: value.idType,
-        expiryDate: value.expiryDate,
-        file: value.file,
-        fileName: value.file!.name,
-        fileSize: value.file!.size,
-      })
-
-      toast.success('Document submitted successfully')
-
-      // Reset form
-      form.reset()
-      setSelectedFile(null)
-      setIsSubmitting(false)
+        const message =
+          error instanceof Error ? error?.message : 'Something went wrong'
+        toast.error(message)
+      }
     },
   })
 
@@ -93,8 +80,7 @@ export function DocumentUploadForm() {
   return (
     <div className="space-y-3 p-8">
       <div className="space-y-0.5">
-        <h3 className="text-2xl font-bold">Upload ID Document</h3>
-        <p>Provide your identification details for verification</p>
+        <h3 className="text-2xl font-bold">Upload Document</h3>
       </div>
 
       <form
@@ -105,19 +91,18 @@ export function DocumentUploadForm() {
         }}
         className="space-y-6"
       >
-        <form.Field name="fullName">
+        <form.Field name="fileName">
           {(field) => (
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium">
-                Full Name (as shown on ID){' '}
-                <span className="text-destructive">*</span>
+              <Label htmlFor="fileName" className="text-sm font-medium">
+                File Name (Optional)
               </Label>
               <Input
-                id="fullName"
+                id="fileName"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
-                placeholder="Enter your full name"
+                placeholder="Enter custom name"
                 className={
                   field.state.meta.errors.length > 0 ? 'border-destructive' : ''
                 }
@@ -128,82 +113,21 @@ export function DocumentUploadForm() {
           )}
         </form.Field>
 
-        <form.Field name="idType">
+        <form.Field name="tag">
           {(field) => (
             <div className="space-y-2">
-              <Label htmlFor="idType" className="text-sm font-medium">
-                ID Type <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={field.state.value ?? ''}
-                onValueChange={(value) =>
-                  field.handleChange(
-                    value as
-                      | 'passport'
-                      | 'drivers_license'
-                      | 'national_id'
-                      | 'residence_permit'
-                  )
-                }
-              >
-                <SelectTrigger
-                  onBlur={field.handleBlur}
-                  className={cn('border-input w-full', {
-                    'border-destructive': field.state.meta.errors.length > 0,
-                  })}
-                >
-                  <SelectValue placeholder="Select ID type" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value="passport">Passport</SelectItem>
-                  <SelectItem value="drivers_license">
-                    Driver&apos;s License
-                  </SelectItem>
-                  <SelectItem value="national_id">National ID Card</SelectItem>
-                  <SelectItem value="residence_permit">
-                    Residence Permit
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldInfo field={field} />
-            </div>
-          )}
-        </form.Field>
-
-        <form.Field name="documentNumber">
-          {(field) => (
-            <div className="space-y-2">
-              <Label htmlFor="documentNumber" className="text-sm font-medium">
-                Document Number <span className="text-destructive">*</span>
+              <Label htmlFor="tag" className="text-sm font-medium">
+                Tag
               </Label>
               <Input
-                id="documentNumber"
+                id="tag"
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.target.value)}
                 onBlur={field.handleBlur}
-                placeholder="Enter document number"
+                placeholder="Enter tag/label for the file"
                 className={
                   field.state.meta.errors.length > 0 ? 'border-destructive' : ''
                 }
-              />
-
-              <FieldInfo field={field} />
-            </div>
-          )}
-        </form.Field>
-
-        <form.Field name="expiryDate">
-          {(field) => (
-            <div className="space-y-2">
-              <Label htmlFor="expiryDate" className="text-sm font-medium">
-                Expiry Date <span className="text-destructive">*</span>
-              </Label>
-
-              <DateTimePicker
-                value={new Date(field.state.value)}
-                variant="date"
-                mode="single"
               />
 
               <FieldInfo field={field} />
@@ -215,7 +139,7 @@ export function DocumentUploadForm() {
           {(field) => (
             <div className="space-y-2">
               <Label htmlFor="file" className="text-sm font-medium">
-                Upload ID Document <span className="text-destructive">*</span>
+                Upload File <span className="text-destructive">*</span>
               </Label>
 
               <div
