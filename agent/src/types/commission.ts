@@ -1,10 +1,12 @@
 export interface Commission {
-  id: number
-  name: string
-  policyId: number
-  type: 'Life' | 'Health' | 'Business' | 'Travel' | 'CPTL'
-  commission: number
-  status: 'Paid' | 'Pending' | 'Clawback'
+  id: string
+  amount: number
+  grossCommission: number
+  deductions: number
+  netCommission: number
+  source: 'personal_sales' | 'overriders' | 'referrals'
+  sourceDetails: string
+  status: 'Paid' | 'Pending' | 'Approved'
   paidOn: Date
 }
 
