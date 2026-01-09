@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { AppSidebar } from '@/components/layout/sidebar'
 import { Footer } from '@/components/layout/footer'
 import { NAVIGATIONS } from '@/constants/navigations'
+import { notFound } from 'next/navigation'
 
 export default function ProductsLayout({
   children,
@@ -24,7 +25,7 @@ export default function ProductsLayout({
     if (resolvedParams['agent-code']) {
       const agentCode = resolvedParams['agent-code'].trim()
       if (!agentCode || agentCode.length !== 10 || agentCode === "null") {
-        router.push('/not-found')
+        notFound()
       }
       setAgentCode(resolvedParams['agent-code'])
     }
