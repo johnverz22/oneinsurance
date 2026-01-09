@@ -18,6 +18,7 @@ import {
   FileText,
   Users,
   TrendingUp,
+  TrendingDown,
 } from 'lucide-react'
 import { SummaryCard } from '@/components/dashboard/policy-summary'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -27,65 +28,89 @@ import { Commission } from '@/types/commission'
 import { cn } from '@/lib/utils'
 import { createSortableHeader, DataTable } from '@/components/ui/data-table'
 import { PRIMARY, SECONDARY, TERTIARY } from '@/components/colors'
+import { formatPHPAmount } from '@/utils/formatter'
+import { format } from 'date-fns'
+import CommissionBreakdownDialog from '@/components/agent/commission-breakdown'
 
-const commissionColumns: ColumnDef<Commission>[] = [
-  { accessorKey: 'name', header: 'Name' },
-  { accessorKey: 'policyId', header: 'Policy ID' },
-  { accessorKey: 'type', header: 'Type' },
+const COMMISSION_COLUMNS: ColumnDef<Commission>[] = [
   {
-    accessorKey: 'commission',
-    header: 'Commission',
-    cell: ({ row }) => `₱\t${row.original.commission.toFixed(2)}`,
+    accessorKey: 'sourceDetails',
+    header: 'Commission Source',
+  },
+  {
+    accessorKey: 'amount',
+    header: 'Policy Amount',
+    cell: ({ row }) => (
+      <p className="font-semibold">{formatPHPAmount(row.original.amount)}</p>
+    ),
+  },
+  {
+    accessorKey: 'grossCommission',
+    header: 'Gross Commission',
+    cell: ({ row }) => (
+      <p className="font-semibold text-green-600">
+        {formatPHPAmount(row.original.grossCommission)}
+      </p>
+    ),
+  },
+  {
+    accessorKey: 'deductions',
+    header: 'Deductions',
+    cell: ({ row }) => (
+      <p className="font-semibold text-red-600">
+        -{formatPHPAmount(row.original.deductions)}
+      </p>
+    ),
+  },
+  {
+    accessorKey: 'netCommission',
+    header: 'Net Commission',
+    cell: ({ row }) => (
+      <p className="font-semibold text-blue-600">
+        {formatPHPAmount(row.original.netCommission)}
+      </p>
+    ),
   },
   {
     accessorKey: 'status',
-    header: ({ column }) => createSortableHeader('Status', column),
+    header: 'Status',
     cell: ({ row }) => {
       const status = row.original.status
-      const color =
-        status === 'Paid'
-          ? { text: 'text-green-600', bg: 'bg-green-600' }
-          : status === 'Pending'
-            ? { text: 'text-yellow-600', bg: 'bg-yellow-600' }
-            : { text: 'text-red-600', bg: 'bg-red-600' }
+      const statusClasses = {
+        Paid: 'bg-green-100 text-green-800',
+        Approved: 'bg-blue-100 text-blue-800',
+        Pending: 'bg-yellow-100 text-yellow-800',
+      }
       return (
-        <div className="flex items-center gap-2">
-          <div className={cn('size-2.5 rounded-full', color.bg)} />
-          <span className={color.text}>{status.toUpperCase()}</span>
-        </div>
+        <span
+          className={`rounded-full px-2 py-1 text-xs font-semibold ${statusClasses[status]}`}
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </span>
       )
     },
   },
-
   {
     accessorKey: 'paidOn',
     header: 'Paid On',
-    cell: ({ row }) => new Date(row.original.paidOn).toLocaleDateString(),
+    cell: ({ row }) => (
+      <p className="font-semibold">{format(row.original.paidOn, 'P')}</p>
+    ),
   },
 ]
-
 export default function CommissionPage() {
-  const totalCommision = 1_234_533
-  const commissionThisMonth = 20_322
-  const policiesSold = 2
+  const [selectedCommission, setSelectedCommission] =
+    useState<Commission | null>(null)
 
-  const commissionByType = useMemo(() => {
-    const data = COMMISSIONS.reduce(
-      (acc, item) => {
-        if (item.status !== 'Paid') return acc
-        if (!acc[item.type]) {
-          acc[item.type] = 0
-        }
-        acc[item.type] += item.commission
-        return acc
-      },
-      {} as Record<string, number>
-    )
-    return Object.entries(data).map(([name, commission]) => ({
-      name,
-      commission,
-    }))
-  }, [])
+  const totalGrossCommission = COMMISSIONS.reduce(
+    (sum, c) => sum + c.grossCommission,
+    0
+  )
+  const totalDeductions = COMMISSIONS.reduce((sum, c) => sum + c.deductions, 0)
+  const totalNetCommission = COMMISSIONS.reduce(
+    (sum, c) => sum + c.netCommission,
+    0
+  )
 
   return (
     <div className="relative mx-auto w-full space-y-6">
@@ -101,23 +126,23 @@ export default function CommissionPage() {
         <SummaryCard
           icon={DollarSign}
           title="Total Commission"
-          value={`PHP ${totalCommision.toLocaleString()}`}
+          value={formatPHPAmount(totalGrossCommission)}
+        />
+        <SummaryCard
+          icon={TrendingDown}
+          title="Total Deductions"
+          value={formatPHPAmount(totalDeductions)}
         />
         <SummaryCard
           icon={TrendingUp}
-          title="Commision this Month"
-          value={`PHP ${commissionThisMonth.toLocaleString()}`}
-        />
-        <SummaryCard
-          icon={FileText}
-          title="Policy Sold this Month"
-          value={policiesSold}
+          title="Total Net Commission"
+          value={formatPHPAmount(totalNetCommission)}
         />
         <SummaryCard icon={Users} title="New Client this Month" value={54} />
       </div>
 
       {/* Charts Grid */}
-      <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-5">
+      {/* <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader>Monthly Performance</CardHeader>
 
@@ -178,95 +203,28 @@ export default function CommissionPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-2">
-          <CardHeader>Commission by Type</CardHeader>
-          <CardContent>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <BarChart
-                  data={commissionByType}
-                  layout="vertical"
-                  margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="colorCommissionByType"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <stop offset="5%" stopColor={PRIMARY} stopOpacity={1} />
-                      <stop
-                        offset="95%"
-                        stopColor={SECONDARY}
-                        stopOpacity={1}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    horizontal={false}
-                    vertical={false}
-                  />
-                  <XAxis type="number" hide />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tick={{ fill: '#6B7280' }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={60}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(243, 244, 246, 0.5)' }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(5px)',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      boxShadow:
-                        '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-                    }}
-                  />
-                  <Bar
-                    dataKey="commission"
-                    fill="url(#colorCommissionByType)"
-                    radius={[0, 8, 8, 0]}
-                    barSize={20}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+      </div> */}
+
+      <div className="border-muted-foreground/20 bg-card rounded-xl border px-8 py-3.5">
+        <DataTable<Commission, unknown>
+          header="Commission History"
+          description="View all your commissions and their breakdown"
+          data={COMMISSIONS}
+          columns={COMMISSION_COLUMNS}
+          renderMode="table"
+          searchKey={['sourceDetails', 'status']}
+          pageSize={10}
+          onRowClick={(commission) => setSelectedCommission(commission)}
+        />
       </div>
 
-      <Card className="bg-background shadow-sm">
-        <CardContent className="p-6">
-          <DataTable<Commission, unknown>
-            header="Commissions"
-            columns={commissionColumns}
-            data={COMMISSIONS}
-            renderMode="table"
-            searchKey="name"
-            enableRowSelection
-            actions={[
-              {
-                label: 'View Details',
-                onClick: (client) => alert(`Viewing ${client.id}`),
-              },
-              {
-                label: 'Delete',
-                variant: 'destructive',
-                onClick: (client) => alert(`Deleting ${client.name}`),
-              },
-            ]}
-            onRowClick={(client) => console.log('Clicked row:', client)}
-            pageSize={5}
-          />
-        </CardContent>
-      </Card>
+      {/* Breakdown Dialog */}
+      {selectedCommission && (
+        <CommissionBreakdownDialog
+          commission={selectedCommission}
+          onClose={() => setSelectedCommission(null)}
+        />
+      )}
     </div>
   )
 }
