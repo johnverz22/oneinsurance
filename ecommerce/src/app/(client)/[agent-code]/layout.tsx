@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react'
 import { use } from 'react'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useRouter } from 'next/navigation'
+import { AppSidebar } from '@/components/layout/sidebar'
+import { Footer } from '@/components/layout/footer'
+import { NAVIGATIONS } from '@/constants/navigations'
 
 export default function ProductsLayout({
   children,
@@ -27,5 +30,17 @@ export default function ProductsLayout({
     }
   }, [resolvedParams, setAgentCode])
 
-  return <div>{children}</div>
+  return (<>
+        <div className="h-full w-full">
+          {/* <Header navigations={NAVIGATIONS} isNavigationVisible={true} /> */}
+          <div className="sm:hidden">
+            <AppSidebar navigations={NAVIGATIONS} />
+          </div>
+        </div>
+  
+        <main className="h-full w-full">{children}</main>
+  
+        <Footer />
+      </>
+    )
 }
