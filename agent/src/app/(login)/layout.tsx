@@ -54,7 +54,7 @@ export default function LoginLayout({
               management
             </p>
             <Link
-              href="/signup"
+              href="https://ifrc.intel-soln.com.ph/agent-application"
               className="inline-flex w-fit items-center justify-center rounded-lg border-2 border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-gray-900"
             >
               Become an Agent
