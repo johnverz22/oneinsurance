@@ -10,7 +10,7 @@ export const INSURANCES = [
     description:
       'Get comprehensive travel insurance that protects you from trip cancellations, medical emergencies, and more—wherever your journey takes you.',
     image: '/images/products/travel.jpg',
-    checkoutLink: `/${AGENT_CODE}/products/travel-insurance`,
+    checkoutLink: `/products/travel-insurance`,
     tag: 'Popular',
     more: {
       overview: 'Worry-Free Trips, Anywhere You Go.',
@@ -43,7 +43,7 @@ export const INSURANCES = [
     companyId: 'oona-insurance',
     title: 'Comprehensive Third-Party Liability Insurance',
     description:
-      'Get comprehensive travel insurance that protects you from trip cancellations, medical emergencies, and more—wherever your journey takes you.',
+      'Provides financial protection against legal liabilities arising from injury, loss, or damage caused to third parties.',
     image: '/images/products/ctpl.png',
     checkoutLink: '/coming-soon',
     tag: 'Popular',
@@ -78,7 +78,7 @@ export const INSURANCES = [
     companyId: 'oona-insurance',
     title: 'Marine Cargo Insurance',
     description:
-      'Get comprehensive travel insurance that protects you from trip cancellations, medical emergencies, and more—wherever your journey takes you.',
+      'Protects your cargo from loss or damage during transit by sea, air, or land, from origin to destination.',
     image: '/images/products/marine.png',
     checkoutLink: '/coming-soon',
     tag: 'Popular',
@@ -113,7 +113,7 @@ export const INSURANCES = [
     companyId: 'oona-insurance',
     title: 'Engineering Insurance (Engineering Lines)',
     description:
-      'Get comprehensive travel insurance that protects you from trip cancellations, medical emergencies, and more—wherever your journey takes you.',
+      'Covers engineering projects, machinery, and equipment against construction risks, breakdowns, and unexpected operational losses.',
     image: '/images/products/engineer.png',
     checkoutLink: '/coming-soon',
     tag: 'Popular',
@@ -148,7 +148,7 @@ export const INSURANCES = [
     companyId: 'oona-insurance',
     title: 'Mandatory and Specialized Insurance Coverage',
     description:
-      'Get comprehensive travel insurance that protects you from trip cancellations, medical emergencies, and more—wherever your journey takes you.',
+      'Delivers compliant, industry-specific insurance solutions that meet legal requirements while protecting your business from specialized risks.',
     image: '/images/products/mandatory.png',
     checkoutLink: '/coming-soon',
     tag: 'Popular',
