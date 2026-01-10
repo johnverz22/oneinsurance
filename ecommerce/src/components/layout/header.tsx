@@ -28,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 
 type WithNavigationProps = {
   isNavigationVisible: true
@@ -54,6 +55,8 @@ export const Header = ({
   const navigations = isNavigationVisible
     ? (rest as WithNavigationProps).navigations
     : []
+
+  const {agentCode} = useAgentCodeStore()
 
   const { isMobile } = useSidebar()
   const isSingIn = isLoggedIn ?? isSingedin()
@@ -108,7 +111,7 @@ export const Header = ({
                                   {navigation.items.map((item, index) => (
                                     <ListItem
                                       key={index}
-                                      href={item.link}
+                                      href={agentCode ? `/${agentCode}${item.link}` : item.link}
                                       title={item.title}
                                       className=""
                                     >
@@ -124,7 +127,7 @@ export const Header = ({
                             asChild
                             className={navigationMenuTriggerStyle()}
                           >
-                            <Link href={navigation.link ?? '/'}>
+                            <Link href={agentCode ? `/${agentCode}${navigation.link ?? '/'}` : navigation.link ?? '/'}>
                               {navigation.label}
                             </Link>
                           </NavigationMenuLink>
@@ -137,9 +140,10 @@ export const Header = ({
             </div>
           )}
 
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
 
-          {isSingIn ? (
+          {/* TEMP: user login temporarily disabled */}
+          {/* {isSingIn ? (
             <div className="flex items-center gap-3">
               <Button variant="secondary" size="icon" className="relative py-2">
                 <Bell className="h-5 w-5" />
@@ -170,7 +174,7 @@ export const Header = ({
             <Button variant="secondary" className="px-8" asChild>
               <Link href="/sign-in">Login</Link>
             </Button>
-          )}
+          )} */}
         </div>
       </div>
     </header>
