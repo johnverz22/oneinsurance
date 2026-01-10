@@ -107,7 +107,7 @@ export const Header = ({
                             </NavigationMenuTrigger>
                             {navigation.items && (
                               <NavigationMenuContent className="z-10">
-                                <ul className="grid w-[300px] gap-4">
+                                <ul className="grid w-[300px]">
                                   {navigation.items.map((item, index) => (
                                     <ListItem
                                       key={index}
