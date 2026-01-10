@@ -8,6 +8,7 @@ import { AppSidebar } from '@/components/layout/sidebar'
 import { Footer } from '@/components/layout/footer'
 import { NAVIGATIONS } from '@/constants/navigations'
 import { notFound } from 'next/navigation'
+import { Header } from '@/components/layout/header'
 
 export default function ProductsLayout({
   children,
@@ -17,7 +18,7 @@ export default function ProductsLayout({
   params: Promise<{ 'agent-code': string }>
 }) {
   const resolvedParams = use(params)
-  const { setAgentCode } = useAgentCodeStore()
+  const { setAgentCode, agentCode } = useAgentCodeStore()
 
   const router = useRouter()
 
@@ -33,9 +34,9 @@ export default function ProductsLayout({
 
   return (<>
         <div className="h-full w-full">
-          {/* <Header navigations={NAVIGATIONS} isNavigationVisible={true} /> */}
+          <Header navigations={NAVIGATIONS} isNavigationVisible={true} />
           <div className="sm:hidden">
-            <AppSidebar navigations={NAVIGATIONS} />
+            {/* <AppSidebar navigations={NAVIGATIONS} /> */}
           </div>
         </div>
   
