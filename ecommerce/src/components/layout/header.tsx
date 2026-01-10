@@ -64,7 +64,7 @@ export const Header = ({
   return (
     <header
       className={cn(
-        'bg-background fixed top-0 z-40 h-20 w-full border-b px-4 py-4 lg:px-8',
+        'bg-background fixed top-0 z-40 h-20 w-full px-4 py-4 lg:px-8',
         className
       )}
     >
@@ -102,7 +102,7 @@ export const Header = ({
                       <NavigationMenuItem key={index}>
                         {isList ? (
                           <>
-                            <NavigationMenuTrigger>
+                            <NavigationMenuTrigger className='font-bold text-primary'>
                               {navigation.label}
                             </NavigationMenuTrigger>
                             {navigation.items && (
@@ -125,7 +125,7 @@ export const Header = ({
                         ) : (
                           <NavigationMenuLink
                             asChild
-                            className={navigationMenuTriggerStyle()}
+                            className={navigationMenuTriggerStyle() + ' font-bold text-primary'}
                           >
                             <Link href={agentCode ? `/${agentCode}${navigation.link ?? '/'}` : navigation.link ?? '/'}>
                               {navigation.label}
