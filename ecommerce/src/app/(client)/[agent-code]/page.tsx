@@ -239,7 +239,7 @@ export default function Home() {
             <InsuranceCard 
               key={index} 
               {...product} 
-              checkoutLink={product.checkoutLink.replace(AGENT_CODE, agentCode || AGENT_CODE)}
+              checkoutLink={agentCode ? `/${agentCode}${product.checkoutLink}` : `/${AGENT_CODE}${product.checkoutLink}`}
             />
           ))}
         </div>
