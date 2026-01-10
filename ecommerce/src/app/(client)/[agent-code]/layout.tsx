@@ -36,7 +36,7 @@ export default function ProductsLayout({
         <div className="h-full w-full">
           <Header navigations={NAVIGATIONS} isNavigationVisible={true} />
           <div className="sm:hidden">
-            {/* <AppSidebar navigations={NAVIGATIONS} /> */}
+            <AppSidebar navigations={NAVIGATIONS} />
           </div>
         </div>
   
