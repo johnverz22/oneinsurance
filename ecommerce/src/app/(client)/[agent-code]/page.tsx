@@ -147,7 +147,7 @@ export default function Home() {
   // }, [])
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full pt-10">
       <section className="relative h-full w-full px-4 py-16 lg:py-20">
         {/* Background Image Container with max-width and rounded edges */}
         <div className="relative mx-auto h-full max-w-7xl overflow-hidden rounded-3xl lg:h-[35rem]">
@@ -156,6 +156,10 @@ export default function Home() {
             alt="Hero background"
             fill
             className="object-cover"
+            style={{
+              maskImage: 'linear-gradient(to right, transparent 0%, black 10%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%)'
+            }}
             priority
           />
           {/* Gradient Overlay */}
