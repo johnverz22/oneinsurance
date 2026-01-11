@@ -6,102 +6,73 @@ import { Card, CardContent } from '@/components/ui/card'
 import { PaymentHistory } from '@/types/agent/payments'
 import { cn } from '@/lib/utils'
 import { formatPHPAmount } from '@/utils/formatter'
+import { format } from 'date-fns'
 
 type PaymentHistoryCardProps = {
   history: PaymentHistory
 }
 
 export const PaymentHistoryCard = ({ history }: PaymentHistoryCardProps) => {
-  const gross = history.grossCommission
-  const deductions = history.overriderDeduction
-  const net = history.netPayment
-  const status = history.status
+  const isPaid = history.status === 'Paid'
 
   return (
-    <Card className="rounded-2xl border shadow-xs">
+    <Card className="rounded-2xl border shadow-none">
       <CardContent className="space-y-6">
+        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-bold">{history.id}</h3>
+            <h3 className="text-lg font-bold">{history.payoutReference}</h3>
             <p className="text-muted-foreground text-sm">
-              {history.period} • {history.salesCount} sales
+              {history.agentName} • {history.agentId}
             </p>
           </div>
 
           <Badge
             className={cn(
-              'px-6 py-1',
-              status === 'Paid'
+              'px-4 py-1',
+              isPaid
                 ? 'bg-green-600 text-white'
-                : 'bg-blue-600 text-white'
+                : history.status === 'Pending'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-red-600 text-white'
             )}
           >
-            {status}
+            {history.status}
           </Badge>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="border-muted-foreground/10 rounded-xl border p-4">
-            <p className="text-muted-foreground text-sm">Gross Commission</p>
-            <h3 className="text-xl font-semibold text-blue-500">
-              {formatPHPAmount(gross.total)}
-            </h3>
-
-            <div className="text-muted-foreground mt-2 space-y-1 text-xs">
-              {gross.breakdown.map((b, i) => (
-                <p key={i}>
-                  {b.label}: {formatPHPAmount(b.amount)}
-                </p>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-muted-foreground/10 rounded-xl border bg-red-500/5 p-4">
-            <p className="text-muted-foreground text-sm">
-              Overrider Deductions
+        {/* Main Info */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border p-4">
+            <p className="text-muted-foreground text-sm">Payout Amount</p>
+            <p className="text-xl font-bold text-green-600">
+              {formatPHPAmount(history.payoutAmount)}
             </p>
-            <h3 className="text-xl font-semibold text-red-600">
-              - {formatPHPAmount(deductions.total)}
-            </h3>
-
-            <div className="text-muted-foreground mt-2 space-y-1 text-xs">
-              {deductions.breakdown.map((d, i) => (
-                <p key={i}>
-                  {d.label}: {formatPHPAmount(d.amount)}
-                </p>
-              ))}
-            </div>
           </div>
 
-          <div className="border-muted-foreground/10 rounded-xl border bg-green-600/5 p-4">
-            <div className="text-muted-foreground text-sm">Net Payment</div>
-            <div className="text-xl font-semibold text-green-600">
-              {formatPHPAmount(net.amount)}
-            </div>
-
-            <div className="text-muted-foreground mt-2 text-xs">
-              Method: {net.method}
-              <br />
-              Date: {net.date}
-            </div>
+          <div className="rounded-xl border p-4">
+            <p className="text-muted-foreground text-sm">Period Covered</p>
+            <p className="text-sm font-medium">
+              {format(history.dateFrom, 'MMM dd, yyyy')} –{' '}
+              {format(history.dateTo, 'MMM dd, yyyy')}
+            </p>
           </div>
 
-          <div className="bg-muted border-muted-foreground/10 rounded-xl border p-4">
-            <div className="text-muted-foreground text-sm">Payment Status</div>
-
-            <div className="mt-2 space-y-1 text-sm">
-              <p>Due Date: {history.paymentStatus.dueDate}</p>
-
-              {history.paymentStatus.paidDate && (
-                <p>Paid: {history.paymentStatus.paidDate}</p>
-              )}
-            </div>
+          <div className="rounded-xl border p-4">
+            <p className="text-muted-foreground text-sm">Payment Method</p>
+            <p className="text-sm font-medium">{history.accountType}</p>
+            <p className="text-muted-foreground text-xs">
+              {history.accountName} • {history.accountNumber}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3">
-          <Button className="bg-blue-600 text-white">View Details</Button>
-          <Button variant="outline">Download Receipt</Button>
+        {/* Footer */}
+        <div className="text-muted-foreground flex items-center justify-between text-xs">
+          <span>
+            Generated by {history.generatedBy} on{' '}
+            {format(history.dateGenerated, 'MMM dd, yyyy')}
+          </span>
         </div>
       </CardContent>
     </Card>

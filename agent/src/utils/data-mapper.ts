@@ -19,3 +19,25 @@ export function mapAgentProductToMappedProduct(input: AgentProduct): Product {
     link,
   }
 }
+
+type SnakeToCamel<S extends string> = S extends `${infer T}_${infer U}`
+  ? `${T}${Capitalize<SnakeToCamel<U>>}`
+  : S
+
+type Camelize<T> = {
+  [K in keyof T as SnakeToCamel<K & string>]: T[K]
+}
+
+const snakeToCamel = (str: string) =>
+  str.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
+
+export const mapSnakeToCamel = <T extends Record<string, any>>(
+  data: T
+): Camelize<T> => {
+  return Object.keys(data).reduce((acc, key) => {
+    const camelKey = snakeToCamel(key)
+    acc[camelKey] = data[key]
+    return acc
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }, {} as any)
+}

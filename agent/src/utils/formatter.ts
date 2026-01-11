@@ -3,7 +3,7 @@ export const formatPHPAmount = (amount: number) => {
     style: 'currency',
     currency: 'PHP',
     currencyDisplay: 'code',
-  }).format(amount)
+  }).format(amount ?? 0)
 
   return formatted.replace('PHP', 'PHP ')
 }
