@@ -183,3 +183,80 @@ export function useGetAgentPayoutStatistics(
     staleTime: 2 * 60 * 1000,
   })
 }
+
+// PAYOUT CONFIGURATION
+
+export function useGetPayoutConfigurations(
+  page: number = 1,
+  perPage: number = 15
+) {
+  const { accessToken } = useAuthStore()
+  return useQuery({
+    queryKey: ['getPayoutConfigurations'],
+    queryFn: async () => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations?page=${page}&per_page=${perPage}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+    enabled: !!accessToken,
+    refetchOnWindowFocus: false,
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
+export function useGetActivePayoutConfiguration() {
+  const { accessToken } = useAuthStore()
+  return useQuery({
+    queryKey: ['getActivePayoutConfiguration'],
+    queryFn: async () => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/active`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+    enabled: !!accessToken,
+    refetchOnWindowFocus: false,
+    staleTime: 2 * 60 * 1000,
+  })
+}
+
+export function useShowPayoutConfigurationDetails(configId: string) {
+  const { accessToken } = useAuthStore()
+  return useQuery({
+    queryKey: ['showPayoutConfigurationDetails', configId],
+    queryFn: async () => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/${configId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+    enabled: !!accessToken,
+    refetchOnWindowFocus: false,
+    staleTime: 2 * 60 * 1000,
+  })
+}
