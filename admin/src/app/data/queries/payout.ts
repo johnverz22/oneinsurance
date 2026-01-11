@@ -55,7 +55,7 @@ export function useGetPayouts(dateFrom?: string, dateTo?: string) {
         handleApiError(error)
       }
     },
-    enabled: !!accessToken,
+    enabled: !!accessToken && ((!!dateFrom && !!dateTo) || (!dateFrom && !dateTo)),
     refetchOnWindowFocus: false,
     staleTime: 2 * 60 * 1000,
   })
