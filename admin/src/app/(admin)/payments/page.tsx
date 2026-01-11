@@ -5,7 +5,9 @@ import { useEffect, useState } from 'react'
 import { Eye, Download, X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { MultiSelect } from '@/components/ui/multi-select'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { ProcessPaymentDialog } from '@/components/transactions/process-payment-dialog'
 import {
   PaymentDataTable,
@@ -15,7 +17,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransaction } from '@/app/data/mutations/transactions'
-import { useGetPayouts } from '@/app/data/queries/payout'
+import { useGetPayouts, useExportPayoutsCsv } from '@/app/data/queries/payout'
 import { Transaction } from '@/types/transactions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/store/auth-store'
@@ -37,11 +39,24 @@ export default function TransactionsPage() {
     isFetching: isFetchingPayouts,
     isLoading: isLoadingPayouts,
   } = useGetPayouts()
+
+  // Export CSV states
+  const [shouldExport, setShouldExport] = useState(false)
+  const [exportDateFrom, setExportDateFrom] = useState('')
+  const [exportDateTo, setExportDateTo] = useState('')
+
+  const { data: csvData, isFetching: isExporting } = useExportPayoutsCsv(
+    exportDateFrom,
+    exportDateTo
+  )
+
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined)
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined)
   const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
   const searchMutation = useSearchTransaction()
 
@@ -56,6 +71,28 @@ export default function TransactionsPage() {
 
     return () => clearTimeout(t)
   }, [isAuthenticated])
+
+  // Handle CSV download when data is ready
+  useEffect(() => {
+    if (csvData && shouldExport) {
+      const blob = new Blob([csvData], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const now = new Date()
+      const dateStr = now.toISOString().split('T')[0]
+      a.download = `payouts-${dateStr}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      setShouldExport(false)
+      setExportDateFrom('')
+      setExportDateTo('')
+      toast.success('Payouts exported successfully')
+    }
+  }, [csvData, shouldExport])
 
   const columns = React.useMemo<ColumnDef<Transaction, any>[]>(
     () => [
@@ -144,13 +181,24 @@ export default function TransactionsPage() {
   }
 
   function handleExportToCSV(): void {
-    const dataToExport = displayData?.data?.data ?? []
-    if (dataToExport.length === 0) {
-      toast.info('No data to export')
-      return
+    // Use the selected date range from the date pickers
+    let dateFromStr: string
+    let dateToStr: string
+
+    if (dateFrom && dateTo) {
+      dateFromStr = dateFrom.toISOString().split('T')[0]
+      dateToStr = dateTo.toISOString().split('T')[0]
+    } else {
+      // Default to last 30 days if no dates selected
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      dateFromStr = thirtyDaysAgo.toISOString().split('T')[0]
+      dateToStr = now.toISOString().split('T')[0]
     }
-    exportToCSV(dataToExport, 'payments-export.csv')
-    toast.success('Data exported successfully')
+
+    setExportDateFrom(dateFromStr)
+    setExportDateTo(dateToStr)
+    setShouldExport(true)
   }
 
   // Details dialog state
@@ -211,7 +259,7 @@ export default function TransactionsPage() {
         ) : (
           <>
             <div className="mb-4 flex justify-between">
-              <div className="flex flex-1 items-center gap-2">
+              <div className="flex flex-1 items-end gap-2">
                 <div className="flex items-center gap-2">
                   <Input
                     placeholder="Search by proposal number, policy ID, transaction ID..."
@@ -230,9 +278,61 @@ export default function TransactionsPage() {
                       { value: 'failed', label: 'Failed' },
                     ]}
                     placeholder="Status"
-                    className="w-full"
+                    className="w-full rounded-full"
                     value={[]}
                     onValueChange={() => {}}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="dateFrom"
+                    className="text-muted-foreground text-xs font-medium"
+                  >
+                    Date From
+                  </Label>
+                  <DateTimePicker
+                    variant="date"
+                    mode="single"
+                    value={dateFrom}
+                    onChange={(date) => setDateFrom(date)}
+                    disabled={(date) => {
+                      const today = new Date()
+                      today.setHours(23, 59, 59, 999)
+
+                      // Disable future dates
+                      if (date > today) return true
+
+                      // Disable dates after dateTo if dateTo is set
+                      if (dateTo && date > dateTo) return true
+
+                      return false
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="dateTo"
+                    className="text-muted-foreground text-xs font-medium"
+                  >
+                    Date To
+                  </Label>
+                  <DateTimePicker
+                    variant="date"
+                    mode="single"
+                    value={dateTo}
+                    onChange={(date) => setDateTo(date)}
+                    disabled={(date) => {
+                      const today = new Date()
+                      today.setHours(23, 59, 59, 999)
+
+                      // Disable future dates
+                      if (date > today) return true
+
+                      // Disable dates before dateFrom if dateFrom is set
+                      if (dateFrom && date < dateFrom) return true
+
+                      return false
+                    }}
                   />
                 </div>
               </div>
@@ -244,9 +344,14 @@ export default function TransactionsPage() {
                   <Plus className="mr-2 h-4 w-4" />
                   Process Payment
                 </Button>
-                <Button variant="outline" className="rounded-full">
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={handleExportToCSV}
+                  disabled={isExporting}
+                >
                   <Download className="mr-2 h-4 w-4" />
-                  Export to CSV
+                  {isExporting ? 'Exporting...' : 'Export to CSV'}
                 </Button>
               </div>
             </div>
