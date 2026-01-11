@@ -189,20 +189,15 @@ export default function TransactionsPage() {
   }
 
   function handleExportToCSV(): void {
-    // Use the selected date range from the date pickers
-    let dateFromStr: string
-    let dateToStr: string
-
-    if (dateFrom && dateTo) {
-      dateFromStr = dateFrom.toISOString().split('T')[0]
-      dateToStr = dateTo.toISOString().split('T')[0]
-    } else {
-      // Default to last 30 days if no dates selected
-      const now = new Date()
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      dateFromStr = thirtyDaysAgo.toISOString().split('T')[0]
-      dateToStr = now.toISOString().split('T')[0]
+    // Check if both dates are selected
+    if (!dateFrom || !dateTo) {
+      toast.error('Please select both Date From and Date To to export')
+      return
     }
+
+    // Use the selected date range from the date pickers
+    const dateFromStr = dateFrom.toISOString().split('T')[0]
+    const dateToStr = dateTo.toISOString().split('T')[0]
 
     setExportDateFrom(dateFromStr)
     setExportDateTo(dateToStr)
