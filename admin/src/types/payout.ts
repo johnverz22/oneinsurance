@@ -24,8 +24,21 @@ export const GetPayoutResponseSchema = z.object({
 export const GetPayoutFilterByStatusResponseSchema =
   createPaginatedResponseType(PayoutSchema)
 
+export const GeneratePayoutResponseSchema = z.object({
+  message: z.string(),
+  count: z.number(),
+  payouts: z.array(PayoutSchema),
+  date_range: z.object({
+    from: z.string(),
+    to: z.string(),
+  }),
+})
+
 export type Payout = z.infer<typeof PayoutSchema>
 export type GetPayoutResponse = z.infer<typeof GetPayoutResponseSchema>
 export type GetPayoutFilterByStatusResponse = z.infer<
   typeof GetPayoutFilterByStatusResponseSchema
+>
+export type GeneratePayoutResponse = z.infer<
+  typeof GeneratePayoutResponseSchema
 >
