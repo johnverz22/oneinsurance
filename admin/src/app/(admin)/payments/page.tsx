@@ -34,11 +34,21 @@ export default function TransactionsPage() {
     isFetching,
     isLoading,
   } = useGetTransactions(page)
+
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined)
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined)
+
+  // Convert Date objects to strings for API
+  const dateFromStr = dateFrom
+    ? dateFrom.toISOString().split('T')[0]
+    : undefined
+  const dateToStr = dateTo ? dateTo.toISOString().split('T')[0] : undefined
+
   const {
     data: payoutsData,
     isFetching: isFetchingPayouts,
     isLoading: isLoadingPayouts,
-  } = useGetPayouts()
+  } = useGetPayouts(dateFromStr, dateToStr)
 
   // Export CSV states
   const [shouldExport, setShouldExport] = useState(false)
@@ -55,8 +65,6 @@ export default function TransactionsPage() {
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
-  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined)
-  const [dateTo, setDateTo] = useState<Date | undefined>(undefined)
   const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
   const searchMutation = useSearchTransaction()
 
