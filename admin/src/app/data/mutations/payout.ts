@@ -208,3 +208,97 @@ export function useDeletePayoutConfiguration() {
     },
   })
 }
+
+// AGENTS RESTRICTIONS
+export type AgentPayoutRestrictionRequest = {
+  agent_id: number
+  restriction_type: 'excluded' | 'limited' | 'manual_approval_required'
+  reason: string
+  is_active: boolean
+}
+export function useSetAgentPayoutRestriction() {
+  const { accessToken } = useAuthStore()
+  return useMutation({
+    mutationKey: ['setAgentPayoutRestriction'],
+    mutationFn: async ({
+      configId,
+      payload,
+    }: {
+      configId: number
+      payload: AgentPayoutRestrictionRequest
+    }) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/${configId}/restrictions`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.post(url, payload, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export type UpdateAgentPayoutRestrictionRequest = Omit<
+  AgentPayoutRestrictionRequest,
+  'agent_id'
+>
+export function useUpdateAgentPayoutRestriction() {
+  const { accessToken } = useAuthStore()
+  return useMutation({
+    mutationKey: ['updateAgentPayoutRestriction'],
+    mutationFn: async ({
+      configId,
+      restrictionId,
+      payload,
+    }: {
+      configId: number
+      restrictionId: number
+      payload: UpdateAgentPayoutRestrictionRequest
+    }) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/${configId}/restrictions/${restrictionId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.patch(url, payload, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export function useDeleteAgentPayoutRestriction() {
+  const { accessToken } = useAuthStore()
+  return useMutation({
+    mutationKey: ['deleteAgentPayoutRestriction'],
+    mutationFn: async ({
+      configId,
+      restrictionId,
+    }: {
+      configId: number
+      restrictionId: number
+    }) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/${configId}/restrictions/${restrictionId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.delete(url, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
