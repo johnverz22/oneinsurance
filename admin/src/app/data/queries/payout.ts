@@ -1,5 +1,8 @@
 import { useAuthStore } from '@/store/auth-store'
-import { GetPayoutResponse } from '@/types/payout'
+import {
+  GetPayoutFilterByStatusResponse,
+  GetPayoutResponse,
+} from '@/types/payout'
 import { handleApiError } from '@/utils/handle-api-error'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -28,7 +31,7 @@ export function useExportPayoutsCsv(dateFrom: string, dateTo: string) {
   })
 }
 
-export function useGetPayouts(dateFrom?: string, dateTo?: string) {
+export function useGetPayouts(dateFrom?: string, dateTo?: string, shouldFetch: boolean = true) {
   const { accessToken } = useAuthStore()
   return useQuery({
     queryKey: ['getAllPayouts', dateFrom, dateTo],
@@ -55,7 +58,8 @@ export function useGetPayouts(dateFrom?: string, dateTo?: string) {
         handleApiError(error)
       }
     },
-    enabled: !!accessToken && ((!!dateFrom && !!dateTo) || (!dateFrom && !dateTo)),
+    enabled:
+      !!accessToken && shouldFetch && ((!!dateFrom && !!dateTo) || (!dateFrom && !dateTo)),
     refetchOnWindowFocus: false,
     staleTime: 2 * 60 * 1000,
   })
@@ -109,7 +113,7 @@ export function useGetPayoutAudit(payoutId: string) {
   })
 }
 
-export function useGetPayoutFilterByStatus(status: 'pending' | 'completed') {
+export function useGetPayoutFilterByStatus(status?: 'pending' | 'completed') {
   const { accessToken } = useAuthStore()
   return useQuery({
     queryKey: ['getPayoutFilterByStatus', status],
@@ -117,7 +121,7 @@ export function useGetPayoutFilterByStatus(status: 'pending' | 'completed') {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payouts/${status}`
       const token = `Bearer ${accessToken}`
       try {
-        const response = await axios.get(url, {
+        const response = await axios.get<GetPayoutFilterByStatusResponse>(url, {
           headers: {
             Authorization: token,
           },
@@ -127,7 +131,7 @@ export function useGetPayoutFilterByStatus(status: 'pending' | 'completed') {
         handleApiError(error)
       }
     },
-    enabled: !!accessToken,
+    enabled: !!accessToken && !!status,
     refetchOnWindowFocus: false,
     staleTime: 2 * 60 * 1000,
   })

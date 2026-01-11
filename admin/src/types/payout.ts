@@ -1,3 +1,4 @@
+import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
 import { z } from 'zod'
 
 export const PayoutSchema = z.object({
@@ -20,5 +21,11 @@ export const GetPayoutResponseSchema = z.object({
   payouts: z.array(PayoutSchema),
 })
 
+export const GetPayoutFilterByStatusResponseSchema =
+  createPaginatedResponseType(PayoutSchema)
+
 export type Payout = z.infer<typeof PayoutSchema>
 export type GetPayoutResponse = z.infer<typeof GetPayoutResponseSchema>
+export type GetPayoutFilterByStatusResponse = z.infer<
+  typeof GetPayoutFilterByStatusResponseSchema
+>

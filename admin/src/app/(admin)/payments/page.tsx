@@ -6,7 +6,13 @@ import { Eye, Download, X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MultiSelect } from '@/components/ui/multi-select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { ProcessPaymentDialog } from '@/components/transactions/process-payment-dialog'
 import {
@@ -17,7 +23,11 @@ import {
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransaction } from '@/app/data/mutations/transactions'
-import { useGetPayouts, useExportPayoutsCsv } from '@/app/data/queries/payout'
+import {
+  useGetPayouts,
+  useExportPayoutsCsv,
+  useGetPayoutFilterByStatus,
+} from '@/app/data/queries/payout'
 import { Transaction } from '@/types/transactions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/store/auth-store'
@@ -44,12 +54,6 @@ export default function TransactionsPage() {
     : undefined
   const dateToStr = dateTo ? dateTo.toISOString().split('T')[0] : undefined
 
-  const {
-    data: payoutsData,
-    isFetching: isFetchingPayouts,
-    isLoading: isLoadingPayouts,
-  } = useGetPayouts(dateFromStr, dateToStr)
-
   // Export CSV states
   const [shouldExport, setShouldExport] = useState(false)
   const [exportDateFrom, setExportDateFrom] = useState('')
@@ -64,9 +68,29 @@ export default function TransactionsPage() {
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
   const searchMutation = useSearchTransaction()
+
+  // Get filtered payouts by status
+  const hasStatusFilter = selectedStatus !== ''
+  const statusFilterValue = hasStatusFilter
+    ? (selectedStatus as 'pending' | 'completed')
+    : undefined
+
+  // Fetch payouts without status filter
+  const {
+    data: payoutsData,
+    isFetching: isFetchingPayouts,
+    isLoading: isLoadingPayouts,
+  } = useGetPayouts(dateFromStr, dateToStr, !hasStatusFilter)
+
+  // Fetch payouts with status filter
+  const {
+    data: filteredPayoutsData,
+    isFetching: isFetchingFilteredPayouts,
+    isLoading: isLoadingFilteredPayouts,
+  } = useGetPayoutFilterByStatus(statusFilterValue!)
 
   useEffect(() => {
     // Small delay to let zustand persist/hydrate and avoid redirect flicker
@@ -220,6 +244,14 @@ export default function TransactionsPage() {
     ? searchMutation.isPending
     : isFetching || isLoading
 
+  // Determine which payout data to display based on filters
+  const displayPayoutData = hasStatusFilter
+    ? filteredPayoutsData?.data?.data || []
+    : payoutsData?.payouts || []
+  const isPayoutDataLoading = hasStatusFilter
+    ? isFetchingFilteredPayouts || isLoadingFilteredPayouts
+    : isFetchingPayouts || isLoadingPayouts
+
   return (
     <div className="container mx-auto space-y-6 py-6">
       <div>
@@ -273,18 +305,18 @@ export default function TransactionsPage() {
                   </Button>
                 </div>
                 <div>
-                  <MultiSelect
-                    id="status"
-                    options={[
-                      { value: 'pending', label: 'Pending' },
-                      { value: 'completed', label: 'Completed' },
-                      { value: 'failed', label: 'Failed' },
-                    ]}
-                    placeholder="Status"
-                    className="w-full rounded-full"
-                    value={[]}
-                    onValueChange={() => {}}
-                  />
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={setSelectedStatus}
+                  >
+                    <SelectTrigger className="w-[180px] rounded-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label
@@ -360,8 +392,8 @@ export default function TransactionsPage() {
             </div>
 
             <PayoutDataTable
-              data={payoutsData?.payouts || []}
-              isLoading={isFetchingPayouts || isLoadingPayouts}
+              data={displayPayoutData}
+              isLoading={isPayoutDataLoading}
               onViewDetails={(payout) => {
                 console.log('View details:', payout)
               }}
