@@ -131,3 +131,80 @@ export function useUploadPayoutCsv() {
     },
   })
 }
+
+// PAYOUT CONFIGURATION
+
+export type PayoutConfigurationRequest = {
+  min_payout_amount: number
+  max_payout_amount: number
+  description: string
+  is_active: boolean
+}
+export function useCreatePayoutConfiguration() {
+  const { accessToken } = useAuthStore()
+  return useMutation({
+    mutationKey: ['createPayoutConfiguration'],
+    mutationFn: async (payload: PayoutConfigurationRequest) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.post(url, payload, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export function useUpdatePayoutConfiguration() {
+  const { accessToken } = useAuthStore()
+  return useMutation({
+    mutationKey: ['updatePayoutConfiguration'],
+    mutationFn: async ({
+      configId,
+      config,
+    }: {
+      configId: string
+      config: PayoutConfigurationRequest
+    }) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/${configId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.patch(url, config, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export function useDeletePayoutConfiguration() {
+  const { accessToken } = useAuthStore()
+  return useMutation({
+    mutationKey: ['deletePayoutConfiguration'],
+    mutationFn: async (configId: string) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations/${configId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.delete(url, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
