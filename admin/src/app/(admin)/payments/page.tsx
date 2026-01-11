@@ -15,6 +15,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransaction } from '@/app/data/mutations/transactions'
+import { useGetPayouts } from '@/app/data/queries/payout'
 import { Transaction } from '@/types/transactions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/store/auth-store'
@@ -22,90 +23,7 @@ import { toast } from 'sonner'
 import PaymentSummary from '@/components/transactions/payment-summary'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { PayoutDataTable } from '@/components/transactions/payout-data-table'
-
-// Mock data based on design
-const mockPaymentData: Transaction[] = [
-  {
-    id: 1,
-    agent_id: 1,
-    agent_code_used: 'AGT-001 | 3 sales',
-    proposal_number: 'PAY-2024-001',
-    policy_id: 'POL-001',
-    merchant_transaction_id: '1234',
-    amount: 90000,
-    customer_id: 1,
-    transaction_status: 'completed',
-    status: 'completed',
-    transaction_date: '2024-11-02T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-11-02T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 2,
-    agent_id: 2,
-    agent_code_used: 'AGT-002 | 3 sales',
-    proposal_number: 'PAY-2024-002',
-    policy_id: 'POL-002',
-    merchant_transaction_id: '09171234567',
-    amount: 37000,
-    customer_id: 2,
-    transaction_status: 'pending',
-    status: 'pending',
-    transaction_date: '2024-11-08T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-01T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 3,
-    agent_id: 3,
-    agent_code_used: 'AGT-003 | 3 sales',
-    proposal_number: 'PAY-2024-003',
-    policy_id: 'POL-003',
-    merchant_transaction_id: '5678',
-    amount: 135500,
-    customer_id: 3,
-    transaction_status: 'processing',
-    status: 'cancelled',
-    transaction_date: '2024-11-06T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-01T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 4,
-    agent_id: 4,
-    agent_code_used: 'AGT-004 | 3 sales',
-    proposal_number: 'PAY-2024-004',
-    policy_id: 'POL-004',
-    merchant_transaction_id: '09181234567',
-    amount: 19000,
-    customer_id: 4,
-    transaction_status: 'completed',
-    status: 'completed',
-    transaction_date: '2024-10-30T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-30T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 5,
-    agent_id: 5,
-    agent_code_used: 'AGT-005 | 3 sales',
-    proposal_number: 'PAY-2024-005',
-    policy_id: 'POL-005',
-    merchant_transaction_id: '9012',
-    amount: 7750,
-    customer_id: 5,
-    transaction_status: 'failed',
-    status: 'failed',
-    transaction_date: '2024-10-28T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-28T00:00:00Z',
-    deleted_at: null,
-  },
-]
+import { Payout } from '@/types/payout'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -114,6 +32,11 @@ export default function TransactionsPage() {
     isFetching,
     isLoading,
   } = useGetTransactions(page)
+  const {
+    data: payoutsData,
+    isFetching: isFetchingPayouts,
+    isLoading: isLoadingPayouts,
+  } = useGetPayouts()
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
@@ -294,9 +217,7 @@ export default function TransactionsPage() {
                     placeholder="Search by proposal number, policy ID, transaction ID..."
                     className="max-w-md rounded-full"
                   />
-                  <Button
-                    className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
-                  >
+                  <Button className="from-primary to-lilac rounded-full bg-gradient-to-r text-white">
                     Search
                   </Button>
                 </div>
@@ -323,20 +244,18 @@ export default function TransactionsPage() {
                   <Plus className="mr-2 h-4 w-4" />
                   Process Payment
                 </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                >
+                <Button variant="outline" className="rounded-full">
                   <Download className="mr-2 h-4 w-4" />
                   Export to CSV
                 </Button>
               </div>
             </div>
 
-            <PayoutDataTable 
-              data={mockPaymentData}
-              onViewDetails={(transaction) => {
-                console.log('View details:', transaction)
+            <PayoutDataTable
+              data={payoutsData?.payouts || []}
+              isLoading={isFetchingPayouts || isLoadingPayouts}
+              onViewDetails={(payout) => {
+                console.log('View details:', payout)
               }}
             />
 

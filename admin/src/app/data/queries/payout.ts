@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/auth-store'
+import { GetPayoutResponse } from '@/types/payout'
 import { handleApiError } from '@/utils/handle-api-error'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
@@ -27,15 +28,10 @@ export function useExportPayoutsCsv(dateFrom: string, dateTo: string) {
   })
 }
 
-export function useGetPayouts(
-  page: number = 1,
-  perPage: number = 15,
-  dateFrom?: string,
-  dateTo?: string
-) {
+export function useGetPayouts(dateFrom?: string, dateTo?: string) {
   const { accessToken } = useAuthStore()
   return useQuery({
-    queryKey: ['getAllPayouts', page, perPage, dateFrom, dateTo],
+    queryKey: ['getAllPayouts', dateFrom, dateTo],
     queryFn: async () => {
       const queryParams = new URLSearchParams()
       if (dateFrom) {
@@ -45,11 +41,11 @@ export function useGetPayouts(
         queryParams.append('date_to', dateTo)
       }
       const url =
-        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payouts?page=${page}&per_page=${perPage}` +
-        (queryParams.toString().length > 0 ? `&${queryParams.toString()}` : '')
+        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payouts` +
+        (queryParams.toString().length > 0 ? `?${queryParams.toString()}` : '')
       const token = `Bearer ${accessToken}`
       try {
-        const response = await axios.get(url, {
+        const response = await axios.get<GetPayoutResponse>(url, {
           headers: {
             Authorization: token,
           },
