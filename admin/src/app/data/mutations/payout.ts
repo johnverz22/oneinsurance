@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/auth-store'
+import { GeneratePayoutResponse } from '@/types/payout'
 import { handleApiError } from '@/utils/handle-api-error'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
@@ -17,11 +18,15 @@ export function useGeneratePayout() {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payouts/generate`
       const token = `Bearer ${accessToken}`
       try {
-        const response = await axios.post(url, payload, {
-          headers: {
-            Authorization: token,
-          },
-        })
+        const response = await axios.post<GeneratePayoutResponse>(
+          url,
+          payload,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        )
 
         return response.data
       } catch (error) {
