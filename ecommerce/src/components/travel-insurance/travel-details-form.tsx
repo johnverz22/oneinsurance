@@ -266,7 +266,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
         <div className="relative flex w-full flex-col gap-4 sm:gap-6 lg:flex-row lg:gap-4">
           <form.Field name={`travelDetailList[0].PlaceOfOrgin`}>
-            {(field) => (
+            {(placeOfOriginField) => (
               <div className="w-full space-y-2">
                 <p className="text-primary text-sm font-medium sm:text-base">
                   From
@@ -274,9 +274,9 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                 <ComboBox
                   title="place"
                   options={options}
-                  value={field.state.value}
+                  value={placeOfOriginField.state.value}
                   onValueChange={(value) => {
-                    field.handleChange(value)
+                    placeOfOriginField.handleChange(value)
                     const updatedTravelDetailList = [
                       ...currentValues.travelDetailList,
                     ]
@@ -292,6 +292,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                     // canSubmit is computed via Zod on currentValues; no explicit validate call needed
                   }}
                 />
+                <FieldInfo field={placeOfOriginField} />
               </div>
             )}
           </form.Field>
@@ -300,6 +301,11 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
             name="travelDetailList"
             children={(field) => {
               const options = getNormalizedTravelCoverages(TravelCoverageMap)
+
+              // Check if there are any destinations selected
+              const hasDestinations = field.state.value?.some(
+                (d: any) => d?.TravelCountry && d.TravelCountry.trim() !== ''
+              )
 
               return (
                 <div className="w-full space-y-2">
@@ -340,22 +346,31 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                           currentValues.travelDetailList[0].PlaceOfOrgin) ||
                         ''
 
-                      const newTravelDetailList = filtered.map(
-                        (code, idx, arr) => ({
-                          TravelCoverageArea: findCoverageArea(code),
-                          PlaceOfOrgin:
-                            idx === 0
-                              ? selectedOrigin
-                              : (arr[idx - 1] ?? selectedOrigin),
-                          TravelCountry: code,
-                          DisplaySequence: idx + 1,
-                        })
-                      )
+                      // If destinations are cleared, preserve the origin with an empty destination
+                      const newTravelDetailList = filtered.length > 0
+                        ? filtered.map((code, idx, arr) => ({
+                            TravelCoverageArea: findCoverageArea(code),
+                            PlaceOfOrgin:
+                              idx === 0
+                                ? selectedOrigin
+                                : (arr[idx - 1] ?? selectedOrigin),
+                            TravelCountry: code,
+                            DisplaySequence: idx + 1,
+                          }))
+                        : [
+                            {
+                              TravelCoverageArea: 'APAC',
+                              PlaceOfOrgin: selectedOrigin,
+                              TravelCountry: '',
+                              DisplaySequence: 1,
+                            },
+                          ]
+                      
                       field.handleChange(newTravelDetailList)
                       updateTravelDetails({
                         travelDetailList: newTravelDetailList,
                       })
-                      // canSubmit is computed via Zod on currentValues; no explicit validate call needed
+                      field.handleBlur()
                     }}
                     defaultValue={
                       (field.state.value ?? [])
@@ -373,6 +388,11 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                     autoSize={false}
                   />
                   <FieldInfo field={field} />
+                  {!hasDestinations && (field.state.meta.isTouched || field.state.meta.errors.length > 0) && (
+                    <p className="text-destructive text-xs">
+                      Please select at least one destination
+                    </p>
+                  )}
                 </div>
               )
             }}
@@ -609,10 +629,10 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
           >
-            {(field) => (
+            {([canSubmit, isSubmitting]) => (
               <Button
                 type="submit"
-                disabled={!form.state.canSubmit}
+                disabled={!canSubmit || isSubmitting}
                 onClick={(e) => {
                   e.preventDefault()
                   form.handleSubmit()

@@ -28,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 
 type WithNavigationProps = {
   isNavigationVisible: true
@@ -55,13 +56,15 @@ export const Header = ({
     ? (rest as WithNavigationProps).navigations
     : []
 
+  const {agentCode} = useAgentCodeStore()
+
   const { isMobile } = useSidebar()
   const isSingIn = isLoggedIn ?? isSingedin()
 
   return (
     <header
       className={cn(
-        'bg-background fixed top-0 z-40 h-20 w-full border-b px-4 py-4 lg:px-8',
+        'bg-background fixed top-0 z-40 h-20 w-full px-4 py-4 lg:px-8',
         className
       )}
     >
@@ -99,7 +102,7 @@ export const Header = ({
                       <NavigationMenuItem key={index}>
                         {isList ? (
                           <>
-                            <NavigationMenuTrigger>
+                            <NavigationMenuTrigger className='font-bold text-primary'>
                               {navigation.label}
                             </NavigationMenuTrigger>
                             {navigation.items && (
@@ -108,7 +111,7 @@ export const Header = ({
                                   {navigation.items.map((item, index) => (
                                     <ListItem
                                       key={index}
-                                      href={item.link}
+                                      href={agentCode ? `/${agentCode}${item.link}` : item.link}
                                       title={item.title}
                                       className=""
                                     >
@@ -122,9 +125,9 @@ export const Header = ({
                         ) : (
                           <NavigationMenuLink
                             asChild
-                            className={navigationMenuTriggerStyle()}
+                            className={navigationMenuTriggerStyle() + ' font-bold text-primary'}
                           >
-                            <Link href={navigation.link ?? '/'}>
+                            <Link href={agentCode ? `/${agentCode}${navigation.link ?? '/'}` : navigation.link ?? '/'}>
                               {navigation.label}
                             </Link>
                           </NavigationMenuLink>
@@ -137,9 +140,10 @@ export const Header = ({
             </div>
           )}
 
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
 
-          {isSingIn ? (
+          {/* TEMP: user login temporarily disabled */}
+          {/* {isSingIn ? (
             <div className="flex items-center gap-3">
               <Button variant="secondary" size="icon" className="relative py-2">
                 <Bell className="h-5 w-5" />
@@ -170,7 +174,7 @@ export const Header = ({
             <Button variant="secondary" className="px-8" asChild>
               <Link href="/sign-in">Login</Link>
             </Button>
-          )}
+          )} */}
         </div>
       </div>
     </header>

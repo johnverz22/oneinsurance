@@ -24,6 +24,8 @@ import {
 import { AxiosError } from 'axios'
 import { StatusUpdateDialog } from './status-dialog'
 import { useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
+import { exportToCSV } from '@/utils/export-to-csv'
+import { Download } from 'lucide-react'
 
 export default function ApplicantsPage() {
   const [page, setPage] = useState<number>(1)
@@ -81,7 +83,7 @@ export default function ApplicantsPage() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => {
-          return <div className="font-medium">{row.original.name}</div>
+          return <div className="font-medium">{row.original.first_name} {row.original.last_name}</div>
         },
       },
       {
@@ -248,6 +250,16 @@ export default function ApplicantsPage() {
     refetch()
   }
 
+  function handleExportToCSV(): void {
+    const dataToExport = applicantsData?.data?.data ?? []
+    if (dataToExport.length === 0) {
+      toast.info('No data to export')
+      return
+    }
+    exportToCSV(dataToExport, 'applicants-export.csv')
+    toast.success('Data exported successfully')
+  }
+
   const displayData = applicantsData
   const isDataLoading = isFetching || isLoading
 
@@ -300,7 +312,7 @@ export default function ApplicantsPage() {
             ) : (
               <div className="p-6">
                 <div className="mb-6 flex justify-between">
-                  <div className="flex w-[50%] items-center gap-2">
+                  <div className="flex flex-1 items-center gap-2">
                     <Input
                       value={searchKey}
                       onChange={(e) => setSearchKey(e.target.value)}
@@ -326,6 +338,13 @@ export default function ApplicantsPage() {
                       </Button>
                     )}
                   </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleExportToCSV}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export to CSV
+                  </Button>
                 </div>
 
                 {isSearchMode && (

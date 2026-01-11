@@ -15,9 +15,9 @@ export default function TeamLayout({
   children: React.ReactNode
 }>) {
   const TABS = [
-    { value: '/hierarchy', label: 'Hierarchy' },
-    { value: '/leaderboard', label: 'Leaderboard' },
-    { value: '/teams', label: 'Teams' },
+    // { value: '/hierarchy', label: 'Hierarchy' },
+    // { value: '/leaderboard', label: 'Leaderboard' },
+    // { value: '/teams', label: 'Teams' },
     { value: '/agents', label: 'Agents' },
     { value: '/applicants', label: 'Applicants' },
     { value: '/invitations', label: 'Invitations' },
@@ -34,8 +34,8 @@ export default function TeamLayout({
   return (
     <div className="relative h-full w-full space-y-6">
       <PageHeader
-        title="Team Management & Performance"
-        subTitle="View agent hierarchies, track team performance, and manage overrider relationships"
+        title="Agents & Applicants Management"
+        subTitle="Manage your agents and applicants efficiently"
       />
       <div className="flex items-center justify-between">
         <TabNavigation tabs={TABS} />

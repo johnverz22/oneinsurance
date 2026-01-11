@@ -24,8 +24,11 @@ import {
 import { INSURANCES } from '@/constants/insurances'
 import { COMPANIES } from '@/constants/companies'
 import { AGENT_CODE } from '@/constants/agent-code'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 
 export default function Home() {
+
+  const {agentCode} = useAgentCodeStore()
   // Sample testimonials data
   const testimonials = [
     {
@@ -233,7 +236,11 @@ export default function Home() {
 
         <div className="grid w-full items-center justify-between gap-4 md:grid-cols-5">
           {INSURANCES.slice(0, 5).map((product, index) => (
-            <InsuranceCard key={index} {...product} />
+            <InsuranceCard 
+              key={index} 
+              {...product} 
+              checkoutLink={agentCode ? `/${agentCode}${product.checkoutLink}` : `/${AGENT_CODE}${product.checkoutLink}`}
+            />
           ))}
         </div>
 
@@ -244,7 +251,7 @@ export default function Home() {
             className="hover:bg-primary rounded-full border-2 px-8 py-6 text-base font-semibold transition-all hover:text-white"
             asChild
           >
-            <Link href={`/${AGENT_CODE}/products`}>View All</Link>
+            <Link href={`/${agentCode}/products`}>View All</Link>
           </Button>
         </div>
       </section>
