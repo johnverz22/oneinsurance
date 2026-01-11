@@ -6,6 +6,10 @@ import {
   LeaderboardAgent,
   LeaderboardDataTableAction,
 } from '@/app/(admin)/(team)/leaderboard/leaderboard-data-table'
+import { exportToCSV } from '@/utils/export-to-csv'
+import { Button } from '@/components/ui/button'
+import { Download } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function LeaderboardPage() {
   const leaderboardData: LeaderboardAgent[] = [
@@ -80,10 +84,19 @@ export default function LeaderboardPage() {
     },
   ]
 
+  function handleExportToCSV(): void {
+    if (leaderboardData.length === 0) {
+      toast.info('No data to export')
+      return
+    }
+    exportToCSV(leaderboardData, 'leaderboard-export.csv')
+    toast.success('Data exported successfully')
+  }
+
   return (
     <Card className="w-full rounded-3xl p-6">
       {/* Header */}
-      <div className="mb-6 border-b pb-4">
+      <div className="mb-6 flex items-start justify-between border-b pb-4">
         <h2 className="text-2xl font-bold">Agent Performance Leaderboard</h2>
         <p className="text-muted-foreground text-sm">
           Ranked by total sales and commission performance
