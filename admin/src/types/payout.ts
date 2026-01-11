@@ -1,19 +1,24 @@
-export type Payout = {
-  payout_reference: string
-  agent_id: string
-  agent_name: string
-  payout_amount: number
-  account_type: string
-  account_name: string
-  account_number: string
-  date_from: string
-  date_to: string
-  generated_by: string
-  date_generated: string
-  status: string
-}
+import { z } from 'zod'
 
-export type GetPayoutResponse = {
-  count: number
-  payouts: Payout[]
-}
+export const PayoutSchema = z.object({
+  payout_reference: z.string(),
+  agent_id: z.string(),
+  agent_name: z.string(),
+  payout_amount: z.number(),
+  account_type: z.string(),
+  account_name: z.string(),
+  account_number: z.string(),
+  date_from: z.string(),
+  date_to: z.string(),
+  generated_by: z.string(),
+  date_generated: z.string(),
+  status: z.string(),
+})
+
+export const GetPayoutResponseSchema = z.object({
+  count: z.number(),
+  payouts: z.array(PayoutSchema),
+})
+
+export type Payout = z.infer<typeof PayoutSchema>
+export type GetPayoutResponse = z.infer<typeof GetPayoutResponseSchema>
