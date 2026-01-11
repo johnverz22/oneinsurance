@@ -21,7 +21,6 @@ export default function DashboardLayout({
     // { value: '/team-sales', label: 'Team Sales' },
     // { value: '/overriders', label: 'Overriders' },
     { value: '/products', label: 'My Products' },
-    { value: '/commissions', label: 'Commissions' },
     { value: '/referrals', label: 'Referral Links' },
     { value: '/payments', label: 'Payments' },
   ] satisfies Tab[]
