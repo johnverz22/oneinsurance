@@ -6,12 +6,12 @@ interface PaymentSummaryCardProps {
 }
 
 interface PaymentSummaryProps {
-  totalPayments: number
+  totalPayouts: number
   totalAmount: number
-  paid: number
-  pending: number
-  failed: number
-  avgProcessing: number
+  pendingCount: number
+  completedCount: number
+  pendingAmount: number
+  completedAmount: number
 }
 
 function PaymentSummaryCard({ title, value }: PaymentSummaryCardProps) {
@@ -26,26 +26,29 @@ function PaymentSummaryCard({ title, value }: PaymentSummaryCardProps) {
 }
 
 export default function PaymentSummary({
-  totalPayments,
+  totalPayouts,
   totalAmount,
-  paid,
-  pending,
-  failed,
-  avgProcessing,
+  pendingCount,
+  completedCount,
+  pendingAmount,
+  completedAmount,
 }: PaymentSummaryProps) {
   return (
     <div className="grid gap-2 md:grid-cols-3 lg:grid-cols-6">
-      <PaymentSummaryCard title="Total Payments" value={`${totalPayments}`} />
+      <PaymentSummaryCard title="Total Payouts" value={`${totalPayouts}`} />
       <PaymentSummaryCard
         title="Total Amount"
-        value={`P ${totalAmount.toFixed(2)}`}
+        value={`₱${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
       />
-      <PaymentSummaryCard title="Paid" value={`P ${paid.toFixed(2)}`} />
-      <PaymentSummaryCard title="Pending" value={`P ${pending.toFixed(2)}`} />
-      <PaymentSummaryCard title="Failed" value={`P ${failed.toFixed(2)}`} />
+      <PaymentSummaryCard title="Pending Count" value={`${pendingCount}`} />
+      <PaymentSummaryCard title="Completed Count" value={`${completedCount}`} />
       <PaymentSummaryCard
-        title="Avg Processing"
-        value={avgProcessing.toPrecision(2)}
+        title="Pending Amount"
+        value={`₱${pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+      />
+      <PaymentSummaryCard
+        title="Completed Amount"
+        value={`₱${completedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
       />
     </div>
   )
