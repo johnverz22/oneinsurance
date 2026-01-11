@@ -28,6 +28,7 @@ import {
   useExportPayoutsCsv,
   useGetPayoutFilterByStatus,
 } from '@/app/data/queries/payout'
+import { useGeneratePayout } from '@/app/data/mutations/payout'
 import { Transaction } from '@/types/transactions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/store/auth-store'
@@ -35,7 +36,7 @@ import { toast } from 'sonner'
 import PaymentSummary from '@/components/transactions/payment-summary'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { PayoutDataTable } from '@/components/transactions/payout-data-table'
-import { Payout } from '@/types/payout'
+import { Payout, GeneratePayoutResponse } from '@/types/payout'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -70,7 +71,11 @@ export default function TransactionsPage() {
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
+  const [generatedPayouts, setGeneratedPayouts] = useState<Payout[] | null>(
+    null
+  )
   const searchMutation = useSearchTransaction()
+  const generatePayoutMutation = useGeneratePayout()
 
   // Get filtered payouts by status
   const hasStatusFilter = selectedStatus !== ''
@@ -212,6 +217,37 @@ export default function TransactionsPage() {
     searchMutation.reset()
   }
 
+  async function handleGeneratePayout(): Promise<void> {
+    // Check if both dates are selected
+    if (!dateFrom || !dateTo) {
+      toast.error('Please select both Date From and Date To to generate payout')
+      return
+    }
+
+    const dateFromStr = dateFrom.toISOString().split('T')[0]
+    const dateToStr = dateTo.toISOString().split('T')[0]
+
+    try {
+      const response = await generatePayoutMutation.mutateAsync({
+        date_from: dateFromStr,
+        date_to: dateToStr,
+      })
+
+      if (response?.message) {
+        toast.success(response.message)
+      } else {
+        toast.success('Payout generated successfully')
+      }
+
+      // Store the generated payouts to display them
+      if (response?.payouts) {
+        setGeneratedPayouts(response.payouts)
+      }
+    } catch (error) {
+      toast.error('Failed to generate payout')
+    }
+  }
+
   function handleExportToCSV(): void {
     // Check if both dates are selected
     if (!dateFrom || !dateTo) {
@@ -245,9 +281,11 @@ export default function TransactionsPage() {
     : isFetching || isLoading
 
   // Determine which payout data to display based on filters
-  const displayPayoutData = hasStatusFilter
-    ? filteredPayoutsData?.data?.data || []
-    : payoutsData?.payouts || []
+  const displayPayoutData = generatedPayouts
+    ? generatedPayouts
+    : hasStatusFilter
+      ? filteredPayoutsData?.data?.data || []
+      : payoutsData?.payouts || []
   const isPayoutDataLoading = hasStatusFilter
     ? isFetchingFilteredPayouts || isLoadingFilteredPayouts
     : isFetchingPayouts || isLoadingPayouts
@@ -378,6 +416,17 @@ export default function TransactionsPage() {
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Process Payment
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={handleGeneratePayout}
+                  disabled={generatePayoutMutation.isPending}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {generatePayoutMutation.isPending
+                    ? 'Generating...'
+                    : 'Generate Payout'}
                 </Button>
                 <Button
                   variant="outline"
