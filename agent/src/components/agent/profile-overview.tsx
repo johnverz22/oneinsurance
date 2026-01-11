@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { formatPHPAmount } from '@/utils/formatter'
 import { cn } from '@/lib/utils'
+import { usePaymentSummary } from '@/app/data/queries/payments'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Amount =
   | 'TOTAL_SALES'
@@ -14,13 +16,8 @@ type Amount =
 
 export const ProfileOverview = () => {
   const { user } = useAgentAuthStore()
-
-  const AMOUNTS = {
-    TOTAL_SALES: 2_450_000,
-    GROSS_COMMISSION: 735_000,
-    OVERRIDER_DEDUCTIONS: -60_000,
-    NET_COMMISSION: 675_000,
-  } as Record<Amount, number>
+  const { data: paymentSummary, isSuccess: isPaymentSummaryFetched } =
+    usePaymentSummary()
 
   const STYLES = {
     OVERRIDER_DEDUCTIONS: 'text-destructive',
@@ -49,19 +46,71 @@ export const ProfileOverview = () => {
         </div>
 
         <div className="flex w-full flex-col gap-x-5 gap-y-3 lg:flex-row lg:items-center lg:justify-between">
-          {Object.entries(AMOUNTS).map(([key, value]) => (
-            <div
-              key={key}
-              className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right"
-            >
-              <p className={cn('text-lg font-bold', STYLES[key as Amount])}>
-                {formatPHPAmount(value)}
-              </p>
-              <span className="text-muted-foreground capitalize">
-                {key.replace('_', ' ').toLowerCase()}
-              </span>
-            </div>
-          ))}
+          {isPaymentSummaryFetched ? (
+            <>
+              <div>
+                <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
+                  <p className={cn('text-lg font-bold')}>
+                    {formatPHPAmount(Number(paymentSummary.totalNetPremium))}
+                  </p>
+                  <span className="text-muted-foreground capitalize">
+                    Total Net Premium
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
+                  <p className={cn('text-lg font-bold')}>
+                    {formatPHPAmount(
+                      Number(paymentSummary.totalGrossCommission)
+                    )}
+                  </p>
+                  <span className="text-muted-foreground capitalize">
+                    Total Gross Commission
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
+                  <p
+                    className={cn(
+                      'text-lg font-bold',
+                      STYLES['OVERRIDER_DEDUCTIONS']
+                    )}
+                  >
+                    {formatPHPAmount(
+                      Number(paymentSummary.totalWithholdingTax)
+                    )}
+                  </p>
+                  <span className="text-muted-foreground capitalize">
+                    Total Withholding Tax
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
+                  <p
+                    className={cn(
+                      'text-lg font-bold',
+                      STYLES['NET_COMMISSION']
+                    )}
+                  >
+                    {formatPHPAmount(Number(paymentSummary.totalNetCommission))}
+                  </p>
+                  <span className="text-muted-foreground capitalize">
+                    Total Net Commission
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : (
+            [...Array(4)].map((_, index) => (
+              <Skeleton
+                key={index}
+                className="border-muted-foreground/10 h-20 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right"
+              />
+            ))
+          )}
         </div>
       </CardContent>
     </Card>

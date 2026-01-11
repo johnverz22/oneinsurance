@@ -14,181 +14,151 @@ import { DataTable } from '@/components/ui/data-table'
 import { PaymentHistoryCard } from '@/components/agent/payment-history-card'
 import { PaymentHistory } from '@/types/agent/payments'
 import { formatPHPAmount } from '@/utils/formatter'
+import {
+  usePaymentsHistory,
+  usePaymentSummary,
+} from '@/app/data/queries/payments'
 
-const PAYMENT_HISTORY: PaymentHistory[] = [
+export const PAYMENT_HISTORY: PaymentHistory[] = [
   {
-    id: 'PAY-2025-010',
-    period: 'October 2025',
-    salesCount: 3,
+    payoutReference: 'PR-2024-001',
+    agentId: 'AG-1001',
+    agentName: 'Juan Dela Cruz',
+    payoutAmount: 32500,
+    accountType: 'Bank',
+    accountName: 'Juan Dela Cruz',
+    accountNumber: '****1234',
+    dateFrom: new Date('2024-01-01'),
+    dateTo: new Date('2024-01-15'),
+    generatedBy: 'System',
+    dateGenerated: new Date('2024-01-16'),
     status: 'Paid',
-    grossCommission: {
-      total: 105000,
-      breakdown: [
-        { label: 'Direct Sales', amount: 85000 },
-        { label: 'Overrider Bonus', amount: 20000 },
-      ],
-    },
-    overriderDeduction: {
-      total: 15000,
-      breakdown: [
-        { label: 'Maria Santos', amount: 8000 },
-        { label: 'Luis Mendoza', amount: 7000 },
-      ],
-    },
-    netPayment: {
-      amount: 90000,
-      method: 'GCash',
-      date: '2025-11-05',
-    },
-    paymentStatus: {
-      dueDate: '2025-11-05',
-      paidDate: '2025-11-02',
-    },
   },
   {
-    id: 'PAY-2025-009',
-    period: 'September 2025',
-    salesCount: 4,
-    status: 'Paid',
-    grossCommission: {
-      total: 98000,
-      breakdown: [
-        { label: 'Direct Sales', amount: 76000 },
-        { label: 'Overrider Bonus', amount: 22000 },
-      ],
-    },
-    overriderDeduction: {
-      total: 12000,
-      breakdown: [
-        { label: 'Karen Dizon', amount: 5000 },
-        { label: 'Rey Morales', amount: 7000 },
-      ],
-    },
-    netPayment: {
-      amount: 86000,
-      method: 'Bank Transfer',
-      date: '2025-10-04',
-    },
-    paymentStatus: {
-      dueDate: '2025-10-05',
-      paidDate: '2025-10-03',
-    },
-  },
-  {
-    id: 'PAY-2025-008',
-    period: 'August 2025',
-    salesCount: 5,
-    status: 'Paid',
-    grossCommission: {
-      total: 125000,
-      breakdown: [
-        { label: 'Direct Sales', amount: 102000 },
-        { label: 'Overrider Bonus', amount: 23000 },
-      ],
-    },
-    overriderDeduction: {
-      total: 18000,
-      breakdown: [
-        { label: 'Jose Ramos', amount: 9000 },
-        { label: 'Nina Cruz', amount: 9000 },
-      ],
-    },
-    netPayment: {
-      amount: 107000,
-      method: 'Maya',
-      date: '2025-09-05',
-    },
-    paymentStatus: {
-      dueDate: '2025-09-05',
-      paidDate: '2025-09-04',
-    },
-  },
-  {
-    id: 'PAY-2025-007',
-    period: 'July 2025',
-    salesCount: 2,
-    status: 'Paid',
-    grossCommission: {
-      total: 72000,
-      breakdown: [
-        { label: 'Direct Sales', amount: 58000 },
-        { label: 'Overrider Bonus', amount: 14000 },
-      ],
-    },
-    overriderDeduction: {
-      total: 9000,
-      breakdown: [
-        { label: 'Anna Lopez', amount: 4000 },
-        { label: 'Mark Villanueva', amount: 5000 },
-      ],
-    },
-    netPayment: {
-      amount: 63000,
-      method: 'Bank Transfer',
-      date: '2025-08-05',
-    },
-    paymentStatus: {
-      dueDate: '2025-08-05',
-      paidDate: '2025-08-02',
-    },
-  },
-  {
-    id: 'PAY-2025-006',
-    period: 'June 2025',
-    salesCount: 4,
-    status: 'Paid',
-    grossCommission: {
-      total: 87000,
-      breakdown: [
-        { label: 'Direct Sales', amount: 69000 },
-        { label: 'Overrider Bonus', amount: 18000 },
-      ],
-    },
-    overriderDeduction: {
-      total: 11000,
-      breakdown: [
-        { label: 'Leo Javier', amount: 6000 },
-        { label: 'Jane Torres', amount: 5000 },
-      ],
-    },
-    netPayment: {
-      amount: 76000,
-      method: 'GCash',
-      date: '2025-07-04',
-    },
-    paymentStatus: {
-      dueDate: '2025-07-05',
-      paidDate: '2025-07-03',
-    },
-  },
-  {
-    id: 'PAY-2025-005',
-    period: 'May 2025',
-    salesCount: 3,
+    payoutReference: 'PR-2024-002',
+    agentId: 'AG-1002',
+    agentName: 'Maria Santos',
+    payoutAmount: 18400,
+    accountType: 'GCash',
+    accountName: 'Maria Santos',
+    accountNumber: '****5678',
+    dateFrom: new Date('2024-01-01'),
+    dateTo: new Date('2024-01-15'),
+    generatedBy: 'System',
+    dateGenerated: new Date('2024-01-16'),
     status: 'Pending',
-    grossCommission: {
-      total: 94000,
-      breakdown: [
-        { label: 'Direct Sales', amount: 76000 },
-        { label: 'Overrider Bonus', amount: 18000 },
-      ],
-    },
-    overriderDeduction: {
-      total: 13000,
-      breakdown: [
-        { label: 'Sarah Go', amount: 7000 },
-        { label: 'Tim Reyes', amount: 6000 },
-      ],
-    },
-    netPayment: {
-      amount: 81000,
-      method: 'GCash',
-      date: '2025-06-05',
-    },
-    paymentStatus: {
-      dueDate: '2025-06-05',
-      paidDate: undefined,
-    },
+  },
+  {
+    payoutReference: 'PR-2024-003',
+    agentId: 'AG-1003',
+    agentName: 'Pedro Reyes',
+    payoutAmount: 50250,
+    accountType: 'Bank',
+    accountName: 'Pedro Reyes',
+    accountNumber: '****9012',
+    dateFrom: new Date('2024-01-16'),
+    dateTo: new Date('2024-01-31'),
+    generatedBy: 'Finance Admin',
+    dateGenerated: new Date('2024-02-01'),
+    status: 'Paid',
+  },
+  {
+    payoutReference: 'PR-2024-004',
+    agentId: 'AG-1004',
+    agentName: 'Ana Lim',
+    payoutAmount: 12900,
+    accountType: 'PayMaya',
+    accountName: 'Ana Lim',
+    accountNumber: '****3344',
+    dateFrom: new Date('2024-01-16'),
+    dateTo: new Date('2024-01-31'),
+    generatedBy: 'Finance Admin',
+    dateGenerated: new Date('2024-02-01'),
+    status: 'Failed',
+  },
+  {
+    payoutReference: 'PR-2024-005',
+    agentId: 'AG-1005',
+    agentName: 'Mark Villanueva',
+    payoutAmount: 27800,
+    accountType: 'Bank',
+    accountName: 'Mark Villanueva',
+    accountNumber: '****7788',
+    dateFrom: new Date('2024-02-01'),
+    dateTo: new Date('2024-02-15'),
+    generatedBy: 'System',
+    dateGenerated: new Date('2024-02-16'),
+    status: 'Paid',
+  },
+  {
+    payoutReference: 'PR-2024-006',
+    agentId: 'AG-1006',
+    agentName: 'Chris Tan',
+    payoutAmount: 9400,
+    accountType: 'GCash',
+    accountName: 'Chris Tan',
+    accountNumber: '****1122',
+    dateFrom: new Date('2024-02-01'),
+    dateTo: new Date('2024-02-15'),
+    generatedBy: 'System',
+    dateGenerated: new Date('2024-02-16'),
+    status: 'Pending',
+  },
+  {
+    payoutReference: 'PR-2024-007',
+    agentId: 'AG-1007',
+    agentName: 'Liza Gomez',
+    payoutAmount: 41500,
+    accountType: 'Bank',
+    accountName: 'Liza Gomez',
+    accountNumber: '****8899',
+    dateFrom: new Date('2024-02-16'),
+    dateTo: new Date('2024-02-28'),
+    generatedBy: 'Finance Admin',
+    dateGenerated: new Date('2024-03-01'),
+    status: 'Paid',
+  },
+  {
+    payoutReference: 'PR-2024-008',
+    agentId: 'AG-1008',
+    agentName: 'Kevin Ong',
+    payoutAmount: 16200,
+    accountType: 'PayMaya',
+    accountName: 'Kevin Ong',
+    accountNumber: '****5566',
+    dateFrom: new Date('2024-02-16'),
+    dateTo: new Date('2024-02-28'),
+    generatedBy: 'Finance Admin',
+    dateGenerated: new Date('2024-03-01'),
+    status: 'Pending',
+  },
+  {
+    payoutReference: 'PR-2024-009',
+    agentId: 'AG-1009',
+    agentName: 'Rhea Flores',
+    payoutAmount: 35600,
+    accountType: 'Bank',
+    accountName: 'Rhea Flores',
+    accountNumber: '****6677',
+    dateFrom: new Date('2024-03-01'),
+    dateTo: new Date('2024-03-15'),
+    generatedBy: 'System',
+    dateGenerated: new Date('2024-03-16'),
+    status: 'Paid',
+  },
+  {
+    payoutReference: 'PR-2024-010',
+    agentId: 'AG-1010',
+    agentName: 'Noel Bautista',
+    payoutAmount: 11800,
+    accountType: 'GCash',
+    accountName: 'Noel Bautista',
+    accountNumber: '****4455',
+    dateFrom: new Date('2024-03-01'),
+    dateTo: new Date('2024-03-15'),
+    generatedBy: 'System',
+    dateGenerated: new Date('2024-03-16'),
+    status: 'Pending',
   },
 ]
 
@@ -233,79 +203,67 @@ function getPaymentDates(today: Date = new Date()) {
 }
 
 const PaymentsPage = () => {
-  const totalEarnings = PAYMENT_HISTORY.reduce(
-    (current, history) => current + history.grossCommission.total,
-    0
-  )
-
-  const totalPaid = PAYMENT_HISTORY.reduce(
-    (current, history) =>
-      current + (history.status === 'Paid' ? history.grossCommission.total : 0),
-    0
-  )
-
-  const totalPending = PAYMENT_HISTORY.reduce(
-    (current, history) =>
-      current +
-      (history.status === 'Pending' ? history.grossCommission.total : 0),
-    0
-  )
-
-  const monthlyAverage = totalEarnings / PAYMENT_HISTORY.length
-  const { lastPayment, nextPayment } = getPaymentDates(new Date())
+  const { data: paymentHistory, isSuccess: isPaymentHistoryFetched } =
+    usePaymentsHistory()
+  const { data: paymentSummary, isSuccess: isPaymentSummaryFetched } =
+    usePaymentSummary()
 
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
-      <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-6">
-        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-          <h4 className="font-bold">Total Earnings</h4>
-          <p className="text-sm font-semibold lg:text-base">
-            {formatPHPAmount(totalEarnings)}
-          </p>
-        </Card>
-        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-          <h4 className="font-bold">Total Paid</h4>
-          <p className="text-sm font-semibold text-green-500 lg:text-base">
-            {formatPHPAmount(totalPaid)}
-          </p>
-        </Card>
-        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-          <h4 className="font-bold">Total Pending</h4>
-          <p className="text-sm font-semibold text-red-500 lg:text-base">
-            {formatPHPAmount(totalPending)}
-          </p>
-        </Card>
-        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-          <h4 className="font-bold">Last Payment</h4>
-          <p className="text-muted-foreground text-sm font-semibold lg:text-base">
-            {lastPayment}
-          </p>
-        </Card>
-        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-          <h4 className="font-bold">Next Payment</h4>
-          <p className="text-sm font-semibold text-blue-500 lg:text-base">
-            {nextPayment}
-          </p>
-        </Card>
-        <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-          <h4 className="font-bold">Monthly Average</h4>
-          <p className="text-sm font-semibold text-purple-500 lg:text-base">
-            {formatPHPAmount(monthlyAverage)}
-          </p>
-        </Card>
-      </div>
+      {isPaymentSummaryFetched && (
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-6">
+          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+            <h4 className="font-bold">Total Cases</h4>
+            <p className="text-sm font-semibold text-blue-500 lg:text-base">
+              {paymentSummary.totalCases}
+            </p>
+          </Card>
+          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+            <h4 className="font-bold">Total Records</h4>
+            <p className="text-sm font-semibold text-purple-500 lg:text-base">
+              {paymentSummary.totalRecords}
+            </p>
+          </Card>
+          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+            <h4 className="font-bold">Total Net Premium</h4>
+            <p className="text-sm font-semibold text-green-500 lg:text-base">
+              {formatPHPAmount(Number(paymentSummary.totalNetPremium))}
+            </p>
+          </Card>
+          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+            <h4 className="font-bold">Total Net Commission</h4>
+            <p className="text-sm font-semibold lg:text-base">
+              {formatPHPAmount(Number(paymentSummary.totalNetCommission))}
+            </p>
+          </Card>
+          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+            <h4 className="font-bold">Total Gross Commission</h4>
+            <p className="text-sm font-semibold text-red-500 lg:text-base">
+              {formatPHPAmount(Number(paymentSummary.totalGrossCommission))}
+            </p>
+          </Card>
+          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
+            <h4 className="font-bold">Total Withholding Tax</h4>
+            <p className="text-muted-foreground text-sm font-semibold lg:text-base">
+              {formatPHPAmount(Number(paymentSummary.totalWithholdingTax))}
+            </p>
+          </Card>
+        </div>
+      )}
 
       <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
         <DataTable<PaymentHistory, unknown>
           header="Payment History"
           description="Track your commission payments and earnings"
-          data={PAYMENT_HISTORY}
+          data={paymentHistory ?? []}
           columns={PAYMENT_HISTORY_COLUMNS}
           renderMode="list"
+          isLoading={!isPaymentHistoryFetched}
           numColumns={1}
           contentRenderer={(row) => (
             <PaymentHistoryCard history={row.original} />
           )}
+          containerClassName="gap-6"
           actions={[]}
           onRowClick={(client) => console.log('Clicked row:', client)}
         />
