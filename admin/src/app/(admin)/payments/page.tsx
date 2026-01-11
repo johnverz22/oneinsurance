@@ -27,6 +27,7 @@ import {
   useGetPayouts,
   useExportPayoutsCsv,
   useGetPayoutFilterByStatus,
+  useGetPayoutStatistics,
 } from '@/app/data/queries/payout'
 import { useGeneratePayout } from '@/app/data/mutations/payout'
 import { Transaction } from '@/types/transactions'
@@ -36,7 +37,11 @@ import { toast } from 'sonner'
 import PaymentSummary from '@/components/transactions/payment-summary'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { PayoutDataTable } from '@/components/transactions/payout-data-table'
-import { Payout, GeneratePayoutResponse } from '@/types/payout'
+import {
+  Payout,
+  GeneratePayoutResponse,
+  PayoutStatistics,
+} from '@/types/payout'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -46,8 +51,17 @@ export default function TransactionsPage() {
     isLoading,
   } = useGetTransactions(page)
 
-  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined)
-  const [dateTo, setDateTo] = useState<Date | undefined>(undefined)
+  // Set default dates: last year to today
+  const getDefaultDateFrom = () => {
+    const date = new Date()
+    date.setFullYear(date.getFullYear() - 1)
+    return date
+  }
+
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(
+    getDefaultDateFrom()
+  )
+  const [dateTo, setDateTo] = useState<Date | undefined>(new Date())
 
   // Convert Date objects to strings for API
   const dateFromStr = dateFrom
@@ -96,6 +110,12 @@ export default function TransactionsPage() {
     isFetching: isFetchingFilteredPayouts,
     isLoading: isLoadingFilteredPayouts,
   } = useGetPayoutFilterByStatus(statusFilterValue!)
+
+  // Fetch payout statistics
+  const { data: payoutStatistics } = useGetPayoutStatistics(
+    dateFromStr || '',
+    dateToStr || ''
+  )
 
   useEffect(() => {
     // Small delay to let zustand persist/hydrate and avoid redirect flicker
@@ -300,12 +320,12 @@ export default function TransactionsPage() {
       </div>
 
       <PaymentSummary
-        totalPayments={5}
-        totalAmount={289250}
-        paid={109_000}
-        pending={172_000}
-        failed={7_750}
-        avgProcessing={3.2}
+        totalPayouts={payoutStatistics?.total_payouts || 0}
+        totalAmount={payoutStatistics?.total_amount || 0}
+        pendingCount={payoutStatistics?.pending_count || 0}
+        completedCount={payoutStatistics?.completed_count || 0}
+        pendingAmount={payoutStatistics?.pending_amount || 0}
+        completedAmount={payoutStatistics?.completed_amount || 0}
       />
 
       <div>

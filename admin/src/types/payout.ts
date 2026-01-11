@@ -34,6 +34,15 @@ export const GeneratePayoutResponseSchema = z.object({
   }),
 })
 
+export const PayoutStatisticsSchema = z.object({
+  total_payouts: z.number(),
+  total_amount: z.number(),
+  pending_count: z.number(),
+  completed_count: z.number(),
+  pending_amount: z.number(),
+  completed_amount: z.number(),
+})
+
 export type Payout = z.infer<typeof PayoutSchema>
 export type GetPayoutResponse = z.infer<typeof GetPayoutResponseSchema>
 export type GetPayoutFilterByStatusResponse = z.infer<
@@ -42,3 +51,4 @@ export type GetPayoutFilterByStatusResponse = z.infer<
 export type GeneratePayoutResponse = z.infer<
   typeof GeneratePayoutResponseSchema
 >
+export type PayoutStatistics = z.infer<typeof PayoutStatisticsSchema>
