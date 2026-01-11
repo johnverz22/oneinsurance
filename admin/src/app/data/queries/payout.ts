@@ -2,6 +2,7 @@ import { useAuthStore } from '@/store/auth-store'
 import {
   GetPayoutFilterByStatusResponse,
   GetPayoutResponse,
+  PayoutStatistics,
 } from '@/types/payout'
 import { handleApiError } from '@/utils/handle-api-error'
 import { useQuery } from '@tanstack/react-query'
@@ -31,7 +32,11 @@ export function useExportPayoutsCsv(dateFrom: string, dateTo: string) {
   })
 }
 
-export function useGetPayouts(dateFrom?: string, dateTo?: string, shouldFetch: boolean = true) {
+export function useGetPayouts(
+  dateFrom?: string,
+  dateTo?: string,
+  shouldFetch: boolean = true
+) {
   const { accessToken } = useAuthStore()
   return useQuery({
     queryKey: ['getAllPayouts', dateFrom, dateTo],
@@ -59,7 +64,9 @@ export function useGetPayouts(dateFrom?: string, dateTo?: string, shouldFetch: b
       }
     },
     enabled:
-      !!accessToken && shouldFetch && ((!!dateFrom && !!dateTo) || (!dateFrom && !dateTo)),
+      !!accessToken &&
+      shouldFetch &&
+      ((!!dateFrom && !!dateTo) || (!dateFrom && !dateTo)),
     refetchOnWindowFocus: false,
     staleTime: 2 * 60 * 1000,
   })
@@ -145,7 +152,7 @@ export function useGetPayoutStatistics(dateFrom: string, dateTo: string) {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payouts/statistics?date_from=${dateFrom}&date_to=${dateTo}`
       const token = `Bearer ${accessToken}`
       try {
-        const response = await axios.get(url, {
+        const response = await axios.get<PayoutStatistics>(url, {
           headers: {
             Authorization: token,
           },
