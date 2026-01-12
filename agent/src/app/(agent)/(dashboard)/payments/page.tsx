@@ -19,7 +19,7 @@ import {
   usePaymentSummary,
 } from '@/app/data/queries/payments'
 
-export const PAYMENT_HISTORY: PaymentHistory[] = [
+const PAYMENT_HISTORY: PaymentHistory[] = [
   {
     payoutReference: 'PR-2024-001',
     agentId: 'AG-1001',
