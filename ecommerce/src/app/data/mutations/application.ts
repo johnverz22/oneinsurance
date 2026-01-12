@@ -1,7 +1,6 @@
 import { api } from '@/lib/axios'
-import { ApplyFormValues } from '@/app/(client)/[agent-code]/agent-application/form.schema'
+import { ApplyFormValues } from '@/app/(client)/agent-application/form.schema'
 import { useMutation } from '@tanstack/react-query'
-
 
 export const useCreateAgentApplication = () => {
   return useMutation({
