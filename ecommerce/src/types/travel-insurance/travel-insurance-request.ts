@@ -316,7 +316,6 @@ export const personalInfoSchema = z
 
       if (
         !b?.firstName ||
-        !b?.middleName ||
         !b?.lastName ||
         !b?.dateOfBirth ||
         !b?.relationship
