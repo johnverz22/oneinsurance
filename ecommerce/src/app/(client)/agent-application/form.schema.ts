@@ -6,8 +6,7 @@ export const applyFormSchema = z.object({
   email: z.string().email('Invalid email address'),
   contact_number: z
     .string({ required_error: 'Contact Number is required' })
-    .min(10, 'Invalid phone number')
-    .max(11, 'Invalid phone number'),
+    .regex(/^([0-9]\d{10}|\+63\s\d{3}\s\d{3}\s\d{4})$/, 'Invalid phone number'),
   application_type: z.enum(['agent', 'referral']),
   notes: z.string(),
 })

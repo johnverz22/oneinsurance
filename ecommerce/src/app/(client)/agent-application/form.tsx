@@ -135,7 +135,7 @@ export const ApplyForm = () => {
           </div>
         )}
       </form.Field>
-      
+
       <form.Field name="application_type">
         {(field) => (
           <div className="space-y-2.5">
@@ -145,9 +145,7 @@ export const ApplyForm = () => {
               value={field.state.value}
             >
               <SelectTrigger className="w-full">
-                <SelectValue>
-                  {roleMap[field.state.value] || 'Select Role'}
-                </SelectValue>
+                <SelectValue placeholder="Select Role" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="agent">Agent</SelectItem>
