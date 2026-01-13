@@ -36,5 +36,6 @@ export function useIssueQuoteRequest() {
         return null
       }
     },
+    retry: false,
   })
 }
