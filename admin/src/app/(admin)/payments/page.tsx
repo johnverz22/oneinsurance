@@ -1,11 +1,19 @@
 'use client'
 
 import * as React from 'react'
-import { useEffect, useState } from 'react'
-import { Eye, Download, X, Plus } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { Eye, Download, X, Plus, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MultiSelect } from '@/components/ui/multi-select'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { ProcessPaymentDialog } from '@/components/transactions/process-payment-dialog'
 import {
   PaymentDataTable,
@@ -15,6 +23,16 @@ import {
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransaction } from '@/app/data/mutations/transactions'
+import {
+  useGetPayouts,
+  useExportPayoutsCsv,
+  useGetPayoutFilterByStatus,
+  useGetPayoutStatistics,
+} from '@/app/data/queries/payout'
+import {
+  useGeneratePayout,
+  useUploadPayoutCsv,
+} from '@/app/data/mutations/payout'
 import { Transaction } from '@/types/transactions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/store/auth-store'
@@ -22,90 +40,11 @@ import { toast } from 'sonner'
 import PaymentSummary from '@/components/transactions/payment-summary'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { PayoutDataTable } from '@/components/transactions/payout-data-table'
-
-// Mock data based on design
-const mockPaymentData: Transaction[] = [
-  {
-    id: 1,
-    agent_id: 1,
-    agent_code_used: 'AGT-001 | 3 sales',
-    proposal_number: 'PAY-2024-001',
-    policy_id: 'POL-001',
-    merchant_transaction_id: '1234',
-    amount: 90000,
-    customer_id: 1,
-    transaction_status: 'completed',
-    status: 'completed',
-    transaction_date: '2024-11-02T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-11-02T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 2,
-    agent_id: 2,
-    agent_code_used: 'AGT-002 | 3 sales',
-    proposal_number: 'PAY-2024-002',
-    policy_id: 'POL-002',
-    merchant_transaction_id: '09171234567',
-    amount: 37000,
-    customer_id: 2,
-    transaction_status: 'pending',
-    status: 'pending',
-    transaction_date: '2024-11-08T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-01T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 3,
-    agent_id: 3,
-    agent_code_used: 'AGT-003 | 3 sales',
-    proposal_number: 'PAY-2024-003',
-    policy_id: 'POL-003',
-    merchant_transaction_id: '5678',
-    amount: 135500,
-    customer_id: 3,
-    transaction_status: 'processing',
-    status: 'cancelled',
-    transaction_date: '2024-11-06T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-01T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 4,
-    agent_id: 4,
-    agent_code_used: 'AGT-004 | 3 sales',
-    proposal_number: 'PAY-2024-004',
-    policy_id: 'POL-004',
-    merchant_transaction_id: '09181234567',
-    amount: 19000,
-    customer_id: 4,
-    transaction_status: 'completed',
-    status: 'completed',
-    transaction_date: '2024-10-30T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-30T00:00:00Z',
-    deleted_at: null,
-  },
-  {
-    id: 5,
-    agent_id: 5,
-    agent_code_used: 'AGT-005 | 3 sales',
-    proposal_number: 'PAY-2024-005',
-    policy_id: 'POL-005',
-    merchant_transaction_id: '9012',
-    amount: 7750,
-    customer_id: 5,
-    transaction_status: 'failed',
-    status: 'failed',
-    transaction_date: '2024-10-28T00:00:00Z',
-    created_at: '2024-10-01T00:00:00Z',
-    updated_at: '2024-10-28T00:00:00Z',
-    deleted_at: null,
-  },
-]
+import {
+  Payout,
+  GeneratePayoutResponse,
+  PayoutStatistics,
+} from '@/types/payout'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -114,13 +53,74 @@ export default function TransactionsPage() {
     isFetching,
     isLoading,
   } = useGetTransactions(page)
+
+  // Set default dates: last year to today
+  const getDefaultDateFrom = () => {
+    const date = new Date()
+    date.setFullYear(date.getFullYear() - 1)
+    return date
+  }
+
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(
+    getDefaultDateFrom()
+  )
+  const [dateTo, setDateTo] = useState<Date | undefined>(new Date())
+
+  // Convert Date objects to strings for API
+  const dateFromStr = dateFrom
+    ? dateFrom.toISOString().split('T')[0]
+    : undefined
+  const dateToStr = dateTo ? dateTo.toISOString().split('T')[0] : undefined
+
+  // Export CSV states
+  const [shouldExport, setShouldExport] = useState(false)
+  const [exportDateFrom, setExportDateFrom] = useState('')
+  const [exportDateTo, setExportDateTo] = useState('')
+
+  const { data: csvData, isFetching: isExporting } = useExportPayoutsCsv(
+    exportDateFrom,
+    exportDateTo
+  )
+
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [isProcessPaymentOpen, setIsProcessPaymentOpen] = useState(false)
+  const [generatedPayouts, setGeneratedPayouts] = useState<Payout[] | null>(
+    null
+  )
   const searchMutation = useSearchTransaction()
+  const generatePayoutMutation = useGeneratePayout()
+  const uploadPayoutCsvMutation = useUploadPayoutCsv()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Get filtered payouts by status
+  const hasStatusFilter = selectedStatus !== ''
+  const statusFilterValue = hasStatusFilter
+    ? (selectedStatus as 'pending' | 'completed')
+    : undefined
+
+  // Fetch payouts without status filter
+  const {
+    data: payoutsData,
+    isFetching: isFetchingPayouts,
+    isLoading: isLoadingPayouts,
+  } = useGetPayouts(dateFromStr, dateToStr, !hasStatusFilter)
+
+  // Fetch payouts with status filter
+  const {
+    data: filteredPayoutsData,
+    isFetching: isFetchingFilteredPayouts,
+    isLoading: isLoadingFilteredPayouts,
+  } = useGetPayoutFilterByStatus(statusFilterValue!)
+
+  // Fetch payout statistics
+  const { data: payoutStatistics } = useGetPayoutStatistics(
+    dateFromStr || '',
+    dateToStr || ''
+  )
 
   useEffect(() => {
     // Small delay to let zustand persist/hydrate and avoid redirect flicker
@@ -133,6 +133,28 @@ export default function TransactionsPage() {
 
     return () => clearTimeout(t)
   }, [isAuthenticated])
+
+  // Handle CSV download when data is ready
+  useEffect(() => {
+    if (csvData && shouldExport) {
+      const blob = new Blob([csvData], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const now = new Date()
+      const dateStr = now.toISOString().split('T')[0]
+      a.download = `payouts-${dateStr}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      setShouldExport(false)
+      setExportDateFrom('')
+      setExportDateTo('')
+      toast.success('Payouts exported successfully')
+    }
+  }, [csvData, shouldExport])
 
   const columns = React.useMemo<ColumnDef<Transaction, any>[]>(
     () => [
@@ -220,14 +242,123 @@ export default function TransactionsPage() {
     searchMutation.reset()
   }
 
-  function handleExportToCSV(): void {
-    const dataToExport = displayData?.data?.data ?? []
-    if (dataToExport.length === 0) {
-      toast.info('No data to export')
+  async function handleGeneratePayout(): Promise<void> {
+    // Check if both dates are selected
+    if (!dateFrom || !dateTo) {
+      toast.error('Please select both Date From and Date To to generate payout')
       return
     }
-    exportToCSV(dataToExport, 'payments-export.csv')
-    toast.success('Data exported successfully')
+
+    const dateFromStr = dateFrom.toISOString().split('T')[0]
+    const dateToStr = dateTo.toISOString().split('T')[0]
+
+    try {
+      const response = await generatePayoutMutation.mutateAsync({
+        date_from: dateFromStr,
+        date_to: dateToStr,
+      })
+
+      if (response?.message) {
+        toast.success(response.message)
+      } else {
+        toast.success('Payout generated successfully')
+      }
+
+      // Store the generated payouts to display them
+      if (response?.payouts) {
+        setGeneratedPayouts(response.payouts)
+      }
+    } catch (error) {
+      toast.error('Failed to generate payout')
+    }
+  }
+
+  function handleExportToCSV(): void {
+    // Check if both dates are selected
+    if (!dateFrom || !dateTo) {
+      toast.error('Please select both Date From and Date To to export')
+      return
+    }
+
+    // Use the selected date range from the date pickers
+    const dateFromStr = dateFrom.toISOString().split('T')[0]
+    const dateToStr = dateTo.toISOString().split('T')[0]
+
+    setExportDateFrom(dateFromStr)
+    setExportDateTo(dateToStr)
+    setShouldExport(true)
+  }
+
+  function handleUploadCSVClick(): void {
+    fileInputRef.current?.click()
+  }
+
+  async function handleFileChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ): Promise<void> {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a CSV file')
+      return
+    }
+
+    // Validate CSV headers
+    const expectedHeaders = [
+      'Payout Reference',
+      'Agent ID',
+      'Agent Name',
+      'Payout Amount',
+      'Account Type',
+      'Account Name',
+      'Account Number',
+      'Date From',
+      'Date To',
+      'Generated By',
+      'Date Generated',
+      'Status',
+    ]
+
+    try {
+      // Read first line to check headers
+      const text = await file.text()
+      const firstLine = text.split('\n')[0].trim()
+      const headers = firstLine
+        .split(',')
+        .map((h) => h.replace(/^"|"$/g, '').trim())
+
+      // Compare headers
+      const headersMatch = expectedHeaders.every(
+        (expectedHeader, index) => headers[index] === expectedHeader
+      )
+
+      if (!headersMatch || headers.length !== expectedHeaders.length) {
+        toast.error(
+          `Invalid CSV format. Expected headers: ${expectedHeaders.join(', ')}`
+        )
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
+        }
+        return
+      }
+
+      const response = await uploadPayoutCsvMutation.mutateAsync(file)
+      toast.success(response?.message || 'CSV uploaded successfully')
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } catch (error) {
+      toast.error('Failed to upload CSV file')
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
   }
 
   // Details dialog state
@@ -246,6 +377,16 @@ export default function TransactionsPage() {
     ? searchMutation.isPending
     : isFetching || isLoading
 
+  // Determine which payout data to display based on filters
+  const displayPayoutData = generatedPayouts
+    ? generatedPayouts
+    : hasStatusFilter
+      ? filteredPayoutsData?.data?.data || []
+      : payoutsData?.payouts || []
+  const isPayoutDataLoading = hasStatusFilter
+    ? isFetchingFilteredPayouts || isLoadingFilteredPayouts
+    : isFetchingPayouts || isLoadingPayouts
+
   return (
     <div className="container mx-auto space-y-6 py-6">
       <div>
@@ -256,12 +397,12 @@ export default function TransactionsPage() {
       </div>
 
       <PaymentSummary
-        totalPayments={5}
-        totalAmount={289250}
-        paid={109_000}
-        pending={172_000}
-        failed={7_750}
-        avgProcessing={3.2}
+        totalPayouts={payoutStatistics?.total_payouts || 0}
+        totalAmount={payoutStatistics?.total_amount || 0}
+        pendingCount={payoutStatistics?.pending_count || 0}
+        completedCount={payoutStatistics?.completed_count || 0}
+        pendingAmount={payoutStatistics?.pending_amount || 0}
+        completedAmount={payoutStatistics?.completed_amount || 0}
       />
 
       <div>
@@ -288,30 +429,80 @@ export default function TransactionsPage() {
         ) : (
           <>
             <div className="mb-4 flex justify-between">
-              <div className="flex flex-1 items-center gap-2">
+              <div className="flex flex-1 items-end gap-2">
                 <div className="flex items-center gap-2">
                   <Input
                     placeholder="Search by proposal number, policy ID, transaction ID..."
                     className="max-w-md rounded-full"
                   />
-                  <Button
-                    className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
-                  >
+                  <Button className="from-primary to-lilac rounded-full bg-gradient-to-r text-white">
                     Search
                   </Button>
                 </div>
                 <div>
-                  <MultiSelect
-                    id="status"
-                    options={[
-                      { value: 'pending', label: 'Pending' },
-                      { value: 'completed', label: 'Completed' },
-                      { value: 'failed', label: 'Failed' },
-                    ]}
-                    placeholder="Status"
-                    className="w-full"
-                    value={[]}
-                    onValueChange={() => {}}
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={setSelectedStatus}
+                  >
+                    <SelectTrigger className="w-[180px] rounded-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="dateFrom"
+                    className="text-muted-foreground text-xs font-medium"
+                  >
+                    Date From
+                  </Label>
+                  <DateTimePicker
+                    variant="date"
+                    mode="single"
+                    value={dateFrom}
+                    onChange={(date) => setDateFrom(date)}
+                    disabled={(date) => {
+                      const today = new Date()
+                      today.setHours(23, 59, 59, 999)
+
+                      // Disable future dates
+                      if (date > today) return true
+
+                      // Disable dates after dateTo if dateTo is set
+                      if (dateTo && date > dateTo) return true
+
+                      return false
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="dateTo"
+                    className="text-muted-foreground text-xs font-medium"
+                  >
+                    Date To
+                  </Label>
+                  <DateTimePicker
+                    variant="date"
+                    mode="single"
+                    value={dateTo}
+                    onChange={(date) => setDateTo(date)}
+                    disabled={(date) => {
+                      const today = new Date()
+                      today.setHours(23, 59, 59, 999)
+
+                      // Disable future dates
+                      if (date > today) return true
+
+                      // Disable dates before dateFrom if dateFrom is set
+                      if (dateFrom && date < dateFrom) return true
+
+                      return false
+                    }}
                   />
                 </div>
               </div>
@@ -326,17 +517,49 @@ export default function TransactionsPage() {
                 <Button
                   variant="outline"
                   className="rounded-full"
+                  onClick={handleGeneratePayout}
+                  disabled={generatePayoutMutation.isPending}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {generatePayoutMutation.isPending
+                    ? 'Generating...'
+                    : 'Generate Payout'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={handleUploadCSVClick}
+                  disabled={uploadPayoutCsvMutation.isPending}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {uploadPayoutCsvMutation.isPending
+                    ? 'Uploading...'
+                    : 'Upload Payout CSV'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={handleExportToCSV}
+                  disabled={isExporting}
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Export to CSV
+                  {isExporting ? 'Exporting...' : 'Export to CSV'}
                 </Button>
               </div>
             </div>
 
-            <PayoutDataTable 
-              data={mockPaymentData}
-              onViewDetails={(transaction) => {
-                console.log('View details:', transaction)
+            <PayoutDataTable
+              data={displayPayoutData}
+              isLoading={isPayoutDataLoading}
+              onViewDetails={(payout) => {
+                console.log('View details:', payout)
               }}
             />
 
