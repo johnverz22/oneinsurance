@@ -100,9 +100,9 @@ export default function PaymentSelection() {
   useEffect(() => {
     const transactionId = searchParams.get('transaction_id')
 
-    if (!paymentSubmitResponse && transactionId) {
+    if (paymentSubmitResponse && transactionId) {
       processedTransactionRef.current = transactionId
-      // setTransactionId(transactionId)
+      setTransactionId(transactionId)
       handleTransactionCompletion()
     }
 
@@ -121,8 +121,40 @@ export default function PaymentSelection() {
 
     setIsProcessing(true)
     setIsIssuingQuote(true)
+
     try {
-      // Issue the quote directly since payment was processed externally
+      // Set up Echo for payment confirmation
+      const echo = getEcho()
+      if (echo.connector.pusher.connection.state !== 'connected') {
+        echo.connect()
+      }
+
+      const confirmationPromise = new Promise<PaymentConfirmationResponse>(
+        (resolve, reject) => {
+          const channel = echo.channel('transaction-channel')
+
+          channel.listen(
+            '.transaction.message',
+            (data: PaymentConfirmationResponse) => {
+              if (data.code === 200) {
+                resolve(data)
+              } else {
+                reject(new Error(data.message))
+              }
+            }
+          )
+        }
+      )
+
+      // Wait for payment confirmation
+      const confirmationResponse = await confirmationPromise
+
+      // Clean up Echo
+      const channel = echo.channel('transaction-channel')
+      channel.stopListening('.transaction.message')
+      echo.disconnect()
+
+      // Payment confirmed, now issue the quote
       const issueQuoteRequestBody = {
         ProposalNo: apiResponse.data.ProposalNo,
       } satisfies IssueQuoteRequest
@@ -153,14 +185,21 @@ export default function PaymentSelection() {
         confirmText: 'Done',
         variant: 'success',
       })
-    } catch (error) {
-      alert(
-        'Transaction completion failed. Please contact support.' +
-          paymentSubmitResponse?.data.merchant_transaction_id
+    } catch (error: any) {
+      // Cleanup Echo on error
+      try {
+        const echo = getEcho()
+        const channel = echo.channel('transaction-channel')
+        channel.stopListening('.transaction.message')
+        echo.disconnect()
+      } catch (cleanupError) {}
+
+      toast.error(
+        error.message || 'Payment confirmation failed. Please contact support.'
       )
+      setIsIssuingQuote(false)
     } finally {
       setIsProcessing(false)
-      // Clean up URL by removing transaction_id parameter
     }
   }
 
@@ -244,17 +283,9 @@ export default function PaymentSelection() {
         (resolve, reject) => {
           const channel = echo.channel('transaction-channel')
 
-          const timeout = setTimeout(() => {
-            channel.stopListening('.transaction.message')
-            echo.disconnect()
-            reject(new Error('Payment confirmation timeout'))
-          }, 30000)
-
           channel.listen(
             '.transaction.message',
             (data: PaymentConfirmationResponse) => {
-              clearTimeout(timeout)
-
               if (data.code === 200 && transactionStatus) {
                 resolve(data)
               } else {
