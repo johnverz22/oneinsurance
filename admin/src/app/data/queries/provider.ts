@@ -11,9 +11,9 @@ export function useGetProviders(page: number = 1, search?: string) {
     queryKey: ['providers', page],
     queryFn: async () => {
       try {
-        const params = new URLSearchParams();
-        if (search) params.append('search', search);
-        const queryString = params.toString();
+        const params = new URLSearchParams()
+        if (search) params.append('search', search)
+        const queryString = params.toString()
         const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/providers?page=${page}${queryString ? `&${queryString}` : ''}`
         const token = `Bearer ${accessToken}`
         const response = await axios.get<ProvidersPaginatedResponse>(url, {
@@ -27,5 +27,6 @@ export function useGetProviders(page: number = 1, search?: string) {
         handleApiError(error)
       }
     },
+    enabled: !!accessToken,
   })
 }

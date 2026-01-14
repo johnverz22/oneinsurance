@@ -36,9 +36,8 @@ export const ProductAssignmentSchema = z.object({
 })
 export type ProductAssignment = z.infer<typeof ProductAssignmentSchema>
 
-
 export const CreateProductRequestSchema = z.object({
-  insuremo_reference_id: z.string().nullable(),
+  carrier_product_code: z.string(),
   provider_id: z.number(),
   name: z.string(),
   description: z.string(),
