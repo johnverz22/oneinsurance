@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '../ui/button'
 import { ProductAssignment } from '@/types/products'
 import CreateProductDialog from './create-product-dialog'
+import ProductDetailsDialog from './product-details-dialog'
 
 interface ProductsMainContentProps {
   productAssignments: ProductAssignment[]
@@ -14,6 +15,15 @@ export default function ProductsMainContent({
   productAssignments,
   onProductCreated,
 }: ProductsMainContentProps) {
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductAssignment | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  const handleProductClick = (product: ProductAssignment) => {
+    setSelectedProduct(product)
+    setDialogOpen(true)
+  }
+
   return (
     <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-4 shadow-sm sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
       {/* Section Header */}
@@ -43,7 +53,8 @@ export default function ProductsMainContent({
         {productAssignments?.map((assignment) => (
           <div
             key={assignment.product.id}
-            className="flex flex-col justify-between rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-5"
+            onClick={() => handleProductClick(assignment)}
+            className="flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-5"
           >
             <div className="mb-1 flex items-start justify-between gap-2">
               <h3 className="line-clamp-2 text-base font-bold sm:text-lg">
@@ -103,6 +114,12 @@ export default function ProductsMainContent({
           </div>
         ))}
       </div>
+
+      <ProductDetailsDialog
+        product={selectedProduct}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </div>
   )
 }
