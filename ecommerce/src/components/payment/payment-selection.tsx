@@ -105,11 +105,6 @@ export default function PaymentSelection() {
       setTransactionId(transactionId)
       handleTransactionCompletion()
     }
-
-    if (paymentSubmitResponse) {
-      console.log('Payment submit response exists, showing success dialog')
-      setShowSuccessDialog(true)
-    }
   }, [searchParams, paymentSubmitResponse])
 
   // Handle transaction completion when returning from redirect
@@ -120,7 +115,7 @@ export default function PaymentSelection() {
     }
 
     setIsProcessing(true)
-    setIsIssuingQuote(true)
+    setShowCardPaymentProcessing(true)
 
     try {
       // Set up Echo for payment confirmation
@@ -153,7 +148,9 @@ export default function PaymentSelection() {
       const channel = echo.channel('transaction-channel')
       channel.stopListening('.transaction.message')
       echo.disconnect()
+      setShowCardPaymentProcessing(false)
 
+      setIsIssuingQuote(true)
       // Payment confirmed, now issue the quote
       const issueQuoteRequestBody = {
         ProposalNo: apiResponse.data.ProposalNo,
@@ -648,7 +645,7 @@ function CardPaymentProcessingDialog({
         ) : (
           <>
             <h2 className="text-lg font-semibold text-gray-800">
-              Processing your card payment...
+              Processing your payment...
             </h2>
             <p className="max-w-xs text-center text-gray-500">
               Please wait while we process your payment. Do not close or refresh
