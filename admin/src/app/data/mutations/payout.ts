@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/auth-store'
 import { GeneratePayoutResponse } from '@/types/payout'
 import { handleApiError } from '@/utils/handle-api-error'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
 // PAYOUT MANAGEMENT
@@ -146,7 +146,9 @@ export type PayoutConfigurationRequest = {
   is_active: boolean
 }
 export function useCreatePayoutConfiguration() {
+  const queryClient = useQueryClient()
   const { accessToken } = useAuthStore()
+
   return useMutation({
     mutationKey: ['createPayoutConfiguration'],
     mutationFn: async (payload: PayoutConfigurationRequest) => {
@@ -163,11 +165,18 @@ export function useCreatePayoutConfiguration() {
         handleApiError(error)
       }
     },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['getPayoutConfigurations'],
+      })
+    },
   })
 }
 
 export function useUpdatePayoutConfiguration() {
+  const queryClient = useQueryClient()
   const { accessToken } = useAuthStore()
+
   return useMutation({
     mutationKey: ['updatePayoutConfiguration'],
     mutationFn: async ({
@@ -190,11 +199,18 @@ export function useUpdatePayoutConfiguration() {
         handleApiError(error)
       }
     },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['getPayoutConfigurations'],
+      })
+    },
   })
 }
 
 export function useDeletePayoutConfiguration() {
+  const queryClient = useQueryClient()
   const { accessToken } = useAuthStore()
+
   return useMutation({
     mutationKey: ['deletePayoutConfiguration'],
     mutationFn: async (configId: string) => {
@@ -210,6 +226,11 @@ export function useDeletePayoutConfiguration() {
       } catch (error) {
         handleApiError(error)
       }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['getPayoutConfigurations'],
+      })
     },
   })
 }
