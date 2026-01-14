@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useEffect, useState, useRef } from 'react'
-import { Eye, Download, X, Plus, Upload } from 'lucide-react'
+import { Eye, Download, X, Plus, Upload, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -45,6 +45,7 @@ import {
   GeneratePayoutResponse,
   PayoutStatistics,
 } from '@/types/payout'
+import Link from 'next/link'
 
 export default function TransactionsPage() {
   const [page, setPage] = useState<number>(1)
@@ -389,11 +390,20 @@ export default function TransactionsPage() {
 
   return (
     <div className="container mx-auto space-y-6 py-6">
-      <div>
-        <h1 className="text-3xl font-bold">Payment History</h1>
-        <p className="text-muted-foreground">
-          Track commission payments, status, and transaction details
-        </p>
+      <div className="flex justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Payment History</h1>
+          <p className="text-muted-foreground">
+            Track commission payments, status, and transaction details
+          </p>
+        </div>
+
+        <Button asChild>
+          <Link href="/payments/configurations">
+            <Settings />
+            Configurations
+          </Link>
+        </Button>
       </div>
 
       <PaymentSummary
