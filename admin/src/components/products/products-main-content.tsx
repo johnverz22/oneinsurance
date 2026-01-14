@@ -39,74 +39,69 @@ export default function ProductsMainContent({
       </div>
 
       {/* Cards Grid Container */}
-      <div
-        className="flex min-h-0 flex-col"
-        style={{ height: 'calc(100vh - 250px)' }}
-      >
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-          {productAssignments?.map((assignment) => (
-            <div
-              key={assignment.product.id}
-              className="flex flex-col justify-between rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-5"
-            >
-              <div className="mb-1 flex items-start justify-between gap-2">
-                <h3 className="line-clamp-2 text-base font-bold sm:text-lg">
-                  {assignment.product.name}
-                </h3>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
-                    assignment.product.status.toLowerCase() === 'active'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-orange-100 text-orange-600'
-                  }`}
-                >
-                  {assignment.product.status.toUpperCase()}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
+        {productAssignments?.map((assignment) => (
+          <div
+            key={assignment.product.id}
+            className="flex flex-col justify-between rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-5"
+          >
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <h3 className="line-clamp-2 text-base font-bold sm:text-lg">
+                {assignment.product.name}
+              </h3>
+              <span
+                className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
+                  assignment.product.status.toLowerCase() === 'active'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-orange-100 text-orange-600'
+                }`}
+              >
+                {assignment.product.status.toUpperCase()}
+              </span>
+            </div>
+
+            <p className="mb-3 truncate text-xs text-gray-600 sm:mb-4 sm:text-sm">
+              {assignment.product.provider.name}
+            </p>
+            <div className="mb-4 flex flex-col gap-2 text-xs sm:mb-5 sm:flex-row sm:items-center sm:gap-6 sm:text-sm">
+              <div>
+                <span className="font-bold">Price: </span>
+                <span className="text-muted-foreground">
+                  {assignment.product.price}
                 </span>
               </div>
-
-              <p className="mb-3 truncate text-xs text-gray-600 sm:mb-4 sm:text-sm">
-                {assignment.product.provider.name}
-              </p>
-              <div className="mb-4 flex flex-col gap-2 text-xs sm:mb-5 sm:flex-row sm:items-center sm:gap-6 sm:text-sm">
-                <div>
-                  <span className="font-bold">Price: </span>
-                  <span className="text-muted-foreground">
-                    {assignment.product.price}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-bold">Commission: </span>
-                  <span className="text-muted-foreground">
-                    {`${assignment.commission_rate}%`}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
-                <span className="text-muted-foreground text-xs font-semibold whitespace-nowrap sm:text-sm">
-                  Assigned to:
+              <div>
+                <span className="font-bold">Commission: </span>
+                <span className="text-muted-foreground">
+                  {`${assignment.commission_rate}%`}
                 </span>
-                {assignment.agents.length > 0 ? (
-                  <div className="flex -space-x-2">
-                    {assignment.agents.map((agent, index) => (
-                      <div
-                        key={index}
-                        className={`flex h-7 w-7 items-center justify-center rounded-full border-2 bg-blue-300 text-xs font-bold sm:h-8 sm:w-8`}
-                        title={agent.first_name + ' ' + agent.last_name}
-                      >
-                        {agent.first_name.charAt(0).toUpperCase()}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-xs text-gray-400 italic sm:text-sm">
-                    No agents assigned
-                  </span>
-                )}
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <span className="text-muted-foreground text-xs font-semibold whitespace-nowrap sm:text-sm">
+                Assigned to:
+              </span>
+              {assignment.agents.length > 0 ? (
+                <div className="flex -space-x-2">
+                  {assignment.agents.map((agent, index) => (
+                    <div
+                      key={index}
+                      className={`flex h-7 w-7 items-center justify-center rounded-full border-2 bg-blue-300 text-xs font-bold sm:h-8 sm:w-8`}
+                      title={agent.first_name + ' ' + agent.last_name}
+                    >
+                      {agent.first_name.charAt(0).toUpperCase()}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-xs text-gray-400 italic sm:text-sm">
+                  No agents assigned
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

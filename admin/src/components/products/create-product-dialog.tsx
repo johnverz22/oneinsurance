@@ -36,13 +36,11 @@ import { cn } from '@/lib/utils'
 
 const createProductSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters'),
-  description: z
-    .string()
-    .min(10, 'Description must be at least 10 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.number().min(1, 'Price must be at least 1'),
   provider_id: z.number().min(1, 'Please select a provider'),
   status: z.enum(['active', 'inactive']),
-  insuremo_reference_id: z.string().optional().nullable(),
+  carrier_product_code: z.string().min(1, 'Carrier product code is required'),
   // Commission fields
   base_commission: z
     .number()
@@ -92,13 +90,15 @@ export default function CreateProductDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [providerSearch, setProviderSearch] = useState('')
   const [providerSearchDebounced, setProviderSearchDebounced] = useState('')
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
+    null
+  )
   const [showProviderResults, setShowProviderResults] = useState(false)
-  
+
   const { mutateAsync: createProduct } = useCreateProduct()
   const { mutateAsync: createCommissionConfig } =
     useCreateCommissionConfiguration()
-  
+
   const { data: providersData } = useGetProviders(1, providerSearchDebounced)
   const providers = providersData?.data.data || []
 
@@ -118,7 +118,7 @@ export default function CreateProductDialog({
       price: 0,
       provider_id: 0,
       status: 'active' as const,
-      insuremo_reference_id: null,
+      carrier_product_code: '',
       base_commission: 15,
       agent_commission: 8,
       agent_overriders_commission: 2.5,
@@ -139,15 +139,13 @@ export default function CreateProductDialog({
           price: value.price,
           provider_id: value.provider_id,
           status: value.status,
-          insuremo_reference_id: value.insuremo_reference_id || null,
+          carrier_product_code: value.carrier_product_code,
         }
 
         const productResponse = await createProduct(productPayload)
 
         if (!productResponse.success) {
-          toast.error(
-            productResponse.message || 'Failed to create product'
-          )
+          toast.error(productResponse.message || 'Failed to create product')
           return
         }
 
@@ -177,7 +175,9 @@ export default function CreateProductDialog({
           return
         }
 
-        toast.success('Product and commission configuration created successfully!')
+        toast.success(
+          'Product and commission configuration created successfully!'
+        )
         form.reset()
         setDialogOpen(false)
         onSuccess?.()
@@ -290,7 +290,7 @@ export default function CreateProductDialog({
                     </Label>
                     <div className="relative">
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <Input
                           id="provider_id"
                           placeholder="Search provider..."
@@ -305,7 +305,7 @@ export default function CreateProductDialog({
                           className="pl-10"
                         />
                       </div>
-                      
+
                       {showProviderResults && providerSearch && (
                         <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg dark:bg-gray-950">
                           {providers.length > 0 ? (
@@ -314,7 +314,8 @@ export default function CreateProductDialog({
                                 key={provider.id}
                                 className={cn(
                                   'flex cursor-pointer items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800',
-                                  selectedProvider?.id === provider.id && 'bg-blue-50 dark:bg-blue-950'
+                                  selectedProvider?.id === provider.id &&
+                                    'bg-blue-50 dark:bg-blue-950'
                                 )}
                                 onClick={() => {
                                   setSelectedProvider(provider)
@@ -356,7 +357,7 @@ export default function CreateProductDialog({
                         field.handleChange(value)
                       }
                     >
-                      <SelectTrigger className='w-full'>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -369,15 +370,15 @@ export default function CreateProductDialog({
                 )}
               </form.Field>
 
-              <form.Field name="insuremo_reference_id">
+              <form.Field name="carrier_product_code">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="insuremo_reference_id">
-                      Insuremo Reference ID
+                    <Label htmlFor="carrier_product_code">
+                      Carrier Product Code
                     </Label>
                     <Input
-                      id="insuremo_reference_id"
-                      placeholder="Optional reference ID"
+                      id="carrier_product_code"
+                      placeholder="Enter carrier product code"
                       value={field.state.value || ''}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
@@ -405,7 +406,8 @@ export default function CreateProductDialog({
                 {(field) => (
                   <div className="space-y-2">
                     <Label htmlFor="base_commission">
-                      Base Commission (%) <span className="text-red-500">*</span>
+                      Base Commission (%){' '}
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="base_commission"
@@ -544,9 +546,7 @@ export default function CreateProductDialog({
                 <form.Field name="ifrc_digitech">
                   {(field) => (
                     <div className="space-y-2">
-                      <Label htmlFor="ifrc_digitech">
-                        IFRC DigiTech (%)
-                      </Label>
+                      <Label htmlFor="ifrc_digitech">IFRC DigiTech (%)</Label>
                       <Input
                         id="ifrc_digitech"
                         type="number"
@@ -624,7 +624,7 @@ export default function CreateProductDialog({
             <Button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !form.state.canSubmit}
             >
               {isSubmitting ? 'Creating...' : 'Create Product'}
             </Button>
