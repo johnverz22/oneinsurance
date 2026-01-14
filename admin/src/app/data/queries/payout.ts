@@ -197,7 +197,16 @@ export function useGetAgentPayoutStatistics(
 }
 
 // PAYOUT CONFIGURATION
-
+export interface PaymentConfig {
+  id: string
+  min_payout_amount: number
+  max_payout_amount: number
+  description: string
+  is_active: boolean
+  created_by: number
+  created_at: string
+  updated_at: string
+}
 export function useGetPayoutConfigurations(
   page: number = 1,
   perPage: number = 15
@@ -209,12 +218,12 @@ export function useGetPayoutConfigurations(
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/payout-configurations?page=${page}&per_page=${perPage}`
       const token = `Bearer ${accessToken}`
       try {
-        const response = await axios.get(url, {
+        const response = await axios.get<{ data: PaymentConfig[] }>(url, {
           headers: {
             Authorization: token,
           },
         })
-        return response.data
+        return response.data.data
       } catch (error) {
         handleApiError(error)
       }
