@@ -260,6 +260,7 @@ export function useGetActivePayoutConfiguration() {
 
 export function useShowPayoutConfigurationDetails(configId: string) {
   const { accessToken } = useAuthStore()
+
   return useQuery({
     queryKey: ['showPayoutConfigurationDetails', configId],
     queryFn: async () => {
@@ -271,7 +272,7 @@ export function useShowPayoutConfigurationDetails(configId: string) {
             Authorization: token,
           },
         })
-        return response.data
+        return response.data.data
       } catch (error) {
         handleApiError(error)
       }

@@ -3,7 +3,14 @@
 import { FC, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Trash2, LucideIcon, ArrowLeft } from 'lucide-react'
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  LucideIcon,
+  ArrowLeft,
+  ArrowUpRight,
+} from 'lucide-react'
 import { DialogFormWrapper } from '@/components/ui/dialog-form-wrapper'
 import { ColumnDef } from '@tanstack/react-table'
 import { createSortableHeader, DataTable } from '@/components/ui/data-table'
@@ -32,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import Link from 'next/link'
+import { formatPHPAmount } from '@/utils/formatter'
 
 interface SummaryCardProps {
   title: string
@@ -95,7 +103,7 @@ export default function PaymentConfigPage() {
       header: ({ column }) => createSortableHeader('Min Amount', column),
       cell: ({ row }) => (
         <span className="font-semibold">
-          ₱{row.original.min_payout_amount.toLocaleString()}
+          {formatPHPAmount(row.original.min_payout_amount)}
         </span>
       ),
     },
@@ -104,7 +112,7 @@ export default function PaymentConfigPage() {
       header: ({ column }) => createSortableHeader('Max Amount', column),
       cell: ({ row }) => (
         <span className="font-semibold">
-          ₱{row.original.max_payout_amount.toLocaleString()}
+          {formatPHPAmount(row.original.max_payout_amount)}
         </span>
       ),
     },
@@ -159,6 +167,12 @@ export default function PaymentConfigPage() {
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/payments/configurations/${row.original.id}`}>
+              <ArrowUpRight className="size-4" />
+            </Link>
+          </Button>
+
           <Button
             variant="ghost"
             size="sm"
