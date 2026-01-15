@@ -31,13 +31,22 @@ export interface ReportDataTableProps<TData, TValue> {
   data: TData[]
   pageSize?: number
   enablePagination?: boolean
+  // Server-side pagination props
+  currentPage?: number
+  totalPages?: number
+  totalRecords?: number
+  onPageChange?: (page: number) => void
 }
 
 export function ReportDataTable<TData extends Record<string, any>, TValue>({
   columns,
   data,
-  pageSize = 9,
+  pageSize = 100000,
   enablePagination = true,
+  currentPage: serverCurrentPage,
+  totalPages: serverTotalPages,
+  totalRecords: serverTotalRecords,
+  onPageChange,
 }: ReportDataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -49,19 +58,28 @@ export function ReportDataTable<TData extends Record<string, any>, TValue>({
     pageSize,
   })
 
+  // Use server-side pagination if provided, otherwise use client-side
+  const isServerSidePagination = !!onPageChange
+
   const table = useReactTable({
     data,
     columns,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: isServerSidePagination
+      ? undefined
+      : getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
+    manualPagination: isServerSidePagination,
+    pageCount: isServerSidePagination ? serverTotalPages : undefined,
     state: {
       columnFilters,
       columnVisibility,
-      pagination,
+      pagination: isServerSidePagination
+        ? { pageIndex: (serverCurrentPage || 1) - 1, pageSize }
+        : pagination,
     },
   })
 
@@ -69,14 +87,48 @@ export function ReportDataTable<TData extends Record<string, any>, TValue>({
     table.setPageSize(pageSize)
   }, [pageSize, table])
 
-  const currentPage = table.getState().pagination.pageIndex + 1
-  const totalPages = table.getPageCount()
-  const totalRecords = data.length
-  const startRecord = table.getState().pagination.pageIndex * pageSize + 1
-  const endRecord = Math.min(
-    (table.getState().pagination.pageIndex + 1) * pageSize,
-    totalRecords
-  )
+  const currentPage = isServerSidePagination
+    ? serverCurrentPage || 1
+    : table.getState().pagination.pageIndex + 1
+  const totalPages = isServerSidePagination
+    ? serverTotalPages || 1
+    : table.getPageCount()
+  const totalRecords = isServerSidePagination
+    ? serverTotalRecords || 0
+    : data.length
+  const startRecord = isServerSidePagination
+    ? (serverCurrentPage || 1 - 1) * pageSize + 1
+    : table.getState().pagination.pageIndex * pageSize + 1
+  const endRecord = isServerSidePagination
+    ? Math.min((serverCurrentPage || 1) * pageSize, serverTotalRecords || 0)
+    : Math.min(
+        (table.getState().pagination.pageIndex + 1) * pageSize,
+        totalRecords
+      )
+
+  const handlePageChange = (page: number) => {
+    if (isServerSidePagination && onPageChange) {
+      onPageChange(page)
+    } else {
+      table.setPageIndex(page - 1)
+    }
+  }
+
+  const handlePreviousPage = () => {
+    if (isServerSidePagination && onPageChange) {
+      onPageChange(currentPage - 1)
+    } else {
+      table.previousPage()
+    }
+  }
+
+  const handleNextPage = () => {
+    if (isServerSidePagination && onPageChange) {
+      onPageChange(currentPage + 1)
+    } else {
+      table.nextPage()
+    }
+  }
 
   return (
     <div className="w-full">
@@ -110,7 +162,10 @@ export function ReportDataTable<TData extends Record<string, any>, TValue>({
             <TableBody>
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
@@ -145,28 +200,38 @@ export function ReportDataTable<TData extends Record<string, any>, TValue>({
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
+                onClick={handlePreviousPage}
+                disabled={
+                  isServerSidePagination
+                    ? currentPage <= 1
+                    : !table.getCanPreviousPage()
+                }
                 className="h-8 w-8"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? 'default' : 'outline'}
-                  size="icon"
-                  onClick={() => table.setPageIndex(page - 1)}
-                  className="h-8 w-8"
-                >
-                  {page}
-                </Button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => handlePageChange(page)}
+                    className="h-8 w-8"
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
+                onClick={handleNextPage}
+                disabled={
+                  isServerSidePagination
+                    ? currentPage >= totalPages
+                    : !table.getCanNextPage()
+                }
                 className="h-8 w-8"
               >
                 <ChevronRight className="h-4 w-4" />

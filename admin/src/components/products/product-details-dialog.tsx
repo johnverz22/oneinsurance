@@ -7,18 +7,26 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Pencil } from 'lucide-react'
+import UpdateProductDialog from './update-product-dialog'
+import { useState } from 'react'
 
 interface ProductDetailsDialogProps {
   product: ProductAssignment | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onProductUpdated?: () => void
 }
 
 export default function ProductDetailsDialog({
   product,
   open,
   onOpenChange,
+  onProductUpdated,
 }: ProductDetailsDialogProps) {
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
+
   if (!product) return null
 
   return (
@@ -29,15 +37,43 @@ export default function ProductDetailsDialog({
             <DialogTitle className="text-lg font-bold sm:text-xl">
               {product.product.name}
             </DialogTitle>
-            <Badge
-              className={`w-fit shrink-0 ${
-                product.product.status.toLowerCase() === 'active'
-                  ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                  : 'bg-orange-100 text-orange-600 hover:bg-orange-100'
-              }`}
-            >
-              {product.product.status.toUpperCase()}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <UpdateProductDialog
+                product={{
+                  id: product.product.id,
+                  name: product.product.name,
+                  description: product.product.description || '',
+                  price: Number(product.product.price) || 0,
+                  provider_id: product.product.provider_id,
+                  lob_id: (product.product as any).line_of_business?.id || 0,
+                  status: product.product.status as 'active' | 'inactive',
+                  carrier_product_code:
+                    (product.product as any).carrier_product_code || '',
+                  provider: product.product.provider,
+                  lob: (product.product as any).line_of_business,
+                }}
+                onSuccess={() => {
+                  setUpdateDialogOpen(false)
+                  onProductUpdated?.()
+                  onOpenChange(false)
+                }}
+                trigger={
+                  <Button variant="outline" size="sm">
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+                }
+              />
+              <Badge
+                className={`w-fit shrink-0 ${
+                  product.product.status.toLowerCase() === 'active'
+                    ? 'bg-green-100 text-green-700 hover:bg-green-100'
+                    : 'bg-orange-100 text-orange-600 hover:bg-orange-100'
+                }`}
+              >
+                {product.product.status.toUpperCase()}
+              </Badge>
+            </div>
           </div>
           <DialogDescription className="text-xs text-gray-600 sm:text-sm">
             View detailed information about this insurance product

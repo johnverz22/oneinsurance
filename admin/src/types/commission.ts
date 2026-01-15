@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { ProductSchema } from "./products";
-import { createPaginatedResponseType } from "@/utils/create-paginated-response-type";
-import { createResponseSchema } from "./base-api-response";
+import { z } from 'zod'
+import { ProductSchema } from './products'
+import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
+import { createResponseSchema } from './base-api-response'
 
 export const CommissionConfigSchema = z.object({
   id: z.number(),
@@ -20,12 +20,15 @@ export const CommissionConfigSchema = z.object({
   updated_at: z.string(),
   deleted_at: z.string().nullable(),
   product: ProductSchema,
-});
+})
 
-export type CommissionConfig = z.infer<typeof CommissionConfigSchema>;
+export type CommissionConfig = z.infer<typeof CommissionConfigSchema>
 
-export const CommissionConfigPaginatedResponseSchema = createPaginatedResponseType<CommissionConfig>(CommissionConfigSchema);
-export type CommissionConfigPaginatedResponse = z.infer<typeof CommissionConfigPaginatedResponseSchema>;
+export const CommissionConfigPaginatedResponseSchema =
+  createPaginatedResponseType<CommissionConfig>(CommissionConfigSchema)
+export type CommissionConfigPaginatedResponse = z.infer<
+  typeof CommissionConfigPaginatedResponseSchema
+>
 
 export const CommissionConfigUpdateRequestSchema = z.object({
   base_commission: z.string(),
@@ -39,10 +42,15 @@ export const CommissionConfigUpdateRequestSchema = z.object({
   status: z.string(),
 })
 
-export type CommissionConfigUpdateRequest = z.infer<typeof CommissionConfigUpdateRequestSchema>;
-export const CommissionConfigUpdateResponseSchema = createResponseSchema(CommissionConfigSchema);
-export type CommissionConfigUpdateResponse = z.infer<typeof CommissionConfigUpdateResponseSchema>;
-
+export type CommissionConfigUpdateRequest = z.infer<
+  typeof CommissionConfigUpdateRequestSchema
+>
+export const CommissionConfigUpdateResponseSchema = createResponseSchema(
+  CommissionConfigSchema
+)
+export type CommissionConfigUpdateResponse = z.infer<
+  typeof CommissionConfigUpdateResponseSchema
+>
 
 export const CreateCommitionConfigRequestSchema = z.object({
   product_id: z.number(),
@@ -57,7 +65,13 @@ export const CreateCommitionConfigRequestSchema = z.object({
   effectivity_date: z.string(),
   status: z.string(),
 })
-export type CreateCommitionConfigRequest = z.infer<typeof CreateCommitionConfigRequestSchema>;
+export type CreateCommitionConfigRequest = z.infer<
+  typeof CreateCommitionConfigRequestSchema
+>
 
-export const CreateCommitionConfigResponseSchema = createResponseSchema(CommissionConfigSchema);
-export type CreateCommitionConfigResponse = z.infer<typeof CreateCommitionConfigResponseSchema>;
+export const CreateCommitionConfigResponseSchema = createResponseSchema(
+  CommissionConfigSchema
+)
+export type CreateCommitionConfigResponse = z.infer<
+  typeof CreateCommitionConfigResponseSchema
+>

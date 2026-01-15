@@ -31,7 +31,9 @@ import { useCreateCommissionConfiguration } from '@/app/data/mutations/commissio
 import { CreateProductRequest } from '@/types/products'
 import { CreateCommitionConfigRequest } from '@/types/commission'
 import { useGetProviders } from '@/app/data/queries/provider'
+import { useGetLineOfBusinessList } from '@/app/data/queries/line-of-business'
 import { Provider } from '@/types/provider'
+import { LineOfBusiness } from '@/types/line-of-business'
 import { cn } from '@/lib/utils'
 
 const createProductSchema = z.object({
@@ -39,6 +41,7 @@ const createProductSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.number().min(1, 'Price must be at least 1'),
   provider_id: z.number().min(1, 'Please select a provider'),
+  lob_id: z.number().min(1, 'Please select a line of business'),
   status: z.enum(['active', 'inactive']),
   carrier_product_code: z.string().min(1, 'Carrier product code is required'),
   // Commission fields
@@ -95,12 +98,25 @@ export default function CreateProductDialog({
   )
   const [showProviderResults, setShowProviderResults] = useState(false)
 
+  const [lobSearch, setLobSearch] = useState('')
+  const [lobSearchDebounced, setLobSearchDebounced] = useState('')
+  const [selectedLob, setSelectedLob] = useState<LineOfBusiness | null>(null)
+  const [showLobResults, setShowLobResults] = useState(false)
+
   const { mutateAsync: createProduct } = useCreateProduct()
   const { mutateAsync: createCommissionConfig } =
     useCreateCommissionConfiguration()
 
   const { data: providersData } = useGetProviders(1, providerSearchDebounced)
   const providers = providersData?.data.data || []
+
+  const { data: lobData } = useGetLineOfBusinessList({
+    page: 1,
+    per_page: 15,
+    name: lobSearchDebounced || undefined,
+    status: 'active',
+  })
+  const lineOfBusinessList = lobData?.data?.data || []
 
   // Debounce provider search
   useEffect(() => {
@@ -111,12 +127,22 @@ export default function CreateProductDialog({
     return () => clearTimeout(timer)
   }, [providerSearch])
 
+  // Debounce LOB search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLobSearchDebounced(lobSearch)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [lobSearch])
+
   const form = useForm({
     defaultValues: {
       name: '',
       description: '',
       price: 0,
       provider_id: 0,
+      lob_id: 0,
       status: 'active' as const,
       carrier_product_code: '',
       base_commission: 15,
@@ -138,6 +164,7 @@ export default function CreateProductDialog({
           description: value.description,
           price: value.price,
           provider_id: value.provider_id,
+          lob_id: value.lob_id,
           status: value.status,
           carrier_product_code: value.carrier_product_code,
         }
@@ -370,24 +397,85 @@ export default function CreateProductDialog({
                 )}
               </form.Field>
 
-              <form.Field name="carrier_product_code">
+              <form.Field name="lob_id">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor="carrier_product_code">
-                      Carrier Product Code
+                    <Label htmlFor="lob_id">
+                      Line of Business <span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      id="carrier_product_code"
-                      placeholder="Enter carrier product code"
-                      value={field.state.value || ''}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    />
+                    <div className="relative">
+                      <div className="relative">
+                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Input
+                          id="lob_id"
+                          placeholder="Search line of business..."
+                          value={selectedLob?.name || lobSearch}
+                          onChange={(e) => {
+                            setLobSearch(e.target.value)
+                            setSelectedLob(null)
+                            field.handleChange(0)
+                            setShowLobResults(true)
+                          }}
+                          onFocus={() => setShowLobResults(true)}
+                          className="pl-10"
+                        />
+                      </div>
+
+                      {showLobResults && (
+                        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg dark:bg-gray-950">
+                          {lineOfBusinessList.length > 0 ? (
+                            lineOfBusinessList.map((lob) => (
+                              <div
+                                key={lob.id}
+                                className={cn(
+                                  'flex cursor-pointer items-center justify-between px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800',
+                                  selectedLob?.id === lob.id &&
+                                    'bg-blue-50 dark:bg-blue-950'
+                                )}
+                                onClick={() => {
+                                  setSelectedLob(lob)
+                                  setLobSearch(lob.name)
+                                  field.handleChange(lob.id)
+                                  setShowLobResults(false)
+                                }}
+                              >
+                                <span>{lob.name}</span>
+                                {selectedLob?.id === lob.id && (
+                                  <Check className="h-4 w-4 text-blue-600" />
+                                )}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="px-4 py-2 text-sm text-gray-500">
+                              No line of business found
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     <FieldInfo field={field} />
                   </div>
                 )}
               </form.Field>
             </div>
+
+            <form.Field name="carrier_product_code">
+              {(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor="carrier_product_code">
+                    Carrier Product Code
+                  </Label>
+                  <Input
+                    id="carrier_product_code"
+                    placeholder="Enter carrier product code"
+                    value={field.state.value || ''}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
           </div>
 
           {/* Commission Configuration Section */}
