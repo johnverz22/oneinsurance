@@ -51,7 +51,7 @@ export const ProfileOverview = () => {
               <div>
                 <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
                   <p className={cn('text-lg font-bold')}>
-                    {formatPHPAmount(Number(paymentSummary.totalNetPremium))}
+                    PHP {paymentSummary.totalNetPremium}
                   </p>
                   <span className="text-muted-foreground capitalize">
                     Total Net Premium
@@ -61,9 +61,7 @@ export const ProfileOverview = () => {
               <div>
                 <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
                   <p className={cn('text-lg font-bold')}>
-                    {formatPHPAmount(
-                      Number(paymentSummary.totalGrossCommission)
-                    )}
+                    PHP {paymentSummary.totalGrossCommission}
                   </p>
                   <span className="text-muted-foreground capitalize">
                     Total Gross Commission
@@ -78,9 +76,7 @@ export const ProfileOverview = () => {
                       STYLES['OVERRIDER_DEDUCTIONS']
                     )}
                   >
-                    {formatPHPAmount(
-                      Number(paymentSummary.totalWithholdingTax)
-                    )}
+                    PHP {paymentSummary.totalWithholdingTax}
                   </p>
                   <span className="text-muted-foreground capitalize">
                     Total Withholding Tax
@@ -95,7 +91,7 @@ export const ProfileOverview = () => {
                       STYLES['NET_COMMISSION']
                     )}
                   >
-                    {formatPHPAmount(Number(paymentSummary.totalNetCommission))}
+                    PHP {paymentSummary.totalNetCommission}
                   </p>
                   <span className="text-muted-foreground capitalize">
                     Total Net Commission
