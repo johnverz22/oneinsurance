@@ -33,7 +33,11 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useActivateAgent, useDeleteAgent, useSendSignupLink } from '@/app/data/mutations/agents'
+import {
+  useActivateAgent,
+  useDeleteAgent,
+  useSendSignupLink,
+} from '@/app/data/mutations/agents'
 import { useUpdateAgent } from '@/app/data/mutations/agents'
 import { AxiosError } from 'axios'
 import { useAuthStore } from '@/store/auth-store'
@@ -43,7 +47,6 @@ import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { Download } from 'lucide-react'
 
-
 export default function AgentsPage() {
   const [page, setPage] = useState<number>(1)
   const {
@@ -52,7 +55,7 @@ export default function AgentsPage() {
     isLoading,
     error,
     refetch,
-  } = useGetAgents(page)
+  } = useGetAgents({ page })
   const deleteMutation = useDeleteAgent()
   const activateMutation = useActivateAgent()
   const sendSignupLinkMutation = useSendSignupLink()
@@ -66,8 +69,6 @@ export default function AgentsPage() {
   const [searchResults, setSearchResults] = useState<AgentsResponse | null>(
     null
   )
-
-
 
   const { mutateAsync: searchAgents, isPending: isSearching } =
     useSearchAgents()
@@ -283,15 +284,15 @@ export default function AgentsPage() {
 
     try {
       setIsSendingSignupLink(true)
-      const response = await sendSignupLinkMutation.mutateAsync({ 
-        email: agent.email 
+      const response = await sendSignupLinkMutation.mutateAsync({
+        email: agent.email,
       })
       toast.success(response?.message ?? `Signup link sent to ${agent.email}`)
     } catch (error) {
       // Handle validation errors from the API
       if (error instanceof AxiosError && error.response?.data) {
         const errorData = error.response.data
-        
+
         // Handle validation errors with specific field messages
         if (errorData.errors?.email && Array.isArray(errorData.errors.email)) {
           const emailError = errorData.errors.email[0]
@@ -460,13 +461,11 @@ export default function AgentsPage() {
 
   // Determine which data to display
   const displayData = isSearchMode ? searchResults : agentsData
-  const isDataLoading = isSearchMode 
-    ? isSearching 
-    : isFetching || isLoading
+  const isDataLoading = isSearchMode ? isSearching : isFetching || isLoading
 
   function handleExportToCSV(): void {
-    const dataToExport = isSearchMode 
-      ? (searchResults?.data.data ?? []) 
+    const dataToExport = isSearchMode
+      ? (searchResults?.data.data ?? [])
       : agentsOnly
 
     if (dataToExport.length === 0) {
@@ -474,7 +473,7 @@ export default function AgentsPage() {
       return
     }
 
-    const filename = isSearchMode 
+    const filename = isSearchMode
       ? `agents-search-${new Date().toISOString().split('T')[0]}.csv`
       : `agents-${new Date().toISOString().split('T')[0]}.csv`
 
@@ -543,10 +542,7 @@ export default function AgentsPage() {
                       </Button>
                     )}
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleExportToCSV}
-                  >
+                  <Button variant="outline" onClick={handleExportToCSV}>
                     <Download className="mr-2 h-4 w-4" />
                     Export to CSV
                   </Button>
@@ -559,7 +555,9 @@ export default function AgentsPage() {
                 )}
                 <AgentDataTable
                   columns={columns}
-                  data={isSearchMode ? (displayData?.data.data ?? []) : agentsOnly}
+                  data={
+                    isSearchMode ? (displayData?.data.data ?? []) : agentsOnly
+                  }
                   onRowClick={(row) => handleRowClick(row)}
                   getRowActions={getActionsForAgent}
                   enableColumnVisibility={false}

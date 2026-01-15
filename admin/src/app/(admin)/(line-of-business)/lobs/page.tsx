@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useGetLineOfBusinessList } from '@/app/data/queries/line-of-business'
+import {
+  useGetLineOfBusinessList,
+  useGetLobAgents,
+} from '@/app/data/queries/line-of-business'
 import {
   useCreateLineOfBusiness,
   useUpdateLineOfBusiness,
@@ -11,7 +14,6 @@ import {
   LineOfBusiness,
   LineOfBusinessFormData,
 } from '@/types/line-of-business'
-import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -50,9 +52,10 @@ import { ColumnDef } from '@tanstack/react-table'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 
-export default function LineOfBusinessPage() {
+export default function LobsPage() {
   const queryClient = useQueryClient()
 
+  // State
   const [currentPage, setCurrentPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [nameSearch, setNameSearch] = useState<string>('')
@@ -65,6 +68,7 @@ export default function LineOfBusinessPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedLob, setSelectedLob] = useState<LineOfBusiness | null>(null)
 
   // Form state
@@ -89,6 +93,13 @@ export default function LineOfBusinessPage() {
 
   const lineOfBusinessList = lobData?.data?.data || []
 
+  // Fetch agents for selected LOB
+  const { data: lobAgentsData, isLoading: isLoadingAgents } = useGetLobAgents(
+    selectedLob?.id || 0
+  )
+  const lobAgents = lobAgentsData?.data?.agents || []
+  const totalAgents = lobAgentsData?.data?.total_agents || 0
+
   // Mutations
   const createMutation = useCreateLineOfBusiness()
   const updateMutation = useUpdateLineOfBusiness()
@@ -101,14 +112,22 @@ export default function LineOfBusinessPage() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => (
-          <div className="font-medium">{row.original.name}</div>
+          <div
+            className="cursor-pointer font-medium hover:text-blue-600"
+            onClick={() => handleRowClick(row.original)}
+          >
+            {row.original.name}
+          </div>
         ),
       },
       {
         accessorKey: 'description',
         header: 'Description',
         cell: ({ row }) => (
-          <div className="max-w-md truncate text-gray-600">
+          <div
+            className="max-w-md cursor-pointer truncate text-gray-600"
+            onClick={() => handleRowClick(row.original)}
+          >
             {row.original.description}
           </div>
         ),
@@ -116,13 +135,20 @@ export default function LineOfBusinessPage() {
       {
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+        cell: ({ row }) => (
+          <div onClick={() => handleRowClick(row.original)}>
+            <StatusBadge status={row.original.status} />
+          </div>
+        ),
       },
       {
         accessorKey: 'created_at',
         header: 'Created At',
         cell: ({ row }) => (
-          <div className="text-gray-600">
+          <div
+            className="cursor-pointer text-gray-600"
+            onClick={() => handleRowClick(row.original)}
+          >
             {new Date(row.original.created_at).toLocaleDateString()}
           </div>
         ),
@@ -152,6 +178,11 @@ export default function LineOfBusinessPage() {
     ],
     []
   )
+
+  const handleRowClick = (lob: LineOfBusiness) => {
+    setSelectedLob(lob)
+    setDetailsDialogOpen(true)
+  }
 
   const handleEditClick = (lob: LineOfBusiness) => {
     setSelectedLob(lob)
@@ -217,8 +248,6 @@ export default function LineOfBusinessPage() {
 
   return (
     <div>
-      <PageHeader title="Line of Business" subTitle="Manage line of business" />
-
       {/* Filters Section */}
       <div className="mb-6 space-y-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -455,6 +484,105 @@ export default function LineOfBusinessPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Details Dialog */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedLob?.name}</DialogTitle>
+            <DialogDescription>
+              Line of business details and assigned agents
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* LOB Information */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <h3 className="font-semibold">Information</h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label className="text-gray-500">Status</Label>
+                  <div className="mt-1">
+                    <StatusBadge status={selectedLob?.status || ''} />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Created At</Label>
+                  <div className="mt-1">
+                    {selectedLob?.created_at
+                      ? new Date(selectedLob.created_at).toLocaleDateString(
+                          'en-US',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          }
+                        )
+                      : '-'}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label className="text-gray-500">Description</Label>
+                <p className="mt-1 text-gray-700">
+                  {selectedLob?.description || '-'}
+                </p>
+              </div>
+            </div>
+
+            {/* Assigned Agents */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">
+                  Assigned Agents ({totalAgents})
+                </h3>
+              </div>
+              {isLoadingAgents ? (
+                <div className="py-8 text-center text-gray-500">
+                  Loading agents...
+                </div>
+              ) : lobAgents && lobAgents.length > 0 ? (
+                <div className="space-y-2">
+                  {lobAgents.map((agentLob: any) => (
+                    <div
+                      key={agentLob.id}
+                      className="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700">
+                          {agentLob.agent.first_name?.charAt(0).toUpperCase()}
+                          {agentLob.agent.last_name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium">
+                            {agentLob.agent.first_name}{' '}
+                            {agentLob.agent.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {agentLob.agent.email}
+                          </div>
+                        </div>
+                      </div>
+                      <StatusBadge status={agentLob.status || 'active'} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-gray-500">
+                  No agents assigned to this line of business yet.
+                </div>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDetailsDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

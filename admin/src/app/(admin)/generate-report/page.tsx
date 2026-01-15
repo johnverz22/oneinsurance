@@ -30,7 +30,12 @@ const reportTypes = [
 ]
 
 export default function GenerateReportPage() {
-  const { data: agents, isLoading, isError, refetch } = useGetAgents(1)
+  const {
+    data: agents,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetAgents({ page: 1 })
   const {
     data: products,
     isLoading: productsLoading,
