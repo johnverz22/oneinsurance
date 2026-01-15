@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { ProviderSchema } from '@/types/provider'
 import { AgentSchema } from '@/types/agents'
 import { createResponseSchema } from './base-api-response'
+import { LineOfBusinessSchema } from './line-of-business'
 
 export const ProductSchema = z.object({
   id: z.string().or(z.number()),
@@ -16,6 +17,7 @@ export const ProductSchema = z.object({
   updated_at: z.string(),
   deleted_at: z.string().nullable(),
   provider: ProviderSchema,
+  line_of_business: LineOfBusinessSchema,
 })
 
 export type Product = z.infer<typeof ProductSchema>
