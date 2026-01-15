@@ -101,7 +101,7 @@ export const TabNavigation = ({ tabs }: { tabs: Tab[] }) => {
   }
 
   return (
-    <div className="relative h-16 w-full">
+    <div className="relative h-16 w-max">
       {showLeft && (
         <Button
           variant="secondary"
@@ -114,7 +114,7 @@ export const TabNavigation = ({ tabs }: { tabs: Tab[] }) => {
 
       <div
         ref={scrollRef}
-        className="no-visible-scrollbar bg-muted-foreground/5 relative flex h-full w-full items-center gap-1 overflow-x-auto rounded-full px-2 py-1.5 lg:w-max"
+        className="no-visible-scrollbar bg-muted-foreground/5 relative flex h-full w-max items-center gap-1 overflow-x-auto rounded-full px-2 py-1.5"
       >
         <div ref={leftSentinel} className="h-full w-px shrink-0" />
 

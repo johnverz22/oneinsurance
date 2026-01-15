@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/store/auth-store'
+import { AssignLobAgentRequest } from '@/types/agents'
 import {
   LineOfBusinessFormData,
   LineOfBusinessResponse,
@@ -65,6 +66,78 @@ export function useDeleteLineOfBusiness() {
     mutationKey: ['delete-line-of-business'],
     mutationFn: async (lobId: number) => {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/lobs/${lobId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.delete<void>(url, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export function useAssignLobToAgent() {
+  const { accessToken } = useAuthStore()
+
+  return useMutation({
+    mutationKey: ['assign-lob-to-agent'],
+    mutationFn: async (request: AssignLobAgentRequest) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.post<void>(url, request, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export function useUpdateAgentLob() {
+  const { accessToken } = useAuthStore()
+
+  return useMutation({
+    mutationKey: ['update-agent-lob'],
+    mutationFn: async ({
+      agentLobId,
+      data,
+    }: {
+      agentLobId: number
+      data: AssignLobAgentRequest
+    }) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs/${agentLobId}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.put<void>(url, data, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
+export function useDeleteAgentLob() {
+  const { accessToken } = useAuthStore()
+
+  return useMutation({
+    mutationKey: ['delete-agent-lob'],
+    mutationFn: async (agentLobId: number) => {
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs/${agentLobId}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.delete<void>(url, {
