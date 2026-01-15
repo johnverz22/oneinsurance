@@ -23,21 +23,21 @@ const REFERRAL_COLUMNS: ColumnDef<Referral>[] = [
 export default function ReferralsPage() {
   const [copiedId, setCopiedId] = useState<string>('')
   const { data: referralCode, isSuccess, isError } = getReferralCode()
-  const { data: products, isFetching: isProductsFetching } = useGetProducts()
+  // const { data: products, isFetching: isProductsFetching } = useGetProducts()
 
-  const referrals = useMemo(() => {
-    if (isProductsFetching) return []
+  // const referrals = useMemo(() => {
+  //   if (isProductsFetching) return []
 
-    const links = (products ?? []).map((product, index) => ({
-      ...product,
-      link: `/${referralCode}/${product.link}`,
-      id: product.code,
-      clicks: 0,
-      conversions: 0,
-    }))
+  //   const links = (products ?? []).map((product, index) => ({
+  //     ...product,
+  //     link: `/${referralCode}/${product.link}`,
+  //     id: product.code,
+  //     clicks: 0,
+  //     conversions: 0,
+  //   }))
 
-    return links
-  }, [isProductsFetching, products, referralCode])
+  //   return links
+  // }, [isProductsFetching, products, referralCode])
 
   const handleCopyLink = (referral: Referral) => {
     navigator.clipboard.writeText(referral.link)
@@ -47,6 +47,18 @@ export default function ReferralsPage() {
     })
     setTimeout(() => setCopiedId(''), 2000)
   }
+
+  const referrals: Referral[] = [
+    {
+      description: 'Travel Insurance',
+      status: 'Active',
+      commissionRate: 5,
+      link: `/${referralCode}/products/travel-insurance`,
+      id: 'travel',
+      clicks: 0,
+      conversions: 0,
+    },
+  ]
 
   const handleShare = async (referral: Referral) => {
     if (navigator.share) {
@@ -87,7 +99,7 @@ export default function ReferralsPage() {
           searchKey="description"
           searchPlaceholder="Product"
           actions={[]}
-          isLoading={isProductsFetching}
+          isLoading={false}
           onRowClick={(client) => console.log('Clicked row:', client)}
         />
       </div>
