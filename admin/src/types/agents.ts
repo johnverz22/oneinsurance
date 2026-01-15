@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
 import { ProviderSchema } from '@/types/provider'
+import { LineOfBusinessSchema } from './line-of-business'
+import { createResponseSchema } from './base-api-response'
 
 export const AgentSchema = z.object({
   id: z.number(),
@@ -118,3 +120,39 @@ export type AssignProductAgentPayload = {
   commission_rate: number
   status: string
 }
+
+export const AgentLineOfBusinessSchema = z.object({
+  id: z.number(),
+  agent_id: z.number(),
+  lob_id: z.number(),
+  status: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  deleted_at: z.string().nullable(),
+  agent: AgentSchema,
+  line_of_business: LineOfBusinessSchema,
+})
+
+export type AgentLineOfBusiness = z.infer<typeof AgentLineOfBusinessSchema>
+export const AgentLineOfBusinessPaginatedResponseSchema =
+  createPaginatedResponseType<AgentLineOfBusiness>(AgentLineOfBusinessSchema)
+export type AgentLineOfBusinessPaginatedResponse = z.infer<
+  typeof AgentLineOfBusinessPaginatedResponseSchema
+>
+
+export const AssignLobAgentPayloadFormSchema = z.object({
+  agent_id: z.number({ message: 'Agent ID is required' }),
+  lob_id: z.number({ message: 'Line of Business ID is required' }),
+  status: z.enum(['active', 'inactive'], {
+    required_error: 'Status is required',
+  }),
+})
+export type AssignLobAgentRequest = z.infer<
+  typeof AssignLobAgentPayloadFormSchema
+>
+export const AgentLineOfBusinessResponseSchema = createResponseSchema(
+  AgentLineOfBusinessSchema
+)
+export type AgentLineOfBusinessResponse = z.infer<
+  typeof AgentLineOfBusinessResponseSchema
+>

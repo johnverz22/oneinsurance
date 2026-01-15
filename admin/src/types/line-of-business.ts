@@ -1,6 +1,7 @@
 import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
 import { z } from 'zod'
 import { createResponseSchema } from './base-api-response'
+import { AgentSchema } from './agents'
 
 /*
 {
@@ -39,4 +40,25 @@ export const LineOfBusinessResponse = createResponseSchema(LineOfBusinessSchema)
 export type LineOfBusinessResponse = z.infer<typeof LineOfBusinessResponse>
 export type LineOfBusinessPaginatedResponse = z.infer<
   typeof LineOfBusinessPaginatedResponseSchema
+>
+
+export const LineOfBusinessAgentsSchema = z.object({
+  line_of_business: LineOfBusinessSchema,
+  agents: z.array(
+    z.object({
+      id: z.number(),
+      agent: AgentSchema,
+      status: z.string(),
+      created_at: z.string(),
+      updated_at: z.string(),
+    })
+  ),
+  total_agents: z.number(),
+})
+export type LineOfBusinessAgents = z.infer<typeof LineOfBusinessAgentsSchema>
+export const LineOfBusinessAgentsResponseSchema = createResponseSchema(
+  LineOfBusinessAgentsSchema
+)
+export type LineOfBusinessAgentsResponse = z.infer<
+  typeof LineOfBusinessAgentsResponseSchema
 >

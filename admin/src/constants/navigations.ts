@@ -97,5 +97,5 @@ export const ADMIN_NAVIGATIONS = [
   //{ type: 'single', label: 'Applicants', link: '/applicants' },
   { type: 'single', label: 'Payments', link: '/payments' },
   { type: 'single', label: 'Generate Report', link: '/generate-report' },
-  { type: 'single', label: 'Line of Business', link: '/line-of-business' },
+  { type: 'single', label: 'Line of Business', link: '/lobs' },
 ] satisfies NavigationItem[]
