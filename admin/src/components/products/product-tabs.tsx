@@ -20,6 +20,7 @@ import {
 } from '@/types/agents'
 import { useGetProducts } from '@/app/data/queries/products'
 import { useGetAgentProducts } from '@/app/data/queries/agents'
+import { useQueryClient } from '@tanstack/react-query'
 
 function combineProductArrays(
   agentCommissions: AgentProduct[],
@@ -50,15 +51,20 @@ function combineProductArrays(
     const agents = commissions.map((c) => c.agent)
 
     // Calculate average commission rate (or use '0.00' if no commissions)
-    const avgCommissionRate = commissions.length > 0
-      ? (
-          commissions.reduce((sum, c) => sum + parseFloat(c.commission_rate), 0) /
-          commissions.length
-        ).toFixed(2)
-      : '0.00'
+    const avgCommissionRate =
+      commissions.length > 0
+        ? (
+            commissions.reduce(
+              (sum, c) => sum + parseFloat(c.commission_rate),
+              0
+            ) / commissions.length
+          ).toFixed(2)
+        : '0.00'
 
     // Determine overall status
-    const allActive = commissions.length === 0 || commissions.every((c) => c.status === 'active')
+    const allActive =
+      commissions.length === 0 ||
+      commissions.every((c) => c.status === 'active')
     const status = allActive ? 'active' : 'inactive'
 
     result.push({
@@ -73,6 +79,7 @@ function combineProductArrays(
         updated_at: productWithProvider.updated_at,
         deleted_at: productWithProvider.deleted_at,
         provider: productWithProvider.provider,
+        line_of_business: productWithProvider.line_of_business,
       },
       provider: productWithProvider.provider,
       agents: agents,
@@ -149,6 +156,7 @@ export default function ProductTabs() {
     ProductAssignment[]
   >([])
 
+  const queryClient = useQueryClient()
   const currentPage = activeTab === 'products' ? productsPage : agentsPage
 
   const {
@@ -177,7 +185,7 @@ export default function ProductTabs() {
       toast.info('No products data to export')
       return
     }
-    const exportData = productsAssignments.map(assignment => ({
+    const exportData = productsAssignments.map((assignment) => ({
       product_id: assignment.product.id,
       product_name: assignment.product.name,
       provider: assignment.provider.name,
@@ -195,7 +203,7 @@ export default function ProductTabs() {
       toast.info('No agents data to export')
       return
     }
-    const exportData = agentProducts.data.data.map(agentProduct => ({
+    const exportData = agentProducts.data.data.map((agentProduct) => ({
       agent_id: agentProduct.agent.id,
       agent_name: `${agentProduct.agent.first_name} ${agentProduct.agent.last_name}`,
       agent_email: agentProduct.agent.email,
@@ -205,6 +213,11 @@ export default function ProductTabs() {
     }))
     exportToCSV(exportData, 'agent-products-export.csv')
     toast.success('Agent products data exported successfully')
+  }
+
+  const handleProductUpdated = () => {
+    queryClient.invalidateQueries({ queryKey: ['products'] })
+    queryClient.invalidateQueries({ queryKey: ['get-agent-products'] })
   }
 
   return (
@@ -255,7 +268,11 @@ export default function ProductTabs() {
 
             <Button
               variant="outline"
-              onClick={activeTab === 'products' ? handleExportProducts : handleExportAgents}
+              onClick={
+                activeTab === 'products'
+                  ? handleExportProducts
+                  : handleExportAgents
+              }
               className="rounded-full"
             >
               <Download className="mr-2 h-4 w-4" />
@@ -267,7 +284,10 @@ export default function ProductTabs() {
         </div>
 
         {activeTab === 'products' ? (
-          <ProductsMainContent productAssignments={productsAssignments} />
+          <ProductsMainContent
+            productAssignments={productsAssignments}
+            onProductCreated={handleProductUpdated}
+          />
         ) : (
           <AgentsMainContent />
         )}
