@@ -5,14 +5,27 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { handleApiError } from '@/utils/handle-api-error'
 
-export function useGetAgents(page = 1) {
+interface GetAgentsParams {
+  page?: number
+  per_page?: number
+  search?: string
+}
+
+export function useGetAgents(params: GetAgentsParams = {}) {
   const { accessToken } = useAuthStore()
+  const { page = 1, per_page = 15, search } = params
+
   return useQuery({
-    queryKey: ['agents', page],
+    queryKey: ['agents', page, per_page, search],
     queryFn: async () => {
+      const searchParams = new URLSearchParams()
+      searchParams.append('page', page.toString())
+      searchParams.append('per_page', per_page.toString())
+      if (search) searchParams.append('search', search)
+
       try {
         const response = await axios.get<AgentsResponse>(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents?page=${page}`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents?${searchParams.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
