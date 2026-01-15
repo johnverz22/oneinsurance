@@ -19,149 +19,6 @@ import {
   usePaymentSummary,
 } from '@/app/data/queries/payments'
 
-const PAYMENT_HISTORY: PaymentHistory[] = [
-  {
-    payoutReference: 'PR-2024-001',
-    agentId: 'AG-1001',
-    agentName: 'Juan Dela Cruz',
-    payoutAmount: 32500,
-    accountType: 'Bank',
-    accountName: 'Juan Dela Cruz',
-    accountNumber: '****1234',
-    dateFrom: new Date('2024-01-01'),
-    dateTo: new Date('2024-01-15'),
-    generatedBy: 'System',
-    dateGenerated: new Date('2024-01-16'),
-    status: 'Paid',
-  },
-  {
-    payoutReference: 'PR-2024-002',
-    agentId: 'AG-1002',
-    agentName: 'Maria Santos',
-    payoutAmount: 18400,
-    accountType: 'GCash',
-    accountName: 'Maria Santos',
-    accountNumber: '****5678',
-    dateFrom: new Date('2024-01-01'),
-    dateTo: new Date('2024-01-15'),
-    generatedBy: 'System',
-    dateGenerated: new Date('2024-01-16'),
-    status: 'Pending',
-  },
-  {
-    payoutReference: 'PR-2024-003',
-    agentId: 'AG-1003',
-    agentName: 'Pedro Reyes',
-    payoutAmount: 50250,
-    accountType: 'Bank',
-    accountName: 'Pedro Reyes',
-    accountNumber: '****9012',
-    dateFrom: new Date('2024-01-16'),
-    dateTo: new Date('2024-01-31'),
-    generatedBy: 'Finance Admin',
-    dateGenerated: new Date('2024-02-01'),
-    status: 'Paid',
-  },
-  {
-    payoutReference: 'PR-2024-004',
-    agentId: 'AG-1004',
-    agentName: 'Ana Lim',
-    payoutAmount: 12900,
-    accountType: 'PayMaya',
-    accountName: 'Ana Lim',
-    accountNumber: '****3344',
-    dateFrom: new Date('2024-01-16'),
-    dateTo: new Date('2024-01-31'),
-    generatedBy: 'Finance Admin',
-    dateGenerated: new Date('2024-02-01'),
-    status: 'Failed',
-  },
-  {
-    payoutReference: 'PR-2024-005',
-    agentId: 'AG-1005',
-    agentName: 'Mark Villanueva',
-    payoutAmount: 27800,
-    accountType: 'Bank',
-    accountName: 'Mark Villanueva',
-    accountNumber: '****7788',
-    dateFrom: new Date('2024-02-01'),
-    dateTo: new Date('2024-02-15'),
-    generatedBy: 'System',
-    dateGenerated: new Date('2024-02-16'),
-    status: 'Paid',
-  },
-  {
-    payoutReference: 'PR-2024-006',
-    agentId: 'AG-1006',
-    agentName: 'Chris Tan',
-    payoutAmount: 9400,
-    accountType: 'GCash',
-    accountName: 'Chris Tan',
-    accountNumber: '****1122',
-    dateFrom: new Date('2024-02-01'),
-    dateTo: new Date('2024-02-15'),
-    generatedBy: 'System',
-    dateGenerated: new Date('2024-02-16'),
-    status: 'Pending',
-  },
-  {
-    payoutReference: 'PR-2024-007',
-    agentId: 'AG-1007',
-    agentName: 'Liza Gomez',
-    payoutAmount: 41500,
-    accountType: 'Bank',
-    accountName: 'Liza Gomez',
-    accountNumber: '****8899',
-    dateFrom: new Date('2024-02-16'),
-    dateTo: new Date('2024-02-28'),
-    generatedBy: 'Finance Admin',
-    dateGenerated: new Date('2024-03-01'),
-    status: 'Paid',
-  },
-  {
-    payoutReference: 'PR-2024-008',
-    agentId: 'AG-1008',
-    agentName: 'Kevin Ong',
-    payoutAmount: 16200,
-    accountType: 'PayMaya',
-    accountName: 'Kevin Ong',
-    accountNumber: '****5566',
-    dateFrom: new Date('2024-02-16'),
-    dateTo: new Date('2024-02-28'),
-    generatedBy: 'Finance Admin',
-    dateGenerated: new Date('2024-03-01'),
-    status: 'Pending',
-  },
-  {
-    payoutReference: 'PR-2024-009',
-    agentId: 'AG-1009',
-    agentName: 'Rhea Flores',
-    payoutAmount: 35600,
-    accountType: 'Bank',
-    accountName: 'Rhea Flores',
-    accountNumber: '****6677',
-    dateFrom: new Date('2024-03-01'),
-    dateTo: new Date('2024-03-15'),
-    generatedBy: 'System',
-    dateGenerated: new Date('2024-03-16'),
-    status: 'Paid',
-  },
-  {
-    payoutReference: 'PR-2024-010',
-    agentId: 'AG-1010',
-    agentName: 'Noel Bautista',
-    payoutAmount: 11800,
-    accountType: 'GCash',
-    accountName: 'Noel Bautista',
-    accountNumber: '****4455',
-    dateFrom: new Date('2024-03-01'),
-    dateTo: new Date('2024-03-15'),
-    generatedBy: 'System',
-    dateGenerated: new Date('2024-03-16'),
-    status: 'Pending',
-  },
-]
-
 const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
   { accessorKey: 'id' },
   { accessorKey: 'period' },
@@ -227,25 +84,25 @@ const PaymentsPage = () => {
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">Total Net Premium</h4>
             <p className="text-sm font-semibold text-green-500 lg:text-base">
-              {formatPHPAmount(Number(paymentSummary.totalNetPremium))}
+              PHP {paymentSummary.totalNetPremium}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">Total Net Commission</h4>
             <p className="text-sm font-semibold lg:text-base">
-              {formatPHPAmount(Number(paymentSummary.totalNetCommission))}
+              PHP {paymentSummary.totalNetCommission}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">Total Gross Commission</h4>
             <p className="text-sm font-semibold text-red-500 lg:text-base">
-              {formatPHPAmount(Number(paymentSummary.totalGrossCommission))}
+              PHP {paymentSummary.totalGrossCommission}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">Total Withholding Tax</h4>
             <p className="text-muted-foreground text-sm font-semibold lg:text-base">
-              {formatPHPAmount(Number(paymentSummary.totalWithholdingTax))}
+              PHP {paymentSummary.totalWithholdingTax}
             </p>
           </Card>
         </div>
