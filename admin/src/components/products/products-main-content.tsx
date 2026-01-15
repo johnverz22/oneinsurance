@@ -119,6 +119,7 @@ export default function ProductsMainContent({
         product={selectedProduct}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        onProductUpdated={onProductCreated}
       />
     </div>
   )
