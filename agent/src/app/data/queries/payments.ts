@@ -23,7 +23,7 @@ export const usePaymentsHistory = ({
     initialData: [],
     queryKey: ['payments-history', user?.id, perPage, sortBy, sortOrder],
     queryFn: async () => {
-      const response = await api.get<{ data: PaymentHistory[] }>(
+      const response = await api.get<{ data: { data: PaymentHistory[] } }>(
         '/agents/commission-logs',
         {
           params: {
@@ -34,7 +34,8 @@ export const usePaymentsHistory = ({
         }
       )
 
-      return response.data.data
+      const result = response.data.data
+      return result.data
     },
   })
 }
@@ -60,7 +61,7 @@ export const usePaymentSummary = ({
     select: mapSnakeToCamel,
     queryFn: async () => {
       const response = await api.get<{ data: PaymentsSummary }>(
-        '/admin/commission-logs/summary',
+        '/agent/commission-logs/summary',
         {
           params: {
             period_start: start,
