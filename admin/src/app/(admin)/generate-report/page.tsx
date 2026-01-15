@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useGetAgents } from '@/app/data/queries/agents'
 import { useGetProducts, searchProducts } from '@/app/data/queries/products'
 import { useSearchAgents } from '@/app/data/mutations/agents'
+import { useGetCommissionLogs } from '@/app/data/queries/commission-logs'
+import { CommissionLogs } from '@/types/commission-logs'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,16 +20,7 @@ import { Calendar, Search, FileSpreadsheet, FileText } from 'lucide-react'
 import { useDebounce } from '@/hooks/use-debounce'
 import { ReportDataTable } from '@/components/reports/report-data-table'
 import { ColumnDef } from '@tanstack/react-table'
-
-interface ReportData {
-  id: number
-  clientName: string
-  product: string
-  policiesSold: number
-  activePolicies: number
-  pending: number
-  premiumAmount: number
-}
+import { exportToCSV } from '@/utils/export-to-csv'
 
 const reportTypes = [
   { value: 'sales', label: 'Sales Report' },
@@ -49,44 +42,74 @@ export default function GenerateReportPage() {
   const [selectedProduct, setSelectedProduct] = useState<string>('all')
   const [dateFrom, setDateFrom] = useState<string>('')
   const [dateTo, setDateTo] = useState<string>('')
-  const [reportType, setReportType] = useState<string>('')
+  const [reportType, setReportType] = useState<string>('commission')
   const [agentSearch, setAgentSearch] = useState<string>('')
   const [productSearch, setProductSearch] = useState<string>('')
-  const [reportData, setReportData] = useState<ReportData[]>([])
-  const [isReportGenerated, setIsReportGenerated] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Fetch commission logs with filters
+  const { data: commissionLogsData, isLoading: commissionLogsLoading } =
+    useGetCommissionLogs({
+      page: currentPage,
+      per_page: 15,
+      agent_id: selectedAgent !== 'all' ? selectedAgent : undefined,
+      product_id: selectedProduct !== 'all' ? selectedProduct : undefined,
+      period_start: dateFrom || undefined,
+      period_end: dateTo || undefined,
+    })
+
+  const reportData = commissionLogsData?.data?.data || []
 
   // Define columns using ColumnDef
-  const columns = useMemo<ColumnDef<ReportData, any>[]>(
+  const columns = useMemo<ColumnDef<any, any>[]>(
     () => [
       {
-        accessorKey: 'clientName',
-        header: 'Client Name',
+        accessorKey: 'agent',
+        header: 'Agent Name',
         cell: ({ row }) => (
-          <div className="font-medium">{row.original.clientName}</div>
+          <div className="font-medium">
+            {row.original.agent.first_name} {row.original.agent.last_name}
+          </div>
         ),
       },
       {
         accessorKey: 'product',
         header: 'Product',
+        cell: ({ row }) => row.original.product.name,
       },
       {
-        accessorKey: 'policiesSold',
-        header: 'Policies Sold',
+        accessorKey: 'provider',
+        header: 'Provider',
+        cell: ({ row }) => row.original.provider.name,
       },
       {
-        accessorKey: 'activePolicies',
-        header: 'Active Policies',
+        accessorKey: 'case_count',
+        header: 'Cases',
       },
       {
-        accessorKey: 'pending',
-        header: 'Pending',
-      },
-      {
-        accessorKey: 'premiumAmount',
-        header: () => <div className="text-right">Premium Amount</div>,
+        accessorKey: 'total_net_premium',
+        header: () => <div className="text-right">Total Premium</div>,
         cell: ({ row }) => (
           <div className="text-right">
-            ₱ {row.original.premiumAmount.toLocaleString()}
+            ₱ {parseFloat(row.original.total_net_premium).toLocaleString()}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'gross_commission',
+        header: () => <div className="text-right">Gross Commission</div>,
+        cell: ({ row }) => (
+          <div className="text-right">
+            ₱ {parseFloat(row.original.gross_commission).toLocaleString()}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'net_commission',
+        header: () => <div className="text-right">Net Commission</div>,
+        cell: ({ row }) => (
+          <div className="text-right">
+            ₱ {parseFloat(row.original.net_commission).toLocaleString()}
           </div>
         ),
       },
@@ -119,194 +142,44 @@ export default function GenerateReportPage() {
     ? searchProductsQuery.data?.data?.data || []
     : products?.data?.data || []
 
-  // Load mock data on mount
-  useEffect(() => {
-    const mockData = [
-      {
-        id: 1,
-        clientName: 'Juan Dela Cruz',
-        product: 'Life Insurance',
-        policiesSold: 24,
-        activePolicies: 15,
-        pending: 1,
-        premiumAmount: 25000,
-      },
-      {
-        id: 2,
-        clientName: 'Juan Dela Cruz',
-        product: 'Travel Insurance',
-        policiesSold: 21,
-        activePolicies: 12,
-        pending: 2,
-        premiumAmount: 25000,
-      },
-      {
-        id: 3,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 18,
-        activePolicies: 3,
-        pending: 2,
-        premiumAmount: 18000,
-      },
-      {
-        id: 4,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 24,
-        activePolicies: 15,
-        pending: 4,
-        premiumAmount: 20000,
-      },
-      {
-        id: 5,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 21,
-        activePolicies: 12,
-        pending: 2,
-        premiumAmount: 18000,
-      },
-      {
-        id: 6,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 18,
-        activePolicies: 3,
-        pending: 4,
-        premiumAmount: 20000,
-      },
-      {
-        id: 7,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 17,
-        activePolicies: 6,
-        pending: 1,
-        premiumAmount: 20000,
-      },
-      {
-        id: 8,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 18,
-        activePolicies: 3,
-        pending: 2,
-        premiumAmount: 18000,
-      },
-      {
-        id: 9,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 17,
-        activePolicies: 6,
-        pending: 2,
-        premiumAmount: 20000,
-      },
-    ]
-
-    setReportData(mockData)
-    setIsReportGenerated(true)
-  }, [])
-
   const handleGenerateReport = () => {
-    // Handle report generation logic here
-    console.log({
-      agent: selectedAgent,
-      product: selectedProduct,
-      dateFrom,
-      dateTo,
-      reportType,
-    })
+    if (reportData.length === 0) {
+      console.log('No data to export')
+      return
+    }
 
-    // Mock data - Replace with actual API call based on filters
+    // Format data for CSV export
+    const formattedData = reportData.map((row) => ({
+      'Agent Name': `${row.agent.first_name} ${row.agent.last_name}`,
+      Product: row.product.name,
+      Provider: row.provider.name,
+      Cases: row.case_count,
+      'Total Premium': parseFloat(row.total_net_premium).toFixed(2),
+      'Product Price': parseFloat(row.product_price).toFixed(2),
+      'Commission Rate': parseFloat(row.commission_rate).toFixed(2),
+      'Gross Commission': parseFloat(row.gross_commission).toFixed(2),
+      'VAT Percentage': parseFloat(row.vat_percentage).toFixed(2),
+      'VAT Amount': parseFloat(row.vat_amount).toFixed(2),
+      'Withholding Tax %': parseFloat(row.withholding_tax_percentage).toFixed(
+        2
+      ),
+      'Withholding Tax Amount': parseFloat(row.withholding_tax_amount).toFixed(
+        2
+      ),
+      'Net Commission': parseFloat(row.net_commission).toFixed(2),
+      'Created At': new Date(row.created_at).toLocaleDateString(),
+    }))
 
-    const mockData = [
-      {
-        id: 1,
-        clientName: 'Juan Dela Cruz',
-        product: 'Life Insurance',
-        policiesSold: 24,
-        activePolicies: 15,
-        pending: 1,
-        premiumAmount: 25000,
-      },
-      {
-        id: 2,
-        clientName: 'Juan Dela Cruz',
-        product: 'Travel Insurance',
-        policiesSold: 21,
-        activePolicies: 12,
-        pending: 2,
-        premiumAmount: 25000,
-      },
-      {
-        id: 3,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 18,
-        activePolicies: 3,
-        pending: 2,
-        premiumAmount: 18000,
-      },
-      {
-        id: 4,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 24,
-        activePolicies: 15,
-        pending: 4,
-        premiumAmount: 20000,
-      },
-      {
-        id: 5,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 21,
-        activePolicies: 12,
-        pending: 2,
-        premiumAmount: 18000,
-      },
-      {
-        id: 6,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 18,
-        activePolicies: 3,
-        pending: 4,
-        premiumAmount: 20000,
-      },
-      {
-        id: 7,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 17,
-        activePolicies: 6,
-        pending: 1,
-        premiumAmount: 20000,
-      },
-      {
-        id: 8,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 18,
-        activePolicies: 3,
-        pending: 2,
-        premiumAmount: 18000,
-      },
-      {
-        id: 9,
-        clientName: 'Maria Santos',
-        product: 'Health Insurance',
-        policiesSold: 17,
-        activePolicies: 6,
-        pending: 2,
-        premiumAmount: 20000,
-      },
-    ]
+    // Generate filename with date range
+    const fromDate = dateFrom
+      ? new Date(dateFrom).toLocaleDateString('en-US').replace(/\//g, '-')
+      : 'all'
+    const toDate = dateTo
+      ? new Date(dateTo).toLocaleDateString('en-US').replace(/\//g, '-')
+      : 'all'
+    const filename = `commission-report_${fromDate}_to_${toDate}.csv`
 
-    setReportData(mockData)
-    setIsReportGenerated(true)
+    exportToCSV(formattedData, filename)
   }
 
   const handleExportExcel = () => {
@@ -446,7 +319,7 @@ export default function GenerateReportPage() {
             <Button
               variant="outline"
               onClick={handleExportExcel}
-              disabled={!isReportGenerated}
+              disabled={commissionLogsLoading || reportData.length === 0}
               className="gap-2"
             >
               <FileSpreadsheet className="h-4 w-4" />
@@ -455,7 +328,7 @@ export default function GenerateReportPage() {
             <Button
               variant="outline"
               onClick={handleExportPDF}
-              disabled={!isReportGenerated}
+              disabled={commissionLogsLoading || reportData.length === 0}
               className="gap-2"
             >
               <FileText className="h-4 w-4" />
@@ -464,7 +337,7 @@ export default function GenerateReportPage() {
           </div>
           <Button
             onClick={handleGenerateReport}
-            disabled={!reportType || !dateFrom || !dateTo}
+            disabled={commissionLogsLoading || reportData.length === 0}
           >
             Generate Report
           </Button>
@@ -475,8 +348,11 @@ export default function GenerateReportPage() {
       <ReportDataTable
         columns={columns}
         data={reportData}
-        pageSize={9}
         enablePagination={true}
+        currentPage={commissionLogsData?.data?.current_page}
+        totalPages={commissionLogsData?.data?.last_page}
+        totalRecords={commissionLogsData?.data?.total}
+        onPageChange={(page) => setCurrentPage(page)}
       />
     </div>
   )
