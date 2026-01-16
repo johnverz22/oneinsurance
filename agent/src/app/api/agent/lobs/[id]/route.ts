@@ -11,10 +11,10 @@ const headers = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.headers.get('Authorization')
-  const { id } = params
+  const { id } = await params
 
   if (!token) {
     return NextResponse.json(

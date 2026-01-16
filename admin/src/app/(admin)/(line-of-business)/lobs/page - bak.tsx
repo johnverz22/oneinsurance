@@ -76,6 +76,7 @@ export default function LobsPage() {
     name: '',
     description: '',
     status: 'active',
+    slug: '',
   })
 
   // Fetch data
@@ -190,6 +191,7 @@ export default function LobsPage() {
       name: lob.name,
       description: lob.description,
       status: lob.status as 'active' | 'inactive',
+      slug: lob.slug || '',
     })
     setUpdateDialogOpen(true)
   }
@@ -204,6 +206,7 @@ export default function LobsPage() {
       name: '',
       description: '',
       status: 'active',
+      slug: '',
     })
     setCreateDialogOpen(true)
   }
