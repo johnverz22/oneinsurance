@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Pencil } from 'lucide-react'
 import UpdateProductDialog from './update-product-dialog'
-import { useState } from 'react'
 
 interface ProductDetailsDialogProps {
   product: ProductAssignment | null
@@ -26,9 +25,15 @@ export default function ProductDetailsDialog({
   onOpenChange,
   onProductUpdated,
 }: ProductDetailsDialogProps) {
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
-
   if (!product) return null
+
+  // Debug: Log product data to verify carrier_product_code
+  console.log('Product Details:', {
+    id: product.product.id,
+    name: product.product.name,
+    carrier_product_code: product.product.carrier_product_code,
+    full_product: product.product,
+  })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,17 +92,17 @@ export default function ProductDetailsDialog({
               Carrier Product Code
             </h3>
             <p className="text-sm sm:text-base">
-              {(product.product as any).carrier_product_code || 'N/A'}
+              {product.product.carrier_product_code || 'N/A'}
             </p>
           </div>
 
-          {/* Commission Rate */}
+          {/* Description */}
           <div>
             <h3 className="mb-1 text-xs font-semibold text-gray-700 sm:mb-2 sm:text-sm">
-              Commission Rate
+              Description
             </h3>
-            <p className="text-sm font-medium sm:text-base">
-              {product.commission_rate}%
+            <p className="text-sm sm:text-base">
+              {product.product.description || 'No description available'}
             </p>
           </div>
         </div>
@@ -110,15 +115,13 @@ export default function ProductDetailsDialog({
               name: product.product.name,
               description: product.product.description || '',
               provider_id: product.product.provider_id,
-              lob_id: (product.product as any).line_of_business?.id || 0,
+              lob_id: product.product.line_of_business?.id || 0,
               status: product.product.status as 'active' | 'inactive',
-              carrier_product_code:
-                (product.product as any).carrier_product_code || '',
+              carrier_product_code: product.product.carrier_product_code || '',
               provider: product.product.provider,
-              lob: (product.product as any).line_of_business,
+              lob: product.product.line_of_business,
             }}
             onSuccess={() => {
-              setUpdateDialogOpen(false)
               onProductUpdated?.()
               onOpenChange(false)
             }}

@@ -20,7 +20,7 @@ import {
   ProductCommissionInfo,
 } from '@/types/agents'
 import { useGetProducts } from '@/app/data/queries/products'
-import { useGetAgentProducts } from '@/app/data/queries/agents'
+import { useGetAgentProducts, useGetAgents } from '@/app/data/queries/agents'
 import { useQueryClient } from '@tanstack/react-query'
 
 function combineProductArrays(
@@ -170,6 +170,15 @@ export default function ProductTabs() {
     isLoading: agentProductsLoading,
     isError: agentProductsError,
   } = useGetAgentProducts(agentsPage)
+  const {
+    data: agentsData,
+    isLoading: agentsLoading,
+    isError: agentsError,
+  } = useGetAgents({
+    page: agentsPage,
+    per_page: 12,
+    status: 'active', // Only fetch active agents
+  })
 
   useEffect(() => {
     if (products && agentProducts) {
@@ -271,7 +280,10 @@ export default function ProductTabs() {
             onProductCreated={handleProductUpdated}
           />
         ) : (
-          <AgentsMainContent />
+          <AgentsMainContent 
+            page={agentsPage} 
+            onPageReset={() => setAgentsPage(1)}
+          />
         )}
 
         {/* Pagination for Products */}
@@ -350,29 +362,29 @@ export default function ProductTabs() {
         )}
 
         {/* Pagination for Agents */}
-        {activeTab === 'agents' && agentProducts?.data && (
+        {activeTab === 'agents' && agentsData?.data && (
           <div className="mt-4 flex flex-col items-center justify-between gap-3 rounded-b-2xl border border-t-0 bg-white px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:rounded-b-3xl sm:px-6 sm:py-4 dark:bg-gray-900">
             <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
-              Showing {agentProducts.data.data.length} of{' '}
-              {agentProducts.data.total} agents
+              Showing {agentsData.data.data.length} of{' '}
+              {agentsData.data.total} agents
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => setAgentsPage((p) => Math.max(1, p - 1))}
-                disabled={agentProducts.data.current_page === 1}
+                disabled={agentsData.data.current_page === 1}
                 className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8 sm:text-base dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
               >
                 ‹
               </button>
               {Array.from(
-                { length: agentProducts.data.last_page },
+                { length: agentsData.data.last_page },
                 (_, i) => i + 1
               )
                 .filter((pageNum) => {
-                  const current = agentProducts.data.current_page
+                  const current = agentsData.data.current_page
                   return (
                     pageNum === 1 ||
-                    pageNum === agentProducts.data.last_page ||
+                    pageNum === agentsData.data.last_page ||
                     (pageNum >= current - 1 && pageNum <= current + 1)
                   )
                 })
@@ -386,7 +398,7 @@ export default function ProductTabs() {
                         <button
                           onClick={() => setAgentsPage(pageNum)}
                           className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
-                            pageNum === agentProducts.data.current_page
+                            pageNum === agentsData.data.current_page
                               ? 'border-green-500 bg-green-500 text-white'
                               : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                           }`}
@@ -401,7 +413,7 @@ export default function ProductTabs() {
                       key={pageNum}
                       onClick={() => setAgentsPage(pageNum)}
                       className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
-                        pageNum === agentProducts.data.current_page
+                        pageNum === agentsData.data.current_page
                           ? 'border-green-500 bg-green-500 text-white'
                           : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                       }`}
@@ -413,12 +425,12 @@ export default function ProductTabs() {
               <button
                 onClick={() =>
                   setAgentsPage((p) =>
-                    Math.min(agentProducts.data.last_page, p + 1)
+                    Math.min(agentsData.data.last_page, p + 1)
                   )
                 }
                 disabled={
-                  agentProducts.data.current_page ===
-                  agentProducts.data.last_page
+                  agentsData.data.current_page ===
+                  agentsData.data.last_page
                 }
                 className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8 sm:text-base dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
               >

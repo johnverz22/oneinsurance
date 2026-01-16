@@ -3,11 +3,31 @@
 import { QuickActionCard } from '@/components/dashboard/quick-action-card'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuthStore } from '@/store/auth-store'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import { useAgentStatistics } from '@/app/data/queries/statistics'
+import { useGetAgents } from '@/app/data/queries/agents'
 
 export default function DashboardPage() {
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
+
+  // Get current month's start and end dates
+  const { dateFrom, dateTo } = useMemo(() => {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    
+    return {
+      dateFrom: start.toISOString().split('T')[0],
+      dateTo: end.toISOString().split('T')[0],
+    }
+  }, [])
+
+  const { data: statistics, isLoading } = useAgentStatistics(dateFrom, dateTo)
+  const { data: agentsData, isLoading: isLoadingAgents } = useGetAgents({ 
+    status: 'active',
+    per_page: 1 
+  })
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -36,7 +56,7 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <OverviewCard
             title="Total Sales"
-            amount={8750000000}
+            amount={isLoading ? 0 : statistics?.total_sales || 0}
             icon={
               <svg
                 width="24"
@@ -52,10 +72,11 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#DCFCE7"
+            isLoading={isLoading}
           />
           <OverviewCard
-            title="Total Commissions"
-            amount={2_625_000_000}
+            title="Gross Commissions"
+            amount={isLoading ? 0 : statistics?.gross_commissions || 0}
             icon={
               <svg
                 width="38"
@@ -71,10 +92,11 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#FFEDD5"
+            isLoading={isLoading}
           />
           <OverviewCard
-            title="Pending Payouts"
-            amount={320_000_000}
+            title="Net Commissions"
+            amount={isLoading ? 0 : statistics?.net_commissions || 0}
             icon={
               <svg
                 width="42"
@@ -90,10 +112,11 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#FEE2E2"
+            isLoading={isLoading}
           />
           <OverviewCard
             title="Active Agents"
-            amount={45}
+            amount={isLoadingAgents ? 0 : agentsData?.data?.total || 0}
             icon={
               <svg
                 width="42"
@@ -111,6 +134,7 @@ export default function DashboardPage() {
             }
             iconBgColor="#F3E8FF"
             isCurrency={false}
+            isLoading={isLoadingAgents}
           />
         </div>
       </div>
@@ -135,9 +159,9 @@ export default function DashboardPage() {
             />
             <QuickActionCard
               icon="👥"
-              title="Team Management"
+              title="Agent Management"
               description="View agent hierarchies"
-              destination="/coming-soon"
+              destination="/agents"
             />
             <QuickActionCard
               icon="📊"
@@ -158,12 +182,14 @@ function OverviewCard({
   icon,
   iconBgColor,
   isCurrency = true,
+  isLoading = false,
 }: {
   title: string
   amount: number
   icon: React.ReactNode
   iconBgColor: string
   isCurrency?: boolean
+  isLoading?: boolean
 }) {
   return (
     <Card className="border-[#B7B7B7]">
@@ -179,12 +205,16 @@ function OverviewCard({
         <div>
           <p className="text-muted-foreground text-sm font-medium">{title}</p>
           <p className="text-base font-bold md:text-lg">
-            {isCurrency
-              ? `₱ ${amount.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`
-              : amount}
+            {isLoading ? (
+              <span className="text-muted-foreground">Loading...</span>
+            ) : isCurrency ? (
+              `₱ ${amount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`
+            ) : (
+              amount
+            )}
           </p>
         </div>
       </CardContent>

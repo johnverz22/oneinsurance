@@ -21,6 +21,7 @@ export const ProviderSchema = z.object({
 export const ProductSchema = z.object({
   id: z.string().or(z.number()),
   provider_id: z.number(),
+  lob_id: z.number().nullable(),
   name: z.string(),
   description: z.string(),
   price: z.number(),

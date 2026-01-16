@@ -3,41 +3,37 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { getReferralCode } from '@/app/data/queries/referral'
+import { useGetAgentLOBs } from '@/app/data/queries/agent-lobs'
 import { DataTable } from '@/components/ui/data-table'
 import { Referral } from '@/types/agent/product'
 import { ColumnDef } from '@tanstack/react-table'
 import { ReferralCard } from '@/components/agent/referral-card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useGetProducts } from '@/app/data/queries/products'
 
 const REFERRAL_COLUMNS: ColumnDef<Referral>[] = [
   { accessorKey: 'id' },
   { accessorKey: 'description' },
-  { accessorKey: 'commissionRate' },
   { accessorKey: 'status' },
   { accessorKey: 'link' },
-  { accessorKey: 'clicks' },
-  { accessorKey: 'conversions' },
 ]
 
 export default function ReferralsPage() {
   const [copiedId, setCopiedId] = useState<string>('')
-  const { data: referralCode, isSuccess, isError } = getReferralCode()
-  // const { data: products, isFetching: isProductsFetching } = useGetProducts()
+  const { data: referralCode, isSuccess: isReferralSuccess } = getReferralCode()
+  const { data: agentLOBs, isLoading: isLOBsLoading } = useGetAgentLOBs()
 
-  // const referrals = useMemo(() => {
-  //   if (isProductsFetching) return []
+  const referrals = useMemo(() => {
+    if (!referralCode || !agentLOBs) return []
 
-  //   const links = (products ?? []).map((product, index) => ({
-  //     ...product,
-  //     link: `/${referralCode}/${product.link}`,
-  //     id: product.code,
-  //     clicks: 0,
-  //     conversions: 0,
-  //   }))
-
-  //   return links
-  // }, [isProductsFetching, products, referralCode])
+    return agentLOBs
+      .filter((agentLOB) => agentLOB.status === 'active' && agentLOB.line_of_business)
+      .map((agentLOB) => ({
+        id: agentLOB.line_of_business!.slug,
+        description: agentLOB.line_of_business!.name,
+        status: (agentLOB.status === 'active' ? 'Active' : 'Inactive') as 'Active' | 'Inactive',
+        link: `/${referralCode}/products/${agentLOB.line_of_business!.slug}`,
+      }))
+  }, [referralCode, agentLOBs])
 
   const handleCopyLink = (referral: Referral) => {
     navigator.clipboard.writeText(referral.link)
@@ -47,18 +43,6 @@ export default function ReferralsPage() {
     })
     setTimeout(() => setCopiedId(''), 2000)
   }
-
-  const referrals: Referral[] = [
-    {
-      description: 'Travel Insurance',
-      status: 'Active',
-      commissionRate: 5,
-      link: `/${referralCode}/products/travel-insurance`,
-      id: 'travel',
-      clicks: 0,
-      conversions: 0,
-    },
-  ]
 
   const handleShare = async (referral: Referral) => {
     if (navigator.share) {
@@ -79,29 +63,38 @@ export default function ReferralsPage() {
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
       <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
-        <DataTable<Referral, unknown>
-          header="Referral Links"
-          data={referrals}
-          columns={REFERRAL_COLUMNS}
-          renderMode="list"
-          numColumns={2}
-          contentRenderer={(row) =>
-            isSuccess ? (
-              <ReferralCard
-                referral={row.original}
-                isCopied={copiedId === row.original.id}
-                onCopyLink={handleCopyLink}
-              />
-            ) : (
-              <Skeleton className="h-full min-h-40 w-full" />
-            )
-          }
-          searchKey="description"
-          searchPlaceholder="Product"
-          actions={[]}
-          isLoading={false}
-          onRowClick={(client) => console.log('Clicked row:', client)}
-        />
+        {referrals.length === 0 && !isLOBsLoading ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-muted-foreground text-lg mb-2">No referral links available</p>
+            <p className="text-muted-foreground text-sm">
+              You don't have any Lines of Business assigned yet. Please contact your administrator to get LOBs assigned to your account.
+            </p>
+          </div>
+        ) : (
+          <DataTable<Referral, unknown>
+            header="Referral Links"
+            data={referrals}
+            columns={REFERRAL_COLUMNS}
+            renderMode="list"
+            numColumns={2}
+            contentRenderer={(row) =>
+              isReferralSuccess && !isLOBsLoading ? (
+                <ReferralCard
+                  referral={row.original}
+                  isCopied={copiedId === row.original.id}
+                  onCopyLink={handleCopyLink}
+                />
+              ) : (
+                <Skeleton className="h-full min-h-40 w-full" />
+              )
+            }
+            searchKey="description"
+            searchPlaceholder="Product"
+            actions={[]}
+            isLoading={isLOBsLoading}
+            onRowClick={(client) => console.log('Clicked row:', client)}
+          />
+        )}
       </div>
     </div>
   )

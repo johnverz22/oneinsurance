@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
-import { zodValidator } from '@tanstack/zod-form-adapter'
 import { z } from 'zod'
 import { Plus, Search, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -34,6 +33,8 @@ import { useGetLineOfBusinessList } from '@/app/data/queries/line-of-business'
 import { Provider } from '@/types/provider'
 import { LineOfBusiness } from '@/types/line-of-business'
 import { cn } from '@/lib/utils'
+import { useCreateCommissionConfiguration } from '@/app/data/mutations/commission'
+import { CreateCommitionConfigRequest } from '@/types/commission'
 
 const createProductSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters'),
@@ -68,6 +69,7 @@ export default function CreateProductDialog({
   const [showLobResults, setShowLobResults] = useState(false)
 
   const { mutateAsync: createProduct } = useCreateProduct()
+  const { mutateAsync: createCommissionConfig } = useCreateCommissionConfiguration()
 
   const { data: providersData } = useGetProviders(1, providerSearchDebounced)
   const providers = providersData?.data.data || []
@@ -128,7 +130,32 @@ export default function CreateProductDialog({
           return
         }
 
-        toast.success('Product created successfully!')
+        // Get the created product ID
+        const createdProductId = productResponse.data.id
+
+        // Create default commission configuration
+        const commissionPayload: CreateCommitionConfigRequest = {
+          product_id: Number(createdProductId),
+          base_commission: 30,
+          agent_commission: 15,
+          agent_overriders_commission: 10,
+          ifrc_admin: 15,
+          ifrc_overrider_commission: 10,
+          ifrc_digitech: 25,
+          digitech_referral: 5,
+          digitech_overriders: 10,
+          effectivity_date: new Date().toISOString().split('T')[0], // Today's date
+          status: 'active',
+        }
+
+        const commissionResponse = await createCommissionConfig(commissionPayload)
+
+        if (!commissionResponse?.success) {
+          toast.warning('Product created, but failed to create default commission configuration. Please configure manually.')
+        } else {
+          toast.success('Product and commission configuration created successfully!')
+        }
+
         form.reset()
         setDialogOpen(false)
         onSuccess?.()
@@ -399,13 +426,15 @@ export default function CreateProductDialog({
               </div>
               <div>
                 <h4 className="font-semibold text-blue-900 dark:text-blue-100">
-                  Commission Configuration
+                  Default Commission Configuration
                 </h4>
                 <p className="mt-1 text-sm text-blue-800 dark:text-blue-200">
-                  Commission rates for this product should be configured in the{' '}
-                  <span className="font-semibold">Commissions Page</span> after
-                  the product is created.
+                  A default commission configuration will be automatically created with this product. You can adjust the rates in the{' '}
+                  <span className="font-semibold">Commissions Page</span> after creation.
                 </p>
+                <div className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                  <p>Default rates: Base 30%, Agent 15%, Admin 15%</p>
+                </div>
               </div>
               </div>
             </div>

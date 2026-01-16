@@ -11,6 +11,9 @@ const headers = {
 
 export async function GET(req: NextRequest) {
   const token = req.headers.get('Authorization')
+  const searchParams = req.nextUrl.searchParams
+  const lobId = searchParams.get('lob_id')
+
   if (!token || !token.startsWith('Bearer ')) {
     return NextResponse.json(
       { message: 'Unauthorized' },
@@ -24,6 +27,7 @@ export async function GET(req: NextRequest) {
       headers: {
         Authorization: token,
       },
+      params: lobId ? { lob_id: lobId } : undefined,
     })
     return NextResponse.json(response.data, { headers })
   } catch (error: any) {

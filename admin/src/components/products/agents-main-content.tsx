@@ -1,6 +1,7 @@
 'use client'
 
-import { useGetAgentProducts } from '@/app/data/queries/agents'
+import { useGetAgentProducts, useGetAgents } from '@/app/data/queries/agents'
+import { useSearchAgents } from '@/app/data/mutations/agents'
 import {
   useGetAllAgentLineOfBusiness,
   useGetLineOfBusinessList,
@@ -28,7 +29,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -37,7 +38,12 @@ interface AgentWithLobs {
   lobs: AgentLineOfBusiness[]
 }
 
-export default function AgentsMainContent() {
+interface AgentsMainContentProps {
+  page?: number
+  onPageReset?: () => void
+}
+
+export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainContentProps) {
   const queryClient = useQueryClient()
   const [agentProductAssignments, setAgentProductAssignments] = useState<
     AgentProductAssignment[]
@@ -48,8 +54,60 @@ export default function AgentsMainContent() {
     AgentLineOfBusiness[]
   >([])
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQueryDebounced, setSearchQueryDebounced] = useState('')
+  const [searchResults, setSearchResults] = useState<any>(null)
+
+  const { mutateAsync: searchAgents, isPending: isSearching } = useSearchAgents()
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQueryDebounced(searchQuery)
+      // Reset page to 1 when search changes
+      if (searchQuery !== searchQueryDebounced && onPageReset) {
+        onPageReset()
+      }
+      // Trigger search if there's a query
+      if (searchQuery.trim()) {
+        searchAgents({ searchKey: searchQuery.trim() })
+          .then((result) => {
+            setSearchResults(result)
+          })
+          .catch((error) => {
+            console.error('Search error:', error)
+            setSearchResults(null)
+          })
+      } else {
+        setSearchResults(null)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, searchQueryDebounced, onPageReset, searchAgents])
 
   const { data: agentProducts } = useGetAgentProducts()
+  const { data: agentsData, isLoading: agentsLoading, isFetching } = useGetAgents({
+    page: page,
+    per_page: 12,
+    status: 'active', // Only fetch active agents
+  })
+  
+  // Use search results if searching, otherwise use regular data
+  const displayData = searchQuery.trim() ? searchResults : agentsData
+  
+  // Debug: Log search query changes and API response
+  useEffect(() => {
+    console.log('=== AGENTS SEARCH DEBUG ===')
+    console.log('Search Query:', searchQuery)
+    console.log('Search Query Debounced:', searchQueryDebounced)
+    console.log('Page:', page)
+    console.log('Is Loading:', agentsLoading)
+    console.log('Is Fetching:', isFetching)
+    console.log('Agents Data:', agentsData)
+    console.log('API URL would be:', `/admin/agents?page=${page}&per_page=12&search=${searchQueryDebounced || ''}&status=active`)
+    console.log('========================')
+  }, [searchQuery, searchQueryDebounced, page, agentsLoading, isFetching, agentsData])
   const { data: agentLobs, refetch: refetchAgentLobs } = useGetAllAgentLineOfBusiness()
   const { data: allLobs } = useGetLineOfBusinessList({
     page: 1,
@@ -61,11 +119,47 @@ export default function AgentsMainContent() {
   const deleteLobMutation = useDeleteAgentLob()
 
   useEffect(() => {
-    if (agentProducts) {
-      const groupedData = groupByAgent(agentProducts.data.data)
+    const dataToUse = displayData || agentsData
+    if (agentProducts && dataToUse) {
+      console.log('Agents Data:', dataToUse)
+      console.log('Agent Products:', agentProducts)
+      
+      // Use agents from the agents endpoint (already filtered for active agents on backend)
+      const allAgents = dataToUse.data.data
+      const agentCommissions = agentProducts.data.data
+      
+      console.log('All Agents Count:', allAgents.length)
+      console.log('Agent Commissions Count:', agentCommissions.length)
+      
+      // Create a map of agent commissions by agent_id
+      const commissionMap = new Map<number, AgentProduct[]>()
+      agentCommissions.forEach((commission) => {
+        const existing = commissionMap.get(Number(commission.agent.id)) || []
+        existing.push(commission)
+        commissionMap.set(Number(commission.agent.id), existing)
+      })
+
+      // Map all agents to AgentProductAssignment format
+      const groupedData: AgentProductAssignment[] = allAgents.map((agent: any) => {
+        const commissions = commissionMap.get(Number(agent.id)) || []
+        
+        const products: ProductCommissionInfo[] = commissions.map((commission) => ({
+          product: commission.product,
+          commission_rate: commission.commission_rate,
+          commission_status: commission.status,
+          commission_id: commission.id,
+        }))
+
+        return {
+          agent: agent,
+          products: products,
+        }
+      })
+
+      console.log('Grouped Data Count:', groupedData.length)
       setAgentProductAssignments(groupedData)
     }
-  }, [agentProducts])
+  }, [agentProducts, agentsData, displayData])
 
   // Update selected agent LOBs when agentLobs data changes
   useEffect(() => {
@@ -152,11 +246,30 @@ export default function AgentsMainContent() {
             streamline operations.
           </p>
         </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-64 md:w-80">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search agents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Agents Grid */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {agentProductAssignments.map((agentAssignment) => (
+        {(agentsLoading || isSearching) ? (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-gray-500">{isSearching ? 'Searching...' : 'Loading agents...'}</p>
+          </div>
+        ) : agentProductAssignments.length > 0 ? (
+          agentProductAssignments.map((agentAssignment) => (
           <div
             key={agentAssignment.agent.id}
             onClick={() => handleAgentClick(agentAssignment)}
@@ -176,7 +289,7 @@ export default function AgentsMainContent() {
                     : 'bg-red-50 text-red-500'
                 }`}
               >
-                {agentAssignment.agent.status}
+                {agentAssignment.agent.status.toUpperCase()}
               </span>
             </div>
 
@@ -234,7 +347,16 @@ export default function AgentsMainContent() {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-gray-500">
+              {searchQuery
+                ? 'No agents found matching your search'
+                : 'No agents available'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Agent Details Dialog */}
@@ -396,51 +518,4 @@ export default function AgentsMainContent() {
       </AlertDialog>
     </div>
   )
-}
-
-function groupByAgent(
-  agentCommissions: AgentProduct[]
-): AgentProductAssignment[] {
-  // Group commissions by agent_id
-  const agentMap = new Map<number, AgentProduct[]>()
-
-  agentCommissions.forEach((commission) => {
-    const existing = agentMap.get(Number(commission.agent.id)) || []
-    existing.push(commission)
-    agentMap.set(Number(commission.agent.id), existing)
-  })
-
-  // Transform to output format
-  const result: AgentProductAssignment[] = []
-
-  agentMap.forEach((commissions, agentId) => {
-    // Get the agent object (same for all commissions)
-    const agent = commissions[0].agent
-
-    // Create products array with commission info
-    const products: ProductCommissionInfo[] = commissions.map((commission) => ({
-      product: {
-        id: commission.product.id,
-        provider_id: commission.product.provider_id,
-        name: commission.product.name,
-        description: commission.product.description,
-        status: commission.product.status,
-        price: commission.product.price,
-        created_at: commission.product.created_at,
-        updated_at: commission.product.updated_at,
-        deleted_at: commission.product.deleted_at,
-        provider: commission.product.provider,
-      },
-      commission_rate: commission.commission_rate,
-      commission_status: commission.status,
-      commission_id: commission.id,
-    }))
-
-    result.push({
-      agent: agent,
-      products: products,
-    })
-  })
-
-  return result
 }

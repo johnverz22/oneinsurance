@@ -65,12 +65,13 @@ export default function LobMainContent() {
   // Form state
   const [formData, setFormData] = useState<LineOfBusinessFormData>({
     name: '',
+    slug: '',
     description: '',
     status: 'active',
   })
 
   // Fetch data
-  const { data: lobData } = useGetLineOfBusinessList({
+  const { data: lobData, isLoading, error } = useGetLineOfBusinessList({
     page: currentPage,
     per_page: 15,
     name: nameSearch || undefined,
@@ -79,6 +80,12 @@ export default function LobMainContent() {
   })
 
   const lineOfBusinessList = lobData?.data?.data || []
+
+  // Debug logging
+  console.log('LOB Data:', lobData)
+  console.log('LOB List:', lineOfBusinessList)
+  console.log('Total LOBs:', lobData?.data?.total)
+  console.log('Error:', error)
 
   // Fetch agents for selected LOB
   const { data: lobAgentsData, isLoading: isLoadingAgents, refetch: refetchLobAgents } = useGetLobAgents(
@@ -108,6 +115,7 @@ export default function LobMainContent() {
     setSelectedLob(lob)
     setFormData({
       name: lob.name,
+      slug: lob.slug || '',
       description: lob.description,
       status: lob.status as 'active' | 'inactive',
     })
@@ -122,6 +130,7 @@ export default function LobMainContent() {
   const handleCreateClick = () => {
     setFormData({
       name: '',
+      slug: '',
       description: '',
       status: 'active',
     })
@@ -202,7 +211,11 @@ export default function LobMainContent() {
 
       {/* Cards Grid Container */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {lineOfBusinessList.length > 0 ? (
+        {isLoading ? (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        ) : lineOfBusinessList.length > 0 ? (
           lineOfBusinessList.map((lob) => (
             <div
               key={lob.id}
@@ -232,30 +245,6 @@ export default function LobMainContent() {
                 <span className="text-muted-foreground">
                   Created: {new Date(lob.created_at).toLocaleDateString()}
                 </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEditClick(lob)
-                    }}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeleteClick(lob)
-                    }}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
               </div>
             </div>
           ))
@@ -360,6 +349,19 @@ export default function LobMainContent() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Enter name"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug</Label>
+                <Input
+                  id="slug"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
+                  placeholder="Enter slug (e.g., travel-insurance)"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -435,6 +437,19 @@ export default function LobMainContent() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Enter name"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="update-slug">Slug</Label>
+                <Input
+                  id="update-slug"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
+                  placeholder="Enter slug (e.g., travel-insurance)"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -539,6 +554,16 @@ export default function LobMainContent() {
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4">
             <div className="space-y-4 sm:space-y-6">
+              {/* Slug */}
+              <div>
+                <h3 className="mb-1 text-xs font-semibold text-gray-700 sm:mb-2 sm:text-sm">
+                  Slug
+                </h3>
+                <p className="text-sm text-gray-700 sm:text-base">
+                  {selectedLob?.slug || '-'}
+                </p>
+              </div>
+
               {/* Description */}
               <div>
                 <h3 className="mb-1 text-xs font-semibold text-gray-700 sm:mb-2 sm:text-sm">

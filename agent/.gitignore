@@ -13,6 +13,8 @@
 # testing
 /coverage
 
+/postman
+
 # next.js
 /.next/
 /out/
