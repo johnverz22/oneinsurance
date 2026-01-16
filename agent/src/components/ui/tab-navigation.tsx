@@ -123,7 +123,7 @@ export const TabNavigation = ({ tabs }: { tabs: Tab[] }) => {
             id={tab.value}
             key={tab.value}
             onClick={() => handleTabChange(tab)}
-            className="relative w-32 shrink-0 cursor-pointer rounded-full px-4 py-2.5"
+            className="relative min-w-32 shrink-0 cursor-pointer rounded-full px-6 py-2.5 whitespace-nowrap"
           >
             {pathname === tab.value && (
               <motion.div
@@ -134,7 +134,7 @@ export const TabNavigation = ({ tabs }: { tabs: Tab[] }) => {
             )}
 
             <span
-              className={cn('relative block', {
+              className={cn('relative block font-medium', {
                 'text-blue-600': pathname === tab.value,
               })}
             >

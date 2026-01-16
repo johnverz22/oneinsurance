@@ -5,24 +5,31 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { formatPHPAmount } from '@/utils/formatter'
 import { cn } from '@/lib/utils'
-import { usePaymentSummary } from '@/app/data/queries/payments'
+import { useGetAgentStatistics } from '@/app/data/queries/statistics'
 import { Skeleton } from '@/components/ui/skeleton'
 
 type Amount =
   | 'TOTAL_SALES'
   | 'GROSS_COMMISSION'
-  | 'OVERRIDER_DEDUCTIONS'
+  | 'NUMBER_OF_SALES'
   | 'NET_COMMISSION'
 
 export const ProfileOverview = () => {
   const { user } = useAgentAuthStore()
-  const { data: paymentSummary, isSuccess: isPaymentSummaryFetched } =
-    usePaymentSummary()
+  const { data: statistics, isSuccess: isStatisticsFetched } =
+    useGetAgentStatistics()
 
   const STYLES = {
-    OVERRIDER_DEDUCTIONS: 'text-destructive',
-    NET_COMMISSION: 'text-blue-500',
+    NUMBER_OF_SALES: 'text-blue-500',
+    NET_COMMISSION: 'text-green-600',
   } as Record<Amount, string>
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
 
   return (
     <Card>
@@ -46,25 +53,15 @@ export const ProfileOverview = () => {
         </div>
 
         <div className="flex w-full flex-col gap-x-5 gap-y-3 lg:flex-row lg:items-center lg:justify-between">
-          {isPaymentSummaryFetched ? (
+          {isStatisticsFetched && statistics ? (
             <>
               <div>
                 <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
                   <p className={cn('text-lg font-bold')}>
-                    PHP {paymentSummary.totalNetPremium}
+                    PHP {formatCurrency(statistics.total_sales)}
                   </p>
                   <span className="text-muted-foreground capitalize">
-                    Total Net Premium
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
-                  <p className={cn('text-lg font-bold')}>
-                    PHP {paymentSummary.totalGrossCommission}
-                  </p>
-                  <span className="text-muted-foreground capitalize">
-                    Total Gross Commission
+                    Total Sales
                   </span>
                 </div>
               </div>
@@ -73,13 +70,23 @@ export const ProfileOverview = () => {
                   <p
                     className={cn(
                       'text-lg font-bold',
-                      STYLES['OVERRIDER_DEDUCTIONS']
+                      STYLES['NUMBER_OF_SALES']
                     )}
                   >
-                    PHP {paymentSummary.totalWithholdingTax}
+                    {statistics.number_of_sales}
                   </p>
                   <span className="text-muted-foreground capitalize">
-                    Total Withholding Tax
+                    Number of Sales
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="border-muted-foreground/10 min-w-40 space-y-0.5 rounded-2xl p-4 max-lg:w-full max-lg:border lg:text-right">
+                  <p className={cn('text-lg font-bold')}>
+                    PHP {formatCurrency(statistics.gross_commissions)}
+                  </p>
+                  <span className="text-muted-foreground capitalize">
+                    Gross Commissions
                   </span>
                 </div>
               </div>
@@ -91,10 +98,10 @@ export const ProfileOverview = () => {
                       STYLES['NET_COMMISSION']
                     )}
                   >
-                    PHP {paymentSummary.totalNetCommission}
+                    PHP {formatCurrency(statistics.net_commissions)}
                   </p>
                   <span className="text-muted-foreground capitalize">
-                    Total Net Commission
+                    Net Commissions
                   </span>
                 </div>
               </div>

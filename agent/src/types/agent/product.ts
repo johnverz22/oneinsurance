@@ -1,16 +1,19 @@
 type BaseType = {
   description: string
   status: 'Active' | 'Inactive'
-  commissionRate: number
   link: string
+  lobId?: number | null
 }
 
 export type Referral = BaseType & {
   id: string
-  clicks: number
-  conversions: number
 }
 
 export type Product = BaseType & {
   code: string
+  commissionRate: number
+  name?: string
+  providerName?: string
+  lobName?: string
+  carrierProductCode?: string
 }

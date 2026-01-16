@@ -9,6 +9,10 @@ import { TransactionsResponse, Transaction } from '@/types/agent/transactions'
 import { DataTable, PaginatedResponse } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import MetricsCard from '@/components/dashboard/metrics-card'
+import { useGetAgentStatistics } from '@/app/data/queries/statistics'
+import { DollarSign, ShoppingCart, TrendingUp, Wallet } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const transactionColumns: ColumnDef<Transaction>[] = [
   {
@@ -94,13 +98,17 @@ const transactionColumns: ColumnDef<Transaction>[] = [
 ]
 
 const MySalesPage = () => {
+  const [currentPage, setCurrentPage] = useState(1)
   const [currentPageSize, setCurrentPageSize] = useState(10)
 
   const {
     data: transactionsResponse,
     isLoading,
     refetch,
-  } = useGetTransactions(currentPageSize)
+  } = useGetTransactions(currentPage, currentPageSize)
+
+  // const { data: statistics, isLoading: isLoadingStats } =
+  //   useGetAgentStatistics()
 
   const { mutateAsync: searchTransactions, isPending: isSearching } =
     useSearchTransactions()
@@ -125,6 +133,7 @@ const MySalesPage = () => {
   }
 
   const handlePaginationChange = (page: number, pageSize: number) => {
+    setCurrentPage(page)
     setCurrentPageSize(pageSize)
 
     try {
@@ -146,6 +155,48 @@ const MySalesPage = () => {
 
   return (
     <div className="relative mx-auto w-full space-y-6">
+      {/* Statistics Cards - Temporarily Hidden */}
+      {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {isLoadingStats ? (
+          <>
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full" />
+            ))}
+          </>
+        ) : statistics ? (
+          <>
+            <MetricsCard
+              title="Total Sales"
+              icon={DollarSign}
+              value={formatCurrency(statistics.total_sales)}
+              change="+0%"
+              changeType={true}
+            />
+            <MetricsCard
+              title="Number of Sales"
+              icon={ShoppingCart}
+              value={statistics.number_of_sales.toString()}
+              change="+0%"
+              changeType={true}
+            />
+            <MetricsCard
+              title="Gross Commissions"
+              icon={TrendingUp}
+              value={formatCurrency(statistics.gross_commissions)}
+              change="+0%"
+              changeType={true}
+            />
+            <MetricsCard
+              title="Net Commissions"
+              icon={Wallet}
+              value={formatCurrency(statistics.net_commissions)}
+              change="+0%"
+              changeType={true}
+            />
+          </>
+        ) : null}
+      </div> */}
+
       <DataTable
         header="Transaction History"
         description="View and manage all your transactions"

@@ -13,6 +13,7 @@ export const ProductSchema = z.object({
   description: z.string(),
   price: z.number(),
   status: z.string(),
+  carrier_product_code: z.string().optional(),
   created_at: z.string(),
   updated_at: z.string(),
   deleted_at: z.string().nullable(),

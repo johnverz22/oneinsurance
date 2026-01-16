@@ -140,3 +140,50 @@ export function useGetLobAgents(lobId: number) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
+
+export function useGetAgentLobs(agentId: number) {
+  const { accessToken } = useAuthStore()
+
+  return useQuery({
+    queryKey: ['agent-lobs', agentId],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams()
+      searchParams.append('agent_id', agentId.toString())
+      searchParams.append('per_page', '100')
+      searchParams.append('status', 'active')
+
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs?${searchParams.toString()}`
+      const token = `Bearer ${accessToken}`
+      try {
+        const response = await axios.get<AgentLineOfBusinessPaginatedResponse>(
+          url,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        )
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+    enabled: !!accessToken && !!agentId,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+}
+
+// Helper function to extract LOB slugs for a specific agent
+export function useGetAgentLobSlugs(agentId: number) {
+  const query = useGetAgentLobs(agentId)
+  
+  const slugs = query.data?.data?.data?.map(
+    (agentLob) => agentLob.line_of_business.slug
+  ).filter(Boolean) || []
+
+  return {
+    ...query,
+    slugs,
+  }
+}
