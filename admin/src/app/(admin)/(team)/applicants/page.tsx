@@ -214,7 +214,7 @@ export default function ApplicantsPage() {
       })
 
       if (updateResponse.success) {
-        const invitationUrl = `${window.location.origin}/signup`
+        const invitationUrl = `${process.env.NEXT_PUBLIC_AFFILIATE_BASE_URL}/signup`
         await sendInvitation({
           email: selectedApplicant.email,
           role: 'agent',
