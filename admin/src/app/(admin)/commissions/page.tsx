@@ -16,7 +16,18 @@ export default function CommissionsPage() {
   const [selectedCommissionConfig, setSelectedCommissionConfig] = useState<CommissionConfig | null>(null)
   const [perPage, setPerPage] = useState(15)
   const [page, setPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState('')
   const {data: commissions, isLoading, isError, refetch} = useGetCommissionConfiguration(perPage, page);
+
+  // Filter commissions based on search query
+  const filteredCommissions = commissions?.data.data.filter((commission) => {
+    const searchLower = searchQuery.toLowerCase()
+    return (
+      commission.product.name.toLowerCase().includes(searchLower) ||
+      commission.product.description?.toLowerCase().includes(searchLower) ||
+      commission.base_commission.toString().includes(searchLower)
+    )
+  }) || []
 
   return (
     <>
@@ -36,51 +47,59 @@ export default function CommissionsPage() {
             </div>
 
             <div className="flex h-8 items-center rounded-full border-1 border-gray-800 px-2">
-              <Search />
+              <Search className="h-4 w-4 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search products"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="ml-2 h-full w-full border-0 bg-transparent outline-none placeholder:font-light"
               />
             </div>
           </div>
           <div>
-            <ScrollArea>
-              <div className="space-y-2">
-                {isLoading && <p>Loading products...</p>}
-                {isError && <p>Error loading products.</p>}
-                {commissions &&
-                  commissions.data.data.map((commission) => (
-                    <div
-                      key={commission.id}
-                      className={cn(
-                        'flex min-h-36 flex-col justify-between rounded-2xl border-2 border-gray-400 p-4 hover:shadow-lg',
-                        {
-                          'border-blue-500 shadow-lg':
-                            selectedCommissionConfig?.id === commission.id,
-                        }
-                      )}
-                      onClick={() => setSelectedCommissionConfig(commission)}
-                    >
+            <ScrollArea className="h-[calc(100vh-250px)]">
+              <div className="space-y-3 pr-2">
+                {isLoading && <p className="text-center text-gray-500">Loading products...</p>}
+                {isError && <p className="text-center text-red-500">Error loading products.</p>}
+                {!isLoading && !isError && filteredCommissions.length === 0 && (
+                  <p className="text-center text-gray-500">
+                    {searchQuery ? 'No products found matching your search.' : 'No products available.'}
+                  </p>
+                )}
+                {filteredCommissions.map((commission) => (
+                  <div
+                    key={commission.id}
+                    className={cn(
+                      'cursor-pointer rounded-xl border-2 border-gray-300 bg-white p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md',
+                      {
+                        'border-blue-500 bg-blue-50 shadow-md':
+                          selectedCommissionConfig?.id === commission.id,
+                      }
+                    )}
+                    onClick={() => setSelectedCommissionConfig(commission)}
+                  >
+                    <div className="space-y-2">
                       <div>
-                        <p className="text-lg font-bold tracking-wide">
-                        {commission.product.name}
+                        <p className="text-base font-bold text-gray-900">
+                          {commission.product.name}
                         </p>
-                        <p className="text-sm font-light">{commission.product.name}</p>
-                        <p className="text-sm">
-                          <span className="font-bold">Price: </span>
-                          <span className="font-light">
-                            ₱ {commission.product.price ?? 'N/A'}
-                          </span>
+                        <p className="text-xs text-gray-500">
+                          {commission.product.description || 'No description'}
                         </p>
                       </div>
 
-                      <p className="text-sm">
-                        <span className="font-bold">Base Commision: </span>
-                        <span className="font-light">{commission.base_commission}</span>
-                      </p>
+                      <div className="flex items-center justify-between rounded-lg bg-gray-100 px-3 py-2">
+                        <span className="text-xs font-semibold text-gray-700">
+                          Base Commission:
+                        </span>
+                        <span className="text-sm font-bold text-blue-600">
+                          {commission.base_commission}%
+                        </span>
+                      </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
               </div>
             </ScrollArea>
           </div>
