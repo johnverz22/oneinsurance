@@ -89,23 +89,9 @@ export default function ProductsMainContent({
                 </span>
               </div>
 
-              <p className="mb-3 truncate text-xs text-gray-600 sm:mb-4 sm:text-sm">
+              <p className="mb-4 truncate text-xs text-gray-600 sm:mb-5 sm:text-sm">
                 {assignment.product.provider.name}
               </p>
-              <div className="mb-4 flex flex-col gap-2 text-xs sm:mb-5 sm:flex-row sm:items-center sm:gap-6 sm:text-sm">
-                <div>
-                  <span className="font-bold">Price: </span>
-                  <span className="text-muted-foreground">
-                    {assignment.product.price}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-bold">Commission: </span>
-                  <span className="text-muted-foreground">
-                    {`${assignment.commission_rate}%`}
-                  </span>
-                </div>
-              </div>
 
               <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <span className="text-muted-foreground text-xs font-semibold whitespace-nowrap sm:text-sm">

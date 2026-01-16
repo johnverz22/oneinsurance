@@ -17,6 +17,7 @@ import { AgentSchema } from './agents'
 
 export const LineOfBusinessFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
+  slug: z.string().min(1, 'Slug is required'),
   description: z.string().min(1, 'Description is required'),
   status: z.enum(['active', 'inactive']),
 })
@@ -26,6 +27,7 @@ export type LineOfBusinessFormData = z.infer<typeof LineOfBusinessFormSchema>
 export const LineOfBusinessSchema = z.object({
   id: z.number(),
   name: z.string(),
+  slug: z.string().optional(),
   description: z.string(),
   status: z.string(),
   created_at: z.string(),

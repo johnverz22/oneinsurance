@@ -104,7 +104,7 @@ export const Header = ({
                             </NavigationMenuTrigger>
                             {navigation.items && (
                               <NavigationMenuContent className="z-10">
-                                <ul className="grid w-[300px] gap-4">
+                                <ul className="grid w-auto min-w-[300px] max-w-[500px] gap-4 p-4">
                                   {navigation.items.map((item, index) => (
                                     <ListItem
                                       key={index}
@@ -158,15 +158,12 @@ export const Header = ({
                   <p className="text-accent flex w-full border-b px-4 py-2.5 font-bold md:hidden">
                     Welcome, {user?.name}!
                   </p>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Button
-                      variant="ghost"
-                      onClick={() => (window.location.href = '/profile')}
-                    >
-                      Profile
-                    </Button>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => (window.location.href = '/profile')}
+                  >
+                    Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={async () => {
                       const response = await logoutAgent()
@@ -202,8 +199,8 @@ function ListItem({
   return (
     <li {...props}>
       <NavigationMenuLink asChild>
-        <Link href={href}>
-          <div className="text-sm leading-none font-medium">{title}</div>
+        <Link href={href} className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+          <div className="text-sm font-medium leading-none">{title}</div>
           <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
             {children}
           </p>

@@ -10,9 +10,10 @@ import {
 import { Product } from '@/types/products'
 import { Value } from '@radix-ui/react-select'
 import { FieldApi, useForm } from '@tanstack/react-form'
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import z from 'zod'
+import { Calendar } from 'lucide-react'
 
 interface ProductCommisionConfigurationProps {
   selectedCommissionConfig: CommissionConfig | null
@@ -24,62 +25,40 @@ const commisionConfigurationSchema = z.object({
     .number()
     .min(0, 'Base commission must be at least 0%')
     .max(30, 'Base commission cannot exceed 30%'),
-  agent: z
+  agent_commission: z
     .number()
     .min(0, 'Agent commission must be at least 0%')
     .max(15, 'Agent commission cannot exceed 15%'),
-  agent_overrider: z
+  agent_overrider_commission: z
     .number()
     .min(0, 'Agent overrider commission must be at least 0%')
     .max(10, 'Agent overrider commission cannot exceed 10%'),
-  agent_admin: z
+  agent_admin_commission: z
     .number()
-    .min(0, 'IFRC Admin commission must be at least 0%'),
-  agent_admin_overrider: z
+    .min(0, 'Agent Admin commission must be at least 0%'),
+  agent_admin_overrider_commission: z
     .number()
-    .min(0, 'IFRC Admin overrider commission must be at least 0%')
-    .max(10, 'IFRC Admin overrider commission cannot exceed 10%'),
-
-  digitech: z
-    .number()
-    .min(0, 'IFRC Digitech commission must be at least 0%')
-    .max(25, 'IFRC Digitech commission cannot exceed 25%'),
-  referral: z
+    .min(0, 'Agent Admin overrider commission must be at least 0%')
+    .max(10, 'Agent Admin overrider commission cannot exceed 10%'),
+  referral_commission: z
     .number()
     .min(0, 'Referral commission must be at least 0%')
-    .max(5, 'Referral commission cannot exceed 5%'),
-  referral_overrider: z
+    .max(25, 'Referral commission cannot exceed 25%'),
+  referral_overrider_commission: z
     .number()
     .min(0, 'Referral overrider commission must be at least 0%')
     .max(10, 'Referral overrider commission cannot exceed 10%'),
-  referral_admin: z
+  referral_admin_commission: z
     .number()
-    .min(0, 'IFRC Admin commission must be at least 0%'),
-  referral_admin_overrider: z
+    .min(0, 'Referral Admin commission must be at least 0%'),
+  referral_admin_overrider_commission: z
     .number()
-    .min(0, 'IFRC Admin overrider commission must be at least 0%')
-    .max(10, 'IFRC Admin overrider commission cannot exceed 10%'),
-}).refine(
-  (data) => {
-    // Validate Agent-based sales: Agent + Admin should equal Base Commission
-    const agentBasedTotal = data.agent + data.agent_admin
-    return Math.abs(agentBasedTotal - data.base_commission) < 0.01
-  },
-  {
-    message: 'Agent + Admin must equal Base Commission for Agent-based sales',
-    path: ['agent'],
-  }
-).refine(
-  (data) => {
-    // Validate Referral-based sales: Referral + Admin should equal Base Commission
-    const referralBasedTotal = data.referral + data.referral_admin
-    return Math.abs(referralBasedTotal - data.base_commission) < 0.01
-  },
-  {
-    message: 'Referral + Admin must equal Base Commission for Referral-based sales',
-    path: ['referral'],
-  }
-)
+    .min(0, 'Referral Admin overrider commission must be at least 0%')
+    .max(10, 'Referral Admin overrider commission cannot exceed 10%'),
+  effectivity_date: z.string().min(1, 'Effectivity date is required'),
+})
+// Note: Removed .refine() validations because the backend uses the same ifrc_admin value
+// for both agent-based and referral-based sales, making the validation impossible to satisfy
 type CommisionConfigurationFormData = z.infer<
   typeof commisionConfigurationSchema
 >
@@ -88,14 +67,16 @@ function mapFormDataToCommissionConfigUpdateRequest(
   formData: CommisionConfigurationFormData
 ): CommissionConfigUpdateRequest {
   return {
-    base_commission: formData.base_commission.toLocaleString(),
-    agent_commission: formData.agent.toLocaleString(),
-    agent_overriders_commission: formData.agent_overrider.toLocaleString(),
-    ifrc_admin: formData.agent_admin.toLocaleString(),
-    ifrc_overrider_commission: formData.agent_admin_overrider.toLocaleString(),
-    ifrc_digitech: formData.digitech.toLocaleString(),
-    digitech_referral: formData.referral.toLocaleString(),
-    digitech_overriders: formData.referral_overrider.toLocaleString(),
+    base_commission: formData.base_commission,
+    agent_commission: formData.agent_commission,
+    agent_overrider_commission: formData.agent_overrider_commission,
+    agent_admin_commission: formData.agent_admin_commission,
+    agent_admin_overrider_commission: formData.agent_admin_overrider_commission,
+    referral_commission: formData.referral_commission,
+    referral_overrider_commission: formData.referral_overrider_commission,
+    referral_admin_commission: formData.referral_admin_commission,
+    referral_admin_overrider_commission: formData.referral_admin_overrider_commission,
+    effectivity_date: formData.effectivity_date,
     status: 'active',
   } satisfies CommissionConfigUpdateRequest
 }
@@ -111,39 +92,68 @@ export default function ProductCommisionConfiguration({
   const form = useForm({
     defaultValues: {
       base_commission: Number(selectedCommissionConfig?.base_commission) ?? 30,
-      agent: Number(selectedCommissionConfig?.agent_commission) ?? 15,
-      agent_overrider:
-        Number(selectedCommissionConfig?.agent_overriders_commission) ?? 10,
-      agent_admin: Number(selectedCommissionConfig?.ifrc_admin) ?? 15,
-      agent_admin_overrider:
-        Number(selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
-      digitech: Number(selectedCommissionConfig?.ifrc_digitech) ?? 25,
-      referral: Number(selectedCommissionConfig?.digitech_referral) ?? 5,
-      referral_overrider:
-        Number(selectedCommissionConfig?.digitech_overriders) ?? 10,
-      referral_admin: Number(selectedCommissionConfig?.ifrc_admin) ?? 15,
-      referral_admin_overrider:
-        Number(selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
+      agent_commission: Number(selectedCommissionConfig?.agent_commission) ?? 15,
+      agent_overrider_commission:
+        Number(selectedCommissionConfig?.agent_overrider_commission || selectedCommissionConfig?.agent_overriders_commission) ?? 10,
+      agent_admin_commission: Number(selectedCommissionConfig?.agent_admin_commission || selectedCommissionConfig?.ifrc_admin) ?? 15,
+      agent_admin_overrider_commission:
+        Number(selectedCommissionConfig?.agent_admin_overrider_commission || selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
+      referral_commission: Number(selectedCommissionConfig?.referral_commission || selectedCommissionConfig?.ifrc_digitech) ?? 25,
+      referral_overrider_commission: Number(selectedCommissionConfig?.referral_overrider_commission || selectedCommissionConfig?.digitech_referral) ?? 5,
+      referral_admin_commission:
+        Number(selectedCommissionConfig?.referral_admin_commission || selectedCommissionConfig?.digitech_overriders) ?? 10,
+      referral_admin_overrider_commission: Number(selectedCommissionConfig?.referral_admin_overrider_commission || selectedCommissionConfig?.ifrc_admin) ?? 25,
+      effectivity_date: selectedCommissionConfig?.effectivity_date 
+        ? selectedCommissionConfig.effectivity_date.split('T')[0] 
+        : new Date().toISOString().split('T')[0],
     },
     validators: {
       onSubmit: commisionConfigurationSchema,
     },
     onSubmit: async ({ value }) => {
-      const updateRequestData =
-        mapFormDataToCommissionConfigUpdateRequest(value)
-      const response = await updateConfingCommission({
-        data: updateRequestData,
-        commissionConfigId: selectedCommissionConfig!.id,
-      })
+      console.log('Form submitted with values:', value)
+      try {
+        const updateRequestData =
+          mapFormDataToCommissionConfigUpdateRequest(value)
+        console.log('Sending update request:', updateRequestData)
+        const response = await updateConfingCommission({
+          data: updateRequestData,
+          commissionConfigId: selectedCommissionConfig!.id,
+        })
 
-      if (response.success) {
-        toast.success(response.message || 'Commission configuration updated successfully!')
-        onUpdateSuccess?.()
-      } else {
-        toast.error(response.message || 'Failed to update commission configuration.')
+        console.log('Response:', response)
+        if (response?.success) {
+          toast.success(response.message || 'Commission configuration updated successfully!')
+          onUpdateSuccess?.()
+        } else {
+          toast.error(response?.message || 'Failed to update commission configuration.')
+        }
+      } catch (error) {
+        console.error('Form submission error:', error)
+        toast.error('An error occurred while saving the configuration.')
       }
     },
   })
+
+  // Reset form when selectedCommissionConfig changes
+  React.useEffect(() => {
+    if (selectedCommissionConfig) {
+      console.log('Selected commission config:', selectedCommissionConfig)
+      form.reset({
+        base_commission: Number(selectedCommissionConfig.base_commission),
+        agent_commission: Number(selectedCommissionConfig.agent_commission),
+        agent_overrider_commission: Number(selectedCommissionConfig.agent_overrider_commission || selectedCommissionConfig.agent_overriders_commission),
+        agent_admin_commission: Number(selectedCommissionConfig.agent_admin_commission || selectedCommissionConfig.ifrc_admin),
+        agent_admin_overrider_commission: Number(selectedCommissionConfig.agent_admin_overrider_commission || selectedCommissionConfig.ifrc_overrider_commission),
+        referral_commission: Number(selectedCommissionConfig.referral_commission || selectedCommissionConfig.ifrc_digitech),
+        referral_overrider_commission: Number(selectedCommissionConfig.referral_overrider_commission || selectedCommissionConfig.digitech_referral),
+        referral_admin_commission: Number(selectedCommissionConfig.referral_admin_commission || selectedCommissionConfig.digitech_overriders),
+        referral_admin_overrider_commission: Number(selectedCommissionConfig.referral_admin_overrider_commission || selectedCommissionConfig.ifrc_admin),
+        effectivity_date: selectedCommissionConfig.effectivity_date.split('T')[0],
+      })
+      console.log('Form reset with values:', form.state.values)
+    }
+  }, [selectedCommissionConfig?.id])
 
   return (
     <div>
@@ -157,7 +167,8 @@ export default function ProductCommisionConfiguration({
             onSubmit={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              form.handleSubmit()
+              console.log('Form onSubmit triggered')
+              void form.handleSubmit()
             }}
           >
             <div className="space-y-10">
@@ -203,6 +214,40 @@ export default function ProductCommisionConfiguration({
                       )
                     }}
                   />
+
+                  <form.Field
+                    name="effectivity_date"
+                    children={(field) => {
+                      return (
+                        <div>
+                          <div className="flex items-center gap-4">
+                            <Label className="font-semibold whitespace-nowrap">
+                              Effectivity Date:
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                type="date"
+                                name={field.name}
+                                id={field.name}
+                                onChange={(e) => {
+                                  field.handleChange(e.target.value)
+                                }}
+                                onBlur={field.handleBlur}
+                                value={field.state.value}
+                                className="h-10 w-48 bg-white pr-10"
+                                placeholder="MM/DD/YYYY"
+                              />
+                              <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            </div>
+                            <span className="text-muted-foreground text-sm">
+                              Date when this configuration becomes active
+                            </span>
+                          </div>
+                          <FieldInfo field={field} />
+                        </div>
+                      )
+                    }}
+                  />
                 </div>
               </div>
 
@@ -228,7 +273,7 @@ export default function ProductCommisionConfiguration({
                       <div className="space-y-3">
                         {/* agent */}
                         <form.Field
-                          name="agent"
+                          name="agent_commission"
                           children={(field) => (
                             <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -248,13 +293,12 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
                         {/* agent overrider */}
                         <form.Field
-                          name="agent_overrider"
+                          name="agent_overrider_commission"
                           children={(field) => (
                             <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -274,7 +318,6 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -289,7 +332,7 @@ export default function ProductCommisionConfiguration({
                       <div className="space-y-3">
                         {/* IFRC admin for Agent-based */}
                         <form.Field
-                          name="agent_admin"
+                          name="agent_admin_commission"
                           children={(field) => (
                             <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -309,13 +352,12 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
                         {/* IFRC admin overrider for Agent-based */}
                         <form.Field
-                          name="agent_admin_overrider"
+                          name="agent_admin_overrider_commission"
                           children={(field) => (
                             <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -335,7 +377,6 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -364,7 +405,7 @@ export default function ProductCommisionConfiguration({
                       <div className="space-y-3">
                         {/* Referral */}
                         <form.Field
-                          name="referral"
+                          name="referral_commission"
                           children={(field) => (
                             <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -384,13 +425,12 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
                         {/* Referral overrider */}
                         <form.Field
-                          name="referral_overrider"
+                          name="referral_overrider_commission"
                           children={(field) => (
                             <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -410,7 +450,6 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -425,7 +464,7 @@ export default function ProductCommisionConfiguration({
                       <div className="space-y-3">
                         {/* Admin for Referral-based */}
                         <form.Field
-                          name="referral_admin"
+                          name="referral_admin_commission"
                           children={(field) => (
                             <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -445,13 +484,12 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
                         {/* Admin overrider for Referral-based */}
                         <form.Field
-                          name="referral_admin_overrider"
+                          name="referral_admin_overrider_commission"
                           children={(field) => (
                             <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-4 py-2">
                               <Label className="font-semibold text-black">
@@ -471,7 +509,6 @@ export default function ProductCommisionConfiguration({
                                 />
                                 <span className="text-muted-foreground">%</span>
                               </div>
-                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -481,6 +518,56 @@ export default function ProductCommisionConfiguration({
                 </div>
               </div>
             </div>
+
+            {/* Save Button - moved inside form */}
+            <div className="mt-6 flex justify-end gap-2">
+              {/* Temporarily hidden
+              <Button
+                variant={'outline'}
+                className="rounded-full"
+                onClick={(e) => {
+                  e.preventDefault()
+                  toast.info('Feature under development')
+                }}
+              >
+                Reset to Default
+              </Button>
+              <Button
+                variant={'outline'}
+                className="rounded-full"
+                onClick={(e) => {
+                  e.preventDefault()
+                  toast.info('Feature under development')
+                }}
+              >
+                Apply to all Products
+              </Button>
+              */}
+              <Button
+                type="submit"
+                className="rounded-full bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => {
+                  console.log('Save button clicked')
+                  console.log('Form state:', form.state)
+                }}
+              >
+                Save Configuration
+              </Button>
+            </div>
+
+            {/* Form submission status */}
+            <form.Subscribe
+              selector={(state) => [state.isSubmitting]}
+              children={([isSubmitting]) => {
+                return (
+                  <>
+                    {isSubmitting && (
+                      <div className="mt-2 text-blue-600 font-semibold">Saving configuration...</div>
+                    )}
+                  </>
+                )
+              }}
+            />
           </form>
           <div className="space-y-4">
             <div className="space-y-3">
@@ -510,45 +597,29 @@ export default function ProductCommisionConfiguration({
                 
                 // Agent-based calculations
                 const agentCommissionTotal =
-                  (field.values.agent / 100) * saleAmount
+                  (field.values.agent_commission / 100) * saleAmount
                 const agentOverriderTotal =
-                  (field.values.agent_overrider / 100) * agentCommissionTotal
+                  (field.values.agent_overrider_commission / 100) * agentCommissionTotal
 
                 const agentAdminCommissionTotal =
-                  (field.values.agent_admin / 100) * saleAmount
+                  (field.values.agent_admin_commission / 100) * saleAmount
                 const agentAdminOverriderTotal =
-                  (field.values.agent_admin_overrider / 100) * agentAdminCommissionTotal
+                  (field.values.agent_admin_overrider_commission / 100) * agentAdminCommissionTotal
 
                 // Referral-based calculations
                 const referralCommissionTotal =
-                  (field.values.referral / 100) * saleAmount
+                  (field.values.referral_commission / 100) * saleAmount
                 const referralOverriderTotal =
-                  (field.values.referral_overrider / 100) *
+                  (field.values.referral_overrider_commission / 100) *
                   referralCommissionTotal
                 
                 const referralAdminCommissionTotal =
-                  (field.values.referral_admin / 100) * saleAmount
+                  (field.values.referral_admin_commission / 100) * saleAmount
                 const referralAdminOverriderTotal =
-                  (field.values.referral_admin_overrider / 100) * referralAdminCommissionTotal
+                  (field.values.referral_admin_overrider_commission / 100) * referralAdminCommissionTotal
                 
-                // Validation checks
-                const agentBasedTotal = field.values.agent + field.values.agent_admin
-                const referralBasedTotal = field.values.referral + field.values.referral_admin
-                const isAgentBasedValid = Math.abs(agentBasedTotal - field.values.base_commission) < 0.01
-                const isReferralBasedValid = Math.abs(referralBasedTotal - field.values.base_commission) < 0.01
                 return (
                   <div className="space-y-4">
-                    {/* Validation warnings */}
-                    {!isAgentBasedValid && (
-                      <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-red-800 text-sm">
-                        ⚠️ Agent-based validation failed: Agent ({field.values.agent}%) + Admin ({field.values.agent_admin}%) = {agentBasedTotal.toFixed(2)}% must equal Base Commission ({field.values.base_commission}%)
-                      </div>
-                    )}
-                    {!isReferralBasedValid && (
-                      <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-red-800 text-sm">
-                        ⚠️ Referral-based validation failed: Referral ({field.values.referral}%) + Admin ({field.values.referral_admin}%) = {referralBasedTotal.toFixed(2)}% must equal Base Commission ({field.values.base_commission}%)
-                      </div>
-                    )}
                     
                     <div className="grid items-start gap-6 md:grid-cols-2">
                       {/* Agent-based Distribution */}
@@ -701,47 +772,6 @@ export default function ProductCommisionConfiguration({
                 )
               }}
             </form.Subscribe>
-          </div>
-
-          <div>
-            {/*<p className="font-bold">Configuration Actions</p>
-            <p className="text-sm font-light">
-              Save or apply your commission configuration
-            </p>*/}
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant={'outline'}
-                className="rounded-full"
-                onClick={(e) => {
-                  e.preventDefault()
-                  toast.info('Feature under development')
-                }}
-              >
-                Reset to Default
-              </Button>
-              {/* Temporarily hidden
-              <Button
-                variant={'outline'}
-                className="rounded-full"
-                onClick={(e) => {
-                  e.preventDefault()
-                  toast.info('Feature under development')
-                }}
-              >
-                Apply to all Products
-              </Button>
-              */}
-              <Button
-                type="submit"
-                className="rounded-full bg-blue-600 text-white hover:bg-blue-700"
-                onClick={(e) => {
-                  e.preventDefault()
-                  form.handleSubmit()
-                }}
-              >
-                Save Configuration
-              </Button>
-            </div>
           </div>
         </div>
       )}

@@ -40,14 +40,6 @@ export const ReferralCard = ({
             <h3 className="text-base font-semibold md:text-lg lg:text-xl">
               {referral.description}
             </h3>
-            <p className="text-sm font-medium">
-              Commission Rate:{' '}
-              <span className="font-light">{referral.commissionRate}%</span>
-            </p>
-          </div>
-          <div className="text-muted-foreground space-y-0.5 text-right text-sm">
-            <p className="font-normal">Clicks: {referral.clicks}</p>
-            <p className="font-normal">Conversions: {referral.conversions}</p>
           </div>
         </div>
 

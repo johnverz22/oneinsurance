@@ -1,25 +1,33 @@
 import { Wallet } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { FC } from 'react'
-
-interface CommissionData {
-  totalThisMonth: number
-  pending: number
-  released: number
-  upcomingPayout: number
-}
-
-const commissionData: CommissionData = {
-  totalThisMonth: 12450.75,
-  pending: 4200.5,
-  released: 8250.25,
-  upcomingPayout: 6300.0,
-}
+import { useGetAgentStatistics } from '@/app/data/queries/statistics'
+import { Skeleton } from '../ui/skeleton'
 
 export const CommissionOverview: FC = () => {
-  const { totalThisMonth, pending, released, upcomingPayout } = commissionData
+  const { data: statistics, isLoading } = useGetAgentStatistics()
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card">
+        <CardHeader>
+          <CardTitle>Commission Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-2.5 w-full" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const totalCommission = statistics?.total_commission ?? 0
+  const released = totalCommission * 0.66 // Example: 66% released
+  const pending = totalCommission * 0.34 // Example: 34% pending
+  const upcomingPayout = totalCommission * 0.5 // Example calculation
+
   const releasedPercentage =
-    totalThisMonth > 0 ? (released / (pending + released)) * 100 : 0
+    totalCommission > 0 ? (released / totalCommission) * 100 : 0
 
   return (
     <Card className="bg-card">
@@ -57,13 +65,13 @@ export const CommissionOverview: FC = () => {
         <div className="flex flex-col">
           <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">
             PHP
-            {totalThisMonth.toLocaleString('en-US', {
+            {totalCommission.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Total this Month
+            Total Commission
           </p>
         </div>
       </CardContent>

@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +11,8 @@ import {
   Check,
   X,
   ArrowUpRight,
+  Search,
+  Download,
 } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useGetAgents } from '@/app/data/queries/agents'
@@ -45,7 +46,7 @@ import { toast } from 'sonner'
 import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
 import { exportToCSV } from '@/utils/export-to-csv'
-import { Download } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 export default function AgentsPage() {
   const [page, setPage] = useState<number>(1)
@@ -55,7 +56,11 @@ export default function AgentsPage() {
     isLoading,
     error,
     refetch,
-  } = useGetAgents({ page })
+  } = useGetAgents({ 
+    page,
+    sort_by: 'created_at',
+    sort_order: 'desc'
+  })
   const deleteMutation = useDeleteAgent()
   const activateMutation = useActivateAgent()
   const sendSignupLinkMutation = useSendSignupLink()
@@ -64,6 +69,7 @@ export default function AgentsPage() {
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
   const [searchKey, setSearchKey] = useState('')
+  const [searchKeyDebounced, setSearchKeyDebounced] = useState('')
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<AgentsResponse | null>(
@@ -72,6 +78,28 @@ export default function AgentsPage() {
 
   const { mutateAsync: searchAgents, isPending: isSearching } =
     useSearchAgents()
+
+  // Debounce search and auto-trigger
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchKeyDebounced(searchKey)
+      if (searchKey.trim()) {
+        searchAgents({ searchKey: searchKey.trim() })
+          .then((result) => {
+            setSearchResults(result)
+            setIsSearchMode(true)
+          })
+          .catch((error) => {
+            console.error('Search error:', error)
+          })
+      } else {
+        setSearchResults(null)
+        setIsSearchMode(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchKey, searchAgents])
 
   // Get agents data
   const agentsOnly = React.useMemo(() => {
@@ -124,21 +152,23 @@ export default function AgentsPage() {
         cell: ({ row }) => {
           const status = row.original.status.toLowerCase()
           return (
-            <span
-              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium capitalize ${
+            <Badge
+              className={`${
                 status === 'active'
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                  ? 'bg-green-100 text-green-700 hover:bg-green-100'
                   : status === 'pending'
-                    ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                    ? 'bg-orange-100 text-orange-600 hover:bg-orange-100'
                     : status === 'approved'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                      ? 'bg-green-100 text-green-700 hover:bg-green-100'
                       : status === 'for interview'
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
+                        : status === 'inactive'
+                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-100'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
               }`}
             >
-              {status}
-            </span>
+              {status.toUpperCase()}
+            </Badge>
           )
         },
       },
@@ -442,15 +472,11 @@ export default function AgentsPage() {
   }
 
   async function handleSearchButtonClick(): Promise<void> {
+    // Search is now handled by debounced useEffect
+    // This function is kept for Enter key compatibility
     if (searchKey.trim() === '') {
       toast.info('Please enter the agent name to search.')
-      return
     }
-    const searchAgentsResult = await searchAgents({
-      searchKey: searchKey.trim(),
-    })
-    setSearchResults(searchAgentsResult)
-    setIsSearchMode(true)
   }
 
   function handleClearSearch(): void {
@@ -482,225 +508,229 @@ export default function AgentsPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 py-6">
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Agent Management</h1>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
+    <div className="min-h-screen">
+      {/* Main Content */}
+      <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-l border-r border-b p-4 shadow-sm sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
+        {/* Section Header */}
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-4 md:flex-row md:items-start">
           <div>
-            {authChecking || isDataLoading ? (
-              <div className="w-full space-y-2">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-background flex items-center gap-4 rounded-md border p-3"
-                  >
-                    <div className="h-10 w-10">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                    </div>
-                    <div className="flex-1">
-                      <Skeleton className="mb-2 h-4 w-1/3" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                    <div className="w-24">
-                      <Skeleton className="h-6 w-full" />
-                    </div>
-                  </div>
-                ))}
+            <h2 className="text-lg font-bold sm:text-xl">Agent Management</h2>
+            <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+              Manage and monitor all registered agents
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-64 md:w-80">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
               </div>
+              <input
+                type="text"
+                placeholder="Search agents..."
+                value={searchKey}
+                onChange={(e) => setSearchKey(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchButtonClick()
+                  }
+                }}
+                className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
+              />
+            </div>
+            {isSearchMode && (
+              <button
+                onClick={handleClearSearch}
+                className="flex w-full items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+              >
+                <X className="mr-2 h-4 w-4" />
+                Clear
+              </button>
+            )}
+            <button
+              onClick={handleExportToCSV}
+              className="flex w-full items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </button>
+          </div>
+        </div>
+
+        {authChecking || isDataLoading ? (
+          <div className="w-full space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-background flex items-center gap-4 rounded-md border p-3"
+              >
+                <div className="h-10 w-10">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                </div>
+                <div className="flex-1">
+                  <Skeleton className="mb-2 h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <div className="w-24">
+                  <Skeleton className="h-6 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            {isSearchMode && (
+              <div className="text-muted-foreground mb-4 text-sm">
+                Showing search results for "{searchKey}" - Found{' '}
+                {displayData?.data.data?.length || 0} result(s)
+              </div>
+            )}
+
+            {/* Agents Table */}
+            {((isSearchMode ? displayData?.data?.data : agentsOnly) || []).length > 0 ? (
+              <AgentDataTable
+                columns={columns}
+                data={isSearchMode ? (displayData?.data?.data ?? []) : agentsOnly}
+                onRowClick={(row) => handleRowClick(row)}
+                getRowActions={getActionsForAgent}
+                enableColumnVisibility={false}
+                enablePagination={false}
+                pageSize={1000}
+              />
             ) : (
-              <div className="p-6">
-                <div className="mb-6 flex justify-between">
-                  <div className="flex flex-1 items-center gap-2">
-                    <Input
-                      value={searchKey}
-                      onChange={(e) => setSearchKey(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleSearchButtonClick()
-                        }
-                      }}
-                      placeholder="Search agents by name, email, or phone..."
-                      className="max-w-md"
-                    />
-                    <Button
-                      className="from-primary to-lilac bg-gradient-to-r text-white"
-                      onClick={handleSearchButtonClick}
-                      disabled={!searchKey.trim()}
-                    >
-                      Search
-                    </Button>
-                    {isSearchMode && (
-                      <Button variant="outline" onClick={handleClearSearch}>
-                        <X className="mr-2 h-4 w-4" />
-                        Clear
-                      </Button>
-                    )}
+              <div className="rounded-lg border border-dashed p-8 text-center">
+                <p className="text-gray-500">
+                  {isSearchMode
+                    ? 'No agents found matching your search'
+                    : 'No agents available'}
+                </p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!isSearchMode && displayData?.data && displayData.data.last_page > 1 && (
+              <div className="mt-6 flex items-center justify-between border-t pt-4">
+                <div className="text-sm text-gray-600">
+                  Showing {displayData.data.from || 0} to{' '}
+                  {displayData.data.to || 0} of{' '}
+                  {displayData.data.total || 0} results
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    disabled={displayData.data.current_page === 1}
+                    className="rounded-full"
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from(
+                      { length: displayData.data.last_page },
+                      (_, i) => i + 1
+                    )
+                      .filter((pageNum) => {
+                        const current = displayData.data.current_page
+                        return (
+                          pageNum === 1 ||
+                          pageNum === displayData.data.last_page ||
+                          (pageNum >= current - 1 && pageNum <= current + 1)
+                        )
+                      })
+                      .map((pageNum, index, array) => (
+                        <React.Fragment key={pageNum}>
+                          {index > 0 && array[index - 1] !== pageNum - 1 && (
+                            <span className="px-2">...</span>
+                          )}
+                          <Button
+                            variant={
+                              displayData.data.current_page === pageNum
+                                ? 'default'
+                                : 'outline'
+                            }
+                            size="sm"
+                            onClick={() => setPage(pageNum)}
+                            className={`h-8 w-8 rounded-full p-0 ${
+                              displayData.data.current_page === pageNum
+                                ? 'bg-green-600 hover:bg-green-700'
+                                : ''
+                            }`}
+                          >
+                            {pageNum}
+                          </Button>
+                        </React.Fragment>
+                      ))}
                   </div>
-                  <Button variant="outline" onClick={handleExportToCSV}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export to CSV
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setPage((prev) =>
+                        Math.min(displayData.data.last_page, prev + 1)
+                      )
+                    }
+                    disabled={
+                      displayData.data.current_page ===
+                      displayData.data.last_page
+                    }
+                    className="rounded-full"
+                  >
+                    Next
                   </Button>
                 </div>
-
-                {isSearchMode && (
-                  <div className="text-muted-foreground mb-4 text-sm">
-                    Showing search results for "{searchQuery}"
-                  </div>
-                )}
-                <AgentDataTable
-                  columns={columns}
-                  data={
-                    isSearchMode ? (displayData?.data.data ?? []) : agentsOnly
-                  }
-                  onRowClick={(row) => handleRowClick(row)}
-                  getRowActions={getActionsForAgent}
-                  enableColumnVisibility={false}
-                  enablePagination={false}
-                  pageSize={1000}
-                />
-
-                {/* Delete confirmation dialog */}
-                {DeleteDialog(
-                  isDeleteOpen,
-                  setIsDeleteOpen,
-                  selectedAgent,
-                  handleConfirmDelete
-                )}
-
-                {/* Activate confirmation dialog */}
-                {ActivateDialog(
-                  isActivateOpen,
-                  setIsActivateOpen,
-                  selectedToActivate,
-                  handleConfirmActivate,
-                  isActivating
-                )}
-
-                {/* Update dialog */}
-                {UpdateDialog(
-                  isUpdateOpen,
-                  setIsUpdateOpen,
-                  selectedToUpdate,
-                  updatePayload,
-                  setUpdatePayload,
-                  setIsSaveConfirmOpen,
-                  isUpdating
-                )}
-
-                {/* Details dialog (opened when a row is clicked) */}
-                {DetailsDialog(
-                  isDetailsOpen,
-                  setIsDetailsOpen,
-                  selectedToView,
-                  // reuse handlers for actions inside the dialog
-                  handleActivateClick,
-                  handleUpdateClick,
-                  handleDeleteClick
-                )}
-
-                {/* Confirm save dialog for updates */}
-                {ConfirmUpdateDialog(
-                  isSaveConfirmOpen,
-                  setIsSaveConfirmOpen,
-                  selectedToUpdate,
-                  handleConfirmUpdate,
-                  isUpdating
-                )}
-
-                {/* Simplified pagination */}
-                {!isSearchMode && displayData?.data && (
-                  <div className="mt-6 flex items-center justify-between border-t pt-4">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Showing {agentsOnly.length} agents
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={displayData.data.current_page === 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        ‹
-                      </Button>
-                      {Array.from(
-                        { length: displayData.data.last_page },
-                        (_, i) => i + 1
-                      )
-                        .filter((pageNum) => {
-                          const current = displayData.data.current_page
-                          return (
-                            pageNum === 1 ||
-                            pageNum === displayData.data.last_page ||
-                            (pageNum >= current - 1 && pageNum <= current + 1)
-                          )
-                        })
-                        .map((pageNum, idx, arr) => {
-                          if (idx > 0 && pageNum - arr[idx - 1] > 1) {
-                            return (
-                              <React.Fragment key={`ellipsis-${pageNum}`}>
-                                <span className="px-2 text-gray-400">...</span>
-                                <Button
-                                  variant={
-                                    pageNum === displayData.data.current_page
-                                      ? 'default'
-                                      : 'outline'
-                                  }
-                                  size="sm"
-                                  onClick={() => setPage(pageNum)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  {pageNum}
-                                </Button>
-                              </React.Fragment>
-                            )
-                          }
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={
-                                pageNum === displayData.data.current_page
-                                  ? 'default'
-                                  : 'outline'
-                              }
-                              size="sm"
-                              onClick={() => setPage(pageNum)}
-                              className="h-8 w-8 p-0"
-                            >
-                              {pageNum}
-                            </Button>
-                          )
-                        })}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) =>
-                            Math.min(displayData.data.last_page, p + 1)
-                          )
-                        }
-                        disabled={
-                          displayData.data.current_page ===
-                          displayData.data.last_page
-                        }
-                        className="h-8 w-8 p-0"
-                      >
-                        ›
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+
+      {/* Delete confirmation dialog */}
+      {DeleteDialog(
+        isDeleteOpen,
+        setIsDeleteOpen,
+        selectedAgent,
+        handleConfirmDelete
+      )}
+
+      {/* Activate confirmation dialog */}
+      {ActivateDialog(
+        isActivateOpen,
+        setIsActivateOpen,
+        selectedToActivate,
+        handleConfirmActivate,
+        isActivating
+      )}
+
+      {/* Update dialog */}
+      {UpdateDialog(
+        isUpdateOpen,
+        setIsUpdateOpen,
+        selectedToUpdate,
+        updatePayload,
+        setUpdatePayload,
+        setIsSaveConfirmOpen,
+        isUpdating
+      )}
+
+      {/* Details dialog (opened when a row is clicked) */}
+      {DetailsDialog(
+        isDetailsOpen,
+        setIsDetailsOpen,
+        selectedToView,
+        // reuse handlers for actions inside the dialog
+        handleActivateClick,
+        handleUpdateClick,
+        handleDeleteClick
+      )}
+
+      {/* Confirm save dialog for updates */}
+      {ConfirmUpdateDialog(
+        isSaveConfirmOpen,
+        setIsSaveConfirmOpen,
+        selectedToUpdate,
+        handleConfirmUpdate,
+        isUpdating
+      )}
     </div>
   )
 }
@@ -726,13 +756,14 @@ function DeleteDialog(
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsDeleteOpen(false)}>
+          <AlertDialogCancel onClick={() => setIsDeleteOpen(false)} className="rounded-full">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               variant="destructive"
               onClick={async () => await handleConfirmDelete()}
+              className="rounded-full"
             >
               Delete
             </Button>
@@ -766,7 +797,7 @@ function ActivateDialog(
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsActivateOpen(false)}>
+          <AlertDialogCancel onClick={() => setIsActivateOpen(false)} className="rounded-full">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction asChild>
@@ -774,6 +805,7 @@ function ActivateDialog(
               variant="default"
               onClick={async () => await handleConfirmActivate()}
               disabled={isActivating}
+              className="rounded-full bg-green-600 hover:bg-green-700"
             >
               {isActivating ? 'Activating...' : 'Activate'}
             </Button>
@@ -850,13 +882,14 @@ function UpdateDialog(
         </ScrollArea>
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsUpdateOpen(false)}>
+          <AlertDialogCancel onClick={() => setIsUpdateOpen(false)} className="rounded-full">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               onClick={() => setIsSaveConfirmOpen(true)}
               disabled={isUpdating}
+              className="rounded-full bg-green-600 hover:bg-green-700"
             >
               {isUpdating ? 'Saving...' : 'Save'}
             </Button>
@@ -890,13 +923,14 @@ function ConfirmUpdateDialog(
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsSaveConfirmOpen(false)}>
+          <AlertDialogCancel onClick={() => setIsSaveConfirmOpen(false)} className="rounded-full">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction asChild>
             <Button
               onClick={async () => await handleConfirmUpdate()}
               disabled={isUpdating}
+              className="rounded-full bg-green-600 hover:bg-green-700"
             >
               {isUpdating ? 'Saving...' : 'Yes, save'}
             </Button>

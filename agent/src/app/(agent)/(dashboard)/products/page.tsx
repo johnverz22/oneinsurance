@@ -4,34 +4,75 @@ import { ColumnDef } from '@tanstack/react-table'
 import { DataTable } from '@/components/ui/data-table'
 import { ProductCard } from '@/components/agent/product-card'
 import { Product } from '@/types/agent/product'
-// import { PRODUCTS } from './products'
-import { useGetProducts } from '@/app/data/queries/products'
-import { AgentProduct } from '@/types/products'
-import { useEffect, useState } from 'react'
-import { delay } from '@/utils/delay'
+import { useGetAgentLOBProducts } from '@/app/data/queries/agent-lob-products'
+import { useMemo } from 'react'
 
 const columns: ColumnDef<Product>[] = [
-  { accessorKey: 'code' },
-  { accessorKey: 'description' },
-  { accessorKey: 'provider' },
-  { accessorKey: 'commissionRate' },
-  { accessorKey: 'status' },
+  { 
+    accessorKey: 'name',
+    header: 'Product Name',
+  },
+  { 
+    accessorKey: 'providerName',
+    header: 'Provider',
+  },
+  { 
+    accessorKey: 'lobName',
+    header: 'Line of Business',
+  },
+  { 
+    accessorKey: 'status',
+    header: 'Status',
+  },
 ]
 
 const MyProductsPage = () => {
-  const { data, isLoading } = useGetProducts()
+  const { data: lobProducts, isLoading } = useGetAgentLOBProducts()
+
+  // Map LOB products to Product type
+  const products = useMemo(() => {
+    if (!lobProducts) return []
+
+    console.log('=== Mapping LOB Products to Display ===')
+    console.log('Total Products:', lobProducts.length)
+
+    return lobProducts.map((product) => {
+      const commissionRate = parseFloat(product.commission_rate?.toString() || '0')
+      
+      const mappedProduct = {
+        code: product.carrier_product_code || `P-${String(product.id).padStart(3, '0')}`,
+        name: product.name,
+        description: product.description,
+        status: (product.status.charAt(0).toUpperCase() + product.status.slice(1)) as 'Active' | 'Inactive',
+        commissionRate: commissionRate,
+        link: `/${product.lobSlug}/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        lobId: product.lob_id,
+        lobName: product.lobName,
+        providerName: product.providerName,
+      }
+
+      console.log(`Mapped Product: ${mappedProduct.name}`)
+      console.log(`  - Description: ${mappedProduct.description}`)
+      console.log(`  - Provider: ${mappedProduct.providerName}`)
+      console.log(`  - Commission Rate: ${mappedProduct.commissionRate}%`)
+      console.log(`  - Status: ${mappedProduct.status}`)
+      console.log(`  - LOB: ${mappedProduct.lobName}`)
+
+      return mappedProduct
+    })
+  }, [lobProducts])
 
   return (
     <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
       <DataTable<Product, unknown>
         header="Assigned Products"
-        description="Products you're auhorized to sell"
-        data={data ?? []}
+        description="Products you're authorized to sell"
+        data={products}
         columns={columns}
         renderMode="list"
         numColumns={2}
         contentRenderer={(row) => <ProductCard product={row.original} />}
-        searchKey="description"
+        searchKey="name"
         actions={[]}
         onRowClick={(client) => console.log('Clicked row:', client)}
         isLoading={isLoading}
