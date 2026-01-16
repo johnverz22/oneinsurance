@@ -17,6 +17,7 @@ export function mapAgentProductToMappedProduct(input: AgentProduct): Product {
     commissionRate: parseFloat(input.commission_rate ?? 0),
     status: status as any,
     link,
+    lobId: input.product.lob_id,
   }
 }
 

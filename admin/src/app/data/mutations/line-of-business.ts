@@ -89,16 +89,12 @@ export function useAssignLobToAgent() {
     mutationFn: async (request: AssignLobAgentRequest) => {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs`
       const token = `Bearer ${accessToken}`
-      try {
-        const response = await axios.post<void>(url, request, {
-          headers: {
-            Authorization: token,
-          },
-        })
-        return response.data
-      } catch (error) {
-        handleApiError(error)
-      }
+      const response = await axios.post<void>(url, request, {
+        headers: {
+          Authorization: token,
+        },
+      })
+      return response.data
     },
   })
 }
@@ -139,16 +135,12 @@ export function useDeleteAgentLob() {
     mutationFn: async (agentLobId: number) => {
       const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs/${agentLobId}`
       const token = `Bearer ${accessToken}`
-      try {
-        const response = await axios.delete<void>(url, {
-          headers: {
-            Authorization: token,
-          },
-        })
-        return response.data
-      } catch (error) {
-        handleApiError(error)
-      }
+      const response = await axios.delete<void>(url, {
+        headers: {
+          Authorization: token,
+        },
+      })
+      return response.data
     },
   })
 }

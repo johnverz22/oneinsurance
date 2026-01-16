@@ -20,6 +20,7 @@ import type {
   ReportMetric,
   ChartData,
 } from '@/types/report'
+import { useGetAgentStatistics, useGetLOBProductStatistics } from '@/app/data/queries/statistics'
 
 const generateMockReport = (filters: ReportFilter): Report => {
   const baseMetrics: ReportMetric[] = [
@@ -163,17 +164,102 @@ export default function ReportsPage() {
   const [report, setReport] = useState<Report | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Calculate date range based on timeRange filter
+  const getDateRange = () => {
+    const today = new Date()
+    const dateTo = today.toISOString().split('T')[0]
+    let dateFrom = ''
+
+    switch (filters.timeRange) {
+      case '7d':
+        const date7 = new Date()
+        date7.setDate(date7.getDate() - 7)
+        dateFrom = date7.toISOString().split('T')[0]
+        break
+      case '30d':
+        const date30 = new Date()
+        date30.setDate(date30.getDate() - 30)
+        dateFrom = date30.toISOString().split('T')[0]
+        break
+      case '90d':
+        const date90 = new Date()
+        date90.setDate(date90.getDate() - 90)
+        dateFrom = date90.toISOString().split('T')[0]
+        break
+      case '1y':
+        const date1y = new Date()
+        date1y.setFullYear(date1y.getFullYear() - 1)
+        dateFrom = date1y.toISOString().split('T')[0]
+        break
+      default:
+        const dateDefault = new Date()
+        dateDefault.setDate(dateDefault.getDate() - 30)
+        dateFrom = dateDefault.toISOString().split('T')[0]
+    }
+
+    return { dateFrom, dateTo }
+  }
+
+  const { dateFrom, dateTo } = getDateRange()
+  
+  // Fetch statistics from API
+  const { data: agentStats, isLoading: isStatsLoading } = useGetAgentStatistics(dateFrom, dateTo)
+  const { data: lobStats, isLoading: isLobStatsLoading } = useGetLOBProductStatistics(dateFrom, dateTo)
+
   const loadReport = async () => {
     setIsLoading(true)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     const newReport = generateMockReport(filters)
+    
+    // Update metrics with real data if available
+    if (agentStats) {
+      newReport.metrics = [
+        {
+          id: '1',
+          title: 'Total Sales',
+          value: agentStats.total_sales,
+          change: 12.5,
+          changeType: 'increase',
+          icon: 'dollar',
+          description: 'Total sales revenue',
+        },
+        {
+          id: '2',
+          title: 'Active Policies',
+          value: agentStats.active_policies,
+          change: 8.2,
+          changeType: 'increase',
+          icon: 'file',
+          description: 'Currently active insurance policies',
+        },
+        {
+          id: '3',
+          title: 'Total Cases',
+          value: agentStats.total_cases,
+          change: -3.1,
+          changeType: 'decrease',
+          icon: 'users',
+          description: 'Total cases handled',
+        },
+        {
+          id: '4',
+          title: 'Total Commission',
+          value: agentStats.total_commission,
+          change: 15.7,
+          changeType: 'increase',
+          icon: 'dollar',
+          description: 'Total commission earned',
+        },
+      ]
+    }
+    
     setReport(newReport)
     setIsLoading(false)
   }
 
   useEffect(() => {
     loadReport()
-  }, [filters])
+  }, [filters, agentStats])
 
   const handleExport = () => {
     const dataStr = JSON.stringify(report, null, 2)
@@ -191,7 +277,7 @@ export default function ReportsPage() {
     loadReport()
   }
 
-  if (!report) {
+  if (!report || isStatsLoading || isLobStatsLoading) {
     return (
       <div className="container mx-auto py-6">
         <div className="flex h-64 items-center justify-center">
@@ -293,16 +379,22 @@ export default function ReportsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Premium Collections</span>
-                      <span className="font-semibold">$2,100,000</span>
+                      <span className="text-sm">Total Sales</span>
+                      <span className="font-semibold">
+                        PHP {agentStats?.total_sales.toLocaleString() ?? '0'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Investment Income</span>
-                      <span className="font-semibold">$250,000</span>
+                      <span className="text-sm">Total Commission</span>
+                      <span className="font-semibold">
+                        PHP {agentStats?.total_commission.toLocaleString() ?? '0'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">Other Revenue</span>
-                      <span className="font-semibold">$100,000</span>
+                      <span className="text-sm">Conversion Rate</span>
+                      <span className="font-semibold">
+                        {agentStats?.conversion_rate ?? 0}%
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -313,18 +405,16 @@ export default function ReportsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Health Insurance</span>
-                      <span className="font-semibold">$850,000</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Life Insurance</span>
-                      <span className="font-semibold">$620,000</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Auto Insurance</span>
-                      <span className="font-semibold">$490,000</span>
-                    </div>
+                    {lobStats?.lobs.slice(0, 3).map((lob) => (
+                      <div key={lob.lob_id} className="flex items-center justify-between">
+                        <span className="text-sm">{lob.lob_name}</span>
+                        <span className="font-semibold">
+                          PHP {lob.total_sales.toLocaleString()}
+                        </span>
+                      </div>
+                    )) ?? (
+                      <p className="text-sm text-muted-foreground">No data available</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -343,19 +433,19 @@ export default function ReportsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Active Policies</span>
-                    <span className="font-semibold">15,420</span>
+                    <span className="font-semibold">{agentStats?.active_policies ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">New Policies (This Month)</span>
-                    <span className="font-semibold">1,250</span>
+                    <span className="text-sm">Total Cases</span>
+                    <span className="font-semibold">{agentStats?.total_cases ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Renewed Policies</span>
-                    <span className="font-semibold">890</span>
+                    <span className="text-sm">Pending Applications</span>
+                    <span className="font-semibold">{agentStats?.pending_applications ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Cancelled Policies</span>
-                    <span className="font-semibold">120</span>
+                    <span className="text-sm">Conversion Rate</span>
+                    <span className="font-semibold">{agentStats?.conversion_rate ?? 0}%</span>
                   </div>
                 </div>
               </CardContent>

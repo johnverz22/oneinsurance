@@ -1,10 +1,20 @@
 'use client'
 
-import { useGetAgentProducts } from '@/app/data/queries/agents'
+import { useGetAgentProducts, useGetAgents } from '@/app/data/queries/agents'
+import { useSearchAgents } from '@/app/data/mutations/agents'
+import {
+  useGetAllAgentLineOfBusiness,
+  useGetLineOfBusinessList,
+} from '@/app/data/queries/line-of-business'
+import {
+  useAssignLobToAgent,
+  useDeleteAgentLob,
+} from '@/app/data/mutations/line-of-business'
 import {
   AgentProduct,
   AgentProductAssignment,
   ProductCommissionInfo,
+  AgentLineOfBusiness,
 } from '@/types/agents'
 import { useEffect, useState } from 'react'
 import {
@@ -16,31 +26,214 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
-import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Plus, Trash2, Search } from 'lucide-react'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
-export default function AgentsMainContent() {
+interface AgentWithLobs {
+  agent: AgentProductAssignment['agent']
+  lobs: AgentLineOfBusiness[]
+}
+
+interface AgentsMainContentProps {
+  page?: number
+  onPageReset?: () => void
+}
+
+export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainContentProps) {
+  const queryClient = useQueryClient()
   const [agentProductAssignments, setAgentProductAssignments] = useState<
     AgentProductAssignment[]
   >([])
   const [selectedAgent, setSelectedAgent] =
     useState<AgentProductAssignment | null>(null)
+  const [selectedAgentLobs, setSelectedAgentLobs] = useState<
+    AgentLineOfBusiness[]
+  >([])
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQueryDebounced, setSearchQueryDebounced] = useState('')
+  const [searchResults, setSearchResults] = useState<any>(null)
+
+  const { mutateAsync: searchAgents, isPending: isSearching } = useSearchAgents()
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQueryDebounced(searchQuery)
+      // Reset page to 1 when search changes
+      if (searchQuery !== searchQueryDebounced && onPageReset) {
+        onPageReset()
+      }
+      // Trigger search if there's a query
+      if (searchQuery.trim()) {
+        searchAgents({ searchKey: searchQuery.trim() })
+          .then((result) => {
+            setSearchResults(result)
+          })
+          .catch((error) => {
+            console.error('Search error:', error)
+            setSearchResults(null)
+          })
+      } else {
+        setSearchResults(null)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, searchQueryDebounced, onPageReset, searchAgents])
 
   const { data: agentProducts } = useGetAgentProducts()
+  const { data: agentsData, isLoading: agentsLoading, isFetching } = useGetAgents({
+    page: page,
+    per_page: 12,
+    status: 'active', // Only fetch active agents
+  })
+  
+  // Use search results if searching, otherwise use regular data
+  const displayData = searchQuery.trim() ? searchResults : agentsData
+  
+  // Debug: Log search query changes and API response
+  useEffect(() => {
+    console.log('=== AGENTS SEARCH DEBUG ===')
+    console.log('Search Query:', searchQuery)
+    console.log('Search Query Debounced:', searchQueryDebounced)
+    console.log('Page:', page)
+    console.log('Is Loading:', agentsLoading)
+    console.log('Is Fetching:', isFetching)
+    console.log('Agents Data:', agentsData)
+    console.log('API URL would be:', `/admin/agents?page=${page}&per_page=12&search=${searchQueryDebounced || ''}&status=active`)
+    console.log('========================')
+  }, [searchQuery, searchQueryDebounced, page, agentsLoading, isFetching, agentsData])
+  const { data: agentLobs, refetch: refetchAgentLobs } = useGetAllAgentLineOfBusiness()
+  const { data: allLobs } = useGetLineOfBusinessList({
+    page: 1,
+    per_page: 100,
+    status: 'active',
+  })
+
+  const assignLobMutation = useAssignLobToAgent()
+  const deleteLobMutation = useDeleteAgentLob()
 
   useEffect(() => {
-    if (agentProducts) {
-      const groupedData = groupByAgent(agentProducts.data.data)
+    const dataToUse = displayData || agentsData
+    if (agentProducts && dataToUse) {
+      console.log('Agents Data:', dataToUse)
+      console.log('Agent Products:', agentProducts)
+      
+      // Use agents from the agents endpoint (already filtered for active agents on backend)
+      const allAgents = dataToUse.data.data
+      const agentCommissions = agentProducts.data.data
+      
+      console.log('All Agents Count:', allAgents.length)
+      console.log('Agent Commissions Count:', agentCommissions.length)
+      
+      // Create a map of agent commissions by agent_id
+      const commissionMap = new Map<number, AgentProduct[]>()
+      agentCommissions.forEach((commission) => {
+        const existing = commissionMap.get(Number(commission.agent.id)) || []
+        existing.push(commission)
+        commissionMap.set(Number(commission.agent.id), existing)
+      })
+
+      // Map all agents to AgentProductAssignment format
+      const groupedData: AgentProductAssignment[] = allAgents.map((agent: any) => {
+        const commissions = commissionMap.get(Number(agent.id)) || []
+        
+        const products: ProductCommissionInfo[] = commissions.map((commission) => ({
+          product: commission.product,
+          commission_rate: commission.commission_rate,
+          commission_status: commission.status,
+          commission_id: commission.id,
+        }))
+
+        return {
+          agent: agent,
+          products: products,
+        }
+      })
+
+      console.log('Grouped Data Count:', groupedData.length)
       setAgentProductAssignments(groupedData)
     }
-  }, [agentProducts])
+  }, [agentProducts, agentsData, displayData])
+
+  // Update selected agent LOBs when agentLobs data changes
+  useEffect(() => {
+    if (selectedAgent && agentLobs?.data?.data) {
+      const agentLobAssignments = agentLobs.data.data.filter(
+        (lob) => lob.agent_id === selectedAgent.agent.id
+      )
+      setSelectedAgentLobs(agentLobAssignments)
+    }
+  }, [agentLobs, selectedAgent])
 
   const handleAgentClick = (agent: AgentProductAssignment) => {
     setSelectedAgent(agent)
+    // Filter LOBs for this agent
+    const agentLobAssignments =
+      agentLobs?.data?.data?.filter(
+        (lob) => lob.agent_id === agent.agent.id
+      ) || []
+    setSelectedAgentLobs(agentLobAssignments)
     setIsDetailsOpen(true)
+  }
+
+  const isLobAssigned = (lobId: number) => {
+    return selectedAgentLobs.some((aLob) => aLob.lob_id === lobId)
+  }
+
+  const getAgentLobId = (lobId: number) => {
+    return selectedAgentLobs.find((aLob) => aLob.lob_id === lobId)?.id
+  }
+
+  const handleToggleLob = async (lobId: number, isChecked: boolean) => {
+    if (!selectedAgent) {
+      console.error('No agent selected')
+      return
+    }
+
+    console.log('Toggle LOB:', { lobId, isChecked, agentId: selectedAgent.agent.id })
+
+    try {
+      if (isChecked) {
+        // Assign LOB
+        console.log('Assigning LOB to agent...')
+        const result = await assignLobMutation.mutateAsync({
+          agent_id: selectedAgent.agent.id,
+          lob_id: lobId,
+          status: 'active',
+        })
+        console.log('Assignment result:', result)
+        toast.success('Line of business assigned successfully')
+      } else {
+        // Remove LOB
+        const agentLobId = getAgentLobId(lobId)
+        console.log('Removing LOB assignment:', agentLobId)
+        if (agentLobId) {
+          const result = await deleteLobMutation.mutateAsync(agentLobId)
+          console.log('Deletion result:', result)
+          toast.success('Line of business removed successfully')
+        } else {
+          console.error('Agent LOB ID not found')
+        }
+      }
+
+      // Refresh data
+      console.log('Refetching agent LOBs...')
+      await refetchAgentLobs()
+      console.log('Refetch complete')
+    } catch (error) {
+      console.error('Error toggling LOB:', error)
+      toast.error(
+        isChecked
+          ? 'Failed to assign line of business'
+          : 'Failed to remove line of business'
+      )
+    }
   }
 
   return (
@@ -53,11 +246,30 @@ export default function AgentsMainContent() {
             streamline operations.
           </p>
         </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-64 md:w-80">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search agents..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Agents Grid */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {agentProductAssignments.map((agentAssignment) => (
+        {(agentsLoading || isSearching) ? (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-gray-500">{isSearching ? 'Searching...' : 'Loading agents...'}</p>
+          </div>
+        ) : agentProductAssignments.length > 0 ? (
+          agentProductAssignments.map((agentAssignment) => (
           <div
             key={agentAssignment.agent.id}
             onClick={() => handleAgentClick(agentAssignment)}
@@ -77,7 +289,7 @@ export default function AgentsMainContent() {
                     : 'bg-red-50 text-red-500'
                 }`}
               >
-                {agentAssignment.agent.status}
+                {agentAssignment.agent.status.toUpperCase()}
               </span>
             </div>
 
@@ -102,112 +314,108 @@ export default function AgentsMainContent() {
             {/* Assigned Products Section */}
             <div className="mt-auto flex flex-col items-start gap-2 sm:flex-row sm:gap-3">
               <span className="text-xs font-medium whitespace-nowrap sm:text-sm">
-                Assigned to:
+                Lines of Business:
               </span>
               <div className="flex flex-wrap gap-2">
-                {agentAssignment.products.length > 0 ? (
-                  <>
-                    {agentAssignment.products.slice(0, 2).map((prod, idx) => (
-                      <span
-                        key={idx}
-                        className="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 sm:px-3"
-                      >
-                        {prod.product.name}
-                      </span>
-                    ))}
-                    {agentAssignment.products.length > 2 && (
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 sm:px-3">
-                        +{agentAssignment.products.length - 2} more
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-xs text-gray-400 italic">
-                    No assignments
-                  </span>
-                )}
+                {(() => {
+                  const agentLobAssignments =
+                    agentLobs?.data?.data?.filter(
+                      (lob) => lob.agent_id === agentAssignment.agent.id
+                    ) || []
+                  return agentLobAssignments.length > 0 ? (
+                    <>
+                      {agentLobAssignments.slice(0, 2).map((lob) => (
+                        <span
+                          key={lob.id}
+                          className="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 sm:px-3"
+                        >
+                          {lob.line_of_business.name}
+                        </span>
+                      ))}
+                      {agentLobAssignments.length > 2 && (
+                        <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 sm:px-3">
+                          +{agentLobAssignments.length - 2} more
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">
+                      No assignments
+                    </span>
+                  )
+                })()}
               </div>
             </div>
           </div>
-        ))}
+        ))
+        ) : (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-gray-500">
+              {searchQuery
+                ? 'No agents found matching your search'
+                : 'No agents available'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Agent Details Dialog */}
       <AlertDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <AlertDialogContent className="max-h-[90vh] max-w-[95vw] overflow-hidden sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl">
-          <AlertDialogHeader className="border-b pb-3 sm:pb-4">
-            <div className="flex items-center justify-between gap-2">
-              <AlertDialogTitle className="text-lg font-bold sm:text-xl md:text-2xl">
-                Agent Details
+        <AlertDialogContent className="flex max-h-[90vh] max-w-2xl flex-col p-0">
+          <AlertDialogHeader className="border-b px-4 py-4 sm:px-6">
+            <div className="flex items-start justify-between gap-4">
+              <AlertDialogTitle className="text-lg font-bold sm:text-xl">
+                {selectedAgent?.agent.first_name}{' '}
+                {selectedAgent?.agent.middle_name ?? ''}{' '}
+                {selectedAgent?.agent.last_name}
               </AlertDialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsDetailsOpen(false)}
-                className="h-6 w-6 shrink-0"
+              <span
+                className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
+                  selectedAgent?.agent.status === 'active'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-50 text-red-500'
+                }`}
               >
-                <X className="h-4 w-4" />
-              </Button>
+                {selectedAgent?.agent.status.toUpperCase()}
+              </span>
             </div>
-            <AlertDialogDescription className="text-xs sm:text-sm">
+            <AlertDialogDescription className="text-xs text-gray-600 sm:text-sm">
               View comprehensive information about the agent and their assigned
               products.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           {selectedAgent && (
-            <ScrollArea className="max-h-[60vh] sm:max-h-[65vh] md:max-h-[70vh]">
-              <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
+            <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Agent Information */}
                 <div>
-                  <h3 className="mb-3 text-base font-semibold sm:mb-4 sm:text-lg">
+                  <h3 className="mb-3 text-xs font-semibold text-gray-700 sm:mb-4 sm:text-sm">
                     Agent Information
                   </h3>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                     <div>
-                      <Label className="text-xs text-gray-500">Agent ID:</Label>
+                      <Label className="text-xs text-gray-500">Agent ID</Label>
                       <div className="text-sm font-medium sm:text-base">
                         AGT{String(selectedAgent.agent.id).padStart(3, '0')}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-500">Name:</Label>
-                      <div className="text-sm font-medium break-words sm:text-base">
-                        {selectedAgent.agent.first_name}{' '}
-                        {selectedAgent.agent.middle_name ?? ''}{' '}
-                        {selectedAgent.agent.last_name}
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Email:</Label>
+                      <Label className="text-xs text-gray-500">Email</Label>
                       <div className="text-sm font-medium break-all sm:text-base">
                         {selectedAgent.agent.email}
                       </div>
                     </div>
                     <div>
                       <Label className="text-xs text-gray-500">
-                        Phone Number:
+                        Phone Number
                       </Label>
                       <div className="text-sm font-medium sm:text-base">
                         {selectedAgent.agent.phone ?? '-'}
                       </div>
                     </div>
                     <div>
-                      <Label className="text-xs text-gray-500">Status:</Label>
-                      <div>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
-                            selectedAgent.agent.status === 'active'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-50 text-red-500'
-                          }`}
-                        >
-                          {selectedAgent.agent.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-gray-500">Address:</Label>
+                      <Label className="text-xs text-gray-500">Address</Label>
                       <div className="text-sm font-medium break-words sm:text-base">
                         {selectedAgent.agent.address ?? '-'}
                       </div>
@@ -215,87 +423,93 @@ export default function AgentsMainContent() {
                   </div>
                 </div>
 
-                {/* Assigned Products */}
+                {/* Manage LOB Assignments */}
                 <div>
-                  <h3 className="mb-3 text-base font-semibold sm:mb-4 sm:text-lg">
-                    Assigned Products ({selectedAgent.products.length})
+                  <h3 className="mb-3 text-xs font-semibold text-gray-700 sm:mb-4 sm:text-sm">
+                    Manage Line of Business Assignments
                   </h3>
-                  {selectedAgent.products.length > 0 ? (
-                    <div className="space-y-3">
-                      {selectedAgent.products.map((prod, idx) => (
-                        <div
-                          key={idx}
-                          className="rounded-lg border p-3 transition-shadow hover:shadow-sm sm:p-4"
-                        >
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-                            <div>
-                              <Label className="text-xs text-gray-500">
-                                Product Name:
-                              </Label>
-                              <div className="text-sm font-semibold break-words text-blue-600 sm:text-base">
-                                {prod.product.name}
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-gray-500">
-                                Provider:
-                              </Label>
-                              <div className="text-sm font-medium break-words sm:text-base">
-                                {prod.product.provider.name}
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-gray-500">
-                                Commission Rate:
-                              </Label>
-                              <div className="text-sm font-medium sm:text-base">
-                                {prod.commission_rate}%
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-gray-500">
-                                Commission Status:
-                              </Label>
-                              <div>
-                                <span
-                                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                                    prod.commission_status === 'active'
-                                      ? 'bg-green-100 text-green-700'
-                                      : 'bg-gray-100 text-gray-700'
-                                  }`}
-                                >
-                                  {prod.commission_status}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="sm:col-span-2">
-                              <Label className="text-xs text-gray-500">
-                                Description:
-                              </Label>
-                              <div className="text-xs text-gray-600 sm:text-sm">
-                                {prod.product.description}
-                              </div>
+                  {allLobs?.data?.data && allLobs.data.data.length > 0 ? (
+                    <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-lg border p-3 sm:max-h-[350px] sm:p-4">
+                      {allLobs.data.data.map((lob) => {
+                        const isAssigned = isLobAssigned(lob.id)
+                        const isLoading =
+                          assignLobMutation.isPending ||
+                          deleteLobMutation.isPending
+                        
+                        return (
+                          <div
+                            key={lob.id}
+                            className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-gray-50"
+                          >
+                            <Checkbox
+                              id={`lob-${lob.id}`}
+                              checked={isAssigned}
+                              onCheckedChange={(checked) =>
+                                handleToggleLob(lob.id, checked as boolean)
+                              }
+                              disabled={isLoading}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <label
+                                htmlFor={`lob-${lob.id}`}
+                                className="flex cursor-pointer flex-col gap-1"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold sm:text-base">
+                                    {lob.name}
+                                  </span>
+                                  {isAssigned && (
+                                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                                      Assigned
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-600 sm:text-sm">
+                                  {lob.description}
+                                </p>
+                              </label>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   ) : (
-                    <div className="rounded-lg border border-dashed p-6 text-center sm:p-8">
-                      <p className="text-xs text-gray-400 sm:text-sm">
-                        No products assigned to this agent.
-                      </p>
-                    </div>
+                    <p className="text-xs text-gray-400 italic sm:text-sm">
+                      No lines of business available
+                    </p>
                   )}
                 </div>
+
+                {/* Summary of Assigned LOBs */}
+                {selectedAgentLobs.length > 0 && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-3 sm:p-4">
+                    <h4 className="mb-2 text-xs font-semibold text-green-800 sm:text-sm">
+                      Currently Assigned ({selectedAgentLobs.length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAgentLobs.map((agentLob) => (
+                        <span
+                          key={agentLob.id}
+                          className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 sm:px-3"
+                        >
+                          {agentLob.line_of_business.name}
+                          <span className="text-green-500">
+                            • {new Date(agentLob.created_at).toLocaleDateString()}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </ScrollArea>
+            </div>
           )}
 
-          <AlertDialogFooter className="border-t pt-3 sm:pt-4">
+          <AlertDialogFooter className="border-t px-4 py-4 sm:px-6">
             <AlertDialogCancel
               onClick={() => setIsDetailsOpen(false)}
-              className="w-full sm:w-auto"
+              className="w-full rounded-full bg-green-600 text-white hover:bg-green-700 hover:text-white sm:w-auto"
             >
               Close
             </AlertDialogCancel>
@@ -304,51 +518,4 @@ export default function AgentsMainContent() {
       </AlertDialog>
     </div>
   )
-}
-
-function groupByAgent(
-  agentCommissions: AgentProduct[]
-): AgentProductAssignment[] {
-  // Group commissions by agent_id
-  const agentMap = new Map<number, AgentProduct[]>()
-
-  agentCommissions.forEach((commission) => {
-    const existing = agentMap.get(Number(commission.agent.id)) || []
-    existing.push(commission)
-    agentMap.set(Number(commission.agent.id), existing)
-  })
-
-  // Transform to output format
-  const result: AgentProductAssignment[] = []
-
-  agentMap.forEach((commissions, agentId) => {
-    // Get the agent object (same for all commissions)
-    const agent = commissions[0].agent
-
-    // Create products array with commission info
-    const products: ProductCommissionInfo[] = commissions.map((commission) => ({
-      product: {
-        id: commission.product.id,
-        provider_id: commission.product.provider_id,
-        name: commission.product.name,
-        description: commission.product.description,
-        status: commission.product.status,
-        price: commission.product.price,
-        created_at: commission.product.created_at,
-        updated_at: commission.product.updated_at,
-        deleted_at: commission.product.deleted_at,
-        provider: commission.product.provider,
-      },
-      commission_rate: commission.commission_rate,
-      commission_status: commission.status,
-      commission_id: commission.id,
-    }))
-
-    result.push({
-      agent: agent,
-      products: products,
-    })
-  })
-
-  return result
 }

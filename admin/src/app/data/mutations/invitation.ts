@@ -3,6 +3,40 @@ import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { handleApiError } from '@/utils/handle-api-error'
 
+export function useSendInvitation() {
+  const { accessToken } = useAuthStore()
+
+  return useMutation({
+    mutationKey: ['send-invitation'],
+    mutationFn: async ({
+      email,
+      role = 'agent',
+      invitation_url,
+    }: {
+      email: string
+      role?: string
+      invitation_url: string
+    }) => {
+      try {
+        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/invitations`
+        const response = await axios.post(
+          url,
+          { email, role, invitation_url },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
+
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+      }
+    },
+  })
+}
+
 export function useCancelInvitation() {
   const { accessToken } = useAuthStore()
 

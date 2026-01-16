@@ -22,6 +22,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const url = `${process.env.BASE_URL}/agents/transactions/search`
+    
+    console.log('Searching transactions at:', url, 'with keyword:', body.keyword)
+    
     const response = await axios.post(url, body, {
       headers: {
         Authorization: token,

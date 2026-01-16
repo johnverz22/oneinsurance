@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
     const incomingUrl = new URL(request.url)
     const query = incomingUrl.search
     const url = `${process.env.BASE_URL}/agents/transactions${query}`
+    
+    console.log('Fetching transactions from:', url)
+    
     const response = await axios.get(url, {
       headers: {
         Authorization: token,

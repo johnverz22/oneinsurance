@@ -51,48 +51,21 @@ export default function SignupForm() {
   } = useAgentRegistrationStore()
   const { isAuthenticated } = useAgentAuthStore()
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/')
-    }
-  }, [isAuthenticated, router])
-
-  useEffect(() => {
-    const token = searchParams.get('token')
-    if (!token) {
-      setRegistrationError('Invalid or missing invitation token. Please use the signup link provided in your invitation email.')
-    } else if (token.length < 10) {
-      setRegistrationError('Invalid invitation token format. Please use the correct signup link provided in your invitation email.')
-    } else {
-      clearValidationErrors()
-      // Fetch autofill data
-      getSignUpAutoFill(token)
-        .then((response) => {
-          setAutofillData(response)
-        })
-        .catch((error) => {
-          console.error('Failed to fetch autofill data:', error)
-          toast.error('Failed to load your information. Please enter your details manually.', {
-            description: error.response?.data?.message || error.message || 'An error occurred',
-          })
-        })
-    }
-  }, [searchParams, setRegistrationError, clearValidationErrors, getSignUpAutoFill, setAutofillData])
-
   const form = useForm({
     defaultValues: {
-      token: searchParams.get('token') || '',
-      email: autofillData?.data?.email || '',
-      firstName: autofillData?.data?.first_name || '',
-      lastName: autofillData?.data?.last_name || '',
-      phone: autofillData?.data?.contact_number || '',
+      email: '',
+      firstName: '',
+      lastName: '',
+      phone: '',
       password: '',
       confirmPassword: '',
+      token: searchParams.get('token') || '',
     } as RegisterAgent,
     validators: {
-      onChange: RegisterAgentSchema,
+      onSubmit: RegisterAgentSchema,
     },
     onSubmit: async ({ value }) => {
+      console.log('Form submission values:', { ...value, password: '[HIDDEN]', confirmPassword: '[HIDDEN]' })
       try {
         setIsRegistering(true)
         clearValidationErrors()
@@ -146,6 +119,43 @@ export default function SignupForm() {
       }
     },
   })
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/')
+    }
+  }, [isAuthenticated, router])
+
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (!token) {
+      setRegistrationError('Invalid or missing invitation token. Please use the signup link provided in your invitation email.')
+    } else if (token.length < 10) {
+      setRegistrationError('Invalid invitation token format. Please use the correct signup link provided in your invitation email.')
+    } else {
+      clearValidationErrors()
+      // Fetch autofill data
+      getSignUpAutoFill(token)
+        .then((response) => {
+          setAutofillData(response)
+        })
+        .catch((error) => {
+          console.error('Failed to fetch autofill data:', error)
+          toast.error('Failed to load your information. Please enter your details manually.', {
+            description: error.response?.data?.message || error.message || 'An error occurred',
+          })
+        })
+    }
+  }, [searchParams, setRegistrationError, clearValidationErrors, getSignUpAutoFill, setAutofillData])
+
+  useEffect(() => {
+    if (autofillData?.data) {
+      form.setFieldValue('email', autofillData.data.email || '')
+      form.setFieldValue('firstName', autofillData.data.first_name || '')
+      form.setFieldValue('lastName', autofillData.data.last_name || '')
+      form.setFieldValue('phone', autofillData.data.contact_number || '')
+    }
+  }, [autofillData])
 
   return (
     <div className="flex w-full flex-col justify-center gap-6">

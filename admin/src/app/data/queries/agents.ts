@@ -9,19 +9,25 @@ interface GetAgentsParams {
   page?: number
   per_page?: number
   search?: string
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+  status?: string
 }
 
 export function useGetAgents(params: GetAgentsParams = {}) {
   const { accessToken } = useAuthStore()
-  const { page = 1, per_page = 15, search } = params
+  const { page = 1, per_page = 15, search, sort_by, sort_order, status } = params
 
   return useQuery({
-    queryKey: ['agents', page, per_page, search],
+    queryKey: ['agents', page, per_page, search, sort_by, sort_order, status],
     queryFn: async () => {
       const searchParams = new URLSearchParams()
       searchParams.append('page', page.toString())
       searchParams.append('per_page', per_page.toString())
       if (search) searchParams.append('search', search)
+      if (sort_by) searchParams.append('sort_by', sort_by)
+      if (sort_order) searchParams.append('sort_order', sort_order)
+      if (status) searchParams.append('status', status)
 
       try {
         const response = await axios.get<AgentsResponse>(

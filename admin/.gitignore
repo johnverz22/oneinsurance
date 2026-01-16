@@ -1,4 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+/postman
 
 # dependencies
 /node_modules
@@ -41,3 +42,4 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+*.md

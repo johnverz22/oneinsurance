@@ -10,8 +10,8 @@ export default function ProductsPage() {
   return (
     <>
       <PageHeader
-        title="Product Assignment Management"
-        subTitle="Assign insurance products to agents and manage access permissions"
+        title="Products & Line of Business"
+        subTitle="Manage line of business, insurance products, and agent assignments"
       />
       <ProductTab />
     </>
