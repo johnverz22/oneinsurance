@@ -226,7 +226,7 @@ export default function ReportsPage() {
         {
           id: '2',
           title: 'Active Policies',
-          value: agentStats.active_policies,
+          value: agentStats.active_policies ?? 0,
           change: 8.2,
           changeType: 'increase',
           icon: 'file',
@@ -235,7 +235,7 @@ export default function ReportsPage() {
         {
           id: '3',
           title: 'Total Cases',
-          value: agentStats.total_cases,
+          value: agentStats.total_cases ?? 0,
           change: -3.1,
           changeType: 'decrease',
           icon: 'users',
@@ -244,7 +244,7 @@ export default function ReportsPage() {
         {
           id: '4',
           title: 'Total Commission',
-          value: agentStats.total_commission,
+          value: agentStats.total_commission ?? 0,
           change: 15.7,
           changeType: 'increase',
           icon: 'dollar',
@@ -387,7 +387,7 @@ export default function ReportsPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Total Commission</span>
                       <span className="font-semibold">
-                        PHP {agentStats?.total_commission.toLocaleString() ?? '0'}
+                        PHP {(agentStats?.total_commission ?? 0).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

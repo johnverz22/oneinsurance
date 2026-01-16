@@ -11,13 +11,13 @@ const headers = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { agentId: string } }
+  { params }: { params: Promise<{ agentId: string }> }
 ) {
   const token = req.headers.get('Authorization')
   const searchParams = req.nextUrl.searchParams
   const dateFrom = searchParams.get('date_from')
   const dateTo = searchParams.get('date_to')
-  const { agentId } = params
+  const { agentId } = await params
 
   if (!token) {
     return NextResponse.json(
