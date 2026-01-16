@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import { FieldInfo } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
@@ -37,7 +38,6 @@ import { cn } from '@/lib/utils'
 const updateProductSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  price: z.number().min(1, 'Price must be at least 1'),
   provider_id: z.number().min(1, 'Please select a provider'),
   lob_id: z.number().min(1, 'Please select a line of business'),
   status: z.enum(['active', 'inactive']),
@@ -50,7 +50,6 @@ interface ProductWithCommission {
   id: number | string
   name: string
   description: string
-  price: number
   provider_id: number
   lob_id: number
   status: 'active' | 'inactive'
@@ -123,7 +122,6 @@ export default function UpdateProductDialog({
     defaultValues: {
       name: product.name,
       description: product.description,
-      price: product.price,
       provider_id: product.provider_id,
       lob_id: product.lob_id,
       status: product.status,
@@ -135,7 +133,7 @@ export default function UpdateProductDialog({
         const productPayload: CreateProductRequest = {
           name: value.name,
           description: value.description,
-          price: value.price,
+          price: 0, // Default price
           provider_id: value.provider_id,
           lob_id: value.lob_id,
           status: value.status,
@@ -176,8 +174,8 @@ export default function UpdateProductDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col p-0" showCloseButton={false}>
+        <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>Update Product</DialogTitle>
           <DialogDescription>Update product information</DialogDescription>
         </DialogHeader>
@@ -188,10 +186,11 @@ export default function UpdateProductDialog({
             e.stopPropagation()
             form.handleSubmit()
           }}
-          className="space-y-6"
+          className="flex flex-1 flex-col overflow-hidden"
         >
-          {/* Product Information Section */}
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            {/* Product Information Section */}
+            <div className="space-y-4">
             <h3 className="text-lg font-semibold">Product Information</h3>
 
             <form.Field name="name">
@@ -231,30 +230,25 @@ export default function UpdateProductDialog({
               )}
             </form.Field>
 
-            <div className="grid grid-cols-2 gap-4">
-              <form.Field name="price">
-                {(field) => (
-                  <div className="space-y-2">
-                    <Label htmlFor="price">
-                      Price (₱) <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={field.state.value || ''}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value))
-                      }
-                      onBlur={field.handleBlur}
-                    />
-                    <FieldInfo field={field} />
-                  </div>
-                )}
-              </form.Field>
+            <form.Field name="carrier_product_code">
+              {(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor="carrier_product_code">
+                    Carrier Product Code <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="carrier_product_code"
+                    placeholder="Enter carrier product code"
+                    value={field.state.value || ''}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
 
+            <div className="grid grid-cols-2 gap-4">
               <form.Field name="provider_id">
                 {(field) => (
                   <div className="space-y-2">
@@ -279,7 +273,7 @@ export default function UpdateProductDialog({
                         />
                       </div>
 
-                      {showProviderResults && (
+                      {showProviderResults && providerSearch && (
                         <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg dark:bg-gray-950">
                           {providers.length > 0 ? (
                             providers.map((provider) => (
@@ -311,33 +305,6 @@ export default function UpdateProductDialog({
                         </div>
                       )}
                     </div>
-                    <FieldInfo field={field} />
-                  </div>
-                )}
-              </form.Field>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <form.Field name="status">
-                {(field) => (
-                  <div className="space-y-2">
-                    <Label htmlFor="status">
-                      Status <span className="text-red-500">*</span>
-                    </Label>
-                    <Select
-                      value={field.state.value}
-                      onValueChange={(value: 'active' | 'inactive') =>
-                        field.handleChange(value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FieldInfo field={field} />
                   </div>
                 )}
@@ -405,43 +372,84 @@ export default function UpdateProductDialog({
               </form.Field>
             </div>
 
-            <form.Field name="carrier_product_code">
+            <form.Field name="status">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor="carrier_product_code">
-                    Carrier Product Code
+                  <Label htmlFor="status">
+                    Status <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="carrier_product_code"
-                    placeholder="Enter carrier product code"
-                    value={field.state.value || ''}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                  />
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(value: 'active' | 'inactive') =>
+                      field.handleChange(value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FieldInfo field={field} />
                 </div>
               )}
             </form.Field>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 border-t pt-6">
+          {/* Commission Note */}
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+            <div className="flex items-start gap-3">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-500 text-white">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                  Commission Configuration
+                </h4>
+                <p className="mt-1 text-sm text-blue-800 dark:text-blue-200">
+                  Commission rates for this product should be configured in the{' '}
+                  <span className="font-semibold">Commissions Page</span> after
+                  the product is created.
+                </p>
+              </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t px-6 py-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => setDialogOpen(false)}
               disabled={isSubmitting}
+              className="rounded-full"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => form.handleSubmit()}
+              className="rounded-full bg-green-600 hover:bg-green-700"
               disabled={isSubmitting || !form.state.canSubmit}
             >
               {isSubmitting ? 'Updating...' : 'Update Product'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

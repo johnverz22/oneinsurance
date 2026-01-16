@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'One Insurance | Products',
+  title: 'One Insurance | Products & LOB',
   description: 'One Insurance',
 }
 

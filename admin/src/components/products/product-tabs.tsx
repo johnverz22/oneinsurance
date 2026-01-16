@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Search, Filter, Plus, Download } from 'lucide-react'
+import LobMainContent from './lob-main-content'
 import ProductsMainContent from './products-main-content'
 import AgentsMainContent from './agents-main-content'
 import AssignProductDialog from './assign-product-dialog'
@@ -149,7 +150,7 @@ function mapToAgentProducts(
 }
 
 export default function ProductTabs() {
-  const [activeTab, setActiveTab] = useState('products')
+  const [activeTab, setActiveTab] = useState('lob')
   const [productsPage, setProductsPage] = useState(1)
   const [agentsPage, setAgentsPage] = useState(1)
   const [productsAssignments, setProductsAssignments] = useState<
@@ -228,11 +229,22 @@ export default function ProductTabs() {
           {/* Tabs */}
           <div className="flex items-end">
             <button
+              onClick={() => setActiveTab('lob')}
+              className={`relative rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+                activeTab === 'lob'
+                  ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-10 border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              Line of Business
+            </button>
+
+            <button
               onClick={() => setActiveTab('products')}
-              className={`relative rounded-t-xl border-x border-t px-4 py-2 text-sm font-bold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative -ml-[1px] rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'products'
                   ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-10 border-transparent bg-gray-100 text-gray-400 group-hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:group-hover:bg-gray-700'
+                  : 'z-20 border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
               }`}
             >
               Products
@@ -240,50 +252,20 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('agents')}
-              className={`relative rounded-t-xl border-x border-t px-4 py-2 text-sm font-bold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative -ml-[1px] rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'agents'
-                  ? 'z-30 -ml-[1px] border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 -ml-[1px] border-transparent bg-gray-100 text-gray-400 group-hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:group-hover:bg-gray-700'
+                  ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-20 border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
               }`}
             >
               Agents
             </button>
           </div>
-
-          {/* Search & Action Button */}
-          <div className="mb-2 flex flex-1 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4 md:mb-3 md:justify-end">
-            <div className="relative w-full sm:w-64 md:w-80">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
-              />
-              <div className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-600">
-                <Filter className="h-4 w-4 text-gray-400" />
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={
-                activeTab === 'products'
-                  ? handleExportProducts
-                  : handleExportAgents
-              }
-              className="rounded-full"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export to CSV
-            </Button>
-
-            <AssignProductDialog />
-          </div>
         </div>
 
-        {activeTab === 'products' ? (
+        {activeTab === 'lob' ? (
+          <LobMainContent />
+        ) : activeTab === 'products' ? (
           <ProductsMainContent
             productAssignments={productsAssignments}
             onProductCreated={handleProductUpdated}
