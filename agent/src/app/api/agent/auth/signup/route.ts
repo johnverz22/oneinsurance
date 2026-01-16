@@ -18,24 +18,28 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const requestPayload = {
+      first_name: body.firstName,
+      last_name: body.lastName,
+      email: body.email,
+      password: body.password,
+      password_confirmation: body.confirmPassword,
+      phone: body.phone,
+      token: body.token,
+    }
+    
     console.log('Registration request body:', { ...body, password: '[HIDDEN]' })
+    console.log('Sending to backend:', { ...requestPayload, password: '[HIDDEN]', password_confirmation: '[HIDDEN]' })
     
     const response = await axios.post<SuccesRegisterAgent>(
-      `${process.env.BASE_URL}/agents/register`,
-      {
-        first_name: body.firstName,
-        last_name: body.lastName,
-        email: body.email,
-        password: body.password,
-        password_confirmation: body.confirmPassword,
-        phone: body.phone,
-        invitation_token: body.token,
-      }
+      `${process.env.BASE_URL}/agents/invitations/accept`,
+      requestPayload
     )
     return NextResponse.json(response.data, { status: response.status })
   } catch (error) {
     console.error('Error during agent registration:', error)
     if (axios.isAxiosError(error) && error.response) {
+      console.error('Backend error response:', error.response.data)
       return handleServerSideAxiosError(error)
     }
 
