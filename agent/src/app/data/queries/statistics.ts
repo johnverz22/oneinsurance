@@ -10,6 +10,11 @@ export interface AgentStatistics {
   net_commissions: number
   average_payout: number
   number_of_products: number
+  active_policies?: number
+  total_cases?: number
+  total_commission?: number
+  conversion_rate?: number
+  pending_applications?: number
   product_sales_ranking: Array<{
     product_id: number
     product_name: string

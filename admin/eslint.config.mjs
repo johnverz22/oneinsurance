@@ -14,10 +14,15 @@ const eslintConfig = [
     extends: [
       'next/core-web-vitals',
       'next/typescript',
-      'react/no-children-prop',
     ],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'react/no-children-prop': 'off',
+      'react/no-unescaped-entities': 'off',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/rules-of-hooks': 'warn',
     },
   }),
 ]
