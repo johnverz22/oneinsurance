@@ -76,6 +76,8 @@ function combineProductArrays(
         description: productWithProvider.description,
         price: 0,
         status: productWithProvider.status,
+        carrier_product_code: productWithProvider.carrier_product_code,
+        lob_id: productWithProvider.lob_id,
         created_at: productWithProvider.created_at,
         updated_at: productWithProvider.updated_at,
         deleted_at: productWithProvider.deleted_at,

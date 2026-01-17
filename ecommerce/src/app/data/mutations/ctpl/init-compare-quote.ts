@@ -17,7 +17,7 @@ export function ctplInitCompareQuote() {
     }) => {
       try {
         const url = '/api/ctpl-insurance/init-compare'
-        const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
+        const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
         const response = await axios.post<CTPLInitCompareResponse>(
           url,
           {

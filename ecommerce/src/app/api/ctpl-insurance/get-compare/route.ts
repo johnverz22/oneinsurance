@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
   const clientRequestId = req.nextUrl.searchParams.get('ClientRequestId')
-  const token = req.headers.get('Authorization')
+  const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
 
-  if (!clientRequestId || !token) {
+  if (!clientRequestId) {
     return NextResponse.json(
       { error: 'Missing required parameters' },
       { status: 400 }

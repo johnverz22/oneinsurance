@@ -13,7 +13,7 @@ export const useGetCtplCompareQuote = (
     queryKey: ['ctpl-compare-quote', clientRequestId],
     queryFn: async () => {
       const url = `/api/ctpl-insurance/get-compare?ClientRequestId=${clientRequestId}`
-      const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
+      const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
       const response = await axios.get<CTPLCompareQuoteResponse>(url, {
         headers: {
           Authorization: token,

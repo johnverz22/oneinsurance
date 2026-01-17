@@ -31,9 +31,9 @@ export default function ProductDetailsDialog({
   // console.log('Product Details:', {
   //   id: product.product.id,
   //   name: product.product.name,
-    carrier_product_code: product.product.carrier_product_code,
-    full_product: product.product,
-  })
+  //   carrier_product_code: product.product.carrier_product_code,
+  //   full_product: product.product,
+  // })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -119,7 +119,7 @@ export default function ProductDetailsDialog({
               status: product.product.status as 'active' | 'inactive',
               carrier_product_code: product.product.carrier_product_code || '',
               provider: product.product.provider,
-              lob: product.product.line_of_business,
+              lob: product.product.line_of_business || undefined,
             }}
             onSuccess={() => {
               onProductUpdated?.()

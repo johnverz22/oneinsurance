@@ -16,7 +16,7 @@ export const useLoadQuoteRequest = (policyNo?: string) => {
           { Type: 'policy', PolicyNo: policyNo },
           {
             headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
             },
           }
         )
