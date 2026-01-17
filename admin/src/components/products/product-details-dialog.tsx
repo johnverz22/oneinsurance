@@ -27,14 +27,6 @@ export default function ProductDetailsDialog({
 }: ProductDetailsDialogProps) {
   if (!product) return null
 
-  // Debug: Log product data to verify carrier_product_code
-  // console.log('Product Details:', {
-  //   id: product.product.id,
-  //   name: product.product.name,
-  //   carrier_product_code: product.product.carrier_product_code,
-  //   full_product: product.product,
-  // })
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col p-0" showCloseButton={false}>
