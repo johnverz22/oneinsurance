@@ -57,6 +57,38 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     ),
   },
   {
+    accessorKey: 'commission_log.gross_commission',
+    header: 'Gross Commission',
+    cell: ({ row }) => {
+      const grossCommission = row.original.commission_log?.gross_commission
+      const value = grossCommission ? parseFloat(grossCommission) : 0
+      return (
+        <p className="font-semibold">
+          ₱{value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+      )
+    },
+  },
+  {
+    accessorKey: 'commission_log.net_commission',
+    header: 'Net Commission',
+    cell: ({ row }) => {
+      const netCommission = row.original.commission_log?.net_commission
+      const value = netCommission ? parseFloat(netCommission) : 0
+      return (
+        <p className="font-semibold">
+          ₱{value.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+      )
+    },
+  },
+  {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
@@ -80,7 +112,7 @@ const transactionColumns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'transaction_date',
-    header: 'Transaction Date & Time',
+    header: 'Timestamp',
     cell: ({ row }) => (
       <p className="text-sm">
         {row.original.transaction_date
