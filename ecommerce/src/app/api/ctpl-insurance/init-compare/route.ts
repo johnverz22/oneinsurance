@@ -13,7 +13,7 @@ interface InitCTPLRequest {
 export async function POST(req: NextRequest) {
   try {
     const data = (await req.json()) as InitCTPLRequest
-    const token = req.headers.get('Authorization')
+    const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
 
     if (!data.productType) {
       return NextResponse.json(

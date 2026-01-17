@@ -16,7 +16,7 @@ export function useCtplFullQuoteRequest() {
       productType: CTPLProductType
     }) => {
       const url = `/api/ctpl-insurance/full-quote`
-      const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
+      const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
 
       const response = await axios.post<FullQuoteCTPLResponse>(
         url,
