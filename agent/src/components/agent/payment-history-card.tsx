@@ -26,7 +26,8 @@ export const PaymentHistoryCard = ({ history }: PaymentHistoryCardProps) => {
             </p>
           </div>
 
-          <Badge
+          {/* Badge temporarily hidden */}
+          {/* <Badge
             className={cn(
               'px-3 py-1',
               isIncludedInPayout
@@ -35,7 +36,7 @@ export const PaymentHistoryCard = ({ history }: PaymentHistoryCardProps) => {
             )}
           >
             {isIncludedInPayout ? 'Included in Payout' : 'Pending'}
-          </Badge>
+          </Badge> */}
         </div>
 
         {/* Key Metrics */}

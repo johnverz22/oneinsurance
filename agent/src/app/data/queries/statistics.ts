@@ -59,21 +59,21 @@ export interface LOBProductStatisticsResponse {
 export const useGetAgentStatistics = (dateFrom?: string, dateTo?: string) => {
   const { accessToken, user } = useAgentAuthStore()
 
-  // Get current month start and end if dates not provided
-  const getCurrentMonthDates = () => {
+  // Get from Jan 1 last year to now if dates not provided
+  const getDefaultDates = () => {
     const now = new Date()
-    const start = new Date(now.getFullYear(), now.getMonth(), 1)
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const lastYear = now.getFullYear() - 1
+    const start = new Date(lastYear, 0, 1) // January 1st of last year
     
     return {
       dateFrom: start.toISOString().split('T')[0], // YYYY-MM-DD format
-      dateTo: end.toISOString().split('T')[0],
+      dateTo: now.toISOString().split('T')[0],
     }
   }
 
   const dates = dateFrom && dateTo 
     ? { dateFrom, dateTo } 
-    : getCurrentMonthDates()
+    : getDefaultDates()
 
   return useQuery<AgentStatistics>({
     queryKey: ['agentStatistics', user?.id, dates.dateFrom, dates.dateTo],

@@ -22,7 +22,7 @@ export default function DashboardLayout({
     // { value: '/overriders', label: 'Overriders' },
     { value: '/products', label: 'My Products' },
     { value: '/referrals', label: 'Referral Links' },
-    { value: '/payments', label: 'Payments' },
+    { value: '/commissions', label: 'Commissions' },
   ] satisfies Tab[]
 
   if (!user || !data) {

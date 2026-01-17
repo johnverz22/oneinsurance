@@ -171,7 +171,7 @@ export function TransactionDataTable({
                     <TableCell key={`${transaction.id}-${column.key}`}>
                       {column.render
                         ? column.render(transaction)
-                        : transaction[column.key as keyof Transaction]}
+                        : String(transaction[column.key as keyof Transaction] ?? '')}
                     </TableCell>
                   ))}
                   <TableCell className="text-right">
