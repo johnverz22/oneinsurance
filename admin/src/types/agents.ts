@@ -67,14 +67,17 @@ export default Agent
 export const ProductSchema = z.object({
   id: z.string().or(z.number()),
   provider_id: z.number(),
+  lob_id: z.number().nullable().optional(),
+  carrier_product_code: z.string().nullable().optional(),
   name: z.string(),
   description: z.string(),
-  price: z.number(),
+  price: z.number().optional(),
   status: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
   deleted_at: z.string().nullable(),
   provider: ProviderSchema,
+  line_of_business: LineOfBusinessSchema.nullable().optional(),
 })
 
 export const AgentProductSchema = z.object({
