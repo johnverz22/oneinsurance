@@ -43,8 +43,6 @@ export function useActivateAgent() {
             },
           }
         )
-
-        console.log('Activate Agent Response:', response.data)
         return response.data
       } catch (error) {
         handleApiError(error)

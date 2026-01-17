@@ -45,7 +45,6 @@ export function IdUploadComponent({
   const removeFile = () => {
     // Prevent file removal while processing
     if (isProcessing) {
-      console.log('Cannot remove file while processing')
       return
     }
 
@@ -58,7 +57,6 @@ export function IdUploadComponent({
   }
 
   const processImage = async () => {
-    console.log('processImage clicked', { uploadedFile, isProcessing })
     if (!uploadedFile) {
       setError('No file uploaded')
       return
@@ -188,7 +186,6 @@ export function IdUploadComponent({
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  console.log('Extract Information button clicked')
                   processImage()
                 }}
                 disabled={isProcessing}

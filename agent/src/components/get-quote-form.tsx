@@ -26,7 +26,6 @@ export default function GetQuoteForm() {
       zipCode: '',
     },
     onSubmit: async ({ value }) => {
-      console.log(value)
     },
   })
 
@@ -261,7 +260,6 @@ export default function GetQuoteForm() {
                               const val = e.target.value.split('|')
                               field.handleChange(val[0])
                               setSelectedProvince(val[1])
-                              console.log('prov_code', val[1])
                             }}
                             className={inputStyle}
                             required

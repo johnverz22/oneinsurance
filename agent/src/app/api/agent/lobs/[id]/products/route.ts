@@ -11,10 +11,11 @@ const headers = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const token = req.headers.get('Authorization')
-  const { id } = await params
+  const resolvedParams = await context.params
+  const { id } = resolvedParams
 
   if (!token) {
     return NextResponse.json(
@@ -33,14 +34,6 @@ export async function GET(
       },
     })
 
-    // Log the response for debugging
-    console.log('=== LOB Products API Route Response ===')
-    console.log('LOB ID:', id)
-    console.log('Request URL:', url)
-    console.log('Response Status:', response.status)
-    console.log('Response Data:', JSON.stringify(response.data, null, 2))
-    console.log('======================================')
-
     if (response.status !== 200) {
       return NextResponse.json(response.data, {
         status: response.status,
@@ -50,11 +43,9 @@ export async function GET(
 
     return NextResponse.json(response.data, { status: 200, headers })
   } catch (error) {
-    console.error('Error fetching LOB products:', error)
     if (axios.isAxiosError(error)) {
       return handleServerSideAxiosError(error)
     }
-
     return NextResponse.json({ error: error }, { status: 500, headers })
   }
 }

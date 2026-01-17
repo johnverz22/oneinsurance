@@ -122,7 +122,7 @@ const PaymentsPage = () => {
           )}
           containerClassName="gap-6"
           actions={[]}
-          onRowClick={(client) => console.log('Clicked row:', client)}
+          onRowClick={(client) => {}}
         />
       </div>
     </div>

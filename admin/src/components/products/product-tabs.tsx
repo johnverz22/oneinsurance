@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Search, Filter, Plus, Download } from 'lucide-react'
 import LobMainContent from './lob-main-content'
 import ProductsMainContent from './products-main-content'
@@ -156,9 +156,17 @@ export default function ProductTabs() {
   const [productsAssignments, setProductsAssignments] = useState<
     ProductAssignment[]
   >([])
+  const [isAgentsSearchMode, setIsAgentsSearchMode] = useState(false)
+  const [agentsSearchData, setAgentsSearchData] = useState<any>(null)
 
   const queryClient = useQueryClient()
   const currentPage = activeTab === 'products' ? productsPage : agentsPage
+
+  // Memoize the search mode change handler to prevent infinite re-renders
+  const handleSearchModeChange = useCallback((isSearchMode: boolean, displayData: any) => {
+    setIsAgentsSearchMode(isSearchMode)
+    setAgentsSearchData(displayData)
+  }, [])
 
   const {
     data: products,
@@ -283,6 +291,7 @@ export default function ProductTabs() {
           <AgentsMainContent 
             page={agentsPage} 
             onPageReset={() => setAgentsPage(1)}
+            onSearchModeChange={handleSearchModeChange}
           />
         )}
 
@@ -362,7 +371,7 @@ export default function ProductTabs() {
         )}
 
         {/* Pagination for Agents */}
-        {activeTab === 'agents' && agentsData?.data && (
+        {activeTab === 'agents' && !isAgentsSearchMode && agentsData?.data && (
           <div className="mt-4 flex flex-col items-center justify-between gap-3 rounded-b-2xl border border-t-0 bg-white px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:rounded-b-3xl sm:px-6 sm:py-4 dark:bg-gray-900">
             <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
               Showing {agentsData.data.data.length} of{' '}

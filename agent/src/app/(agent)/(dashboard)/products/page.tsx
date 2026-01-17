@@ -33,9 +33,6 @@ const MyProductsPage = () => {
   const products = useMemo(() => {
     if (!lobProducts) return []
 
-    console.log('=== Mapping LOB Products to Display ===')
-    console.log('Total Products:', lobProducts.length)
-
     return lobProducts.map((product) => {
       const commissionRate = parseFloat(product.commission_rate?.toString() || '0')
       
@@ -50,13 +47,6 @@ const MyProductsPage = () => {
         lobName: product.lobName,
         providerName: product.providerName,
       }
-
-      console.log(`Mapped Product: ${mappedProduct.name}`)
-      console.log(`  - Description: ${mappedProduct.description}`)
-      console.log(`  - Provider: ${mappedProduct.providerName}`)
-      console.log(`  - Commission Rate: ${mappedProduct.commissionRate}%`)
-      console.log(`  - Status: ${mappedProduct.status}`)
-      console.log(`  - LOB: ${mappedProduct.lobName}`)
 
       return mappedProduct
     })
@@ -74,7 +64,7 @@ const MyProductsPage = () => {
         contentRenderer={(row) => <ProductCard product={row.original} />}
         searchKey="name"
         actions={[]}
-        onRowClick={(client) => console.log('Clicked row:', client)}
+        onRowClick={(client) => {}}
         isLoading={isLoading}
       />
     </div>

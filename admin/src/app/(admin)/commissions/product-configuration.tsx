@@ -111,17 +111,14 @@ export default function ProductCommisionConfiguration({
       onSubmit: commisionConfigurationSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submitted with values:', value)
       try {
         const updateRequestData =
           mapFormDataToCommissionConfigUpdateRequest(value)
-        console.log('Sending update request:', updateRequestData)
         const response = await updateConfingCommission({
           data: updateRequestData,
           commissionConfigId: selectedCommissionConfig!.id,
         })
 
-        console.log('Response:', response)
         if (response?.success) {
           toast.success(response.message || 'Commission configuration updated successfully!')
           onUpdateSuccess?.()
@@ -138,7 +135,6 @@ export default function ProductCommisionConfiguration({
   // Reset form when selectedCommissionConfig changes
   React.useEffect(() => {
     if (selectedCommissionConfig) {
-      console.log('Selected commission config:', selectedCommissionConfig)
       form.reset({
         base_commission: Number(selectedCommissionConfig.base_commission),
         agent_commission: Number(selectedCommissionConfig.agent_commission),
@@ -151,7 +147,6 @@ export default function ProductCommisionConfiguration({
         referral_admin_overrider_commission: Number(selectedCommissionConfig.referral_admin_overrider_commission || selectedCommissionConfig.ifrc_admin),
         effectivity_date: selectedCommissionConfig.effectivity_date.split('T')[0],
       })
-      console.log('Form reset with values:', form.state.values)
     }
   }, [selectedCommissionConfig?.id])
 
@@ -167,7 +162,6 @@ export default function ProductCommisionConfiguration({
             onSubmit={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              console.log('Form onSubmit triggered')
               void form.handleSubmit()
             }}
           >
@@ -546,10 +540,7 @@ export default function ProductCommisionConfiguration({
               <Button
                 type="submit"
                 className="rounded-full bg-blue-600 text-white hover:bg-blue-700"
-                onClick={() => {
-                  console.log('Save button clicked')
-                  console.log('Form state:', form.state)
-                }}
+                onClick={() => {}}
               >
                 Save Configuration
               </Button>
