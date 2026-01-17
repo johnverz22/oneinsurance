@@ -65,7 +65,6 @@ export default function SignupForm() {
       onSubmit: RegisterAgentSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submission values:', { ...value, password: '[HIDDEN]', confirmPassword: '[HIDDEN]' })
       try {
         setIsRegistering(true)
         clearValidationErrors()

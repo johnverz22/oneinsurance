@@ -59,7 +59,7 @@ export function useGetAgentLOBProducts() {
   const { data: agentLOBs, isLoading: isLOBsLoading } = useGetAgentLOBs('active')
 
   return useQuery({
-    queryKey: ['agentLOBProducts', agentLOBs?.map(lob => lob.id)],
+    queryKey: ['agentLOBProducts', agentLOBs?.map(lob => lob.lob_id)],
     queryFn: async () => {
       if (!agentLOBs || agentLOBs.length === 0) {
         return []
@@ -69,7 +69,7 @@ export function useGetAgentLOBProducts() {
       const productPromises = agentLOBs.map(async (agentLOB) => {
         try {
           const response = await axios.get<LOBProductsResponse>(
-            `/api/agent/lobs/${agentLOB.id}/products`,
+            `/api/agent/lobs/${agentLOB.lob_id}/products`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -78,23 +78,9 @@ export function useGetAgentLOBProducts() {
             }
           )
 
-          // Log the response structure for debugging
-          console.log('=== LOB Products API Response ===')
-          console.log('LOB ID:', agentLOB.id)
-          console.log('LOB Name:', agentLOB.line_of_business?.name)
-          console.log('Full Response:', JSON.stringify(response.data, null, 2))
-          console.log('Products:', response.data.data.data)
-          console.log('================================')
-
           return response.data.data.data.map(product => {
             // Extract commission rate from either direct field or nested agent_product
             const commissionRate = product.agent_product?.commission_rate || product.commission_rate || '0'
-            
-            console.log(`Product: ${product.name}`)
-            console.log(`  - Commission Rate: ${commissionRate}`)
-            console.log(`  - Provider: ${product.provider?.name}`)
-            console.log(`  - LOB: ${product.line_of_business?.name || agentLOB.line_of_business?.name}`)
-            console.log(`  - Product Details:`, product)
             
             return {
               ...product,
@@ -105,7 +91,7 @@ export function useGetAgentLOBProducts() {
             }
           })
         } catch (error) {
-          console.error(`Error fetching products for LOB ${agentLOB.id}:`, error)
+          console.error(`Error fetching products for LOB ID ${agentLOB.lob_id}:`, error)
           return []
         }
       })

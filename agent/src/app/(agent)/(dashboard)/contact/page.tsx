@@ -41,7 +41,6 @@ export default function NewInquiryPage() {
     },
     onSubmit: async ({ value }) => {
       // TODO: implement API
-      console.log('🚀 ~ onSubmit: ', value)
       await delay(3000)
       setIsSubmitted(true)
     },

@@ -32,8 +32,6 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
   const form = useForm({
     defaultValues: { ...product },
     onSubmit: async ({ value }) => {
-      console.log(value)
-
       // TODO: IMPLEMENT DELETE API
       await delay(3000)
       handleCloseDialog()

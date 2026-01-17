@@ -242,8 +242,6 @@ export default function PaymentConfigDetailsPage() {
     return <PageLoader />
   }
 
-  console.log('config', configDetails)
-
   const restrictions = restrictionsData?.data || []
   const restrictionCounts = {
     total: restrictions.length,

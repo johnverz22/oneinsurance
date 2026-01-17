@@ -154,7 +154,7 @@ export default function ApplicationsPage() {
                 onClick: (client) => alert(`Deleting ${client.name}`),
               },
             ]}
-            onRowClick={(client) => console.log('Clicked row:', client)}
+            onRowClick={(client) => {}}
             pageSize={5}
           />
         </CardContent>

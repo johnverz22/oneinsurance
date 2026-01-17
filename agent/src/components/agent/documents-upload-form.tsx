@@ -43,8 +43,6 @@ export function DocumentUploadForm({ onSuccess }: DocumentUploadFormProps) {
         setSelectedFile(null)
         onSuccess()
       } catch (error: unknown) {
-        console.log('Failed to upload document:', error)
-
         const message =
           error instanceof Error ? error?.message : 'Something went wrong'
         toast.error(message)

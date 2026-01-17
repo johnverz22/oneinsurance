@@ -33,7 +33,6 @@ export default function CompanyDetailsForm() {
     onSubmit: async ({ value }) => {
       await delay(3000)
       setData({ ...value })
-      console.log(value)
       increaseStep()
     },
   })

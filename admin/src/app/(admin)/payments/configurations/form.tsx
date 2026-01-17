@@ -50,7 +50,6 @@ export const PaymentConfigForm = ({
       is_active: initialData?.is_active ?? true,
     } as PaymentConfigFormData,
     onSubmit: async ({ value }) => {
-      console.log('Submitting:', value)
       onSubmit(value)
     },
     validators: {

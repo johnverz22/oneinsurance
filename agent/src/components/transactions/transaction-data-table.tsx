@@ -99,7 +99,6 @@ export function TransactionDataTable({
   const total = data?.total || 0
 
   const handleSearch = () => {
-    console.log('Search triggered with term:', localSearchTerm)
     if (onSearch) {
       onSearch(localSearchTerm)
     }

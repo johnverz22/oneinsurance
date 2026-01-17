@@ -15,7 +15,7 @@ import {
   Download,
 } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
-import { useGetAgents } from '@/app/data/queries/agents'
+import { useGetAgents, useGetAgentById } from '@/app/data/queries/agents'
 import { useSearchAgents } from '@/app/data/mutations/agents'
 import { useRouter } from 'next/navigation'
 import { Agent, AgentsResponse } from '@/types/agents'
@@ -124,7 +124,11 @@ export default function AgentsPage() {
       {
         accessorKey: 'id',
         header: 'Agent ID',
-        cell: ({ row }) => <div className="font-medium">{row.original.id}</div>,
+        cell: ({ row }) => (
+          <div className="font-medium">
+            AGT{String(row.original.id).padStart(3, '0')}
+          </div>
+        ),
       },
       {
         accessorKey: 'first_name',
@@ -238,6 +242,10 @@ export default function AgentsPage() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [selectedToView, setSelectedToView] = useState<Agent | null>(null)
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null)
+  
+  // Fetch detailed agent data when an agent is selected
+  const { data: agentDetailData, isFetching: isFetchingDetail } = useGetAgentById(selectedAgentId)
   const [isActivateOpen, setIsActivateOpen] = useState(false)
   const [selectedToActivate, setSelectedToActivate] = useState<Agent | null>(
     null
@@ -256,7 +264,12 @@ export default function AgentsPage() {
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false)
 
   function handleRowClick(agent: Agent) {
+    console.log('=== AGENT ROW CLICKED ===')
+    console.log('Full Agent Data from List:', JSON.stringify(agent, null, 2))
+    console.log('Agent Object:', agent)
+    console.log('========================')
     setSelectedToView(agent)
+    setSelectedAgentId(agent.id)
     setIsDetailsOpen(true)
   }
 
