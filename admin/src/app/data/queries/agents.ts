@@ -93,11 +93,6 @@ export function useGetAgentById(agentId: number | null) {
           }
         )
 
-        console.log('=== AGENT DETAIL API RESPONSE ===')
-        console.log('Full Response:', JSON.stringify(response.data, null, 2))
-        console.log('Response Object:', response.data)
-        console.log('================================')
-
         return response.data
       } catch (error) {
         console.error('Error fetching agent details:', error)

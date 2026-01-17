@@ -57,8 +57,14 @@ const commisionConfigurationSchema = z.object({
     .max(10, 'Referral Admin overrider commission cannot exceed 10%'),
   effectivity_date: z.string().min(1, 'Effectivity date is required'),
 })
-// Note: Removed .refine() validations because the backend uses the same ifrc_admin value
-// for both agent-based and referral-based sales, making the validation impossible to satisfy
+.refine((data) => data.agent_commission + data.agent_admin_commission === data.base_commission, {
+  message: 'Agent + Admin commissions must equal Base commission',
+  path: ['agent_commission'],
+})
+.refine((data) => data.referral_commission + data.referral_admin_commission === data.base_commission, {
+  message: 'Referral + Admin commissions must equal Base commission',
+  path: ['referral_commission'],
+})
 type CommisionConfigurationFormData = z.infer<
   typeof commisionConfigurationSchema
 >
@@ -108,7 +114,7 @@ export default function ProductCommisionConfiguration({
         : new Date().toISOString().split('T')[0],
     },
     validators: {
-      onSubmit: commisionConfigurationSchema,
+      onChange: commisionConfigurationSchema,
     },
     onSubmit: async ({ value }) => {
       try {
@@ -167,26 +173,27 @@ export default function ProductCommisionConfiguration({
           >
             <div className="space-y-10">
               {/* Header */}
-              <div className="flex justify-between">
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xl font-bold">
-                      {selectedCommissionConfig?.product.name}
-                    </p>
-                    <p className="text-base font-light">
-                      Overall commision percentage for this product
-                    </p>
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xl font-bold">
+                    {selectedCommissionConfig?.product.name}
+                  </p>
+                  <p className="text-base font-light">
+                    Overall commission percentage for this product
+                  </p>
+                </div>
 
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Base Commission */}
                   <form.Field
                     name="base_commission"
                     children={(field) => {
                       return (
-                        <div>
-                          <div className="flex items-center">
-                            <Label className="font-semibol mr-4">
-                              Base Commission:{' '}
-                            </Label>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-gray-700">
+                            Base Commission
+                          </Label>
+                          <div className="flex items-center gap-2">
                             <Input
                               type="number"
                               name={field.name}
@@ -197,9 +204,9 @@ export default function ProductCommisionConfiguration({
                               }}
                               onBlur={field.handleBlur}
                               value={field.state.value.toString()}
-                              className="h-10 w-20 text-right"
+                              className="h-10 w-24 text-right font-semibold"
                             />
-                            <span className="text-muted-foreground ml-2">
+                            <span className="text-sm text-gray-600">
                               % of total net sale amount
                             </span>
                           </div>
@@ -209,33 +216,28 @@ export default function ProductCommisionConfiguration({
                     }}
                   />
 
+                  {/* Effectivity Date */}
                   <form.Field
                     name="effectivity_date"
                     children={(field) => {
                       return (
-                        <div>
-                          <div className="flex items-center gap-4">
-                            <Label className="font-semibold whitespace-nowrap">
-                              Effectivity Date:
-                            </Label>
-                            <div className="relative">
-                              <Input
-                                type="date"
-                                name={field.name}
-                                id={field.name}
-                                onChange={(e) => {
-                                  field.handleChange(e.target.value)
-                                }}
-                                onBlur={field.handleBlur}
-                                value={field.state.value}
-                                className="h-10 w-48 bg-white pr-10"
-                                placeholder="MM/DD/YYYY"
-                              />
-                              <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            </div>
-                            <span className="text-muted-foreground text-sm">
-                              Date when this configuration becomes active
-                            </span>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-gray-700">
+                            Effectivity Date
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              type="date"
+                              name={field.name}
+                              id={field.name}
+                              onChange={(e) => {
+                                field.handleChange(e.target.value)
+                              }}
+                              onBlur={field.handleBlur}
+                              value={field.state.value}
+                              className="h-10 w-full cursor-pointer font-medium [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                            />
+                            <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
                           </div>
                           <FieldInfo field={field} />
                         </div>
@@ -257,6 +259,16 @@ export default function ProductCommisionConfiguration({
                       Commission distribution when sale is made by an Agent
                     </p>
                   </div>
+                  
+                  {/* Validation error for agent commission */}
+                  <form.Field
+                    name="agent_commission"
+                    children={(field) => (
+                      <div className="mb-4">
+                        <FieldInfo field={field} />
+                      </div>
+                    )}
+                  />
 
                   <div className="space-y-4">
                     {/* Agent Group */}
@@ -269,23 +281,25 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="agent_commission"
                           children={(field) => (
-                            <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Agent
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
+                                <Label className="font-semibold text-black">
+                                  Agent
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-9 w-20 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground">%</span>
+                                </div>
                               </div>
                             </div>
                           )}
@@ -294,24 +308,27 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="agent_overrider_commission"
                           children={(field) => (
-                            <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Overrider
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-black">
+                                  Overrider
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-8 w-16 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground text-sm">%</span>
+                                </div>
                               </div>
+                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -328,24 +345,27 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="agent_admin_commission"
                           children={(field) => (
-                            <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Admin
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
+                                <Label className="font-semibold text-black">
+                                  Admin
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-9 w-20 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground">%</span>
+                                </div>
                               </div>
+                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -353,24 +373,27 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="agent_admin_overrider_commission"
                           children={(field) => (
-                            <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Overrider
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-black">
+                                  Overrider
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-8 w-16 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground text-sm">%</span>
+                                </div>
                               </div>
+                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -389,6 +412,16 @@ export default function ProductCommisionConfiguration({
                       Commission distribution when sale is made by a Referral
                     </p>
                   </div>
+                  
+                  {/* Validation error for referral commission */}
+                  <form.Field
+                    name="referral_commission"
+                    children={(field) => (
+                      <div className="mb-4">
+                        <FieldInfo field={field} />
+                      </div>
+                    )}
+                  />
 
                   <div className="space-y-4">
                     {/* Referral Group */}
@@ -401,23 +434,25 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="referral_commission"
                           children={(field) => (
-                            <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Referral
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
+                                <Label className="font-semibold text-black">
+                                  Referral
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-9 w-20 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground">%</span>
+                                </div>
                               </div>
                             </div>
                           )}
@@ -426,24 +461,27 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="referral_overrider_commission"
                           children={(field) => (
-                            <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Overrider
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-black">
+                                  Overrider
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-8 w-16 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground text-sm">%</span>
+                                </div>
                               </div>
+                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -460,24 +498,27 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="referral_admin_commission"
                           children={(field) => (
-                            <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Admin
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
+                                <Label className="font-semibold text-black">
+                                  Admin
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-9 w-20 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground">%</span>
+                                </div>
                               </div>
+                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -485,24 +526,27 @@ export default function ProductCommisionConfiguration({
                         <form.Field
                           name="referral_admin_overrider_commission"
                           children={(field) => (
-                            <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-4 py-2">
-                              <Label className="font-semibold text-black">
-                                Overrider
-                              </Label>
-                              <div className="flex items-center gap-2">
-                                <Input
-                                  type="number"
-                                  name={field.name}
-                                  id={field.name}
-                                  onChange={(e) =>
-                                    field.handleChange(Number(e.target.value))
-                                  }
-                                  onBlur={field.handleBlur}
-                                  value={field.state.value.toString()}
-                                  className="h-9 w-20 text-right text-black"
-                                />
-                                <span className="text-muted-foreground">%</span>
+                            <div>
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-black">
+                                  Overrider
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    name={field.name}
+                                    id={field.name}
+                                    onChange={(e) =>
+                                      field.handleChange(Number(e.target.value))
+                                    }
+                                    onBlur={field.handleBlur}
+                                    value={field.state.value.toString()}
+                                    className="h-8 w-16 text-right text-black"
+                                  />
+                                  <span className="text-muted-foreground text-sm">%</span>
+                                </div>
                               </div>
+                              <FieldInfo field={field} />
                             </div>
                           )}
                         />
@@ -629,14 +673,14 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-3 py-2 text-[#437AEE]">
-                                <p className="text-sm">Agent/Advisor</p>
+                                <p className="text-sm font-semibold">Agent</p>
                                 <p className="font-bold">
                                   ₱ {agentCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-3 py-2 text-[#24A34A]">
-                                <p className="text-sm">Overrider</p>
-                                <p className="font-bold">
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-2 py-1.5 text-[#24A34A]">
+                                <p className="text-xs">Overrider</p>
+                                <p className="text-sm font-semibold">
                                   ₱ {agentOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
@@ -650,14 +694,14 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-3 py-2 text-[#9636EA]">
-                                <p className="text-sm">IFRC Admin</p>
+                                <p className="text-sm font-semibold">Admin</p>
                                 <p className="font-bold">
                                   ₱ {agentAdminCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-3 py-2 text-[#F08548]">
-                                <p className="text-sm">Overrider</p>
-                                <p className="font-bold">
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-2 py-1.5 text-[#F08548]">
+                                <p className="text-xs">Overrider</p>
+                                <p className="text-sm font-semibold">
                                   ₱ {agentAdminOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
@@ -692,14 +736,14 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-3 py-2 text-[#437AEE]">
-                                <p className="text-sm">Referral</p>
+                                <p className="text-sm font-semibold">Referral</p>
                                 <p className="font-bold">
                                   ₱ {referralCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-3 py-2 text-[#24A34A]">
-                                <p className="text-sm">Overrider</p>
-                                <p className="font-bold">
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-2 py-1.5 text-[#24A34A]">
+                                <p className="text-xs">Overrider</p>
+                                <p className="text-sm font-semibold">
                                   ₱ {referralOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
@@ -713,14 +757,14 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-3 py-2 text-[#9636EA]">
-                                <p className="text-sm">Admin</p>
+                                <p className="text-sm font-semibold">Admin</p>
                                 <p className="font-bold">
                                   ₱ {referralAdminCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-3 py-2 text-[#F08548]">
-                                <p className="text-sm">Overrider</p>
-                                <p className="font-bold">
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-2 py-1.5 text-[#F08548]">
+                                <p className="text-xs">Overrider</p>
+                                <p className="text-sm font-semibold">
                                   ₱ {referralAdminOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
