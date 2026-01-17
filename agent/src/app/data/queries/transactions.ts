@@ -21,6 +21,5 @@ export function useGetTransactions(page: number = 1, perPage: number = 10) {
       return response.data
     },
     enabled: !!accessToken,
-    // keepPreviousData option removed to satisfy types
   })
 }
