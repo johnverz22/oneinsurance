@@ -11,15 +11,15 @@ export default function DashboardPage() {
   const { isAuthenticated } = useAuthStore()
   const [authChecking, setAuthChecking] = useState(true)
 
-  // Get current month's start and end dates
+  // Get date range from January 1st of last year to now
   const { dateFrom, dateTo } = useMemo(() => {
     const now = new Date()
-    const start = new Date(now.getFullYear(), now.getMonth(), 1)
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const lastYear = now.getFullYear() - 1
+    const start = new Date(lastYear, 0, 1) // January 1st of last year
     
     return {
       dateFrom: start.toISOString().split('T')[0],
-      dateTo: end.toISOString().split('T')[0],
+      dateTo: now.toISOString().split('T')[0],
     }
   }, [])
 
