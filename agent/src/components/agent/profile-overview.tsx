@@ -76,7 +76,7 @@ export const ProfileOverview = () => {
                     {statistics.number_of_sales}
                   </p>
                   <span className="text-muted-foreground capitalize">
-                    Number of Sales
+                    Cases
                   </span>
                 </div>
               </div>
