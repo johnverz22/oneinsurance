@@ -15,7 +15,7 @@ export function useIssueQuoteRequest() {
       issueQuoteRequest: IssueQuoteRequest
     }) => {
       try {
-        const token = `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`
+        const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/issue-quote`,
           issueQuoteRequest,

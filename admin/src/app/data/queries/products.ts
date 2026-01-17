@@ -22,6 +22,14 @@ export function useGetProducts(page: number = 1, query?: string) {
               Authorization: `Bearer ${accessToken}`,
             },
           })
+          
+          console.log('=== PRODUCTS API RESPONSE (WITH QUERY) ===')
+          console.log('API Endpoint:', url)
+          console.log('Query:', query)
+          console.log('Full Response:', JSON.stringify(response.data, null, 2))
+          console.log('Response Object:', response.data)
+          console.log('==========================================')
+          
           return response.data
         }
         const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/products?page=${page}`
@@ -30,6 +38,14 @@ export function useGetProducts(page: number = 1, query?: string) {
             Authorization: `Bearer ${accessToken}`,
           },
         })
+        
+        console.log('=== PRODUCTS API RESPONSE ===')
+        console.log('API Endpoint:', url)
+        console.log('Page:', page)
+        console.log('Full Response:', JSON.stringify(response.data, null, 2))
+        console.log('Response Object:', response.data)
+        console.log('=============================')
+        
         return response.data
       } catch (error) {
         handleApiError(error)
