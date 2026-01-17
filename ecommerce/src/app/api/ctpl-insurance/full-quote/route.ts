@@ -17,10 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'No body' }, { status: 400 })
     }
 
-    const token = req.headers.get('Authorization')
-    if (!token) {
-      return NextResponse.json({ message: 'No token' }, { status: 400 })
-    }
+    const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
 
     const paths: Record<CTPLProductType, string> = {
       MOTORCYCLE: '/quote/ctpl/motorcycle/full-quote',

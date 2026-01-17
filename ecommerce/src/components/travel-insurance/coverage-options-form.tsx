@@ -130,7 +130,7 @@ export function CoverageOptionsForm() {
               `${process.env.NEXT_PUBLIC_BASE_URL}/quote/compare/${cacheKey}`,
               {
                 headers: {
-                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
                 },
               }
             )

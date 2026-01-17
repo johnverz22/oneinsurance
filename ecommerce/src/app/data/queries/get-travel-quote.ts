@@ -34,7 +34,7 @@ export const useGetTravelQuote = (
         // This ensures the request doesn't hang indefinitely on Vercel
         const result = await axios.get<TravelInsuranceApiResponse>(url, {
           headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
           },
           signal, // Pass the AbortController signal to axios
           timeout: 90000, // 90 second timeout for the request itself
