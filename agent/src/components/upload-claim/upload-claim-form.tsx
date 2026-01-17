@@ -31,7 +31,6 @@ export default function UploadClaimForm() {
     },
     onSubmit: async ({ value }) => {
       await delay(3000)
-      console.log(value)
       form.reset()
       toast.info('Under Construction')
     },

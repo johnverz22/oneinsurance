@@ -307,7 +307,7 @@ export default function ClientManagementPage() {
                 onClick: (client) => alert(`Deleting ${client.firstName}`),
               },
             ]}
-            onRowClick={(client) => console.log('Clicked row:', client)}
+            onRowClick={(client) => {}}
             pageSize={5}
           />
         </CardContent>

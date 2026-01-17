@@ -215,7 +215,7 @@ const TeamSalesPage = () => {
         renderMode="table"
         searchKey={['agent', 'product']}
         pageSize={5}
-        onRowClick={(client) => console.log('Clicked row:', client)}
+        onRowClick={(client) => {}}
       />
     </div>
   )

@@ -149,7 +149,6 @@ export default function GenerateReportPage() {
 
   const handleGenerateReport = () => {
     if (reportData.length === 0) {
-      console.log('No data to export')
       return
     }
 
@@ -189,12 +188,10 @@ export default function GenerateReportPage() {
 
   const handleExportExcel = () => {
     // Implement Excel export logic
-    console.log('Exporting to Excel...')
   }
 
   const handleExportPDF = () => {
     // Implement PDF export logic
-    console.log('Exporting to PDF...')
   }
 
   return (

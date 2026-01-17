@@ -28,9 +28,9 @@ export default function ProductDetailsDialog({
   if (!product) return null
 
   // Debug: Log product data to verify carrier_product_code
-  console.log('Product Details:', {
-    id: product.product.id,
-    name: product.product.name,
+  // console.log('Product Details:', {
+  //   id: product.product.id,
+  //   name: product.product.name,
     carrier_product_code: product.product.carrier_product_code,
     full_product: product.product,
   })

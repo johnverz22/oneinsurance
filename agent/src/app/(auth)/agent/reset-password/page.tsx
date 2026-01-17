@@ -53,11 +53,8 @@ function ResetPasswordContent() {
         setError(null)
         setValidationErrors(null)
 
-        console.log('Resetting password with token:', value.token)
-
         const result = await resetPassword({ data: value })
 
-        console.log('Password reset successful:', result)
         setSuccess(true)
 
         // Redirect to login after 3 seconds

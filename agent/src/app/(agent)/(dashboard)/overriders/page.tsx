@@ -262,7 +262,7 @@ const OverridersPage = () => {
           }
           searchKey="name"
           actions={[]}
-          onRowClick={(client) => console.log('Clicked row:', client)}
+          onRowClick={(client) => {}}
         />
       </div>
 
@@ -275,7 +275,7 @@ const OverridersPage = () => {
           searchKey="name"
           actions={[]}
           pageSize={5}
-          onRowClick={(client) => console.log('Clicked row:', client)}
+          onRowClick={(client) => {}}
         />
       </div>
     </div>

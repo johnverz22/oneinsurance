@@ -126,7 +126,6 @@ export default function NewApplicationPage() {
     onSubmit: async ({ value }) => {
       toast.info('Under Construction')
       await delay(3000)
-      console.log(value)
     },
   })
 

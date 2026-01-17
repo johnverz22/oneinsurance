@@ -16,7 +16,6 @@ import { ArrowUpDown, Check, Eye, MoreHorizontal, X } from 'lucide-react'
 import type { Client, ClientStatus } from '@/types/client'
 
 const getStatusBadge = (status: ClientStatus) => {
-  console.log('🚀 ~ getStatusBadge ~ status:', status)
   const variants = {
     pending: { variant: 'secondary' as const, color: 'text-yellow-600' },
     approved: { variant: 'default' as const, color: 'text-green-600' },
