@@ -264,10 +264,6 @@ export default function AgentsPage() {
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false)
 
   function handleRowClick(agent: Agent) {
-    console.log('=== AGENT ROW CLICKED ===')
-    console.log('Full Agent Data from List:', JSON.stringify(agent, null, 2))
-    console.log('Agent Object:', agent)
-    console.log('========================')
     setSelectedToView(agent)
     setSelectedAgentId(agent.id)
     setIsDetailsOpen(true)
