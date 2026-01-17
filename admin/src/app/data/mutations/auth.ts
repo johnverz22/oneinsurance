@@ -41,7 +41,6 @@ export function useLogoutAdmin() {
         // Clear local auth state/storage
         removeLocalStorage('admin-auth-storage')
 
-        console.log('Logout response:', response.data)
       } catch (error) {
         handleApiError(error)
       }

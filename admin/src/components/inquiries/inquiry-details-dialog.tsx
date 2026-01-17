@@ -149,7 +149,7 @@ export const InquiryDetailsDialog = ({
                 <CardContent className="space-y-4">
                   <Textarea
                     value=""
-                    onChange={(e) => console.log(e.target.value)}
+                    onChange={(e) => {}}
                     placeholder="Type your response here..."
                   />
                   <Button

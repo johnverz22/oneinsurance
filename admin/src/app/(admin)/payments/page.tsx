@@ -568,9 +568,7 @@ export default function TransactionsPage() {
             <PayoutDataTable
               data={displayPayoutData}
               isLoading={isPayoutDataLoading}
-              onViewDetails={(payout) => {
-                console.log('View details:', payout)
-              }}
+              onViewDetails={(payout) => {}}
             />
 
             <ProcessPaymentDialog

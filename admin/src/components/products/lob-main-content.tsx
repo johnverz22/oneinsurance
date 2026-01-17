@@ -81,12 +81,6 @@ export default function LobMainContent() {
 
   const lineOfBusinessList = lobData?.data?.data || []
 
-  // Debug logging
-  console.log('LOB Data:', lobData)
-  console.log('LOB List:', lineOfBusinessList)
-  console.log('Total LOBs:', lobData?.data?.total)
-  console.log('Error:', error)
-
   // Fetch agents for selected LOB
   const { data: lobAgentsData, isLoading: isLoadingAgents, refetch: refetchLobAgents } = useGetLobAgents(
     selectedLob?.id || 0

@@ -53,7 +53,7 @@ export default function ReferralsPage() {
           url: referral.link,
         })
       } catch (error) {
-        console.log('Error sharing:', error)
+        // Error sharing
       }
     } else {
       handleCopyLink(referral)
@@ -92,7 +92,7 @@ export default function ReferralsPage() {
             searchPlaceholder="Product"
             actions={[]}
             isLoading={isLOBsLoading}
-            onRowClick={(client) => console.log('Clicked row:', client)}
+            onRowClick={(client) => {}}
           />
         )}
       </div>

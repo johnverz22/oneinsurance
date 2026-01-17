@@ -41,9 +41,10 @@ interface AgentWithLobs {
 interface AgentsMainContentProps {
   page?: number
   onPageReset?: () => void
+  onSearchModeChange?: (isSearchMode: boolean, displayData: any) => void
 }
 
-export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainContentProps) {
+export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeChange }: AgentsMainContentProps) {
   const queryClient = useQueryClient()
   const [agentProductAssignments, setAgentProductAssignments] = useState<
     AgentProductAssignment[]
@@ -56,58 +57,51 @@ export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainC
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchQueryDebounced, setSearchQueryDebounced] = useState('')
+  const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchResults, setSearchResults] = useState<any>(null)
 
   const { mutateAsync: searchAgents, isPending: isSearching } = useSearchAgents()
 
-  // Debounce search query
+  // Debounce search query and auto-trigger search
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQueryDebounced(searchQuery)
-      // Reset page to 1 when search changes
-      if (searchQuery !== searchQueryDebounced && onPageReset) {
-        onPageReset()
-      }
-      // Trigger search if there's a query
       if (searchQuery.trim()) {
         searchAgents({ searchKey: searchQuery.trim() })
           .then((result) => {
             setSearchResults(result)
+            setIsSearchMode(true)
+            // Notify parent about search mode change
+            onSearchModeChange?.(true, result)
           })
           .catch((error) => {
             console.error('Search error:', error)
             setSearchResults(null)
+            setIsSearchMode(false)
+            onSearchModeChange?.(false, null)
           })
       } else {
         setSearchResults(null)
+        setIsSearchMode(false)
+        onSearchModeChange?.(false, null)
       }
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [searchQuery, searchQueryDebounced, onPageReset, searchAgents])
+  }, [searchQuery, searchAgents, onSearchModeChange])
 
   const { data: agentProducts } = useGetAgentProducts()
   const { data: agentsData, isLoading: agentsLoading, isFetching } = useGetAgents({
     page: page,
     per_page: 12,
-    status: 'active', // Only fetch active agents
+    status: 'active',
   })
   
-  // Use search results if searching, otherwise use regular data
-  const displayData = searchQuery.trim() ? searchResults : agentsData
+  // Determine which data to display
+  const displayData = isSearchMode ? searchResults : agentsData
+  const isDataLoading = isSearchMode ? isSearching : isFetching || agentsLoading
   
-  // Debug: Log search query changes and API response
-  useEffect(() => {
-    console.log('=== AGENTS SEARCH DEBUG ===')
-    console.log('Search Query:', searchQuery)
-    console.log('Search Query Debounced:', searchQueryDebounced)
-    console.log('Page:', page)
-    console.log('Is Loading:', agentsLoading)
-    console.log('Is Fetching:', isFetching)
-    console.log('Agents Data:', agentsData)
-    console.log('API URL would be:', `/admin/agents?page=${page}&per_page=12&search=${searchQueryDebounced || ''}&status=active`)
-    console.log('========================')
-  }, [searchQuery, searchQueryDebounced, page, agentsLoading, isFetching, agentsData])
+
   const { data: agentLobs, refetch: refetchAgentLobs } = useGetAllAgentLineOfBusiness()
   const { data: allLobs } = useGetLineOfBusinessList({
     page: 1,
@@ -119,21 +113,20 @@ export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainC
   const deleteLobMutation = useDeleteAgentLob()
 
   useEffect(() => {
-    const dataToUse = displayData || agentsData
-    if (agentProducts && dataToUse) {
-      console.log('Agents Data:', dataToUse)
-      console.log('Agent Products:', agentProducts)
-      
-      // Use agents from the agents endpoint (already filtered for active agents on backend)
-      const allAgents = dataToUse.data.data
+    if (agentProducts && displayData) {
+      // Use agents from either search results or regular paginated data
+      const allAgents = displayData.data?.data || []
       const agentCommissions = agentProducts.data.data
       
-      console.log('All Agents Count:', allAgents.length)
-      console.log('Agent Commissions Count:', agentCommissions.length)
+      // If no agents data, set empty array
+      if (!allAgents || allAgents.length === 0) {
+        setAgentProductAssignments([])
+        return
+      }
       
       // Create a map of agent commissions by agent_id
       const commissionMap = new Map<number, AgentProduct[]>()
-      agentCommissions.forEach((commission) => {
+      agentCommissions?.forEach((commission) => {
         const existing = commissionMap.get(Number(commission.agent.id)) || []
         existing.push(commission)
         commissionMap.set(Number(commission.agent.id), existing)
@@ -156,10 +149,9 @@ export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainC
         }
       })
 
-      console.log('Grouped Data Count:', groupedData.length)
       setAgentProductAssignments(groupedData)
     }
-  }, [agentProducts, agentsData, displayData])
+  }, [agentProducts, displayData])
 
   // Update selected agent LOBs when agentLobs data changes
   useEffect(() => {
@@ -196,26 +188,20 @@ export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainC
       return
     }
 
-    console.log('Toggle LOB:', { lobId, isChecked, agentId: selectedAgent.agent.id })
-
     try {
       if (isChecked) {
         // Assign LOB
-        console.log('Assigning LOB to agent...')
-        const result = await assignLobMutation.mutateAsync({
+        await assignLobMutation.mutateAsync({
           agent_id: selectedAgent.agent.id,
           lob_id: lobId,
           status: 'active',
         })
-        console.log('Assignment result:', result)
         toast.success('Line of business assigned successfully')
       } else {
         // Remove LOB
         const agentLobId = getAgentLobId(lobId)
-        console.log('Removing LOB assignment:', agentLobId)
         if (agentLobId) {
-          const result = await deleteLobMutation.mutateAsync(agentLobId)
-          console.log('Deletion result:', result)
+          await deleteLobMutation.mutateAsync(agentLobId)
           toast.success('Line of business removed successfully')
         } else {
           console.error('Agent LOB ID not found')
@@ -223,9 +209,7 @@ export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainC
       }
 
       // Refresh data
-      console.log('Refetching agent LOBs...')
       await refetchAgentLobs()
-      console.log('Refetch complete')
     } catch (error) {
       console.error('Error toggling LOB:', error)
       toast.error(
@@ -262,9 +246,16 @@ export default function AgentsMainContent({ page = 1, onPageReset }: AgentsMainC
         </div>
       </div>
 
+      {isSearchMode && (
+        <div className="text-muted-foreground mb-4 text-sm">
+          Showing search results for "{searchQuery}" - Found{' '}
+          {agentProductAssignments.length} result(s)
+        </div>
+      )}
+
       {/* Agents Grid */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {(agentsLoading || isSearching) ? (
+        {isDataLoading ? (
           <div className="col-span-full py-12 text-center">
             <p className="text-gray-500">{isSearching ? 'Searching...' : 'Loading agents...'}</p>
           </div>

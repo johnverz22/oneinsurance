@@ -84,21 +84,12 @@ export const useGetAgentStatistics = (dateFrom?: string, dateTo?: string) => {
 
       const url = `/api/agent/statistics?${params.toString()}`
 
-      console.log('=== FETCHING AGENT STATISTICS ===')
-      console.log('URL:', url)
-      console.log('User ID:', user?.id)
-      console.log('Access Token exists:', !!accessToken)
-      console.log('Date range:', dates)
-
       const response = await axios.get<AgentStatisticsResponse>(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           Accept: 'application/json',
         },
       })
-
-      console.log('=== STATISTICS RESPONSE ===')
-      console.log('Full response:', JSON.stringify(response.data, null, 2))
 
       // Check if response has nested data property or is direct
       return response.data.data || response.data

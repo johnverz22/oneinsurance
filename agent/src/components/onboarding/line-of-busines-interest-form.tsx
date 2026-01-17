@@ -71,7 +71,6 @@ export default function BusinessInterestForm() {
     } as BusinessInterestFormData,
     onSubmit: async ({ value }) => {
       // Handle form submission
-      console.log('Form submitted:', value)
 
       // Get selected interests
       const selectedInterests: string[] = []
@@ -104,8 +103,6 @@ export default function BusinessInterestForm() {
         selectedInterests.push('International Investment Plans')
       if (value.others.internationalProtectionPlans)
         selectedInterests.push('International Protection Plans')
-
-      console.log('Selected interests:', selectedInterests)
 
       increaseStep()
     },

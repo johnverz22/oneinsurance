@@ -42,7 +42,6 @@ export default function ForgotPasswordPage() {
             redirectUrl: requestBody.redirectUrl,
           },
         })
-        console.log('Forgot password response:', result)
         toast.success(result.message)
         setSuccess(true)
       } catch (err: any) {

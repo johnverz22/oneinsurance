@@ -18,8 +18,6 @@ export function DocumentsList() {
       await downloadDocument({ id: doc.id, file_name: doc.file_name })
       toast.success('Document is ready to be saved!')
     } catch (error: unknown) {
-      console.log('Failed to upload document:', error)
-
       const message =
         error instanceof Error ? error?.message : 'Something went wrong'
       toast.error(message)

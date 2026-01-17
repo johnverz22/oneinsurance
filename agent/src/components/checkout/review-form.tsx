@@ -19,7 +19,6 @@ export function ReviewForm() {
 
   const handleSubmit = async () => {
     try {
-      console.log('Submitting form:', formData)
       nextStep()
     } catch (error) {
       console.error('Error submitting form:', error)

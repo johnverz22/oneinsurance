@@ -76,3 +76,36 @@ export function useGetAgentProducts(page: number = 1) {
     staleTime: 5 * 60 * 1000,
   })
 }
+
+export function useGetAgentById(agentId: number | null) {
+  const { accessToken } = useAuthStore()
+
+  return useQuery({
+    queryKey: ['agent-detail', agentId],
+    queryFn: async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
+
+        console.log('=== AGENT DETAIL API RESPONSE ===')
+        console.log('Full Response:', JSON.stringify(response.data, null, 2))
+        console.log('Response Object:', response.data)
+        console.log('================================')
+
+        return response.data
+      } catch (error) {
+        console.error('Error fetching agent details:', error)
+        handleApiError(error)
+      }
+    },
+    refetchOnWindowFocus: false,
+    enabled: !!accessToken && !!agentId,
+    staleTime: 5 * 60 * 1000,
+  })
+}

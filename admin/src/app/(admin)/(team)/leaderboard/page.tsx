@@ -72,15 +72,15 @@ export default function LeaderboardPage() {
   const actions: LeaderboardDataTableAction<LeaderboardAgent>[] = [
     {
       label: 'View Details',
-      onClick: (agent) => console.log('View Details:', agent),
+      onClick: (agent) => {},
     },
     {
       label: 'View Hierarchy',
-      onClick: (agent) => console.log('View Hierarchy:', agent),
+      onClick: (agent) => {},
     },
     {
       label: 'Contact Agent',
-      onClick: (agent) => console.log('Contact Agent:', agent),
+      onClick: (agent) => {},
     },
   ]
 
