@@ -128,8 +128,8 @@ export const formatValidators = {
   PAS: z
     .string()
     .regex(
-      /^([A-Z]{2}\d{7}|[A-Z]\d{7}|[A-Z]{2}\d{6})$/,
-      'Passport format: AA1234567 or A1234567'
+      /^[A-Z][A-Z0-9]\d{6}[A-Z0-9]$/,
+      'Passport format: AB123456B, A01234565)'
     ),
 
   TIN: z
@@ -204,7 +204,7 @@ export const getIdFormatDescription = (
     POS: 'Format: ABC12345678', // Postal ID
     SSS: 'Format: 12-3456789-0', // Social Security System Number
     UMI: 'Format: 1234-5678-9012', // Unified Multi-Purpose ID
-    PAS: 'Format: AA1234567 or A1234567', // Passport
+    PAS: 'Format: A0123456B or AB1234567', // Passport
     TIN: 'Format: 123-456-789-012', // Tax Identification Number
     DRI: 'Format: A12-34-567890', // Driver's License Number
     PRC: 'Format varies', // Professional Regulation Commission ID
