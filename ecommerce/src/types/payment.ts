@@ -59,7 +59,7 @@ export type PaymentSubmitRequest = {
   postal_code: string
   is_card_payment: boolean
   card_holder_name?: string // if is_card_payment is true
-  card_number?: number // if is_card_payment is true
+  card_number?: string // if is_card_payment is true - keep as string for payment gateway
   expiration_month?: string // if is_card_payment is true - format: "01", "02", etc.
   expiration_year?: string // if is_card_payment is true - format: "24", "25", etc.
   ccv?: number // if is_card_payment is true
