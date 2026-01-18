@@ -41,11 +41,16 @@ import {
 } from '@/utils/payment-mappers'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { popup } from '@/store/use-popup-store'
-import { getEcho } from '@/lib/echo'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { toast } from 'sonner'
 import { delay } from '@/utils/delay'
 import { PageLoader } from '../page-loader'
+import { usePaymentPolling } from '@/hooks/use-payment-polling'
+import {
+  saveProposalNumber,
+  getProposalNumber,
+  clearProposalNumber,
+} from '@/utils/payment-storage'
 
 // Utility function to remove transaction_id from URL
 const removeTransactionIdFromUrl = () => {
@@ -95,65 +100,49 @@ export default function PaymentSelection() {
     useState(false)
   const [isIssuingQuote, setIsIssuingQuote] = useState(false)
   const [transactionStatus, setTransactionStatus] = useState(true)
+  const isProcessingQuoteRef = useRef(false) // Guard against duplicate calls
 
-  // Check for transaction completion on component mount
+  // Polling hook
+  const { startPolling, stopPolling } = usePaymentPolling({
+    proposalNumber: apiResponse?.data?.ProposalNo || '',
+    onSuccess: handlePaymentSuccess,
+    onError: handlePaymentError,
+    onTimeout: handlePaymentTimeout,
+  })
+
+  // Check for proposal number on component mount (e-wallet return)
   useEffect(() => {
-    const transactionId = searchParams.get('transaction_id')
+    const proposalNumber = getProposalNumber()
 
-    if (paymentSubmitResponse && transactionId) {
-      processedTransactionRef.current = transactionId
-      setTransactionId(transactionId)
-      handleTransactionCompletion()
+    if (proposalNumber && !isProcessing) {
+      // Remove transaction_id from URL if present
+      removeTransactionIdFromUrl()
+      // Start polling
+      setIsProcessing(true)
+      setShowCardPaymentProcessing(true)
+      startPolling()
     }
-  }, [searchParams, paymentSubmitResponse])
+  }, [])
 
-  // Handle transaction completion when returning from redirect
-  const handleTransactionCompletion = async () => {
-    // Prevent duplicate execution
-    if (isProcessing) {
+  // Payment success handler
+  async function handlePaymentSuccess(data: any) {
+    // Guard against duplicate calls
+    if (isProcessingQuoteRef.current) {
+      console.log('Already processing quote, skipping duplicate call')
       return
     }
 
-    setIsProcessing(true)
-    setShowCardPaymentProcessing(true)
+    isProcessingQuoteRef.current = true
 
     try {
-      // Set up Echo for payment confirmation
-      const echo = getEcho()
-      if (echo.connector.pusher.connection.state !== 'connected') {
-        echo.connect()
-      }
-
-      const confirmationPromise = new Promise<PaymentConfirmationResponse>(
-        (resolve, reject) => {
-          const channel = echo.channel('transaction-channel')
-
-          channel.listen(
-            '.transaction.message',
-            (data: PaymentConfirmationResponse) => {
-              if (data.code === 200) {
-                resolve(data)
-              } else {
-                reject(new Error(data.message))
-              }
-            }
-          )
-        }
-      )
-
-      // Wait for payment confirmation
-      const confirmationResponse = await confirmationPromise
-
-      // Clean up Echo
-      const channel = echo.channel('transaction-channel')
-      channel.stopListening('.transaction.message')
-      echo.disconnect()
+      // Clear localStorage
+      clearProposalNumber()
       setShowCardPaymentProcessing(false)
-
       setIsIssuingQuote(true)
-      // Payment confirmed, now issue the quote
+
+      // Issue the quote
       const issueQuoteRequestBody = {
-        ProposalNo: apiResponse.data.ProposalNo,
+        ProposalNo: data.proposal_number,
       } satisfies IssueQuoteRequest
 
       const response = await issueQuote({
@@ -183,21 +172,41 @@ export default function PaymentSelection() {
         variant: 'success',
       })
     } catch (error: any) {
-      // Cleanup Echo on error
-      try {
-        const echo = getEcho()
-        const channel = echo.channel('transaction-channel')
-        channel.stopListening('.transaction.message')
-        echo.disconnect()
-      } catch (cleanupError) {}
-
       toast.error(
         error.message || 'Payment confirmation failed. Please contact support.'
       )
       setIsIssuingQuote(false)
+      isProcessingQuoteRef.current = false // Reset on error so user can retry
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  // Payment error handler
+  function handlePaymentError(error: Error) {
+    clearProposalNumber()
+    setShowCardPaymentProcessing(false)
+    setIsProcessing(false)
+    toast.error(error.message || 'Payment failed. Please contact support.')
+  }
+
+  // Payment timeout handler
+  function handlePaymentTimeout() {
+    clearProposalNumber()
+    setShowCardPaymentProcessing(false)
+    setIsProcessing(false)
+    toast.error(
+      'Payment verification timed out. Please contact support with your proposal number: ' +
+        apiResponse?.data?.ProposalNo
+    )
+  }
+
+  // Handle transaction completion when returning from redirect
+  // Note: This is now handled by the useEffect on mount that checks for proposal number
+  const handleTransactionCompletion = async () => {
+    // This function is kept for backward compatibility but the actual
+    // payment verification is now handled by polling in the mount useEffect
+    return
   }
 
   // Create payment configuration
@@ -271,28 +280,6 @@ export default function PaymentSelection() {
         return
       }
 
-      const echo = getEcho()
-      if (echo.connector.pusher.connection.state !== 'connected') {
-        echo.connect()
-      }
-
-      const confirmationPromise = new Promise<PaymentConfirmationResponse>(
-        (resolve, reject) => {
-          const channel = echo.channel('transaction-channel')
-
-          channel.listen(
-            '.transaction.message',
-            (data: PaymentConfirmationResponse) => {
-              if (data.code === 200 && transactionStatus) {
-                resolve(data)
-              } else {
-                reject(new Error(data.message))
-              }
-            }
-          )
-        }
-      )
-
       setShowCardPaymentProcessing(true)
 
       const paymentResult = await submitPayment({
@@ -307,10 +294,6 @@ export default function PaymentSelection() {
         !paymentResult?.success ||
         !paymentResult.data.status_code.includes('OK')
       ) {
-        const channel = echo.channel('transaction-channel')
-        channel.stopListening('.transaction.message')
-        echo.disconnect()
-
         alert(
           paymentResult?.message ||
             'Payment submission failed. Please try again.'
@@ -320,32 +303,18 @@ export default function PaymentSelection() {
         return
       }
 
-      const confirmationResponse = await confirmationPromise
-
-      const channel = echo.channel('transaction-channel')
-      channel.stopListening('.transaction.message')
-      echo.disconnect()
-
-      // Both payment and confirmation successful
+      // Both payment submission successful, start polling
       setPaymentSubmitResponse(paymentResult)
-      await handleCardPaymentIssueQuote(paymentRequest)
+      startPolling()
     } catch (error: any) {
-      // Cleanup on error
-      try {
-        const echo = getEcho()
-        const channel = echo.channel('transaction-channel')
-        channel.stopListening('.transaction.message')
-        echo.disconnect()
-      } catch (cleanupError) {}
-
       toast.error(
         error.response?.data?.message ||
           error.message ||
           'Payment failed. Please try again.'
       )
+      setShowCardPaymentProcessing(false)
     } finally {
       setIsProcessing(false)
-      setShowCardPaymentProcessing(false)
     }
   }
 
@@ -384,6 +353,9 @@ export default function PaymentSelection() {
 
       const redirectUrl = paymentResult.data.redirect_url
       if (redirectUrl) {
+        // Save proposal number to localStorage before redirect
+        saveProposalNumber(apiResponse.data.ProposalNo)
+
         alert(
           "You will be redirected to payment wall. Please don't close this tab."
         )
