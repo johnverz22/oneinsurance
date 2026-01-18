@@ -132,9 +132,9 @@ export const mapCardPaymentToRequest = (
     postal_code: formData.postalCode.trim(),
     is_card_payment: true,
     card_holder_name: formData.cardholderName.trim().toUpperCase(),
-    card_number: parseInt(cleanCardNumber, 10),
+    card_number: cleanCardNumber, // Keep as string
     expiration_month: formData.expiryMonth.padStart(2, '0'),
-    expiration_year: formData.expiryYear.slice(-2).padStart(2, '0'),
+    expiration_year: formData.expiryYear.slice(-2).padStart(2, '0'), // Last 2 digits
     ccv: parseInt(formData.ccv, 10),
     payment_brand_code: selectedBrand.code,
     payment_brand: selectedBrand.value,
