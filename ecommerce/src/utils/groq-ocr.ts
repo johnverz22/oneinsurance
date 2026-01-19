@@ -1,10 +1,33 @@
 import Groq from 'groq-sdk'
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-})
+if (!process.env.GROQ_API_KEY) {
+  console.warn('GROQ_API_KEY is not set in environment variables')
+}
+
+// Initialize Groq client - will be recreated if API key changes
+const getGroqClient = () => {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) {
+    throw new Error('GROQ_API_KEY is not set in environment variables')
+  }
+  return new Groq({ apiKey })
+}
 
 export async function runGroqOCR(base64Image: string) {
+  const apiKey = process.env.GROQ_API_KEY
+  
+  if (!apiKey) {
+    console.error('GROQ_API_KEY is missing from environment variables')
+    throw new Error('GROQ_API_KEY is not configured. Please set it in your ecommerce/.env file.')
+  }
+  
+  if (apiKey === '' || apiKey.length < 10) {
+    console.error('GROQ_API_KEY appears to be invalid (too short or empty)')
+    throw new Error('GROQ_API_KEY appears to be invalid. Please check your ecommerce/.env file.')
+  }
+
+  console.log('Using Groq API key (length:', apiKey.length, ')')
+
   const prompt = `
   You are an OCR assistant. Extract the following fields from the ID card image:
   - id_number
@@ -34,6 +57,8 @@ export async function runGroqOCR(base64Image: string) {
   DO NOT ADD ANY ADDITIONAL TEXT.
   `
 
+  const groq = getGroqClient()
+  
   const response = await groq.chat.completions.create({
     model: 'meta-llama/llama-4-scout-17b-16e-instruct', // Example vision-capable model
     messages: [
