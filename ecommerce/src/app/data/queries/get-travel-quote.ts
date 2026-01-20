@@ -22,12 +22,13 @@ export const useGetTravelQuote = (
           throw new Error('ClientRequestId not found.')
         }
 
-        // Return cached plans if available
+        return null
+
         if (insurancePlans) {
           return insurancePlans
         }
 
-        const url = `/api/travel-insurance/get-compare?ClientRequestId=${clientRequestId}`
+        const url = `/api/travel-insurance/init-compare?ClientRequestId=${clientRequestId}`
 
         // Create a race condition between the actual request and a timeout
         // This ensures the request doesn't hang indefinitely on Vercel
