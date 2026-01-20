@@ -89,13 +89,9 @@ export function PersonalInfoForm() {
         agentCode!
       )
 
-      console.log('Submitting full quote request...', fullQuoteRequestBody)
-
       const fullQuoteResponse = await mutateAsync({
         fullQuoteRequest: fullQuoteRequestBody,
       })
-
-      console.log('Full quote response:', fullQuoteResponse)
 
       if (
         FullQuoteResponseValidationErrorSchema.safeParse(fullQuoteResponse)
@@ -106,19 +102,17 @@ export function PersonalInfoForm() {
         alert(
           `Validation Error. Code: ${error.data?.data.ValidateResult.ErrorMessage.at(0)?.code} ${error.data?.data.ValidateResult.ErrorMessage.at(0)?.message}`
         )
-        throw new Error('Validation error') // Throw to prevent nextStep
+        return
       }
 
       if (!fullQuoteResponse?.success) {
-        console.error('Full quote request failed:', fullQuoteResponse)
-        alert(fullQuoteResponse?.message || 'Failed to request full quote')
-        throw new Error(fullQuoteResponse?.message || 'Failed to request full quote') // Throw to prevent nextStep
+        alert(fullQuoteResponse?.message)
+        return
       }
 
       FullQuoteResponseSchema.parse(fullQuoteResponse)
 
       setApiResponse(fullQuoteResponse as FullQuoteResponse)
-      console.log('Moving to next step...')
       nextStep()
     },
     validators: {
@@ -225,13 +219,13 @@ export function PersonalInfoForm() {
     const { currentTabErrors } = getSortedTravelerErrors(fields)
 
     if (!currentTabErrors.length) {
-      // Don't scroll when there are no errors - let form submission proceed
+      handleSetActiveTab(Math.min(currentTabIndex + 1, totalTravelers - 1))
       return
     }
 
     const firstErrorField = currentTabErrors[0]
     const element = formErrorRefs.current[firstErrorField]
-    handleSetActiveTab(currentTabIndex, false) // Don't scroll to travelers-info section
+    handleSetActiveTab(currentTabIndex)
 
     if (!element) return
 
@@ -258,54 +252,17 @@ export function PersonalInfoForm() {
     if (currentTabIndex > 0) handleSetActiveTab(currentTabIndex - 1)
   }
 
-  const handleSetActiveTab = (index: number, shouldScroll: boolean = true) => {
+  const handleSetActiveTab = (index: number) => {
     setActiveTab(`traveler-${index}`)
-    // Only scroll when changing tabs manually, not during form submission
-    if (shouldScroll && !hasValidated) {
-      document.getElementById('travelers-info')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
-    }
+    document.getElementById('travelers-info')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
   }
 
-  const handleTriggerValidation = async () => {
-    console.log('handleTriggerValidation called')
+  const handleTriggerValidation = () => {
     setHasValidated(true)
-    
-    // Validate the form
-    const validationResult = form.validateSync('submit')
-    console.log('Validation result:', validationResult)
-    
-    // If validation fails, scroll to first error
-    if (validationResult && Object.keys(validationResult).length > 0) {
-      const errorFields = Object.keys(validationResult)
-      console.log('Validation failed, error fields:', errorFields)
-      setTimeout(() => {
-        scrollToFirstError(errorFields)
-      }, 100)
-      return
-    }
-    
-    // If validation passes, submit the form
-    console.log('Validation passed, submitting form...')
-    try {
-      // form.handleSubmit() will handle the async submission and update isSubmitting state
-      await form.handleSubmit()
-      console.log('Form submitted successfully')
-    } catch (error: any) {
-      console.error('Form submission error:', error)
-      // Only scroll to error if there's an actual validation error
-      const errorFields = Object.keys(error?.fieldErrors || {})
-      if (errorFields.length > 0) {
-        setTimeout(() => {
-          scrollToFirstError(errorFields)
-        }, 100)
-      } else {
-        // If it's not a validation error, show alert
-        alert(error?.message || 'An error occurred. Please try again.')
-      }
-    }
+    form.validateSync('submit')
   }
 
   const handleDataExtracted = (index: number) => (extractedData: any) => {
@@ -352,39 +309,15 @@ export function PersonalInfoForm() {
     <div className="relative w-full space-y-4 border-0">
       <div className="mx-auto w-full max-w-7xl">
         <form
-          onSubmit={async (e) => {
+          onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            console.log('Form onSubmit triggered')
-            setHasValidated(true)
-            
-            // Validate before submitting
-            const validationResult = form.validateSync('submit')
-            if (validationResult && Object.keys(validationResult).length > 0) {
-              const errorFields = Object.keys(validationResult)
-              console.log('Validation failed, error fields:', errorFields)
+            form.handleSubmit().catch(() => {
+              // Scroll to first error when form submission fails
               setTimeout(() => {
-                scrollToFirstError(errorFields)
+                scrollToFirstError()
               }, 100)
-              return
-            }
-            
-            // If validation passes, submit the form
-            console.log('Validation passed, submitting form...')
-            try {
-              await form.handleSubmit()
-              console.log('Form submitted successfully')
-            } catch (error: any) {
-              console.error('Form submission error:', error)
-              const errorFields = Object.keys(error?.fieldErrors || {})
-              if (errorFields.length > 0) {
-                setTimeout(() => {
-                  scrollToFirstError(errorFields)
-                }, 100)
-              } else {
-                alert(error?.message || 'An error occurred. Please try again.')
-              }
-            }
+            })
           }}
         >
           <Card id="travelers-info" className="gap-4 shadow-none">
@@ -802,6 +735,11 @@ export function PersonalInfoForm() {
                                           <Label className="text-primary block">
                                             ID Number
                                           </Label>
+                                          {idType && (
+                                            <p className="text-muted-foreground text-xs">
+                                              {getIdFormatDescription(idType)}
+                                            </p>
+                                          )}
                                         </div>
 
                                         <Input
@@ -1272,19 +1210,15 @@ export function PersonalInfoForm() {
             ) : (
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
-                children={([canSubmit, isSubmitting]) => {
-                  console.log('Button state - canSubmit:', canSubmit, 'isSubmitting:', isSubmitting)
-                  return (
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
-                      disabled={isSubmitting || !canSubmit}
-                    >
-                      {isSubmitting ? 'Processing...' : 'Request Full Quote'}
-                    </Button>
-                  )
-                }}
+                children={([canSubmit, isSubmitting]) => (
+                  <Button
+                    size="lg"
+                    className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
+                    onClick={handleTriggerValidation}
+                  >
+                    {isSubmitting ? 'Processing...' : 'Request Full Quote'}
+                  </Button>
+                )}
               />
             )}
           </div>
