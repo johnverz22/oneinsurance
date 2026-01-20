@@ -206,6 +206,11 @@ export default function PersonalInformationPage() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <Label className="block">ID Number</Label>
+                            {idType && (
+                              <p className="text-muted-foreground text-xs">
+                                {getIdFormatDescription(idType)}
+                              </p>
+                            )}
                           </div>
 
                           <Input
@@ -273,6 +278,11 @@ export default function PersonalInformationPage() {
                       <div className="space-y-2">
                         <div className="flex justify-between">
                           <Label className="block">ID Number</Label>
+                          {idType && (
+                            <p className="text-muted-foreground text-xs">
+                              {getIdFormatDescription(idType as any)}
+                            </p>
+                          )}
                         </div>
 
                         <Input

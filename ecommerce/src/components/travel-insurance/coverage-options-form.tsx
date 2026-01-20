@@ -126,14 +126,12 @@ export function CoverageOptionsForm() {
           const cacheKey = queue.current.shift() // Get the first item in the queue
 
           try {
-            // Use the Next.js API route handler instead of calling the external API directly
             const response = await axios.get(
-              `/api/travel-insurance/compare/${cacheKey}`,
+              `${process.env.NEXT_PUBLIC_BASE_URL}/quote/compare/${cacheKey}`,
               {
                 headers: {
                   Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
                 },
-                timeout: 120000, // 2 minute timeout
               }
             )
 
@@ -170,52 +168,25 @@ export function CoverageOptionsForm() {
               data: [...currentPlans.data, { ...cleanData.data }],
             }
             setInsurancePlans(newCompareQuotes)
-            setIsError(false) // Clear error state on success
-            setIsLoading(false) // Clear loading state
           } catch (error) {
-            console.error('Error processing queue item:', error)
-            // Don't set error immediately - allow retries
-            // Only set error if we've exhausted all retries
-            if (queue.current.length === 0) {
-              setIsError(true)
-            }
+            setIsError(true) // Set error state to true
           }
         }
 
         isProcessing.current = false // Reset the processing flag
         setIsLoading(false) // Set loading state to false
-        
-        // If queue is empty and we have no plans yet, don't show error immediately
-        // The WebSocket might still be receiving events
-        if (queue.current.length === 0 && !insurancePlans) {
-          // Wait a bit before showing error - give WebSocket time to receive events
-          setTimeout(() => {
-            const currentPlans = useTravelInsuranceStore.getState().insurancePlans
-            if (!currentPlans && queue.current.length === 0) {
-              // Only show error if we still have no plans after waiting
-              setIsError(true)
-            }
-          }, 5000) // Wait 5 seconds before showing error
-        }
       }
 
       const channel = echo
         .channel(clientRequest.id)
         .listen('.insurance.plan.received', (e: any) => {
-          console.log('WebSocket event received:', e)
           const cacheKey = e['cache_key']
-          if (cacheKey) {
-            queue.current.push(cacheKey) // Add the cacheKey to the queue
-            processQueue() // Start processing the queue
-          }
+          queue.current.push(cacheKey) // Add the cacheKey to the queue
+          processQueue() // Start processing the queue
         })
-      
-      // Set status to fetching initially, will be updated when data arrives
-      setClientRequest({ ...clientRequest, status: 'fetching' })
+      setClientRequest({ ...clientRequest, status: 'success' })
       echoRef.current = echo
       channelRef.current = channel
-      
-      console.log('WebSocket channel subscribed to:', clientRequest.id)
     }
 
     return () => {

@@ -14,33 +14,14 @@ export type TravelQuoteRequestArgs = {
 
 export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
   try {
-    // Use the Next.js API route handler instead of calling the external API directly
-    const url = `/api/travel-insurance/init-compare`
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/compare-quote`
     const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
 
     const result = await axios.post<InitCompareQuote>(url, data, {
       headers: { Authorization: token },
-      timeout: 120000, // 2 minute timeout to match backend
     })
-    
-    console.log('API Route Response:', result.data)
-    
-    // Validate response structure
-    if (!result.data || !result.data.data || !result.data.data.ClientRequestId) {
-      console.error('Invalid response structure:', result.data)
-      throw new Error('Invalid response from server: Missing ClientRequestId')
-    }
-    
     return result.data
-  } catch (error: any) {
-    console.error('initCompareQuote error:', error)
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      })
-    }
+  } catch (error) {
     throw error
   }
 }
