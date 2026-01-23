@@ -4,7 +4,7 @@ import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
-export function getReferralCode() {
+export function useGetReferralCode() {
   const { accessToken, user } = useAgentAuthStore()
   return useQuery({
     queryKey: ['referralCode'],

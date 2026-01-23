@@ -10,10 +10,14 @@ export default function ProductsPage() {
     (insurance) => insurance.companyId === companyId
   )
 
-  const groupedInsurances = Object.groupBy(
-    insurancesByTenant,
-    (item) => item.categoryId
-  )
+  const groupedInsurances = insurancesByTenant.reduce((acc, item) => {
+    const key = item.categoryId
+    if (!acc[key]) {
+      acc[key] = []
+    }
+    acc[key].push(item)
+    return acc
+  }, {} as Record<string, typeof insurancesByTenant>)
 
   return (
     <div className="relative h-full w-full">

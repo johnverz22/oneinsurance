@@ -73,21 +73,30 @@ export default function PoliciesPage() {
     } catch (e) {}
   }
 
-  const handleRefresh = async () => {
-    try {
-      await refetch()
-      toast.success('Policies refreshed')
-    } catch (e: any) {
-      toast.error('Failed to refresh policies')
-    }
-  }
-
   const handleClearSearch = () => {
     setSearchedTransactions(null)
   }
 
   // Use searched data if available, otherwise use paginated data
-  const displayData = searchedTransactions || transactionsResponse
+  const displayData = searchedTransactions || transactionsResponse || { 
+    success: false, 
+    message: '', 
+    data: { 
+      data: [], 
+      total: 0, 
+      current_page: 1, 
+      last_page: 1, 
+      per_page: 10, 
+      from: 0, 
+      to: 0, 
+      path: '',
+      first_page_url: '',
+      last_page_url: '',
+      links: [],
+      next_page_url: null,
+      prev_page_url: null
+    } 
+  }
 
   return (
     <div className="space-y-6">
