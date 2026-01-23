@@ -21,14 +21,12 @@ export function useUpdateCommissionConfiguration() {
       commissionConfigId: number
     }) => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/commission-configurations/${commissionConfigId}`
-        const token = `Bearer ${accessToken}`
         const response = await axios.put<CommissionConfigUpdateResponse>(
-          url,
+          `/api/admin/commission-configurations/${commissionConfigId}`,
           data,
           {
             headers: {
-              Authorization: token,
+              Authorization: `Bearer ${accessToken}`,
             },
           }
         )
@@ -47,13 +45,15 @@ export function useCreateCommissionConfiguration() {
     mutationKey: ['create-commission-configuration'],
     mutationFn: async (payload: CreateCommitionConfigRequest) => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/commission-configurations`
-        const token = `Bearer ${accessToken}`
-        const response = await axios.post(url, payload, {
-          headers: {
-            Authorization: token,
-          },
-        })
+        const response = await axios.post(
+          `/api/admin/commission-configurations`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
 
         return response.data
       } catch (error) {

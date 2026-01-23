@@ -79,6 +79,14 @@ export default function LobMainContent() {
     sort_order: 'desc',
   })
 
+  console.log('LOB Debug:', {
+    lobData,
+    isLoading,
+    error,
+    currentPage,
+    nameSearch
+  })
+
   const lineOfBusinessList = lobData?.data?.data || []
 
   // Fetch agents for selected LOB
@@ -208,6 +216,11 @@ export default function LobMainContent() {
         {isLoading ? (
           <div className="col-span-full py-12 text-center">
             <p className="text-gray-500">Loading...</p>
+          </div>
+        ) : error ? (
+          <div className="col-span-full py-12 text-center">
+            <p className="text-red-500 text-lg mb-2">Error loading line of business</p>
+            <p className="text-gray-500 text-sm">{error.message || 'Please try refreshing the page'}</p>
           </div>
         ) : lineOfBusinessList.length > 0 ? (
           lineOfBusinessList.map((lob) => (

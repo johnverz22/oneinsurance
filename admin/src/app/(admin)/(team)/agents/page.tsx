@@ -49,6 +49,7 @@ import { exportToCSV } from '@/utils/export-to-csv'
 import { Badge } from '@/components/ui/badge'
 
 export default function AgentsPage() {
+  const router = useRouter()
   const [page, setPage] = useState<number>(1)
   const {
     data: agentsData,
@@ -264,9 +265,8 @@ export default function AgentsPage() {
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false)
 
   function handleRowClick(agent: Agent) {
-    setSelectedToView(agent)
-    setSelectedAgentId(agent.id)
-    setIsDetailsOpen(true)
+    // Navigate to agent policies page instead of opening modal
+    router.push(`/agents/${agent.id}/policies`)
   }
 
   function handleDeleteClick(agent: Agent) {
