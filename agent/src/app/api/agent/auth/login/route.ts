@@ -27,9 +27,17 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Debug environment variables
+  console.log('BASE_URL:', process.env.BASE_URL)
+  console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL)
+  console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('BASE')))
+
+  // Use fallback if BASE_URL is undefined
+  const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-one-insurance.intel-soln.com.ph/api/v1'
+  
   try {
     const response = await axios.post(
-      `${process.env.BASE_URL}/agents/login`,
+      `${baseUrl}/agents/login`,
       parseBody.data
     )
 

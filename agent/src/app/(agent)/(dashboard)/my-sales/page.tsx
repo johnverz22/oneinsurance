@@ -13,6 +13,7 @@ import MetricsCard from '@/components/dashboard/metrics-card'
 import { useGetAgentStatistics } from '@/app/data/queries/statistics'
 import { DollarSign, ShoppingCart, TrendingUp, Wallet } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 
 const transactionColumns: ColumnDef<Transaction>[] = [
   {

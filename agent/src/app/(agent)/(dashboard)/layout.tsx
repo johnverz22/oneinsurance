@@ -23,6 +23,7 @@ export default function DashboardLayout({
     { value: '/products', label: 'My Products' },
     { value: '/referrals', label: 'Referral Links' },
     { value: '/commissions', label: 'Commissions' },
+    { value: '/policies', label: 'Policy' },
   ] satisfies Tab[]
 
   if (!user || !data) {
