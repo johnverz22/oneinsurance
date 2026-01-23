@@ -14,13 +14,13 @@ export function useCreateLineOfBusiness() {
   return useMutation({
     mutationKey: ['create-line-of-business'],
     mutationFn: async (data: LineOfBusinessFormData) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/lobs`
+      const url = `/api/admin/lobs`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.post<LineOfBusinessResponse>(url, data, {
           headers: {
             Authorization: token,
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
           },
         })
         return response.data
@@ -43,7 +43,7 @@ export function useUpdateLineOfBusiness() {
       lobId: number
       data: LineOfBusinessFormData
     }) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/lobs/${lobId}`
+      const url = `/api/admin/lobs/${lobId}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.put<LineOfBusinessResponse>(url, data, {
@@ -65,7 +65,7 @@ export function useDeleteLineOfBusiness() {
   return useMutation({
     mutationKey: ['delete-line-of-business'],
     mutationFn: async (lobId: number) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/lobs/${lobId}`
+      const url = `/api/admin/lobs/${lobId}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.delete<void>(url, {
@@ -87,7 +87,7 @@ export function useAssignLobToAgent() {
   return useMutation({
     mutationKey: ['assign-lob-to-agent'],
     mutationFn: async (request: AssignLobAgentRequest) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs`
+      const url = `/api/admin/agent-lobs`
       const token = `Bearer ${accessToken}`
       const response = await axios.post<void>(url, request, {
         headers: {
@@ -111,7 +111,7 @@ export function useUpdateAgentLob() {
       agentLobId: number
       data: AssignLobAgentRequest
     }) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs/${agentLobId}`
+      const url = `/api/admin/agent-lobs/${agentLobId}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.put<void>(url, data, {
@@ -133,7 +133,7 @@ export function useDeleteAgentLob() {
   return useMutation({
     mutationKey: ['delete-agent-lob'],
     mutationFn: async (agentLobId: number) => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs/${agentLobId}`
+      const url = `/api/admin/agent-lobs/${agentLobId}`
       const token = `Bearer ${accessToken}`
       const response = await axios.delete<void>(url, {
         headers: {

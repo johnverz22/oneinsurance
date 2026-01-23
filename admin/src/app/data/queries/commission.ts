@@ -11,13 +11,18 @@ export function useGetCommissionConfiguration(perPage: number = 15, page: number
         queryKey: ['commission-configuration', perPage, page],
         queryFn: async () => {
             try {
-                const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/commission-configurations?per_page=${perPage}&page=${page}`;
-                const token = `Bearer ${accessToken}`;
-                const response = await axios.get<CommissionConfigPaginatedResponse>(url, {
-                    headers: {
-                        Authorization: token
+                const searchParams = new URLSearchParams()
+                searchParams.append('per_page', perPage.toString())
+                searchParams.append('page', page.toString())
+
+                const response = await axios.get<CommissionConfigPaginatedResponse>(
+                    `/api/admin/commission-configurations?${searchParams.toString()}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                        },
                     }
-                })
+                )
 
                 return response.data;
             } catch (error) {

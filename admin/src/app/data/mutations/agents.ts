@@ -12,8 +12,7 @@ export function useDeleteAgent() {
     mutationKey: ['delete-agent'],
     mutationFn: async (agentId: number) => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`
-        const response = await axios.delete(url, {
+        const response = await axios.delete(`/api/admin/agents/${agentId}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -33,9 +32,8 @@ export function useActivateAgent() {
     mutationKey: ['activate-agent'],
     mutationFn: async (agentId: number) => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/activate-account`
         const response = await axios.post(
-          url,
+          `/api/auth/activate-account`,
           { user_id: agentId },
           {
             headers: {
@@ -63,8 +61,7 @@ export function useUpdateAgent() {
       payload: any
     }) => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`
-        const response = await axios.put(url, payload, {
+        const response = await axios.put(`/api/admin/agents/${agentId}`, payload, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -85,7 +82,7 @@ export function useSearchAgents() {
     mutationFn: async ({ searchKey }: { searchKey: string }) => {
       try {
         const response = await axios.post<AgentsResponse>(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/search`,
+          `/api/admin/agents/search`,
           {
             keyword: searchKey,
           },
@@ -113,7 +110,7 @@ export function useSendSignupLink() {
     mutationFn: async ({ email }: { email: string }) => {
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/invitations`,
+          `/api/admin/invitations`,
           {
             email: email,
             role: 'agent',

@@ -85,7 +85,7 @@ export function useGetAgentById(agentId: number | null) {
     queryFn: async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents/${agentId}`,
+          `/api/admin/agents/${agentId}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
