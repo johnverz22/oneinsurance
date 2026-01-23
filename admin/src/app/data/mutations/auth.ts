@@ -10,10 +10,16 @@ export function useLoginAdmin() {
     mutationKey: ['login-admin'],
     mutationFn: async ({ data }: { data: Login }) => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/login`
+        // Use internal API route instead of direct external call
+        const url = `/api/admin/auth/login`
+        
+        console.log('Admin login URL:', url)
+        console.log('Login data:', data)
+        
         const response = await axios.post<LoginResponse>(url, data)
         return response.data
       } catch (error) {
+        console.error('Admin login error:', error)
         handleApiError(error)
       }
     },
@@ -27,7 +33,7 @@ export function useLogoutAdmin() {
     mutationKey: ['logout-admin'],
     mutationFn: async () => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/logout`
+        const url = `/api/admin/auth/logout`
 
         const response = await axios.post(url, null, {
           headers: {

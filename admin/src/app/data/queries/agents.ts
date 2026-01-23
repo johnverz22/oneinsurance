@@ -31,7 +31,7 @@ export function useGetAgents(params: GetAgentsParams = {}) {
 
       try {
         const response = await axios.get<AgentsResponse>(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agents?${searchParams.toString()}`,
+          `/api/admin/agents?${searchParams.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -58,7 +58,7 @@ export function useGetAgentProducts(page: number = 1) {
     queryFn: async () => {
       try {
         const response = await axios.get<AgentProductPaginatedResponse>(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-products?page=${page}`,
+          `/api/admin/agent-products?page=${page}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

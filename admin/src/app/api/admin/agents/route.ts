@@ -1,0 +1,65 @@
+import { NextRequest, NextResponse } from 'next/server'
+import axios from 'axios'
+
+const headers = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+
+  if (!authHeader) {
+    return NextResponse.json(
+      { message: 'Authorization header required' },
+      { status: 401, headers }
+    )
+  }
+
+  // Get query parameters
+  const { searchParams } = new URL(req.url)
+  const page = searchParams.get('page') || '1'
+  const per_page = searchParams.get('per_page') || '15'
+  const search = searchParams.get('search')
+  const sort_by = searchParams.get('sort_by')
+  const sort_order = searchParams.get('sort_order')
+  const status = searchParams.get('status')
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-one-insurance.intel-soln.com.ph/api/v1'
+  
+  try {
+    // Build query string
+    const queryParams = new URLSearchParams()
+    queryParams.append('page', page)
+    queryParams.append('per_page', per_page)
+    if (search) queryParams.append('search', search)
+    if (sort_by) queryParams.append('sort_by', sort_by)
+    if (sort_order) queryParams.append('sort_order', sort_order)
+    if (status) queryParams.append('status', status)
+
+    const response = await axios.get(
+      `${baseUrl}/admin/agents?${queryParams.toString()}`,
+      {
+        headers: {
+          Authorization: authHeader,
+        },
+      }
+    )
+
+    return NextResponse.json(response.data, { status: 200, headers })
+  } catch (error) {
+    console.error('Admin agents error:', error)
+    if (axios.isAxiosError(error)) {
+      return NextResponse.json(
+        { 
+          message: error.response?.data?.message || error.message,
+          status: error.response?.status || 500
+        }, 
+        { status: error.response?.status || 500, headers }
+      )
+    }
+    return NextResponse.json({ message: 'Agents fetch failed' }, { status: 500, headers })
+  }
+}

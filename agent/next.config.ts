@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
   // ],
   // reactStrictMode: false,
 
+  env: {
+    BASE_URL: process.env.BASE_URL,
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+  },
+
   images: {
     remotePatterns: [
       {
