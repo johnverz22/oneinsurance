@@ -11,13 +11,15 @@ export function useGetTransactions(page = 1) {
     queryKey: ['transactions', page],
     queryFn: async () => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/transactions?page=${page}`
-        const response = await axios.get<TransactionsResponse>(url, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/json',
-          },
-        })
+        const response = await axios.get<TransactionsResponse>(
+          `/api/admin/transactions?page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            },
+          }
+        )
 
         return response.data
       } catch (error) {
@@ -26,5 +28,31 @@ export function useGetTransactions(page = 1) {
       },
       refetchOnWindowFocus: false,
       enabled: !!accessToken,
+  })
+}
+
+export function useGetAgentTransactions(agentId: number, page = 1) {
+  const { accessToken } = useAuthStore()
+  return useQuery({
+    queryKey: ['agent-transactions', agentId, page],
+    queryFn: async () => {
+      try {
+        const response = await axios.get<TransactionsResponse>(
+          `/api/admin/transactions?agent_id=${agentId}&page=${page}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            },
+          }
+        )
+
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+        }
+      },
+      refetchOnWindowFocus: false,
+      enabled: !!accessToken && !!agentId,
   })
 }
