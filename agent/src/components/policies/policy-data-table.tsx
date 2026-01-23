@@ -107,7 +107,7 @@ export function PolicyDataTable({
             placeholder="Search by Certificate number or Policyholder"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
             className="pl-9"
           />
         </div>
