@@ -50,14 +50,15 @@ export function useGetCommissionLogs(params: CommissionLogsParams = {}) {
       if (params.max_commission)
         searchParams.append('max_commission', params.max_commission.toString())
 
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/commission-logs?${searchParams.toString()}`
-      const token = `Bearer ${accessToken}`
       try {
-        const response = await axios.get<CommissionLogsPaginatedResponse>(url, {
-          headers: {
-            Authorization: token,
-          },
-        })
+        const response = await axios.get<CommissionLogsPaginatedResponse>(
+          `/api/admin/commission-logs?${searchParams.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
 
         if (!response.status.toString().startsWith('2')) {
           throw new Error('Failed to fetch commission logs')

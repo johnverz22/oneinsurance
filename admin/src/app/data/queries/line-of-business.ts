@@ -49,7 +49,7 @@ export function useGetLineOfBusinessList(params: LineOfBusinessParams = {}) {
       if (params.status) searchParams.append('status', params.status)
       if (params.name) searchParams.append('name', params.name)
 
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/lobs?${searchParams.toString()}`
+      const url = `/api/admin/lobs?${searchParams.toString()}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.get<LineOfBusinessPaginatedResponse>(url, {
@@ -93,7 +93,7 @@ export function useGetAllAgentLineOfBusiness(
         searchParams.append('agent_id', params.agent_id.toString())
       if (params.lob_id) searchParams.append('lob_id', params.lob_id.toString())
 
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs?${searchParams.toString()}`
+      const url = `/api/admin/agent-lobs?${searchParams.toString()}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.get<AgentLineOfBusinessPaginatedResponse>(
@@ -122,7 +122,7 @@ export function useGetLobAgents(lobId: number) {
   return useQuery({
     queryKey: ['lob-agents', lobId],
     queryFn: async () => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs/lob/${lobId}/agents`
+      const url = `/api/admin/agent-lobs/lob/${lobId}/agents`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.get<LineOfBusinessAgentsResponse>(url, {
@@ -152,7 +152,7 @@ export function useGetAgentLobs(agentId: number) {
       searchParams.append('per_page', '100')
       searchParams.append('status', 'active')
 
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-lobs?${searchParams.toString()}`
+      const url = `/api/admin/agent-lobs?${searchParams.toString()}`
       const token = `Bearer ${accessToken}`
       try {
         const response = await axios.get<AgentLineOfBusinessPaginatedResponse>(

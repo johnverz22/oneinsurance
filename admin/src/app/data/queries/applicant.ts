@@ -30,7 +30,7 @@ export function useGetApplicants(props: useGetApplicantsProps) {
                 if (props.search) params.append('search', props.search);
                 
                 const queryString = params.toString();
-                const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/applicants${queryString ? `?${queryString}` : ''}`;
+                const url = `/api/admin/applicants${queryString ? `?${queryString}` : ''}`;
                 
                 const response = await axios.get<ApplicantPaginatedResponse>(url, {
                     headers: {
