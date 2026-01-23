@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { CalendarIcon, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -26,6 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { useGetAgents } from '@/app/data/queries/agents'
+import type { Agent } from '@/types/agents'
 
 interface ProcessPaymentDialogProps {
   open: boolean
@@ -36,6 +39,43 @@ export function ProcessPaymentDialog({
   open,
   onOpenChange,
 }: ProcessPaymentDialogProps) {
+  const [agentSearch, setAgentSearch] = React.useState('')
+  const [debouncedSearch, setDebouncedSearch] = React.useState('')
+  const [selectedAgent, setSelectedAgent] = React.useState<Agent | null>(null)
+  const [isAgentDropdownOpen, setIsAgentDropdownOpen] = React.useState(false)
+  const [payoutMonth, setPayoutMonth] = React.useState<Date | undefined>()
+
+  // Debounce agent search input so we don't spam the API
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(agentSearch.trim())
+    }, 300)
+
+    return () => clearTimeout(handler)
+  }, [agentSearch])
+
+  const {
+    data: agentsResponse,
+    isLoading: isAgentsLoading,
+  } = useGetAgents(
+    debouncedSearch
+      ? {
+          search: debouncedSearch,
+          per_page: 10,
+        }
+      : {
+          per_page: 10,
+        }
+  )
+
+  const agents = agentsResponse?.data?.data ?? []
+
+  const handleSelectAgent = (agent: Agent) => {
+    setSelectedAgent(agent)
+    setAgentSearch(`${agent.first_name} ${agent.last_name}`)
+    setIsAgentDropdownOpen(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="min-w-full">
@@ -59,22 +99,63 @@ export function ProcessPaymentDialog({
             <div className="grid grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="agent">Agent</Label>
-                <Input
-                  id="agent"
-                  placeholder="Search Agent..."
-                  className="rounded-full"
-                />
+                <div className="relative">
+                  <Input
+                    id="agent"
+                    placeholder="Search Agent..."
+                    className="rounded-full"
+                    value={agentSearch}
+                    onChange={(e) => {
+                      setAgentSearch(e.target.value)
+                      setIsAgentDropdownOpen(true)
+                    }}
+                    onFocus={() => {
+                      if (agents.length > 0) {
+                        setIsAgentDropdownOpen(true)
+                      }
+                    }}
+                  />
+                  {isAgentDropdownOpen && agentSearch && (
+                    <div className="bg-popover absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border shadow-md">
+                      {isAgentsLoading ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          Searching agents...
+                        </div>
+                      ) : agents.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          No agents found.
+                        </div>
+                      ) : (
+                        agents.map((agent) => (
+                          <button
+                            key={agent.id}
+                            type="button"
+                            onClick={() => handleSelectAgent(agent)}
+                            className="hover:bg-accent flex w-full items-start gap-2 px-3 py-2 text-left text-sm"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {agent.first_name} {agent.last_name}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                {agent.email}
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payout-month">Payout Month</Label>
-                <div className="relative">
-                  <Input
-                    id="payout-month"
-                    placeholder="MM/DD/YYYY"
-                    className="rounded-full pr-10"
-                  />
-                  <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                </div>
+                <DateTimePicker
+                  variant="date"
+                  mode="single"
+                  value={payoutMonth}
+                  onChange={(date) => setPayoutMonth(date as Date)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payout-type">Payout Type</Label>

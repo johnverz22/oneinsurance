@@ -23,7 +23,7 @@ export const useAgentStatistics = (dateFrom: string, dateTo: string) => {
   return useQuery({
     queryKey: ['agent-statistics', dateFrom, dateTo],
     queryFn: async () => {
-      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/agent-statistics?date_from=${dateFrom}&date_to=${dateTo}`
+      const url = `/api/admin/statistics?date_from=${dateFrom}&date_to=${dateTo}`
       const token = `Bearer ${accessToken}`
       
       try {

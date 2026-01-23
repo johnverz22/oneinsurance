@@ -10,26 +10,20 @@ export function useGetProducts(page: number = 1, query?: string) {
     queryKey: ['products', page, query],
     queryFn: async () => {
       try {
-        if (query && query?.trim()?.length != 0) {
-          const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/products`
-          const response = await axios.request<ProductsPaginatedResponse>({
-            method: 'GET',
-            url: url,
-            data: {
-              keyword: query,
-            },
+        const searchParams = new URLSearchParams()
+        searchParams.append('page', page.toString())
+        if (query && query.trim().length > 0) {
+          searchParams.append('keyword', query.trim())
+        }
+
+        const response = await axios.get<ProductsPaginatedResponse>(
+          `/api/admin/products?${searchParams.toString()}`,
+          {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
-          })
-          return response.data
-        }
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/products?page=${page}`
-        const response = await axios.get<ProductsPaginatedResponse>(url, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
+          }
+        )
         return response.data
       } catch (error) {
         handleApiError(error)
@@ -46,16 +40,14 @@ export function searchProducts(query: string) {
     queryKey: ['search-products', query],
     queryFn: async () => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BASE_URL}/admin/products`
-        const requestbody = {
-          keyword: query.trim(),
-        }
-        const response = await axios.get<ProductsPaginatedResponse>(url, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          params: requestbody,
-        })
+        const response = await axios.get<ProductsPaginatedResponse>(
+          `/api/admin/products?keyword=${encodeURIComponent(query.trim())}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
         return response.data
       } catch (error) {
         handleApiError(error)

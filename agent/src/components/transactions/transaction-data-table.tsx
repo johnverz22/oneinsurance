@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react'
 import { Transaction, TransactionsData } from '@/types/agent/transactions'
 import { cn } from '@/lib/utils'
-import { MoreHorizontal, Search, X, AlertCircle } from 'lucide-react'
+import { MoreHorizontal, Search, X, AlertCircle, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useRouter } from 'next/navigation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,6 +96,7 @@ export function TransactionDataTable({
   onClearSearch,
 }: TransactionDataTableProps) {
   const [localSearchTerm, setLocalSearchTerm] = useState('')
+  const router = useRouter()
   const transactions = data?.data || []
   const total = data?.total || 0
 
