@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { getReferralCode } from '@/app/data/queries/referral'
+import { useGetReferralCode } from '@/app/data/queries/referral'
 import { useGetAgentLOBs } from '@/app/data/queries/agent-lobs'
 import { DataTable } from '@/components/ui/data-table'
 import { Referral } from '@/types/agent/product'
@@ -19,8 +19,18 @@ const REFERRAL_COLUMNS: ColumnDef<Referral>[] = [
 
 export default function ReferralsPage() {
   const [copiedId, setCopiedId] = useState<string>('')
-  const { data: referralCode, isSuccess: isReferralSuccess } = getReferralCode()
-  const { data: agentLOBs, isLoading: isLOBsLoading } = useGetAgentLOBs()
+  const { data: referralCode, isSuccess: isReferralSuccess, isLoading: isReferralLoading, error: referralError } = useGetReferralCode()
+  const { data: agentLOBs, isLoading: isLOBsLoading, error: lobsError } = useGetAgentLOBs()
+
+  console.log('Referral Debug:', {
+    referralCode,
+    isReferralSuccess,
+    isReferralLoading,
+    referralError,
+    agentLOBs,
+    isLOBsLoading,
+    lobsError
+  })
 
   const referrals = useMemo(() => {
     if (!referralCode || !agentLOBs) return []
@@ -63,7 +73,18 @@ export default function ReferralsPage() {
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
       <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
-        {referrals.length === 0 && !isLOBsLoading ? (
+        {(isReferralLoading || isLOBsLoading) ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-muted-foreground text-lg mb-2">Loading referral links...</p>
+          </div>
+        ) : (referralError || lobsError) ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-red-500 text-lg mb-2">Error loading referral data</p>
+            <p className="text-muted-foreground text-sm">
+              {referralError?.message || lobsError?.message || 'Please try refreshing the page'}
+            </p>
+          </div>
+        ) : referrals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <p className="text-muted-foreground text-lg mb-2">No referral links available</p>
             <p className="text-muted-foreground text-sm">
@@ -78,7 +99,7 @@ export default function ReferralsPage() {
             renderMode="list"
             numColumns={2}
             contentRenderer={(row) =>
-              isReferralSuccess && !isLOBsLoading ? (
+              isReferralSuccess && !isLOBsLoading && !isReferralLoading ? (
                 <ReferralCard
                   referral={row.original}
                   isCopied={copiedId === row.original.id}
@@ -91,7 +112,7 @@ export default function ReferralsPage() {
             searchKey="description"
             searchPlaceholder="Product"
             actions={[]}
-            isLoading={isLOBsLoading}
+            isLoading={isLOBsLoading || isReferralLoading}
             onRowClick={(client) => {}}
           />
         )}
