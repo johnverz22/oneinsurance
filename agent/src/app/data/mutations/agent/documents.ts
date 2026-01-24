@@ -63,3 +63,16 @@ export const useDownloadDocument = () => {
     },
   })
 }
+
+export const useDeleteDocument = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (values: Pick<Document, 'id'>) => {
+      const response = await api.delete(`/agents/files/${values.id}`)
+      return response.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['documents'] })
+    },
+  })
+}

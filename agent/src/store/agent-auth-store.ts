@@ -10,6 +10,7 @@ type AgentUser = {
   designation: string
   phone: string
   status: string
+  profile_photo_url?: string | null
   created_at: string
   updated_at: string
 }

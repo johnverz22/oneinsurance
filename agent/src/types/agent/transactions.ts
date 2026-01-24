@@ -44,6 +44,7 @@ export const TransactionSchema = z.object({
   merchant_transaction_id: z.string().nullable(),
   amount: z.number().or(z.string()).nullable(),
   customer_id: z.number().nullable(),
+  customer_name: z.string().nullable().optional(), // Add customer name field
   transaction_status: z.string().nullable(),
   transaction_date: z.string().datetime().nullable(),
   status: z.enum(['pending', 'completed', 'failed', 'cancelled']),
