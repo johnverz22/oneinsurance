@@ -149,7 +149,7 @@ export const Header = ({
                       Welcome, {user?.name}
                     </span>
                     <Avatar>
-                      <AvatarImage src="" />
+                      {user?.profile_photo_url && <AvatarImage src={user.profile_photo_url} />}
                       <AvatarFallback>{getInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>

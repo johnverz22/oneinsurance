@@ -291,12 +291,12 @@ export default function PolicyDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Customer Information */}
+          {/* Policy Holder */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Customer Information
+                Policy Holder
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -64,13 +64,16 @@ export function handleServerSideAxiosError(error: AxiosError) {
         }
       )
     default:
-      return NextResponse.json(error.response, {
-        status: error.status || 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        },
-      })
+      return NextResponse.json(
+        error.response?.data || { message: 'Internal Server Error' },
+        {
+          status: error.response?.status || 500,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          },
+        }
+      )
   }
 }

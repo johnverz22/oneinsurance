@@ -15,7 +15,7 @@ type Amount =
   | 'NET_COMMISSION'
 
 export const ProfileOverview = () => {
-  const { user } = useAgentAuthStore()
+  const { user, getInitials } = useAgentAuthStore()
   const { data: statistics, isSuccess: isStatisticsFetched } =
     useGetAgentStatistics()
 
@@ -36,8 +36,8 @@ export const ProfileOverview = () => {
       <CardContent className="flex w-full flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex w-full min-w-1/3 items-center gap-5 xl:w-1/3">
           <Avatar className="size-20">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
+            {user?.profile_photo_url && <AvatarImage src={user.profile_photo_url} />}
+            <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div>
             <h2 className="text-lg font-bold md:text-xl lg:text-2xl">

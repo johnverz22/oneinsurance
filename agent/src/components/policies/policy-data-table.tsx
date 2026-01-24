@@ -245,7 +245,9 @@ export function PolicyDataTable({
                     </button>
                   </TableCell>
                   <TableCell>
-                    <p className="font-medium">{transaction.policy_id}</p>
+                    <p className="font-medium">
+                      {transaction.customer_id ? `Customer ID: ${transaction.customer_id}` : 'N/A'}
+                    </p>
                   </TableCell>
                   <TableCell>
                     <p className="text-muted-foreground">{transaction.customer_id || 'N/A'}</p>
@@ -268,11 +270,7 @@ export function PolicyDataTable({
                     </p>
                   </TableCell>
                   <TableCell>
-                    <p className="font-semibold">
-                      {transaction.commission_log?.net_commission
-                        ? `₱${Number(transaction.commission_log.net_commission).toLocaleString()}`
-                        : 'N/A'}
-                    </p>
+                    <p className="font-semibold">PHP</p>
                   </TableCell>
                   <TableCell>
                     <Badge
