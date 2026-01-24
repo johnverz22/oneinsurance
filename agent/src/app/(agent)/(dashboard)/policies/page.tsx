@@ -46,9 +46,10 @@ export default function PoliciesPage() {
   }
 
   const handleDateFilter = (fromDate: Date, toDate: Date) => {
-    // Filter the existing data by date range
+    // Filter the existing data by date range and only show completed transactions
     const filtered = transactionsResponse?.data?.data?.filter(transaction => {
       if (!transaction.transaction_date) return false
+      if (transaction.status?.toLowerCase() !== 'completed') return false
       const transactionDate = new Date(transaction.transaction_date)
       return transactionDate >= fromDate && transactionDate <= toDate
     })
@@ -61,7 +62,7 @@ export default function PoliciesPage() {
           data: filtered
         }
       })
-      toast.success(`Filtered ${filtered.length} policies by date range`)
+      toast.success(`Filtered ${filtered.length} completed policies by date range`)
     }
   }
 
@@ -98,18 +99,29 @@ export default function PoliciesPage() {
     } 
   }
 
+  // Filter to show only completed transactions for policies
+  const filteredDisplayData = displayData ? {
+    ...displayData,
+    data: {
+      ...displayData.data,
+      data: displayData.data?.data?.filter(transaction => 
+        transaction.status?.toLowerCase() === 'completed'
+      ) || []
+    }
+  } : displayData
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <h2 className="text-2xl font-bold">Policy Management</h2>
+          <h2 className="text-2xl font-bold">Transaction History</h2>
           <p className="text-muted-foreground">
             View and manage all your policy transactions, certificates, and coverage details.
           </p>
         </CardHeader>
         <CardContent>
           <PolicyDataTable
-            data={displayData}
+            data={filteredDisplayData}
             isLoading={isLoading || isSearching}
             onSearch={handleSearch}
             onClearSearch={handleClearSearch}
