@@ -1,15 +1,28 @@
 'use client'
 
-import { useDownloadDocument } from '@/app/data/mutations/agent/documents'
+import { useState } from 'react'
+import { useDownloadDocument, useDeleteDocument } from '@/app/data/mutations/agent/documents'
 import { useGetAllDocuments } from '@/app/data/queries/documents'
 import { Document } from '@/types/agent/documents'
-import { FileText, Loader2, Download, ExternalLink } from 'lucide-react'
+import { FileText, Loader2, Download, ExternalLink, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '../ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 
 export function DocumentsList() {
-  const { data, isLoading, isError } = useGetAllDocuments()
+  const { data, isLoading, isError, refetch } = useGetAllDocuments()
   const { mutateAsync: downloadDocument } = useDownloadDocument()
+  const { mutateAsync: deleteDocument, isPending: isDeleting } = useDeleteDocument()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<number | null>(null)
 
   const documents = data ?? []
 
@@ -20,6 +33,19 @@ export function DocumentsList() {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error?.message : 'Something went wrong'
+      toast.error(message)
+    }
+  }
+
+  const handleDeleteDocument = async (doc: Document) => {
+    try {
+      await deleteDocument({ id: doc.id })
+      toast.success('Document deleted successfully!')
+      setDeleteDialogOpen(null)
+      refetch() // Refresh the documents list
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error?.message : 'Failed to delete document'
       toast.error(message)
     }
   }
@@ -50,50 +76,97 @@ export function DocumentsList() {
   }
 
   return (
-    <div className="grid gap-3">
-      {documents.map((doc) => (
-        <div
-          key={doc.id}
-          className="hover:bg-muted flex items-center justify-between rounded-lg border p-4 transition"
-        >
-          {/* Left */}
-          <div className="flex items-center gap-3">
-            <FileText className="text-muted-foreground h-5 w-5" />
+    <>
+      <div className="grid gap-3">
+        {documents.map((doc) => (
+          <div
+            key={doc.id}
+            className="hover:bg-muted flex items-center justify-between rounded-lg border p-4 transition"
+          >
+            {/* Left */}
+            <div className="flex items-center gap-3">
+              <FileText className="text-muted-foreground h-5 w-5" />
 
-            <div>
-              <p className="leading-none font-medium">{doc.file_name}</p>
+              <div>
+                <p className="leading-none font-medium">{doc.file_name}</p>
 
-              <p className="text-muted-foreground mt-1 text-sm">
-                {doc.mime_type} • {(doc.size / 1024 / 1024).toFixed(2)} MB
-              </p>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  {doc.mime_type} • {(doc.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+            </div>
+
+            {/* Right */}
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground text-xs">
+                {new Date(doc.created_at).toLocaleDateString()}
+              </span>
+
+              <a
+                href={doc.web_view_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:bg-muted rounded-md p-2"
+                title="View"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </a>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-md p-2"
+                onClick={() => handleDownloadDocument(doc)}
+                title="Download"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-md p-2 text-destructive hover:text-destructive"
+                onClick={() => setDeleteDialogOpen(doc.id)}
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* Right */}
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground text-xs">
-              {new Date(doc.created_at).toLocaleDateString()}
-            </span>
-
-            <a
-              href={doc.web_view_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:bg-muted rounded-md p-2"
-              title="View"
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen !== null} onOpenChange={() => setDeleteDialogOpen(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const doc = documents.find(d => d.id === deleteDialogOpen)
+                if (doc) handleDeleteDocument(doc)
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
             >
-              <ExternalLink className="h-4 w-4" />
-            </a>
-
-            <Button
-              className="rounded-md p-2"
-              onClick={() => handleDownloadDocument(doc)}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
