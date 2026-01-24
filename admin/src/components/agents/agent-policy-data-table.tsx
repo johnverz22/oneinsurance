@@ -60,16 +60,28 @@ export function AgentPolicyDataTable({
   const [isSearchMode, setIsSearchMode] = useState(false)
   const router = useRouter()
 
+  console.log('AgentPolicyDataTable - Rendering with agentId:', agentId, 'currentPage:', currentPage)
+
   const {
     data: transactionsResponse,
     isLoading,
     error,
   } = useGetAgentTransactions(agentId, currentPage)
 
+  console.log('AgentPolicyDataTable - Query result:', {
+    transactionsResponse,
+    isLoading,
+    error,
+    agentId,
+    currentPage
+  })
+
   const transactions = transactionsResponse?.data?.data || []
+  console.log('AgentPolicyDataTable - Extracted transactions:', transactions)
 
   // Don't render if agentId is not valid
   if (!agentId || agentId === 0) {
+    console.log('AgentPolicyDataTable - Invalid agentId, showing loading message')
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">Loading agent information...</p>
@@ -78,6 +90,7 @@ export function AgentPolicyDataTable({
   }
 
   const handleViewPolicy = (policyId: string) => {
+    console.log('AgentPolicyDataTable - Navigating to policy:', policyId)
     router.push(`/agents/${agentId}/policies/${policyId}`)
   }
 
@@ -124,6 +137,7 @@ export function AgentPolicyDataTable({
   const totalPages = isSearchMode ? 1 : (transactionsResponse?.data?.last_page || 1)
 
   if (isLoading) {
+    console.log('AgentPolicyDataTable - Showing loading skeleton')
     return (
       <div className="space-y-4">
         <div className="flex gap-4">
@@ -140,12 +154,22 @@ export function AgentPolicyDataTable({
   }
 
   if (error) {
+    console.log('AgentPolicyDataTable - Showing error state:', error)
     return (
       <div className="text-center py-8">
-        <p className="text-red-500">Error loading transactions</p>
+        <p className="text-red-500">Error loading transactions: {error?.message || 'Unknown error'}</p>
+        <Button 
+          onClick={() => window.location.reload()} 
+          className="mt-4"
+          variant="outline"
+        >
+          Retry
+        </Button>
       </div>
     )
   }
+
+  console.log('AgentPolicyDataTable - Rendering table with', displayData.length, 'transactions')
 
   return (
     <div className="space-y-4">

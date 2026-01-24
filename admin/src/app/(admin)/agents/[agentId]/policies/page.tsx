@@ -22,7 +22,9 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
 
   useEffect(() => {
     params.then(({ agentId: agentIdStr }) => {
-      setAgentId(parseInt(agentIdStr))
+      const id = parseInt(agentIdStr)
+      console.log('AgentPoliciesPage - Setting agentId:', id)
+      setAgentId(id)
     })
   }, [params])
 
@@ -33,6 +35,11 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
   } = useGetAgentById(agentId)
 
   const agent = agentData?.data
+
+  console.log('AgentPoliciesPage - agentId:', agentId)
+  console.log('AgentPoliciesPage - agent:', agent)
+  console.log('AgentPoliciesPage - agent keys:', agent ? Object.keys(agent) : 'no agent')
+  console.log('AgentPoliciesPage - isLoadingAgent:', isLoadingAgent)
 
   const handleBackClick = () => {
     router.push('/agents')
@@ -105,26 +112,24 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">
-            {agent.first_name} {agent.last_name} - Policies
-          </h1>
-          <p className="text-muted-foreground">
-            Agent ID: AGT{String(agent.id).padStart(3, '0')} • {agent.email}
+          <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'}
           </p>
         </div>
       </div>
 
-      {/* Policy Management Card */}
+      {/* Transaction History Card */}
       <Card>
         <CardHeader>
-          <h2 className="text-2xl font-bold">Policy Management</h2>
+          <h2 className="text-2xl font-bold">Transaction History</h2>
           <p className="text-muted-foreground">
             View and manage all policy transactions, certificates, and coverage details for this agent.
           </p>
         </CardHeader>
         <CardContent>
           <AgentPolicyDataTable
-            agentId={agentId || 0}
+            agentId={agentId}
             onPageChange={handlePageChange}
             currentPage={currentPage}
           />
