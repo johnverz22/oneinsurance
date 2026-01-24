@@ -247,9 +247,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             </div>
           </div>
 
-          {/* Customer Information Section */}
+          {/* Policy Holder Section */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4">Customer Information</h3>
+            <h3 className="text-lg font-semibold mb-4">Policy Holder</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
