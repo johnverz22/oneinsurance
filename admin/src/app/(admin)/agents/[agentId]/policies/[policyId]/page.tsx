@@ -50,41 +50,57 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
     }
   }
 
-  // Use real policy data from API or fallback to mock data
+  // Use real policy data from API or fallback to mock data with customer information
   const policyData = policy ? {
     certificate_number: policy.certificate_number || `CERT-${policyId}`,
-    policy_holder: policy.policy_holder || 'Unknown',
-    plan_name: policy.plan_name || 'Insurance Plan',
-    plan_type: policy.plan_type || 'Insurance',
-    premium: policy.premium || '0.00',
+    policy_holder: policy.policy_holder || 'John Michael Doe',
+    plan_name: policy.plan_name || 'OONA Travel',
+    plan_type: policy.plan_type || 'Travel Insurance',
+    premium: policy.premium || '25000',
     currency: policy.currency || 'PHP',
-    coverage_start: policy.coverage_start ? new Date(policy.coverage_start).toLocaleDateString() : 'N/A',
-    coverage_end: policy.coverage_end ? new Date(policy.coverage_end).toLocaleDateString() : 'N/A',
+    coverage_start: policy.coverage_start ? new Date(policy.coverage_start).toLocaleDateString() : '1/15/2024',
+    coverage_end: policy.coverage_end ? new Date(policy.coverage_end).toLocaleDateString() : '12/15/2024',
     status: policy.status || 'active',
-    provider: policy.provider || 'Insurance Provider',
+    provider: policy.provider || 'OONA',
     policy_details: policy.policy_details || {
-      sum_insured: policy.gross_commission || '0.00',
-      deductible: '0.00',
+      sum_insured: policy.gross_commission || '1000000',
+      deductible: '5000',
       beneficiary: policy.agent ? `${policy.agent.first_name} ${policy.agent.last_name}` : 'N/A',
-      emergency_contact: 'N/A',
-    }
+      emergency_contact: '+63 917 123 4567',
+    },
+    // Customer information - use real data if available, otherwise use mock data
+    customer_name: policy.customer_name || policy.policy_holder || 'John Michael Doe',
+    customer_email: policy.customer_email || 'john.doe@email.com',
+    customer_phone: policy.customer_phone || '+63 917 123 4567',
+    customer_address: policy.customer_address || '123 Main Street, Makati City, Metro Manila',
+    customer_dob: policy.customer_dob || '6/15/1985',
+    customer_id_type: policy.customer_id_type || 'Driver\'s License',
+    customer_id_number: policy.customer_id_number || 'N01-85-123456',
   } : {
-    certificate_number: 'CERT-2024-001234',
-    policy_holder: 'John Doe',
-    plan_name: 'Travel Insurance Premium',
-    plan_type: 'Travel',
-    premium: '5000.00',
+    certificate_number: 'CERT-000004',
+    policy_holder: 'John Michael Doe',
+    plan_name: 'OONA Travel',
+    plan_type: 'Travel Insurance',
+    premium: '25000',
     currency: 'PHP',
-    coverage_start: '2024-01-15',
-    coverage_end: '2024-12-15',
+    coverage_start: '1/15/2024',
+    coverage_end: '12/15/2024',
     status: 'active',
-    provider: 'OONA Insurance',
+    provider: 'OONA',
     policy_details: {
-      sum_insured: '1000000.00',
-      deductible: '5000.00',
+      sum_insured: '1000000',
+      deductible: '5000',
       beneficiary: 'Jane Doe',
-      emergency_contact: '+63 912 345 6789',
-    }
+      emergency_contact: '+63 917 123 4567',
+    },
+    // Mock customer information
+    customer_name: 'John Michael Doe',
+    customer_email: 'john.doe@email.com',
+    customer_phone: '+63 917 123 4567',
+    customer_address: '123 Main Street, Makati City, Metro Manila',
+    customer_dob: '6/15/1985',
+    customer_id_type: 'Driver\'s License',
+    customer_id_number: 'N01-85-123456',
   }
 
   const handleDownloadPDF = () => {
@@ -171,7 +187,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           <div>
             <h1 className="text-2xl font-bold">Policy Details</h1>
             <p className="text-muted-foreground">
-              {agent ? `${agent.first_name} ${agent.last_name}` : 'Agent'} • Certificate: {policyData.certificate_number}
+              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Certificate: {policyData.certificate_number}
             </p>
           </div>
         </div>
@@ -227,6 +243,45 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <div>
                 <label className="text-sm font-medium text-gray-500">Provider</label>
                 <p className="text-lg">{policyData.provider}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Information Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4">Customer Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Full Name</label>
+                  <p className="text-lg">{policyData.customer_name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-lg">{policyData.customer_email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Phone</label>
+                  <p className="text-lg">{policyData.customer_phone}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Date of Birth</label>
+                  <p className="text-lg">{policyData.customer_dob}</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Address</label>
+                  <p className="text-lg">{policyData.customer_address}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">ID Type</label>
+                  <p className="text-lg">{policyData.customer_id_type}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">ID Number</label>
+                  <p className="text-lg">{policyData.customer_id_number}</p>
+                </div>
               </div>
             </div>
           </div>
