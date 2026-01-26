@@ -41,6 +41,8 @@ export const TransactionSchema = z.object({
   agent_code_used: z.string(),
   proposal_number: z.string(),
   policy_id: z.string(),
+  policy_details: z.string().nullable().optional(), // Add policy_details field
+  carrier_product_code: z.string().optional(), // Add carrier_product_code field
   merchant_transaction_id: z.string().nullable(),
   amount: z.number().or(z.string()).nullable(),
   customer_id: z.number().nullable(),
