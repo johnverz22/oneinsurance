@@ -57,7 +57,7 @@ export function usePolicy(policyId: string) {
             proposal_number: data.data?.proposal_number || '',
             carrier_product_code: data.data?.carrier_product_code || 'PHTRAVEL',
             policy_id: data.data?.policy_id || '',
-            policy_details: null, // Set to null if validation fails
+            policy_details: data.data?.policy_details || null, // Preserve policy_details with PolicyCustomerList
             merchant_transaction_id: data.data?.merchant_transaction_id || null,
             amount: data.data?.amount ? (typeof data.data.amount === 'string' ? parseFloat(data.data.amount) : data.data.amount) : null,
             customer_id: data.data?.customer_id || null,

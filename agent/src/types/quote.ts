@@ -164,7 +164,7 @@ const TravelPolicyDataSchema = z.object({
   PolicyElementId: z.number(),
   PolicyId: z.string(),
   PolicyLobList: z.array(PolicyLobSchema),
-  PolicyNo: z.string(),
+  CarrierPolicyNo: z.string(),
   PolicyStatus: z.number(),
   PolicyStatusForDisplay: z.number(),
   PolicyType: z.string(),

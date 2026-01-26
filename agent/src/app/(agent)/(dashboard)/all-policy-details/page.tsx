@@ -14,7 +14,7 @@ import { useGetTransactions } from '@/app/data/queries/transactions'
 import axios from 'axios'
 
 interface PolicyDetails {
-  PolicyNo: string
+  CarrierPolicyNo: string
   [key: string]: any // For other policy data that might come from the API
 }
 
@@ -42,7 +42,7 @@ export default function AllPolicyDetailsPage() {
             try {
               const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/quote/load`, {
                 type: "policy",
-                PolicyNo: transaction.policy_id
+                CarrierPolicyNo: transaction.policy_id
               }, {
                 headers: {
                   'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export default function AllPolicyDetailsPage() {
             } catch (error: any) {
               // Silently handle errors - API might work in production
               details[transaction.policy_id] = {
-                PolicyNo: transaction.policy_id
+                CarrierPolicyNo: transaction.policy_id
               }
             }
           }
@@ -128,7 +128,7 @@ export default function AllPolicyDetailsPage() {
         if (Object.keys(policyData).length > 0) {
           details.push('--- Policy Details ---')
           Object.entries(policyData).forEach(([key, value]) => {
-            if (key !== 'PolicyNo' && value) {
+            if (key !== 'CarrierPolicyNo' && value) {
               details.push(`${key}: ${value}`)
             }
           })
@@ -327,7 +327,7 @@ export default function AllPolicyDetailsPage() {
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <div className="grid grid-cols-2 gap-4">
                             {Object.entries(policyData).map(([key, value]) => {
-                              if (key === 'PolicyNo' || !value) return null
+                              if (key === 'CarrierPolicyNo' || !value) return null
                               return (
                                 <div key={key}>
                                   <p className="text-sm text-gray-500 mb-1">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
