@@ -52,51 +52,24 @@ export const useUpdateAdminProfile = () => {
 
       console.log('Attempting to update admin profile with data:', backendData)
 
-      try {
-        const response = await axios.put(`/api/admin/profile`, backendData, {
-          headers: {
-            Authorization: token,
-            'Content-Type': 'application/json',
-          },
-        })
-        
-        console.log('Profile update successful via API:', response.data)
-        return {
-          ...response.data,
-          isLocalUpdate: false
-        }
-      } catch (error: any) {
-        console.log('Profile API failed, falling back to local update:', error.response?.data)
-        
-        // If the API fails (backend bug), do optimistic update
-        // This ensures the UI works even when backend has issues
-        console.log('Performing optimistic update due to backend error')
-        
-        return {
-          success: true,
-          message: 'Profile updated locally (backend API has issues)',
-          data: {
-            name: data.name,
-            email: data.email
-          },
-          isLocalUpdate: true,
-          backendError: error.response?.data?.message || 'Backend API error'
-        }
-      }
+      const response = await axios.put(`/api/admin/profile`, backendData, {
+        headers: {
+          Authorization: token,
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      console.log('Profile update successful:', response.data)
+      return response.data
     },
     onSuccess: (response, variables) => {
       console.log('Profile update successful:', response)
       
-      // Always update the local store with the new data
+      // Update the local store with the new data
       updateUser({
         name: variables.data.name,
         email: variables.data.email
       })
-      
-      // Show appropriate message based on whether it was a real API update or local
-      if (response.isLocalUpdate) {
-        console.warn('Profile updated locally only - backend API has issues:', response.backendError)
-      }
       
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: ['admin-profile'] })
