@@ -10,6 +10,8 @@ import { TransactionsResponse } from '@/types/agent/transactions'
 
 export default function PoliciesPage() {
   const [currentPage, setCurrentPage] = useState(1)
+  const [searchedTransactions, setSearchedTransactions] = useState<TransactionsResponse | null>(null)
+  
   // Initialize current page from sessionStorage if available
   useEffect(() => {
     try {
@@ -26,9 +28,8 @@ export default function PoliciesPage() {
     isLoading,
     refetch,
   } = useGetTransactions(currentPage)
+  
   const { mutateAsync: searchTransactions } = useSearchTransactions()
-  const [searchedTransactions, setSearchedTransactions] =
-    useState<TransactionsResponse | null>(null)
   const [isSearching, setIsSearching] = useState(false)
 
   const handleSearch = async (keyword: string) => {
@@ -36,6 +37,7 @@ export default function PoliciesPage() {
       setIsSearching(true)
       const result = await searchTransactions({ keyword })
       setSearchedTransactions(result)
+      toast.success(`Found ${result.data.data.length} policies matching "${keyword}"`)
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || 'Error searching policies'
@@ -72,32 +74,20 @@ export default function PoliciesPage() {
     try {
       sessionStorage.setItem('policies.currentPage', String(page))
     } catch (e) {}
+    
+    // Clear search results when changing pages
+    if (searchedTransactions) {
+      setSearchedTransactions(null)
+    }
   }
 
   const handleClearSearch = () => {
     setSearchedTransactions(null)
+    refetch() // Refresh the original data
   }
 
   // Use searched data if available, otherwise use paginated data
-  const displayData = searchedTransactions || transactionsResponse || { 
-    success: false, 
-    message: '', 
-    data: { 
-      data: [], 
-      total: 0, 
-      current_page: 1, 
-      last_page: 1, 
-      per_page: 10, 
-      from: 0, 
-      to: 0, 
-      path: '',
-      first_page_url: '',
-      last_page_url: '',
-      links: [],
-      next_page_url: null,
-      prev_page_url: null
-    } 
-  }
+  const displayData = searchedTransactions || transactionsResponse
 
   // Filter to show only completed transactions for policies
   const filteredDisplayData = displayData ? {
@@ -108,15 +98,15 @@ export default function PoliciesPage() {
         transaction.status?.toLowerCase() === 'completed'
       ) || []
     }
-  } : displayData
+  } : null
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <h2 className="text-2xl font-bold">Transaction History</h2>
+          <h2 className="text-2xl font-bold">Policy Management</h2>
           <p className="text-muted-foreground">
-            View and manage all your policy transactions, certificates, and coverage details.
+            View and manage all your completed insurance policies, certificates, and coverage details.
           </p>
         </CardHeader>
         <CardContent>
