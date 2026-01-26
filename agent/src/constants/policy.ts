@@ -605,7 +605,7 @@ export const POLICY = {
         TechProductId: 826503626,
       },
     ],
-    PolicyNo: 'POTRAVEL00000115',
+    CarrierPolicyNo: 'P0086998',
     PolicyStatus: 2,
     PolicyStatusForDisplay: 2,
     PolicyType: '1',

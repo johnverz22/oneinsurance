@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from '@tanstack/react-form'
 import Link from 'next/link'
-import { Loader2, Lock, LockKeyhole, User } from 'lucide-react'
+import { Loader2, LockKeyhole, User } from 'lucide-react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'

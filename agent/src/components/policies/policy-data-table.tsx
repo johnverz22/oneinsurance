@@ -252,18 +252,93 @@ export function PolicyDataTable({
                         <p className="font-medium">
                           {transaction.customer_name || `Customer ID: ${transaction.customer_id}` || 'N/A'}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          Agent Code: {transaction.agent_code_used}
-                        </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">Travel Insurance</p>
-                      <p className="text-sm text-muted-foreground">PHTRAVEL</p>
+                      <p className="font-medium">
+                        {(() => {
+                          // Try to get CarrierProductCode from policy_details
+                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                          if (transactionWithDetails.policy_details) {
+                            try {
+                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                                ? JSON.parse(transactionWithDetails.policy_details) 
+                                : transactionWithDetails.policy_details;
+                              
+                              return policyDetails?.CarrierProductCode || policyDetails?.ProductCode || 'TRAVEL';
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for CarrierProductCode:', e);
+                            }
+                          }
+                          
+                          return 'TRAVEL';
+                        })()}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {(() => {
+                          // Try to get CarrierCode from policy_details
+                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                          if (transactionWithDetails.policy_details) {
+                            try {
+                              const policyDetails = typeof transaction.policy_details === 'string' 
+                                ? JSON.parse(transaction.policy_details) 
+                                : transaction.policy_details;
+                              
+                              return policyDetails?.CarrierCode || 'MALAYAN';
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for CarrierCode:', e);
+                            }
+                          }
+                          
+                          return 'MALAYAN';
+                        })()}
+                      </p>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">Travel Plan</p>
-                      <p className="text-sm text-muted-foreground">Individual</p>
+                      <p className="font-medium">
+                        {(() => {
+                          // Try to get plan code from policy_details
+                          const transactionWithDetails = transaction as Transaction & { policy_details?: string, carrier_product_code?: string };
+                          if (transactionWithDetails.policy_details) {
+                            try {
+                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                                ? JSON.parse(transactionWithDetails.policy_details) 
+                                : transactionWithDetails.policy_details;
+                              
+                              if (policyDetails?.PlanCode) {
+                                return policyDetails.PlanCode;
+                              }
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for plan code:', e);
+                            }
+                          }
+                          
+                          // Fallback to carrier_product_code or default
+                          return transactionWithDetails.carrier_product_code || 'Travel Plan';
+                        })()}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {(() => {
+                          // Try to get travel type from policy_details
+                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                          if (transactionWithDetails.policy_details) {
+                            try {
+                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                                ? JSON.parse(transactionWithDetails.policy_details) 
+                                : transactionWithDetails.policy_details;
+                              
+                              if (policyDetails?.TravelType) {
+                                return policyDetails.TravelType;
+                              }
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for travel type:', e);
+                            }
+                          }
+                          
+                          // Fallback
+                          return 'Individual';
+                        })()}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <p className="font-semibold">
