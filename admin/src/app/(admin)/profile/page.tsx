@@ -102,16 +102,7 @@ const AdminProfilePage = () => {
       })
       
       if (response && response.success) {
-        if (response.isLocalUpdate) {
-          // Local update due to backend issues
-          toast.warning('Profile updated locally only. Changes will not persist after logout due to backend API issues.', {
-            duration: 6000
-          })
-        } else {
-          // Real API success
-          toast.success('Profile updated successfully!')
-        }
-        
+        toast.success('Profile updated successfully!')
         setIsEditing(false)
         setFormErrors({})
       } else {
