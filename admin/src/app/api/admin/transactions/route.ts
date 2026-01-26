@@ -65,25 +65,37 @@ export async function GET(req: NextRequest) {
     // If we're getting commission logs for agent transactions, transform the data
     if (agentId && response.data?.data?.data) {
       console.log('Transactions API - Transforming commission data for agent:', agentId)
+      
       const transformedData = {
         success: true,
         message: 'Transactions retrieved successfully',
         data: {
-          data: response.data.data.data.map((commission: any) => ({
-            id: commission.id,
-            certificate_number: `CERT-${commission.id.toString().padStart(6, '0')}`,
-            policy_holder: `${commission.agent.first_name} ${commission.agent.last_name}`,
-            plan_name: commission.product.name,
-            plan_type: commission.product.category || 'Insurance',
-            premium: commission.total_net_premium,
-            currency: 'PHP',
-            coverage_start: commission.period_start || commission.created_at,
-            coverage_end: commission.period_end || commission.created_at,
-            status: 'active',
-            policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
-            transaction_date: commission.created_at,
-            provider: commission.provider?.name || 'Insurance Provider',
-          })),
+          data: response.data.data.data.map((commission: any) => {
+            // For now, show "Unknown Customer" since customer relationship isn't implemented in API yet
+            let customerName = 'Unknown Customer'
+            
+            // Only try to get customer if there's a direct customer_id field
+            if (commission.customer_id) {
+              // This would be handled by a separate API call if needed
+              customerName = 'Customer' // Placeholder until API is implemented
+            }
+            
+            return {
+              id: commission.id,
+              certificate_number: `CERT-${commission.id.toString().padStart(6, '0')}`,
+              policy_holder: customerName, // Customer name, not agent name
+              plan_name: commission.product.name,
+              plan_type: commission.product.category || 'Insurance',
+              premium: commission.total_net_premium,
+              currency: 'PHP',
+              coverage_start: commission.period_start || commission.created_at,
+              coverage_end: commission.period_end || commission.created_at,
+              status: 'active',
+              policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
+              transaction_date: commission.created_at,
+              provider: commission.provider?.name || 'Insurance Provider',
+            }
+          }),
           total: response.data.data.total,
           current_page: response.data.data.current_page,
           last_page: response.data.data.last_page,
@@ -127,21 +139,31 @@ export async function GET(req: NextRequest) {
             success: true,
             message: 'Transactions retrieved successfully',
             data: {
-              data: agentCommissions.map((commission: any) => ({
-                id: commission.id,
-                certificate_number: `CERT-${commission.id.toString().padStart(6, '0')}`,
-                policy_holder: `${commission.agent.first_name} ${commission.agent.last_name}`,
-                plan_name: commission.product.name,
-                plan_type: commission.product.category || 'Insurance',
-                premium: commission.total_net_premium,
-                currency: 'PHP',
-                coverage_start: commission.period_start || commission.created_at,
-                coverage_end: commission.period_end || commission.created_at,
-                status: 'active',
-                policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
-                transaction_date: commission.created_at,
-                provider: commission.provider?.name || 'Insurance Provider',
-              })),
+              data: agentCommissions.map((commission: any) => {
+                // For now, show "Unknown Customer" since customer relationship isn't implemented in API yet
+                let customerName = 'Unknown Customer'
+                
+                // Only try to get customer if there's a direct customer_id field
+                if (commission.customer_id) {
+                  customerName = 'Customer' // Placeholder until API is implemented
+                }
+                
+                return {
+                  id: commission.id,
+                  certificate_number: `CERT-${commission.id.toString().padStart(6, '0')}`,
+                  policy_holder: customerName, // Customer name, not agent name
+                  plan_name: commission.product.name,
+                  plan_type: commission.product.category || 'Insurance',
+                  premium: commission.total_net_premium,
+                  currency: 'PHP',
+                  coverage_start: commission.period_start || commission.created_at,
+                  coverage_end: commission.period_end || commission.created_at,
+                  status: 'active',
+                  policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
+                  transaction_date: commission.created_at,
+                  provider: commission.provider?.name || 'Insurance Provider',
+                }
+              }),
               total: agentCommissions.length,
               current_page: 1,
               last_page: 1,
@@ -169,7 +191,7 @@ export async function GET(req: NextRequest) {
             {
               id: 1,
               certificate_number: `CERT-000001`,
-              policy_holder: `Test Agent ${agentId}`,
+              policy_holder: `John Michael Doe`, // Customer name, not agent name
               plan_name: 'Travel Insurance Premium',
               plan_type: 'Travel',
               premium: '5000.00',
@@ -184,7 +206,7 @@ export async function GET(req: NextRequest) {
             {
               id: 2,
               certificate_number: `CERT-000002`,
-              policy_holder: `Test Agent ${agentId}`,
+              policy_holder: `Maria Santos`, // Customer name, not agent name
               plan_name: 'Health Insurance Basic',
               plan_type: 'Health',
               premium: '8000.00',

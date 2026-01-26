@@ -55,15 +55,27 @@ export const Header = ({
   const navigations = isNavigationVisible
     ? (rest as WithNavigationProps).navigations
     : []
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, getInitials } = useAuthStore()
   const { mutateAsync: logoutAdmin } = useLogoutAdmin()
 
   const { isMobile } = useSidebar()
   const isSingIn = isAuthenticated
 
   const handleLogout = async () => {
-    await logoutAdmin()
-    window.location.href = '/login'
+    try {
+      console.log('Admin logout - Starting logout process')
+      console.log('Admin logout - Current user:', user)
+      console.log('Admin logout - Is authenticated:', isAuthenticated)
+      
+      await logoutAdmin()
+      
+      console.log('Admin logout - Logout successful, redirecting to login')
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Admin logout - Logout failed:', error)
+      // Even if logout fails, clear local state and redirect
+      window.location.href = '/login'
+    }
   }
 
   return (
@@ -161,14 +173,16 @@ export const Header = ({
                     className="flex items-center gap-2 py-2"
                   >
                     <Avatar>
-                      <AvatarImage src="https://github.com/shadcn.png" />
-                      <AvatarFallback>CN</AvatarFallback>
+                      {user?.profile_photo_url && <AvatarImage src={user.profile_photo_url} />}
+                      <AvatarFallback>{getInitials()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{user?.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">Profile</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     Logout
