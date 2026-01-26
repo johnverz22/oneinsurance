@@ -41,6 +41,7 @@ interface PolicyDataTableProps {
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case 'completed':
+    case 'active':
       return 'bg-green-100 text-green-800 hover:bg-green-200'
     case 'pending':
       return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
@@ -69,7 +70,8 @@ export function PolicyDataTable({
   const router = useRouter()
 
   const handleViewPolicy = (transaction: Transaction) => {
-    router.push(`/policies/${transaction.policy_id}`)
+    // Use the transaction ID for the policy details page
+    router.push(`/policies/${transaction.id}`)
   }
 
   const handleSearchSubmit = () => {
@@ -218,83 +220,109 @@ export function PolicyDataTable({
             <TableRow>
               <TableHead>Certificate Number</TableHead>
               <TableHead>Policyholder</TableHead>
-              <TableHead>Plan Name</TableHead>
-              <TableHead>Plan Type</TableHead>
+              <TableHead>Product</TableHead>
+              <TableHead>Plan Code</TableHead>
               <TableHead>Premium</TableHead>
               <TableHead>Coverage Period</TableHead>
-              <TableHead>Currency</TableHead>
+              <TableHead>Travel Destination</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Timestamp</TableHead>
+              <TableHead>Created Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {transactions && transactions.length > 0 ? (
-              transactions.map((transaction, index) => (
-                <TableRow
-                  key={transaction.id}
-                  className={cn('h-16', {
-                    'bg-gray-50 dark:bg-gray-900': index % 2 === 1,
-                  })}
-                >
-                  <TableCell>
-                    <button
-                      onClick={() => handleViewPolicy(transaction)}
-                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                    >
-                      {transaction.proposal_number}
-                    </button>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-medium">
-                      {transaction.customer_id ? `Customer ID: ${transaction.customer_id}` : 'N/A'}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-muted-foreground">{transaction.customer_id || 'N/A'}</p>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-muted-foreground">{transaction.merchant_transaction_id || 'N/A'}</p>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-semibold">
-                      {transaction.amount
-                        ? `₱${Number(transaction.amount).toLocaleString()}`
-                        : 'N/A'}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-semibold">
-                      {transaction.commission_log?.gross_commission
-                        ? `₱${Number(transaction.commission_log.gross_commission).toLocaleString()}`
-                        : 'N/A'}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-semibold">PHP</p>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={cn(getStatusColor(transaction.status))}
-                    >
-                      {transaction.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm">
-                      {transaction.transaction_date
-                        ? new Date(transaction.transaction_date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : 'N/A'}
-                    </p>
-                  </TableCell>
-                </TableRow>
-              ))
+              transactions.map((transaction, index) => {
+                return (
+                  <TableRow
+                    key={transaction.id}
+                    className={cn('h-16', {
+                      'bg-gray-50 dark:bg-gray-900': index % 2 === 1,
+                    })}
+                  >
+                    <TableCell>
+                      <button
+                        onClick={() => handleViewPolicy(transaction)}
+                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        {transaction.proposal_number}
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">
+                          {transaction.customer_name || `Customer ID: ${transaction.customer_id}` || 'N/A'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Agent Code: {transaction.agent_code_used}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium">Travel Insurance</p>
+                      <p className="text-sm text-muted-foreground">PHTRAVEL</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium">Travel Plan</p>
+                      <p className="text-sm text-muted-foreground">Individual</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-semibold">
+                        {transaction.amount
+                          ? `₱${Number(transaction.amount).toLocaleString()}`
+                          : 'N/A'}
+                      </p>
+                      {transaction.commission_log?.gross_commission && (
+                        <p className="text-sm text-green-600">
+                          Commission: ₱{Number(transaction.commission_log.gross_commission).toLocaleString()}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {transaction.transaction_date ? (
+                        <div>
+                          <p className="text-sm">
+                            {new Date(transaction.transaction_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Active Policy
+                          </p>
+                        </div>
+                      ) : (
+                        'N/A'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">Various Destinations</p>
+                        <p className="text-sm text-muted-foreground">Worldwide Coverage</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={cn(getStatusColor(transaction.status))}
+                      >
+                        {transaction.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm">
+                        {new Date(transaction.created_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={9} className="h-24 text-center text-gray-500">
