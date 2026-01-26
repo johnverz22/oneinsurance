@@ -6,7 +6,7 @@ import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { handleApiError } from '@/utils/handle-api-error'
 
 export function useGetTransactions(page = 1) {
-  const { accessToken } = useAuthStore()
+  const { getAuthToken } = useAuthStore()
   return useQuery({
     queryKey: ['transactions', page],
     queryFn: async () => {
@@ -15,7 +15,7 @@ export function useGetTransactions(page = 1) {
           `/api/admin/transactions?page=${page}`,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: getAuthToken(),
               Accept: 'application/json',
             },
           }
@@ -27,14 +27,14 @@ export function useGetTransactions(page = 1) {
         }
       },
       refetchOnWindowFocus: false,
-      enabled: !!accessToken,
+      enabled: !!getAuthToken(),
   })
 }
 
 export function useGetAgentTransactions(agentId: number, page = 1) {
-  const { accessToken } = useAuthStore()
+  const { getAuthToken } = useAuthStore()
   
-  console.log('useGetAgentTransactions - Called with:', { agentId, page, accessToken: accessToken ? 'present' : 'missing' })
+  console.log('useGetAgentTransactions - Called with:', { agentId, page, authToken: getAuthToken() ? 'present' : 'missing' })
   
   return useQuery({
     queryKey: ['agent-transactions', agentId, page],
@@ -46,7 +46,7 @@ export function useGetAgentTransactions(agentId: number, page = 1) {
           `/api/admin/transactions?agent_id=${agentId}&page=${page}`,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: getAuthToken(),
               Accept: 'application/json',
             },
           }
@@ -61,7 +61,7 @@ export function useGetAgentTransactions(agentId: number, page = 1) {
       }
     },
     refetchOnWindowFocus: false,
-    enabled: !!accessToken && !!agentId && agentId > 0,
+    enabled: !!getAuthToken() && !!agentId && agentId > 0,
     retry: 3,
     retryDelay: 1000,
   })
