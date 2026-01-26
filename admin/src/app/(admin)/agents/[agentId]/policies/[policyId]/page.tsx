@@ -94,6 +94,11 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   const policyData = policy
   const policyDetails = policyData.policy_details
   
+  // Debug logging to see what data we're receiving
+  console.log('Admin Policy Details - Full policy data:', policyData)
+  console.log('Admin Policy Details - Policy details:', policyDetails)
+  console.log('Admin Policy Details - PolicyCustomerList:', policyDetails?.PolicyCustomerList)
+  
   // Extract customer information from multiple sources
   // 1. First try policy details customer list (PolicyCustomerList)
   // 2. Then try customer_name from transaction
@@ -101,6 +106,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   const policyCustomer = policyDetails?.PolicyCustomerList?.[0]
   const transactionCustomerName = policyData.customer_name
   const customer = policyCustomer
+  
+  console.log('Admin Policy Details - Extracted customer:', customer)
+  console.log('Admin Policy Details - Transaction customer name:', transactionCustomerName)
   const insuredPerson = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]
   const coverages = insuredPerson?.PolicyCoverageList || []
   const travelDetails = policyDetails?.TravelDetailList?.[0]
@@ -150,7 +158,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `Policy Number: ${policyDetails?.PolicyId || policyData.policy_id || 'N/A'}`,
+        `Policy Number: ${policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}`,
         `Certificate Number: ${policyData.certificate_number || 'N/A'}`,
         `Status: ${policyData.status || 'N/A'}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
@@ -300,7 +308,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
-                  <p className="font-semibold text-blue-600">{policyDetails?.PolicyId || policyData.policy_id || 'N/A'}</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Certificate Number</p>
@@ -310,6 +318,12 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
                   <Badge variant="secondary" className={getStatusColor(policyData.status || 'N/A')}>
                     {policyData.status || 'N/A'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Renewable</p>
+                  <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'destructive'}>
+                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : 'N/A'}
                   </Badge>
                 </div>
                 <div>
@@ -375,64 +389,130 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
-                  <p className="font-semibold text-lg">
-                    {customer 
-                      ? `${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || 'N/A'
-                      : policyData.customer_name || policyData.policy_holder || 'N/A'
-                    }
+              {customer ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                    <p className="font-semibold text-lg">
+                      {[customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                        .filter(Boolean)
+                        .join(' ') || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Gender</p>
+                    <p className="font-semibold">
+                      {customer.Gender === 'M' ? 'Male' : customer.Gender === 'F' ? 'Female' : customer.Gender || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                    <p className="font-semibold">{customer.Email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                    <p className="font-semibold">
+                      {customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                    <p className="font-semibold">
+                      {customer.DateOfBirth ? 
+                        new Date(customer.DateOfBirth).toLocaleDateString('en-US', { 
+                          month: '2-digit', 
+                          day: '2-digit', 
+                          year: 'numeric' 
+                        }) : 'N/A'
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Age</p>
+                    <p className="font-semibold">
+                      {customer.DateOfBirth ? 
+                        Math.floor((new Date().getTime() - new Date(customer.DateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25)) + ' years'
+                        : 'N/A'
+                      }
+                    </p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Complete Address</p>
+                    <p className="font-semibold">
+                      {[
+                        customer.AddressLine1,
+                        customer.AddressLine2,
+                        customer.City,
+                        customer.AddrProvince,
+                        customer.PostCode
+                      ].filter(Boolean).join(', ') || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
+                    <p className="font-semibold">
+                      {customer.IdTypeCode === 'PAS' ? "Passport" : 
+                       customer.IdTypeCode === 'DL' ? "Driver's License" :
+                       customer.IdTypeCode === 'NID' ? "National ID" :
+                       customer.IdTypeCode === 'SSS' ? "SSS ID" :
+                       customer.IdTypeCode === 'TIN' ? "TIN ID" :
+                       customer.IdTypeCode || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
+                    <p className="font-semibold">
+                      {customer.TempData?.['MaskAfter-IdNo'] || customer.IdNo || 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              ) : policyData.customer_name || policyData.policy_holder ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                    <p className="font-semibold text-lg">{policyData.customer_name || policyData.policy_holder}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Gender</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                    <p className="font-semibold">{policyData.customer_email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                    <p className="font-semibold">{policyData.customer_phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                    <p className="font-semibold">{policyData.customer_dob || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Age</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Complete Address</p>
+                    <p className="font-semibold">{policyData.customer_address || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
+                    <p className="font-semibold">{policyData.customer_id_type || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
+                    <p className="font-semibold">{policyData.customer_id_number || 'N/A'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No policy holder information available</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Policy holder details are not available in the current policy data.
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Address</p>
-                  <p className="font-semibold">
-                    {customer 
-                      ? `${customer.AddressLine1 || ''}, ${customer.AddressLine2 || ''}, ${customer.City || ''}`.replace(/^,\s*|,\s*$/g, '').replace(/,\s*,/g, ',') || 'N/A'
-                      : policyData.customer_address || 'N/A'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
-                  <p className="font-semibold">
-                    {customer?.Email || policyData.customer_email || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
-                  <p className="font-semibold">
-                    {customer?.IdTypeCode === 'PAS' ? "Passport" : 
-                     customer?.IdTypeCode === 'DL' ? "Driver's License" : 
-                     customer?.IdTypeCode || policyData.customer_id_type || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
-                  <p className="font-semibold">
-                    {customer?.TempData?.['MaskAfter-Mobile'] || customer?.Mobile || policyData.customer_phone || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
-                  <p className="font-semibold">
-                    {customer?.TempData?.['MaskAfter-IdNo'] || customer?.IdNo || policyData.customer_id_number || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
-                  <p className="font-semibold">
-                    {customer?.DateOfBirth ? 
-                      new Date(customer.DateOfBirth).toLocaleDateString('en-US', { 
-                        month: '2-digit', 
-                        day: '2-digit', 
-                        year: 'numeric' 
-                      }) : policyData.customer_dob || 'N/A'
-                    }
-                  </p>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -569,27 +649,87 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             </CardContent>
           </Card>
 
-          {/* Coverage Details */}
+          {/* Policy Risk List */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building className="h-5 w-5" />
-                Coverage Details {coverages.length > 0 && `(${coverages.length} coverages)`}
+                Policy Risk List
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {coverages.length > 0 ? (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {coverages.map((coverage: any, index: number) => (
-                    <div key={coverage.PolicyElementId} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium">{coverage.CoverageName}</p>
-                        <p className="text-sm text-muted-foreground">Code: {coverage.ProductElementCode}</p>
+              {policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 ? (
+                <div className="space-y-6">
+                  {policyDetails.PolicyLobList[0].PolicyRiskList.map((insuredPerson: any, index: number) => (
+                    <div key={insuredPerson.PolicyElementId} className="border rounded-lg p-4 bg-muted/20">
+                      {/* Insured Person Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h4 className="font-semibold text-lg">
+                            {insuredPerson.InsuredName || 
+                             [insuredPerson.FirstName, insuredPerson.MiddleName, insuredPerson.LastName]
+                               .filter(Boolean).join(' ') || 'N/A'}
+                          </h4>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>{insuredPerson.IsMainInsured === 'Y' ? 'Main Insured' : 'Additional Insured'}</span>
+                            <span>•</span>
+                            <span>{insuredPerson.IsAdultTraveller === 'Y' ? 'Adult' : 'Child'}</span>
+                            <span>•</span>
+                            <span>Age: {insuredPerson.Age || 'N/A'}</span>
+                          </div>
+                        </div>
+                        <Badge variant={insuredPerson.IsMainInsured === 'Y' ? 'default' : 'secondary'}>
+                          {insuredPerson.IsMainInsured === 'Y' ? 'Primary' : 'Secondary'}
+                        </Badge>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold">#{index + 1}</p>
-                        <p className="text-xs text-muted-foreground">Sequence</p>
+
+                      {/* Insured Person Details */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Email</p>
+                          <p className="text-sm font-medium">{insuredPerson.Email || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Phone</p>
+                          <p className="text-sm font-medium">
+                            {insuredPerson.TempData?.['MaskAfter-Mobile'] || insuredPerson.Mobile || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Gender</p>
+                          <p className="text-sm font-medium">
+                            {insuredPerson.Gender === 'M' ? 'Male' : insuredPerson.Gender === 'F' ? 'Female' : insuredPerson.Gender || 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Date of Birth</p>
+                          <p className="text-sm font-medium">
+                            {insuredPerson.DateOfBirth ? 
+                              new Date(insuredPerson.DateOfBirth).toLocaleDateString('en-US', { 
+                                month: '2-digit', 
+                                day: '2-digit', 
+                                year: 'numeric' 
+                              }) : 'N/A'
+                            }
+                          </p>
+                        </div>
                       </div>
+
+                      {/* Coverage List */}
+                      {insuredPerson.PolicyCoverageList && insuredPerson.PolicyCoverageList.length > 0 && (
+                        <div>
+                          <h5 className="font-medium text-sm mb-3 text-muted-foreground">
+                            Coverage ({insuredPerson.PolicyCoverageList.length} items)
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
+                              <div key={coverage.PolicyElementId} className="bg-muted/30 px-3 py-2 rounded text-sm border">
+                                <span className="text-foreground font-medium">{coverage.CoverageName}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -615,7 +755,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
-                <p className="font-semibold">{policyDetails?.PlanCode || 'TRAVEL-PLAN'}</p>
+                <p className="font-semibold">{policyDetails?.PlanCode || 'TMPHPC2'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
@@ -626,7 +766,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Agent Code Used</p>
+                <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
                 <p className="font-semibold">{policyData.agent_code_used || 'N/A'}</p>
               </div>
               {policyDetails?.PremiumTaxAmt && (
@@ -639,6 +779,38 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">LGT</p>
                   <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
+                </div>
+              )}
+              
+              {/* Important Dates moved here */}
+              {policyDetails?.ProposalDate && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
+                  <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyDetails?.QuotationDate && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
+                  <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyData.transaction_date && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
+                  <p className="font-semibold">{new Date(policyData.transaction_date).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyData.created_at && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Created At</p>
+                  <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyData.updated_at && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Updated At</p>
+                  <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
                 </div>
               )}
             </CardContent>
@@ -695,42 +867,6 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               </CardContent>
             </Card>
           )}
-
-          {/* Policy Dates */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Important Dates
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {policyDetails?.ProposalDate && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
-                  <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
-                </div>
-              )}
-              {policyDetails?.QuotationDate && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
-                  <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
-                </div>
-              )}
-              {policyData.created_at && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Created At</p>
-                  <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
-                </div>
-              )}
-              {policyData.updated_at && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Updated At</p>
-                  <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
