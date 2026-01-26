@@ -4,7 +4,7 @@ import axios from 'axios'
 import { handleApiError } from '@/utils/handle-api-error'
 
 export function useGetPolicyDetails(policyId: string | null) {
-  const { accessToken } = useAuthStore()
+  const { getAuthToken } = useAuthStore()
 
   return useQuery({
     queryKey: ['policy-details', policyId],
@@ -14,7 +14,7 @@ export function useGetPolicyDetails(policyId: string | null) {
           `/api/admin/policies/${policyId}`,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: getAuthToken(),
             },
           }
         )
@@ -24,7 +24,7 @@ export function useGetPolicyDetails(policyId: string | null) {
         handleApiError(error)
       }
     },
-    enabled: !!accessToken && !!policyId,
+    enabled: !!getAuthToken() && !!policyId,
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
   })
