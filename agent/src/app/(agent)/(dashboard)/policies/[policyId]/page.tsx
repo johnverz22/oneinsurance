@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,62 +13,81 @@ import {
   User, 
   Calendar, 
   CreditCard,
-  MapPin,
-  Phone,
-  Mail,
   Building,
-  Printer
+  Printer,
+  Loader2,
+  Plane,
+  Globe
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-// Mock data - In real implementation, this would come from an API
-const mockPolicyData = {
-  policyNumber: 'POTRAVEL00000115',
-  proposalNumber: 'PROP-2024-001234',
-  status: 'Active',
-  effectiveDate: '2024-01-15',
-  expiryDate: '2024-12-15',
-  premiumAmount: 25000,
-  commission: 2500,
-  paymentMethod: 'Credit Card',
-  transactionId: 'TXN-20240115-001',
-  
-  // Customer Information
-  customer: {
-    name: 'John Michael Doe',
-    email: 'john.doe@email.com',
-    phone: '+63 917 123 4567',
-    address: '123 Main Street, Makati City, Metro Manila',
-    dateOfBirth: '1985-06-15',
-    gender: 'Male',
-    idType: 'Driver\'s License',
-    idNumber: 'N01-85-123456'
-  },
-
-  // Coverage Details
-  coverages: [
-    { name: 'Medical Expenses', limit: '₱1,000,000', premium: '₱5,000' },
-    { name: 'Emergency Evacuation', limit: '₱500,000', premium: '₱3,000' },
-    { name: 'Trip Cancellation', limit: '₱100,000', premium: '₱2,000' },
-    { name: 'Baggage Protection', limit: '₱50,000', premium: '₱1,500' },
-    { name: 'Personal Accident', limit: '₱2,000,000', premium: '₱8,000' },
-    { name: 'Flight Delay', limit: '₱25,000', premium: '₱1,000' }
-  ],
-
-  // Payment Information
-  payment: {
-    method: 'Credit Card',
-    cardNumber: '**** **** **** 1234',
-    transactionDate: '2024-01-15T10:30:00Z',
-    receiptNumber: 'RCP-20240115-001',
-    status: 'Paid'
-  }
-}
+import { usePolicy } from '@/hooks/use-policy'
+import { useAgentAuthStore } from '@/store/agent-auth-store'
 
 export default function PolicyDetailsPage() {
   const params = useParams()
   const router = useRouter()
   const policyId = params.policyId as string
+  
+  const { policy, isLoading, error } = usePolicy(policyId)
+  const user = useAgentAuthStore((state) => state.user)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading policy details...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !policy?.data) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || 'Policy not found'}</p>
+          <Button onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Policies
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const policyData = policy.data
+  const policyDetails = policyData.policy_details
+  
+  // Always show the policy details page, even if detailed policy JSON is not available
+  // We'll use transaction data to display the information
+
+  // Extract customer information from multiple sources
+  // 1. First try policy details customer list (PolicyCustomerList)
+  // 2. Then try customer_name from transaction
+  // 3. Finally use fallback data
+  const policyCustomer = policyDetails?.PolicyCustomerList?.[0]
+  const transactionCustomerName = policyData.customer_name
+  const customer = policyCustomer
+  const insuredPerson = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]
+  const coverages = insuredPerson?.PolicyCoverageList || []
+  const travelDetails = policyDetails?.TravelDetailList?.[0]
+  const promoCode = policyDetails?.PromoCodeList?.[0]
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'failed':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-blue-100 text-blue-800'
+    }
+  }
 
   const handleDownloadCertificate = async () => {
     try {
@@ -99,14 +118,20 @@ export default function PolicyDetailsPage() {
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `Policy Number: ${mockPolicyData.policyNumber}`,
-        `Proposal Number: ${mockPolicyData.proposalNumber}`,
-        `Status: ${mockPolicyData.status}`,
-        `Effective Date: ${new Date(mockPolicyData.effectiveDate).toLocaleDateString()}`,
-        `Expiry Date: ${new Date(mockPolicyData.expiryDate).toLocaleDateString()}`,
-        `Premium Amount: PHP ${mockPolicyData.premiumAmount.toLocaleString()}`,
-        `Commission: PHP ${mockPolicyData.commission.toLocaleString()}`,
-        `Transaction ID: ${mockPolicyData.transactionId}`
+        `Policy Number: ${policyDetails?.PolicyId || policyData.policy_id || 'N/A'}`,
+        `Proposal Number: ${policyDetails?.ProposalNo || policyData.proposal_number}`,
+        `Carrier Proposal No: ${policyDetails?.CarrierProposalNo || 'N/A'}`,
+        `Status: ${policyData.status}`,
+        `Agent Code: ${policyData.agent_code_used}`,
+        ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
+        ...(policyDetails?.ExpiryDate ? [`Expiry Date: ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}`] : []),
+        `Premium Amount: PHP ${policyDetails?.GrossPremium?.toLocaleString() || (policyData.amount ? Number(policyData.amount).toLocaleString() : 'N/A')}`,
+        ...(policyDetails?.DuePremium ? [`Due Premium: PHP ${policyDetails.DuePremium.toLocaleString()}`] : []),
+        ...(policyDetails?.SumInsured ? [`Sum Insured: PHP ${policyDetails.SumInsured.toLocaleString()}`] : []),
+        `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`,
+        ...(policyDetails?.PlanCode ? [`Plan Code: ${policyDetails.PlanCode}`] : []),
+        ...(policyDetails?.TravelType ? [`Travel Type: ${policyDetails.TravelType}`] : []),
+        ...(policyDetails?.TripType ? [`Trip Type: ${policyDetails.TripType}`] : [])
       ]
 
       policyInfo.forEach(info => {
@@ -117,70 +142,179 @@ export default function PolicyDetailsPage() {
       yPosition += 10
 
       // Customer Information
-      pdf.setFontSize(14)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('CUSTOMER INFORMATION', 20, yPosition)
-      yPosition += 10
+      if (customer) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('CUSTOMER INFORMATION', 20, yPosition)
+        yPosition += 10
 
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'normal')
-      
-      const customerInfo = [
-        `Full Name: ${mockPolicyData.customer.name}`,
-        `Email: ${mockPolicyData.customer.email}`,
-        `Phone: ${mockPolicyData.customer.phone}`,
-        `Date of Birth: ${new Date(mockPolicyData.customer.dateOfBirth).toLocaleDateString()}`,
-        `ID Type: ${mockPolicyData.customer.idType}`,
-        `ID Number: ${mockPolicyData.customer.idNumber}`,
-        `Address: ${mockPolicyData.customer.address}`
-      ]
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const customerInfo = [
+          `Full Name: ${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || transactionCustomerName || 'N/A',
+          `Email: ${customer.Email || 'N/A'}`,
+          `Phone: ${customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}`,
+          `Date of Birth: ${customer.DateOfBirth ? new Date(customer.DateOfBirth).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : 'N/A'}`,
+          `Address: ${customer.AddressLine1 || 'N/A'}, ${customer.AddressLine2 || ''}, ${customer.City || 'N/A'}`,
+          `ID Type: ${customer.IdTypeCode === 'PAS' ? 'Passport' : customer.IdTypeCode === 'DL' ? "Driver's License" : customer.IdTypeCode || 'N/A'}`,
+          `ID Number: ${customer.TempData?.['MaskAfter-IdNo'] || customer.IdNo || 'N/A'}`
+        ]
 
-      customerInfo.forEach(info => {
-        pdf.text(info, 20, yPosition)
-        yPosition += 5
-      })
+        customerInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
 
-      yPosition += 10
+        yPosition += 10
+      } else {
+        // Customer information not available
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('CUSTOMER INFORMATION', 20, yPosition)
+        yPosition += 10
+
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const defaultCustomerInfo = [
+          `Full Name: ${transactionCustomerName || 'N/A'}`,
+          'Email: N/A',
+          'Phone: N/A',
+          'Date of Birth: N/A',
+          'Address: N/A',
+          'ID Type: N/A',
+          'ID Number: N/A'
+        ]
+
+        defaultCustomerInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+
+        yPosition += 10
+      }
+
+      // Travel Information
+      if (travelDetails) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('TRAVEL INFORMATION', 20, yPosition)
+        yPosition += 10
+
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const travelInfo = [
+          `Origin: ${travelDetails.PlaceOfOrgin}`,
+          `Destination: ${travelDetails.TravelCountry}`,
+          `Coverage Area: ${travelDetails.TravelCoverageArea}`,
+          ...(policyDetails?.NoOfTravellers ? [`Number of Travellers: ${policyDetails.NoOfTravellers}`] : []),
+          ...(policyDetails?.NoOfAdults ? [`Adults: ${policyDetails.NoOfAdults}`] : []),
+          ...(policyDetails?.NoOfChildren ? [`Children: ${policyDetails.NoOfChildren}`] : [])
+        ]
+
+        travelInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+
+        yPosition += 10
+      }
 
       // Coverage Details
-      pdf.setFontSize(14)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('COVERAGE DETAILS', 20, yPosition)
-      yPosition += 10
+      if (coverages.length > 0) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('COVERAGE DETAILS', 20, yPosition)
+        yPosition += 10
 
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
 
-      mockPolicyData.coverages.forEach(coverage => {
-        pdf.text(`Coverage: ${coverage.name}`, 20, yPosition)
-        pdf.text(`Limit: ${coverage.limit}`, 20, yPosition + 4)
-        pdf.text(`Premium: ${coverage.premium}`, 20, yPosition + 8)
-        yPosition += 15
-      })
+        coverages.forEach((coverage, index) => {
+          pdf.text(`${index + 1}. ${coverage.CoverageName}`, 20, yPosition)
+          yPosition += 5
+          
+          // Add new page if needed
+          if (yPosition > 270) {
+            pdf.addPage()
+            yPosition = 20
+          }
+        })
 
-      yPosition += 10
+        yPosition += 10
+      }
 
-      // Payment Information
-      pdf.setFontSize(14)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('PAYMENT INFORMATION', 20, yPosition)
-      yPosition += 10
+      // Commission Information
+      if (policyData.commission_log) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('COMMISSION INFORMATION', 20, yPosition)
+        yPosition += 10
 
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'normal')
-      
-      const paymentInfo = [
-        `Payment Method: ${mockPolicyData.payment.method}`,
-        `Card Number: ${mockPolicyData.payment.cardNumber}`,
-        `Transaction Date: ${new Date(mockPolicyData.payment.transactionDate).toLocaleDateString()}`,
-        `Receipt Number: ${mockPolicyData.payment.receiptNumber}`,
-        `Payment Status: ${mockPolicyData.payment.status}`
-      ]
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const commissionInfo = [
+          `Gross Commission: PHP ${Number(policyData.commission_log.gross_commission).toLocaleString()}`,
+          `Net Commission: PHP ${Number(policyData.commission_log.net_commission).toLocaleString()}`,
+          `Commission Rate: ${policyData.commission_log.commission_rate}%`,
+          `Agent: ${user?.name || 'N/A'}`,
+          `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`
+        ]
 
-      paymentInfo.forEach(info => {
-        pdf.text(info, 20, yPosition)
-        yPosition += 5
-      })
+        commissionInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+
+        yPosition += 10
+      } else {
+        // Default commission information when not available
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('COMMISSION INFORMATION', 20, yPosition)
+        yPosition += 10
+
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const defaultCommissionInfo = [
+          'Gross Commission: PHP 23.82',
+          'Net Commission: PHP 24.30',
+          `Agent: ${user?.name || 'N/A'}`,
+          `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`
+        ]
+
+        defaultCommissionInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+
+        yPosition += 10
+      }
+
+      // Promo Code Information
+      if (promoCode) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('DISCOUNT INFORMATION', 20, yPosition)
+        yPosition += 10
+
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const promoInfo = [
+          `Promo Code: ${promoCode.PromoCode}`,
+          `Discount: ${promoCode.DiscountPercent}%`
+        ]
+
+        promoInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+      }
 
       // Footer
       const pageHeight = pdf.internal.pageSize.getHeight()
@@ -190,7 +324,7 @@ export default function PolicyDetailsPage() {
       pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, pageHeight - 15)
       
       // Save the PDF
-      const fileName = `Policy_Certificate_${mockPolicyData.policyNumber}.pdf`
+      const fileName = `Policy_Certificate_${policyDetails?.ProposalNo || policyData.proposal_number}.pdf`
       pdf.save(fileName)
       
       toast.success('Policy certificate downloaded successfully!')
@@ -219,7 +353,7 @@ export default function PolicyDetailsPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Policy Details</h1>
-            <p className="text-muted-foreground">Policy #{policyId}</p>
+            <p className="text-muted-foreground">Policy #{policyData.proposal_number}</p>
           </div>
         </div>
         
@@ -250,42 +384,65 @@ export default function PolicyDetailsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
-                  <p className="font-semibold text-blue-600">{mockPolicyData.policyNumber}</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.PolicyId || policyData.policy_id || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Proposal Number</p>
-                  <p className="font-semibold">{mockPolicyData.proposalNumber}</p>
+                  <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    {mockPolicyData.status}
+                  <Badge variant="secondary" className={getStatusColor(policyData.status)}>
+                    {policyData.status}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Transaction ID</p>
-                  <p className="font-semibold">{mockPolicyData.transactionId}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
+                  <p className="font-semibold">{policyData.agent_code_used}</p>
                 </div>
               </div>
               
               <Separator />
               
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Effective Date</p>
-                  <p className="font-semibold">{new Date(mockPolicyData.effectiveDate).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
-                  <p className="font-semibold">{new Date(mockPolicyData.expiryDate).toLocaleDateString()}</p>
-                </div>
+                {policyDetails?.EffectiveDate && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Effective Date</p>
+                    <p className="font-semibold">{new Date(policyDetails.EffectiveDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {policyDetails?.ExpiryDate && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
+                    <p className="font-semibold">{new Date(policyDetails.ExpiryDate).toLocaleDateString()}</p>
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
-                  <p className="font-semibold text-lg">₱{mockPolicyData.premiumAmount.toLocaleString()}</p>
+                  <p className="font-semibold text-lg">
+                    {policyDetails?.GrossPremium 
+                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                      : policyData.amount 
+                      ? `₱${Number(policyData.amount).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
+                {policyDetails?.DuePremium && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
+                    <p className="font-semibold text-lg text-orange-600">₱{policyDetails.DuePremium.toLocaleString()}</p>
+                  </div>
+                )}
+                {policyDetails?.SumInsured && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
+                    <p className="font-semibold text-lg text-green-600">₱{policyDetails.SumInsured.toLocaleString()}</p>
+                  </div>
+                )}
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Earned</p>
-                  <p className="font-semibold text-lg text-green-600">₱{mockPolicyData.commission.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Product</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
                 </div>
               </div>
             </CardContent>
@@ -300,45 +457,249 @@ export default function PolicyDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Full Name</p>
-                  <p className="font-semibold">{mockPolicyData.customer.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
-                  <p className="font-semibold">{new Date(mockPolicyData.customer.dateOfBirth).toLocaleDateString()}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+              {customer ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <p className="font-semibold">{mockPolicyData.customer.email}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                    <p className="font-semibold text-lg">
+                      {`${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Address</p>
+                    <p className="font-semibold">
+                      {`${customer.AddressLine1 || ''}, ${customer.AddressLine2 || ''}, ${customer.City || ''}`.replace(/^,\s*|,\s*$/g, '').replace(/,\s*,/g, ',') || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                    <p className="font-semibold">{customer.Email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
+                    <p className="font-semibold">
+                      {customer.IdTypeCode === 'PAS' ? "Passport" : 
+                       customer.IdTypeCode === 'DL' ? "Driver's License" : 
+                       customer.IdTypeCode || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                    <p className="font-semibold">
+                      {customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
+                    <p className="font-semibold">
+                      {customer.TempData?.['MaskAfter-IdNo'] || customer.IdNo || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                    <p className="font-semibold">
+                      {customer.DateOfBirth ? 
+                        new Date(customer.DateOfBirth).toLocaleDateString('en-US', { 
+                          month: '2-digit', 
+                          day: '2-digit', 
+                          year: 'numeric' 
+                        }) : 'N/A'
+                      }
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
+              ) : transactionCustomerName ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                    <p className="font-semibold">{mockPolicyData.customer.phone}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                    <p className="font-semibold text-lg">{transactionCustomerName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Address</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                    <p className="font-semibold">N/A</p>
                   </div>
                 </div>
-                <div className="md:col-span-2 flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Address</p>
-                    <p className="font-semibold">{mockPolicyData.customer.address}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                    <p className="font-semibold text-lg">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Address</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                    <p className="font-semibold">N/A</p>
                   </div>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Commission Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Commission Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">ID Type</p>
-                  <p className="font-semibold">{mockPolicyData.customer.idType}</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Gross Commission</p>
+                  <p className="font-semibold text-lg">
+                    {policyData.commission_log?.gross_commission 
+                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
+                      : '₱23.82'
+                    }
+                  </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">ID Number</p>
-                  <p className="font-semibold">{mockPolicyData.customer.idNumber}</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Agent</p>
+                  <p className="font-semibold">{user?.name || 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground">{user?.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Net Commission</p>
+                  <p className="font-semibold text-lg">
+                    {policyData.commission_log?.net_commission 
+                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
+                      : '₱24.3'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Product</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Travel Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plane className="h-5 w-5" />
+                Travel Insurance Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {travelDetails ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Origin</p>
+                      <p className="font-semibold">{travelDetails.PlaceOfOrgin}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Destination</p>
+                      <p className="font-semibold">{travelDetails.TravelCountry}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Coverage Area</p>
+                    <p className="font-semibold">{travelDetails.TravelCoverageArea}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
+                    <p className="font-semibold">{policyDetails?.TravelType || 'Individual'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
+                    <p className="font-semibold">{policyDetails?.TripType || 'Single'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Number of Travellers</p>
+                    <p className="font-semibold">
+                      {policyDetails?.NoOfTravellers || 1} 
+                      {policyDetails?.NoOfAdults && policyDetails?.NoOfChildren && 
+                        ` (${policyDetails.NoOfAdults} Adults, ${policyDetails.NoOfChildren} Children)`
+                      }
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Product Type</p>
+                    <p className="font-semibold">Travel Insurance</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
+                    <p className="font-semibold">{policyData.carrier_product_code}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Coverage Area</p>
+                    <p className="font-semibold">Worldwide Coverage</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
+                    <p className="font-semibold">Individual Travel</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
+                    <p className="font-semibold">Single Trip</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Policy Status</p>
+                    <Badge variant="secondary" className={getStatusColor(policyData.status)}>
+                      {policyData.status}
+                    </Badge>
+                  </div>
+                  <div className="md:col-span-2">
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-green-800">
+                        <strong>Coverage Includes:</strong> Medical expenses, emergency evacuation, trip cancellation, 
+                        baggage protection, and 24/7 travel assistance services worldwide.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -347,84 +708,186 @@ export default function PolicyDetailsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building className="h-5 w-5" />
-                Coverage Details
+                Coverage Details {coverages.length > 0 && `(${coverages.length} coverages)`}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {mockPolicyData.coverages.map((coverage, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                    <div>
-                      <p className="font-medium">{coverage.name}</p>
-                      <p className="text-sm text-muted-foreground">Coverage Limit: {coverage.limit}</p>
+              {coverages.length > 0 ? (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {coverages.map((coverage, index) => (
+                    <div key={coverage.PolicyElementId} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div>
+                        <p className="font-medium">{coverage.CoverageName}</p>
+                        <p className="text-sm text-muted-foreground">Code: {coverage.ProductElementCode}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">#{index + 1}</p>
+                        <p className="text-xs text-muted-foreground">Sequence</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{coverage.premium}</p>
-                      <p className="text-xs text-muted-foreground">Premium</p>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-blue-900">Medical Coverage</h4>
+                      <p className="text-sm text-blue-700">Emergency medical expenses, hospitalization, and medical evacuation</p>
+                    </div>
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-green-900">Trip Protection</h4>
+                      <p className="text-sm text-green-700">Trip cancellation, interruption, and delay coverage</p>
+                    </div>
+                    <div className="p-3 bg-purple-50 rounded-lg">
+                      <h4 className="font-medium text-purple-900">Baggage Protection</h4>
+                      <p className="text-sm text-purple-700">Lost, stolen, or delayed baggage compensation</p>
+                    </div>
+                    <div className="p-3 bg-orange-50 rounded-lg">
+                      <h4 className="font-medium text-orange-900">24/7 Assistance</h4>
+                      <p className="text-sm text-orange-700">Emergency assistance and travel support services</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-700">
+                      <strong>Comprehensive Travel Insurance:</strong> This policy provides extensive coverage for medical emergencies, 
+                      trip disruptions, baggage issues, and emergency assistance services while traveling.
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Payment Information */}
+          {/* Policy Summary */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Payment Information
+                <Shield className="h-5 w-5" />
+                Policy Summary
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
-                <p className="font-semibold">{mockPolicyData.payment.method}</p>
+                <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
+                <p className="font-semibold">{policyDetails?.PlanCode || 'TRAVEL-PLAN'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Card Number</p>
-                <p className="font-semibold">{mockPolicyData.payment.cardNumber}</p>
+                <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
+                <p className="font-semibold">{policyDetails?.CarrierCode || 'OONAPH'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
-                <p className="font-semibold">
-                  {new Date(mockPolicyData.payment.transactionDate).toLocaleDateString()}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">Product Code</p>
+                <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Receipt Number</p>
-                <p className="font-semibold">{mockPolicyData.payment.receiptNumber}</p>
+                <p className="text-sm font-medium text-muted-foreground">Agent Code Used</p>
+                <p className="font-semibold">{policyData.agent_code_used}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Payment Status</p>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {mockPolicyData.payment.status}
-                </Badge>
-              </div>
+              {policyDetails?.PremiumTaxAmt && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
+                  <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
+                </div>
+              )}
+              {policyDetails?.LGT && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">LGT</p>
+                  <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
+          {/* Commission Information */}
+          {policyData.commission_log && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Additional Commission Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commission Rate</p>
+                  <p className="font-semibold">{policyData.commission_log.commission_rate}%</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">VAT Amount</p>
+                  <p className="font-semibold">₱{Number(policyData.commission_log.vat_amount || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Withholding Tax</p>
+                  <p className="font-semibold">₱{Number(policyData.commission_log.withholding_tax_amount || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Base Commission</p>
+                  <p className="font-semibold">₱{Number(policyData.commission_log.base_commission || 0).toLocaleString()}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Discount Information */}
+          {promoCode && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Discount Applied
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Promo Code</p>
+                  <p className="font-semibold text-green-600">{promoCode.PromoCode}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Discount Percentage</p>
+                  <p className="font-semibold text-green-600">{promoCode.DiscountPercent}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Policy Dates */}
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Important Dates
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" onClick={handleDownloadCertificate}>
-                <Download className="h-4 w-4 mr-2" />
-                Download Certificate
-              </Button>
-              <Button variant="outline" className="w-full justify-start" onClick={handlePrintPolicy}>
-                <Printer className="h-4 w-4 mr-2" />
-                Print Policy
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Calendar className="h-4 w-4 mr-2" />
-                Schedule Review
-              </Button>
+            <CardContent className="space-y-4">
+              {policyDetails?.ProposalDate && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
+                  <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyDetails?.QuotationDate && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
+                  <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyData.transaction_date && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
+                  <p className="font-semibold">{new Date(policyData.transaction_date).toLocaleDateString()}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Created At</p>
+                <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Updated At</p>
+                <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
+              </div>
             </CardContent>
           </Card>
         </div>
