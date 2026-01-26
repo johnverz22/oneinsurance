@@ -27,28 +27,52 @@ export function useLoginAdmin() {
 }
 
 export function useLogoutAdmin() {
-  const { accessToken } = useAuthStore()
+  const { getAuthToken, logout } = useAuthStore()
 
   return useMutation({
     mutationKey: ['logout-admin'],
     mutationFn: async () => {
       try {
         const url = `/api/admin/auth/logout`
+        const token = getAuthToken()
 
-        const response = await axios.post(url, null, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
+        console.log('Admin logout mutation - Starting logout')
+        console.log('Admin logout mutation - Token:', token ? 'present' : 'missing')
 
-        if (response.status !== 200) {
-          throw new Error('Failed to logout')
+        if (token) {
+          const response = await axios.post(url, null, {
+            headers: {
+              Authorization: token,
+            },
+          })
+
+          console.log('Admin logout mutation - API response:', response.status)
+          
+          if (response.status !== 200) {
+            throw new Error('Failed to logout from server')
+          }
+        } else {
+          console.log('Admin logout mutation - No token, skipping API call')
         }
-        // Clear local auth state/storage
+
+        // Always clear local auth state regardless of API success
+        console.log('Admin logout mutation - Clearing local storage')
         removeLocalStorage('admin-auth-storage')
+        
+        // Clear the auth store
+        console.log('Admin logout mutation - Clearing auth store')
+        logout()
 
       } catch (error) {
-        handleApiError(error)
+        console.error('Admin logout mutation - Error:', error)
+        
+        // Even if API call fails, clear local state
+        console.log('Admin logout mutation - API failed, clearing local state anyway')
+        removeLocalStorage('admin-auth-storage')
+        logout()
+        
+        // Don't throw the error - we want logout to always succeed locally
+        console.log('Admin logout mutation - Local logout completed despite API error')
       }
     },
   })

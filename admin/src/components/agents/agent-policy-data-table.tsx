@@ -267,10 +267,10 @@ export function AgentPolicyDataTable({
                 <TableRow key={transaction.id}>
                   <TableCell>
                     <button
-                      onClick={() => handleViewPolicy(transaction.policy_id)}
-                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                      onClick={() => handleViewPolicy(`POL-${transaction.id.toString().padStart(6, '0')}`)}
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
                     >
-                      {transaction.certificate_number || transaction.proposal_number || 'N/A'}
+                      {transaction.certificate_number || transaction.proposal_number || `CERT-${transaction.id.toString().padStart(6, '0')}`}
                     </button>
                   </TableCell>
                   <TableCell className="font-medium">

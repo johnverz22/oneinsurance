@@ -1,15 +1,28 @@
 'use client'
 
 import React from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useParams, useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Download } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { 
+  ArrowLeft, 
+  Download, 
+  Shield, 
+  User, 
+  Calendar, 
+  CreditCard,
+  Building,
+  Printer,
+  Loader2,
+  Plane,
+  Globe
+} from 'lucide-react'
+import { toast } from 'sonner'
 import { useGetAgentById } from '@/app/data/queries/agents'
 import { useGetPolicyDetails } from '@/app/data/queries/policies'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-import jsPDF from 'jspdf'
+import { useAuthStore } from '@/store/auth-store'
 
 interface AgentPolicyDetailsPageProps {
   params: Promise<{
@@ -22,6 +35,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   const router = useRouter()
   const [agentId, setAgentId] = React.useState<number | null>(null)
   const [policyId, setPolicyId] = React.useState<string | null>(null)
+  const user = useAuthStore((state) => state.user)
 
   React.useEffect(() => {
     params.then(({ agentId: agentIdStr, policyId: policyIdStr }) => {
@@ -50,125 +64,192 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
     }
   }
 
-  // Use real policy data from API or fallback to mock data with customer information
-  const policyData = policy ? {
-    certificate_number: policy.certificate_number || `CERT-${policyId}`,
-    policy_holder: policy.policy_holder || 'John Michael Doe',
-    plan_name: policy.plan_name || 'OONA Travel',
-    plan_type: policy.plan_type || 'Travel Insurance',
-    premium: policy.premium || '25000',
-    currency: policy.currency || 'PHP',
-    coverage_start: policy.coverage_start ? new Date(policy.coverage_start).toLocaleDateString() : '1/15/2024',
-    coverage_end: policy.coverage_end ? new Date(policy.coverage_end).toLocaleDateString() : '12/15/2024',
-    status: policy.status || 'active',
-    provider: policy.provider || 'OONA',
-    policy_details: policy.policy_details || {
-      sum_insured: policy.gross_commission || '1000000',
-      deductible: '5000',
-      beneficiary: policy.agent ? `${policy.agent.first_name} ${policy.agent.last_name}` : 'N/A',
-      emergency_contact: '+63 917 123 4567',
-    },
-    // Customer information - use real data if available, otherwise use mock data
-    customer_name: policy.customer_name || policy.policy_holder || 'John Michael Doe',
-    customer_email: policy.customer_email || 'john.doe@email.com',
-    customer_phone: policy.customer_phone || '+63 917 123 4567',
-    customer_address: policy.customer_address || '123 Main Street, Makati City, Metro Manila',
-    customer_dob: policy.customer_dob || '6/15/1985',
-    customer_id_type: policy.customer_id_type || 'Driver\'s License',
-    customer_id_number: policy.customer_id_number || 'N01-85-123456',
-  } : {
-    certificate_number: 'CERT-000004',
-    policy_holder: 'John Michael Doe',
-    plan_name: 'OONA Travel',
-    plan_type: 'Travel Insurance',
-    premium: '25000',
-    currency: 'PHP',
-    coverage_start: '1/15/2024',
-    coverage_end: '12/15/2024',
-    status: 'active',
-    provider: 'OONA',
-    policy_details: {
-      sum_insured: '1000000',
-      deductible: '5000',
-      beneficiary: 'Jane Doe',
-      emergency_contact: '+63 917 123 4567',
-    },
-    // Mock customer information
-    customer_name: 'John Michael Doe',
-    customer_email: 'john.doe@email.com',
-    customer_phone: '+63 917 123 4567',
-    customer_address: '123 Main Street, Makati City, Metro Manila',
-    customer_dob: '6/15/1985',
-    customer_id_type: 'Driver\'s License',
-    customer_id_number: 'N01-85-123456',
-  }
-
-  const handleDownloadPDF = () => {
-    const doc = new jsPDF()
-    
-    // Header
-    doc.setFontSize(20)
-    doc.setTextColor(40, 40, 40)
-    doc.text('CONFIRMATION OF COVERAGE', 20, 30)
-    
-    // Policy details
-    doc.setFontSize(12)
-    doc.text(`Certificate Number: ${policyData.certificate_number}`, 20, 50)
-    doc.text(`Policyholder: ${policyData.policy_holder}`, 20, 65)
-    doc.text(`Plan: ${policyData.plan_name}`, 20, 80)
-    doc.text(`Premium: ₱${parseFloat(policyData.premium).toLocaleString()}`, 20, 95)
-    doc.text(`Coverage Period: ${policyData.coverage_start} to ${policyData.coverage_end}`, 20, 110)
-    
-    // Save the PDF
-    doc.save(`policy-${policyData.certificate_number}.pdf`)
-  }
   if (isLoadingAgent || isLoadingPolicy) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <Skeleton className="h-8 w-64" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading policy details...</span>
         </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-48" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className="h-6 w-full" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     )
   }
 
-  if (policyError) {
+  if (policyError || !policy) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleBackClick}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-4 w-4" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">
+            {policyError instanceof Error ? policyError.message : policyError || 'Policy not found'}
+          </p>
+          <Button onClick={handleBackClick}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Policies
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Policy Details</h1>
-            <p className="text-muted-foreground">Error loading policy details</p>
-          </div>
         </div>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-red-600">Failed to load policy details. Please try again.</p>
-          </CardContent>
-        </Card>
       </div>
     )
+  }
+
+  const policyData = policy
+  const policyDetails = policyData.policy_details
+  
+  // Extract customer information from multiple sources
+  // 1. First try policy details customer list (PolicyCustomerList)
+  // 2. Then try customer_name from transaction
+  // 3. Finally use fallback data
+  const policyCustomer = policyDetails?.PolicyCustomerList?.[0]
+  const transactionCustomerName = policyData.customer_name
+  const customer = policyCustomer
+  const insuredPerson = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]
+  const coverages = insuredPerson?.PolicyCoverageList || []
+  const travelDetails = policyDetails?.TravelDetailList?.[0]
+  const promoCode = policyDetails?.PromoCodeList?.[0]
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'failed':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-blue-100 text-blue-800'
+    }
+  }
+
+  const handleDownloadCertificate = async () => {
+    try {
+      // Import jsPDF
+      const jsPDF = (await import('jspdf')).default
+
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      let yPosition = 20
+
+      // Header
+      pdf.setFontSize(20)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('POLICY CERTIFICATE', 20, yPosition)
+      
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('One Insurance Company', 20, yPosition + 10)
+      
+      yPosition += 25
+
+      // Policy Information
+      pdf.setFontSize(14)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('POLICY INFORMATION', 20, yPosition)
+      yPosition += 10
+
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'normal')
+      
+      const policyInfo = [
+        `Policy Number: ${policyDetails?.PolicyId || policyData.policy_id || 'N/A'}`,
+        `Certificate Number: ${policyData.certificate_number || 'N/A'}`,
+        `Status: ${policyData.status || 'N/A'}`,
+        ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
+        ...(policyDetails?.ExpiryDate ? [`Expiry Date: ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}`] : []),
+        `Premium Amount: PHP ${policyDetails?.GrossPremium?.toLocaleString() || (policyData.premium ? Number(policyData.premium).toLocaleString() : 'N/A')}`,
+        `Product: ${policyDetails?.ProductName || policyData.plan_name || 'N/A'}`,
+      ]
+
+      policyInfo.forEach(info => {
+        pdf.text(info, 20, yPosition)
+        yPosition += 5
+      })
+
+      yPosition += 10
+
+      // Customer Information
+      pdf.setFontSize(14)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('CUSTOMER INFORMATION', 20, yPosition)
+      yPosition += 10
+
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'normal')
+      
+      if (customer) {
+        const customerInfo = [
+          `Full Name: ${`${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || 'N/A'}`,
+          `Email: ${customer.Email || 'N/A'}`,
+          `Phone: ${customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}`,
+          `Date of Birth: ${customer.DateOfBirth ? new Date(customer.DateOfBirth).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : 'N/A'}`,
+          `Address: ${customer.AddressLine1 || 'N/A'}, ${customer.AddressLine2 || ''}, ${customer.City || 'N/A'}`,
+          `ID Type: ${customer.IdTypeCode === 'PAS' ? 'Passport' : customer.IdTypeCode === 'DL' ? "Driver's License" : customer.IdTypeCode || 'N/A'}`,
+          `ID Number: ${customer.TempData?.['MaskAfter-IdNo'] || customer.IdNo || 'N/A'}`
+        ]
+
+        customerInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+      } else {
+        const defaultCustomerInfo = [
+          `Full Name: ${policyData.customer_name || policyData.policy_holder || 'N/A'}`,
+          `Email: ${policyData.customer_email || 'N/A'}`,
+          `Phone: ${policyData.customer_phone || 'N/A'}`,
+          'Date of Birth: N/A',
+          'Address: N/A',
+          'ID Type: N/A',
+          'ID Number: N/A'
+        ]
+
+        defaultCustomerInfo.forEach(info => {
+          pdf.text(info, 20, yPosition)
+          yPosition += 5
+        })
+      }
+
+      yPosition += 10
+
+      // Commission Information
+      pdf.setFontSize(14)
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('COMMISSION INFORMATION', 20, yPosition)
+      yPosition += 10
+
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'normal')
+      
+      const commissionInfo = [
+        `Gross Commission: PHP ${policyData.gross_commission ? Number(policyData.gross_commission).toLocaleString() : 'N/A'}`,
+        `Net Commission: PHP ${policyData.net_commission ? Number(policyData.net_commission).toLocaleString() : 'N/A'}`,
+        `Agent: ${policyData.agent ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || 'N/A' : 'N/A'}`,
+        `Product: ${policyData.product?.name || policyData.plan_name || 'N/A'}`
+      ]
+
+      commissionInfo.forEach(info => {
+        pdf.text(info, 20, yPosition)
+        yPosition += 5
+      })
+
+      // Footer
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      pdf.setFontSize(8)
+      pdf.setFont('helvetica', 'italic')
+      pdf.text('This is an official policy certificate issued by One Insurance Company.', 20, pageHeight - 20)
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, pageHeight - 15)
+      
+      // Save the PDF
+      const fileName = `Policy_Certificate_${policyData.certificate_number || policyData.policy_id}.pdf`
+      pdf.save(fileName)
+      
+      toast.success('Policy certificate downloaded successfully!')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast.error('Failed to generate PDF. Please try again.')
+    }
+  }
+
+  const handlePrintPolicy = () => {
+    window.print()
   }
 
   return (
@@ -178,158 +259,480 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={handleBackClick}
-            className="rounded-full"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Policies
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Policy Details</h1>
             <p className="text-muted-foreground">
-              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Certificate: {policyData.certificate_number}
+              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Certificate: {policyData.certificate_number || 'N/A'}
             </p>
           </div>
         </div>
-        <Button onClick={handleDownloadPDF} className="gap-2">
-          <Download className="h-4 w-4" />
-          Download Certificate
-        </Button>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleDownloadCertificate}>
+            <Download className="h-4 w-4 mr-2" />
+            Download Certificate
+          </Button>
+          <Button onClick={handlePrintPolicy}>
+            <Printer className="h-4 w-4 mr-2" />
+            Print Policy
+          </Button>
+        </div>
       </div>
-      {/* Policy Information Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Confirmation of Coverage</h2>
-            <Badge className="bg-green-100 text-green-800">
-              {policyData.status.toUpperCase()}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-500">Certificate Number</label>
-                <p className="text-lg font-semibold">{policyData.certificate_number}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Policyholder</label>
-                <p className="text-lg">{policyData.policy_holder}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Plan Name</label>
-                <p className="text-lg">{policyData.plan_name}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Plan Type</label>
-                <p className="text-lg">{policyData.plan_type}</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-500">Premium</label>
-                <p className="text-lg font-semibold">₱{parseFloat(policyData.premium).toLocaleString()}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Currency</label>
-                <p className="text-lg">{policyData.currency}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Coverage Period</label>
-                <p className="text-lg">{policyData.coverage_start} to {policyData.coverage_end}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">Provider</label>
-                <p className="text-lg">{policyData.provider}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Policy Holder Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4">Policy Holder</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Policy Information */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Policy Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Policy Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Full Name</label>
-                  <p className="text-lg">{policyData.customer_name}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.PolicyId || policyData.policy_id || 'N/A'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p className="text-lg">{policyData.customer_email}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Certificate Number</p>
+                  <p className="font-semibold">{policyData.certificate_number || 'N/A'}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p className="text-lg">{policyData.customer_phone}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <Badge variant="secondary" className={getStatusColor(policyData.status || 'N/A')}>
+                    {policyData.status || 'N/A'}
+                  </Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                  <p className="text-lg">{policyData.customer_dob}</p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Address</label>
-                  <p className="text-lg">{policyData.customer_address}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">ID Type</label>
-                  <p className="text-lg">{policyData.customer_id_type}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">ID Number</label>
-                  <p className="text-lg">{policyData.customer_id_number}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Provider</p>
+                  <p className="font-semibold">{policyData.provider || 'N/A'}</p>
                 </div>
               </div>
-            </div>
-          </div>
+              
+              <Separator />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Effective Date</p>
+                  <p className="font-semibold">
+                    {policyDetails?.EffectiveDate 
+                      ? new Date(policyDetails.EffectiveDate).toLocaleDateString()
+                      : policyData.coverage_start || 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
+                  <p className="font-semibold">
+                    {policyDetails?.ExpiryDate 
+                      ? new Date(policyDetails.ExpiryDate).toLocaleDateString()
+                      : policyData.coverage_end || 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
+                  <p className="font-semibold text-lg">
+                    {policyDetails?.GrossPremium 
+                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                      : policyData.premium 
+                      ? `₱${Number(policyData.premium).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Currency</p>
+                  <p className="font-semibold">{policyData.currency || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Product</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || policyData.plan_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Plan Type</p>
+                  <p className="font-semibold">{policyData.plan_type || 'N/A'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Additional Details */}
-          {policy && (policy.gross_commission || policy.net_commission || policy.agent) && (
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold mb-4">Commission Details</h3>
+          {/* Policy Holder */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Policy Holder
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  {policy.gross_commission && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Gross Commission</label>
-                      <p className="text-lg">₱{parseFloat(policy.gross_commission).toLocaleString()}</p>
-                    </div>
-                  )}
-                  {policy.net_commission && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Net Commission</label>
-                      <p className="text-lg">₱{parseFloat(policy.net_commission).toLocaleString()}</p>
-                    </div>
-                  )}
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                  <p className="font-semibold text-lg">
+                    {customer 
+                      ? `${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || 'N/A'
+                      : policyData.customer_name || policyData.policy_holder || 'N/A'
+                    }
+                  </p>
                 </div>
-                <div className="space-y-4">
-                  {policy.agent && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Agent</label>
-                      <p className="text-lg">{policy.agent.first_name} {policy.agent.last_name}</p>
-                      {policy.agent.email && (
-                        <p className="text-sm text-gray-600">{policy.agent.email}</p>
-                      )}
-                    </div>
-                  )}
-                  {policy.product && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Product</label>
-                      <p className="text-lg">{policy.product.name}</p>
-                      {policy.product.category && (
-                        <p className="text-sm text-gray-600">{policy.product.category}</p>
-                      )}
-                    </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Address</p>
+                  <p className="font-semibold">
+                    {customer 
+                      ? `${customer.AddressLine1 || ''}, ${customer.AddressLine2 || ''}, ${customer.City || ''}`.replace(/^,\s*|,\s*$/g, '').replace(/,\s*,/g, ',') || 'N/A'
+                      : policyData.customer_address || 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
+                  <p className="font-semibold">
+                    {customer?.Email || policyData.customer_email || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
+                  <p className="font-semibold">
+                    {customer?.IdTypeCode === 'PAS' ? "Passport" : 
+                     customer?.IdTypeCode === 'DL' ? "Driver's License" : 
+                     customer?.IdTypeCode || policyData.customer_id_type || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
+                  <p className="font-semibold">
+                    {customer?.TempData?.['MaskAfter-Mobile'] || customer?.Mobile || policyData.customer_phone || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
+                  <p className="font-semibold">
+                    {customer?.TempData?.['MaskAfter-IdNo'] || customer?.IdNo || policyData.customer_id_number || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                  <p className="font-semibold">
+                    {customer?.DateOfBirth ? 
+                      new Date(customer.DateOfBirth).toLocaleDateString('en-US', { 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        year: 'numeric' 
+                      }) : policyData.customer_dob || 'N/A'
+                    }
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Commission Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Commission Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Gross Commission</p>
+                  <p className="font-semibold text-lg">
+                    {policyData.gross_commission 
+                      ? `₱${Number(policyData.gross_commission).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Agent</p>
+                  <p className="font-semibold">
+                    {policyData.agent 
+                      ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || 'N/A'
+                      : 'N/A'
+                    }
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {policyData.agent?.email || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Net Commission</p>
+                  <p className="font-semibold text-lg">
+                    {policyData.net_commission 
+                      ? `₱${Number(policyData.net_commission).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Product</p>
+                  <p className="font-semibold">
+                    {policyData.product?.name || policyData.plan_name || 'N/A'}
+                  </p>
+                  {policyData.product?.category && (
+                    <p className="text-sm text-muted-foreground">{policyData.product.category}</p>
                   )}
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* Travel Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plane className="h-5 w-5" />
+                Travel Insurance Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {travelDetails ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Origin</p>
+                      <p className="font-semibold">{travelDetails.PlaceOfOrgin || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Destination</p>
+                      <p className="font-semibold">{travelDetails.TravelCountry || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Coverage Area</p>
+                    <p className="font-semibold">{travelDetails.TravelCoverageArea || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
+                    <p className="font-semibold">{policyDetails?.TravelType || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
+                    <p className="font-semibold">{policyDetails?.TripType || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Number of Travellers</p>
+                    <p className="font-semibold">
+                      {policyDetails?.NoOfTravellers || 'N/A'} 
+                      {policyDetails?.NoOfAdults && policyDetails?.NoOfChildren && 
+                        ` (${policyDetails.NoOfAdults} Adults, ${policyDetails.NoOfChildren} Children)`
+                      }
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Product Type</p>
+                    <p className="font-semibold">{policyData.plan_type || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Provider</p>
+                    <p className="font-semibold">{policyData.provider || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Coverage Area</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
+                    <p className="font-semibold">N/A</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Policy Status</p>
+                    <Badge variant="secondary" className={getStatusColor(policyData.status || 'N/A')}>
+                      {policyData.status || 'N/A'}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Coverage Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building className="h-5 w-5" />
+                Coverage Details {coverages.length > 0 && `(${coverages.length} coverages)`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {coverages.length > 0 ? (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {coverages.map((coverage: any, index: number) => (
+                    <div key={coverage.PolicyElementId} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div>
+                        <p className="font-medium">{coverage.CoverageName}</p>
+                        <p className="text-sm text-muted-foreground">Code: {coverage.ProductElementCode}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">#{index + 1}</p>
+                        <p className="text-xs text-muted-foreground">Sequence</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No detailed coverage information available
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Policy Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Policy Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
+                <p className="font-semibold">{policyDetails?.PlanCode || 'TRAVEL-PLAN'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
+                <p className="font-semibold">{policyDetails?.CarrierCode || 'OONAPH'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Product Code</p>
+                <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Agent Code Used</p>
+                <p className="font-semibold">{policyData.agent_code_used || 'N/A'}</p>
+              </div>
+              {policyDetails?.PremiumTaxAmt && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
+                  <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
+                </div>
+              )}
+              {policyDetails?.LGT && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">LGT</p>
+                  <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Enhanced Commission Information */}
+          {policyData.commission_log && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Additional Commission Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commission Rate</p>
+                  <p className="font-semibold">{policyData.commission_log.commission_rate || '0'}%</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">VAT Amount</p>
+                  <p className="font-semibold">₱{Number(policyData.commission_log.vat_amount || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Withholding Tax</p>
+                  <p className="font-semibold">₱{Number(policyData.commission_log.withholding_tax_amount || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Base Commission</p>
+                  <p className="font-semibold">₱{Number(policyData.commission_log.base_commission || 0).toLocaleString()}</p>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Discount Information */}
+          {promoCode && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Discount Applied
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Promo Code</p>
+                  <p className="font-semibold text-green-600">{promoCode.PromoCode}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Discount Percentage</p>
+                  <p className="font-semibold text-green-600">{promoCode.DiscountPercent}%</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Policy Dates */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Important Dates
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {policyDetails?.ProposalDate && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
+                  <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyDetails?.QuotationDate && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
+                  <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyData.created_at && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Created At</p>
+                  <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
+                </div>
+              )}
+              {policyData.updated_at && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Updated At</p>
+                  <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

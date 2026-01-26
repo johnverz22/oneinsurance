@@ -10,6 +10,7 @@ type AgentUser = {
   role: string
   designation: string
   status: string
+  profile_photo_url?: string | null
   created_at: string
   updated_at: string
 }
@@ -39,6 +40,7 @@ type AgentAuthState = {
   clearUser: () => void
 
   // Helper methods
+  getInitials: () => string
   getAuthToken: () => string | null
   isTokenValid: () => boolean
   hasRole: (role: string) => boolean
@@ -109,6 +111,20 @@ export const useAuthStore = create<AgentAuthState>()(
       },
 
       // Helper methods
+      getInitials: () => {
+        const { user } = get()
+
+        if (user) {
+          return user?.name
+            ?.split(' ')
+            .map((word) => word[0])
+            .join('')
+            .toUpperCase()
+        }
+
+        return ''
+      },
+
       getAuthToken: () => {
         const { accessToken, tokenType } = get()
         if (accessToken && tokenType) {
