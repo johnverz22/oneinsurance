@@ -106,7 +106,7 @@ export function PolicyDataTable({
         <div className="relative max-w-sm flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search by Certificate number or Policyholder"
+            placeholder="Search by Policy number or Policyholder"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -218,7 +218,7 @@ export function PolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Certificate Number</TableHead>
+              <TableHead>Policy Number</TableHead>
               <TableHead>Policyholder</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Plan Code</TableHead>
@@ -244,7 +244,26 @@ export function PolicyDataTable({
                         onClick={() => handleViewPolicy(transaction)}
                         className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                       >
-                        {transaction.proposal_number}
+                        {(() => {
+                          // Try to get CarrierPolicyNo from policy_details
+                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                          if (transactionWithDetails.policy_details) {
+                            try {
+                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                                ? JSON.parse(transactionWithDetails.policy_details) 
+                                : transactionWithDetails.policy_details;
+                              
+                              if (policyDetails?.CarrierPolicyNo) {
+                                return policyDetails.CarrierPolicyNo;
+                              }
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+                            }
+                          }
+                          
+                          // Fallback to proposal_number if CarrierPolicyNo is not available
+                          return transaction.proposal_number || 'N/A';
+                        })()}
                       </button>
                     </TableCell>
                     <TableCell>
@@ -346,29 +365,55 @@ export function PolicyDataTable({
                           ? `₱${Number(transaction.amount).toLocaleString()}`
                           : 'N/A'}
                       </p>
-                      {transaction.commission_log?.gross_commission && (
-                        <p className="text-sm text-green-600">
-                          Commission: ₱{Number(transaction.commission_log.gross_commission).toLocaleString()}
-                        </p>
-                      )}
                     </TableCell>
                     <TableCell>
-                      {transaction.transaction_date ? (
-                        <div>
-                          <p className="text-sm">
-                            {new Date(transaction.transaction_date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Active Policy
-                          </p>
-                        </div>
-                      ) : (
-                        'N/A'
-                      )}
+                      {(() => {
+                        // Try to get EffectiveDate and ExpiryDate from policy_details
+                        const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                        if (transactionWithDetails.policy_details) {
+                          try {
+                            const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                              ? JSON.parse(transactionWithDetails.policy_details) 
+                              : transactionWithDetails.policy_details;
+                            
+                            if (policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) {
+                              const startDate = new Date(policyDetails.EffectiveDate);
+                              const endDate = new Date(policyDetails.ExpiryDate);
+                              const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                              
+                              return (
+                                <div>
+                                  <p className="text-sm font-medium">
+                                    {startDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {endDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {diffDays} Day{diffDays !== 1 ? 's' : ''}
+                                  </p>
+                                </div>
+                              );
+                            }
+                          } catch (e) {
+                            console.log('Failed to parse policy_details for dates:', e);
+                          }
+                        }
+                        
+                        // Fallback to transaction date if policy dates not available
+                        return transaction.transaction_date ? (
+                          <div>
+                            <p className="text-sm">
+                              {new Date(transaction.transaction_date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Active Policy
+                            </p>
+                          </div>
+                        ) : 'N/A';
+                      })()}
                     </TableCell>
                     <TableCell>
                       <div>
