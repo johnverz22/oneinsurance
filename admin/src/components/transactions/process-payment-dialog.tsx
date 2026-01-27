@@ -200,7 +200,7 @@ export function ProcessPaymentDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Policy Number</TableHead>
+                  <TableHead>Policy No./Certificate No.</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead>Premium Amount</TableHead>
                   <TableHead>Commission %</TableHead>
