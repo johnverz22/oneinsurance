@@ -61,27 +61,39 @@ export async function GET(request: NextRequest) {
             // Use PolicyCustomerList[0] data for customer names
             const customerIndex = index % sampleCustomers.length
             const customer = sampleCustomers[customerIndex]
-            const customerName = [customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+            const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
               .filter(Boolean)
               .join(' ')
               .trim()
             
             console.log(`Agent: Transaction ${transaction.id} - Using customer: ${customerName}`)
             
-            // Add sample policy_details with plan code information
-            const samplePolicyDetails = {
-              PlanCode: "TMPHPC2", // Use the correct plan code from policy_travel.json
+            // Add real policy_details structure from policy_travel.json
+            const realPolicyDetails = {
+              PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
+              CarrierPolicyNo: `P00${(86998 + index).toString()}`,
+              ProposalNo: `PTRAVEL000000${(919 + index).toString().padStart(4, '0')}`,
+              ProductName: "Travel Insurance",
+              ProductCode: "TRAVEL",
+              CarrierProductCode: "TRAVEL",
+              PlanCode: "TMPHPC2",
+              CarrierCode: "MALAYAN",
+              GrossPremium: 258,
+              EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
+              ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
               TravelType: index % 3 === 0 ? "INDIVIDUAL" : index % 3 === 1 ? "FAMILY" : "GROUP",
-              ProductCode: "TRAVEL", // From policy_travel.json
-              CarrierCode: "MALAYAN", // From policy_travel.json
-              CarrierProductCode: "TRAVEL", // From policy_travel.json
+              TripType: "SINGLE",
+              NoOfTravellers: 3,
+              NoOfAdults: 2,
+              NoOfChildren: 1,
+              IsRenewable: "Y",
               PolicyCustomerList: [customer]
             }
             
             return {
               ...transaction,
               customer_name: customerName, // Override with PolicyCustomerList[0] data
-              policy_details: JSON.stringify(samplePolicyDetails), // Add policy_details for plan code extraction
+              policy_details: JSON.stringify(realPolicyDetails), // Add real policy_details structure
             }
           })
         }

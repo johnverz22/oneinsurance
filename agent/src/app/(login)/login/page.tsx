@@ -79,6 +79,13 @@ export default function LoginPage() {
             toast.error('Failed to send OTP. Please try again.')
           }
         }
+        
+        /* TEMPORARY: Direct login without OTP - DISABLED FOR PRODUCTION
+        // Complete login directly without OTP (TEMPORARY)
+        login(result)
+        toast.success('Login successful!')
+        router.push('/')
+        END TEMPORARY CODE */
       } catch (error: any) {
         if (error instanceof NotVerifiedEmailError) {
           setLoginError(error.message)
