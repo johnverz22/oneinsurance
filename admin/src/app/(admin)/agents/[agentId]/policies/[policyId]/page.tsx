@@ -158,7 +158,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `Policy Number: ${policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}`,
+        `Policy No./Certificate No.: ${policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}`,
         `Certificate Number: ${policyData.certificate_number || 'N/A'}`,
         `Status: ${policyData.status || 'N/A'}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
@@ -286,7 +286,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
+                  <p className="text-sm font-medium text-muted-foreground">Policy No./Certificate No.</p>
                   <p className="font-semibold text-blue-600">{policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}</p>
                 </div>
                 <div>
@@ -425,50 +425,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 )}
               </div>
 
-              <Separator />
 
-              {/* Commission Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
-                  <p className="font-semibold">
-                    {policyData.gross_commission 
-                      ? `₱${Number(policyData.gross_commission).toLocaleString()}`
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                  <p className="font-semibold">
-                    {policyData.net_commission 
-                      ? `₱${Number(policyData.net_commission).toLocaleString()}`
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                  <p className="font-semibold">
-                    {policyData.agent 
-                      ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || 'N/A'
-                      : 'N/A'
-                    }
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {policyData.agent?.email || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
-                  <p className="font-semibold">
-                    {policyData.product?.name || policyData.plan_name || 'N/A'}
-                  </p>
-                  {policyData.product?.category && (
-                    <p className="text-xs text-muted-foreground">{policyData.product.category}</p>
-                  )}
-                </div>
-              </div>
             </CardContent>
           </Card>
 
@@ -687,6 +644,59 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Commission Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Commission Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
+                  <p className="font-semibold">
+                    {policyData.gross_commission 
+                      ? `₱${Number(policyData.gross_commission).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
+                  <p className="font-semibold">
+                    {policyData.net_commission 
+                      ? `₱${Number(policyData.net_commission).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
+                  <p className="font-semibold">
+                    {policyData.agent 
+                      ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || 'N/A'
+                      : 'N/A'
+                    }
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {policyData.agent?.email || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
+                  <p className="font-semibold">
+                    {policyData.product?.name || policyData.plan_name || 'N/A'}
+                  </p>
+                  {policyData.product?.category && (
+                    <p className="text-xs text-muted-foreground">{policyData.product.category}</p>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
