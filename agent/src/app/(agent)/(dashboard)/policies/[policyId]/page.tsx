@@ -254,55 +254,6 @@ export default function PolicyDetailsPage() {
         yPosition += 10
       }
 
-      // Commission Information
-      if (policyData.commission_log) {
-        pdf.setFontSize(14)
-        pdf.setFont('helvetica', 'bold')
-        pdf.text('COMMISSION INFORMATION', 20, yPosition)
-        yPosition += 10
-
-        pdf.setFontSize(10)
-        pdf.setFont('helvetica', 'normal')
-        
-        const commissionInfo = [
-          `Gross Commission: PHP ${Number(policyData.commission_log.gross_commission).toLocaleString()}`,
-          `Net Commission: PHP ${Number(policyData.commission_log.net_commission).toLocaleString()}`,
-          `Commission Rate: ${policyData.commission_log.commission_rate}%`,
-          `Agent: ${user?.name || 'N/A'}`,
-          `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`
-        ]
-
-        commissionInfo.forEach(info => {
-          pdf.text(info, 20, yPosition)
-          yPosition += 5
-        })
-
-        yPosition += 10
-      } else {
-        // Default commission information when not available
-        pdf.setFontSize(14)
-        pdf.setFont('helvetica', 'bold')
-        pdf.text('COMMISSION INFORMATION', 20, yPosition)
-        yPosition += 10
-
-        pdf.setFontSize(10)
-        pdf.setFont('helvetica', 'normal')
-        
-        const defaultCommissionInfo = [
-          'Gross Commission: PHP 23.82',
-          'Net Commission: PHP 24.30',
-          `Agent: ${user?.name || 'N/A'}`,
-          `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`
-        ]
-
-        defaultCommissionInfo.forEach(info => {
-          pdf.text(info, 20, yPosition)
-          yPosition += 5
-        })
-
-        yPosition += 10
-      }
-
       // Promo Code Information
       if (promoCode) {
         pdf.setFontSize(14)
@@ -395,7 +346,7 @@ export default function PolicyDetailsPage() {
                   <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Proposal Number</p>
+                  <p className="text-sm font-medium text-muted-foreground">Reference Number</p>
                   <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number}</p>
                 </div>
                 <div>
@@ -414,22 +365,54 @@ export default function PolicyDetailsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
                   <p className="font-semibold">{policyData.agent_code_used}</p>
                 </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
+                  <p className="font-semibold">{policyDetails?.PlanCode || 'TMPHPC2'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
+                  <p className="font-semibold">{policyDetails?.CarrierCode || 'MALAYAN'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Product Code</p>
+                  <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code}</p>
+                </div>
               </div>
               
               <Separator />
               
               <div className="grid grid-cols-2 gap-4">
-                {policyDetails?.EffectiveDate && (
+                {(policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) ? (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Effective Date</p>
-                    <p className="font-semibold">{new Date(policyDetails.EffectiveDate).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Coverage Date</p>
+                    <p className="font-semibold">
+                      {new Date(policyDetails.EffectiveDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {new Date(policyDetails.ExpiryDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {(() => {
+                        const startDate = new Date(policyDetails.EffectiveDate)
+                        const endDate = new Date(policyDetails.ExpiryDate)
+                        const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+                        return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
+                      })()}
+                    </p>
                   </div>
-                )}
-                {policyDetails?.ExpiryDate && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
-                    <p className="font-semibold">{new Date(policyDetails.ExpiryDate).toLocaleDateString()}</p>
-                  </div>
+                ) : (
+                  <>
+                    {policyDetails?.EffectiveDate && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Effective Date</p>
+                        <p className="font-semibold">{new Date(policyDetails.EffectiveDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                    {policyDetails?.ExpiryDate && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Expiry Date</p>
+                        <p className="font-semibold">{new Date(policyDetails.ExpiryDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
@@ -458,6 +441,83 @@ export default function PolicyDetailsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Product</p>
                   <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
                 </div>
+                {policyDetails?.PremiumTaxAmt && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
+                    <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
+                  </div>
+                )}
+                {policyDetails?.LGT && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">LGT</p>
+                    <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Important Dates */}
+              <div className="grid grid-cols-2 gap-4">
+                {policyDetails?.ProposalDate && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
+                    <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {policyDetails?.QuotationDate && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
+                    <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {policyData.transaction_date && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
+                    <p className="font-semibold">{new Date(policyData.transaction_date).toLocaleDateString()}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Created At</p>
+                  <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Updated At</p>
+                  <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Commission Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
+                  <p className="font-semibold">
+                    {policyData.commission_log?.gross_commission 
+                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
+                      : '₱23.82'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
+                  <p className="font-semibold">
+                    {policyData.commission_log?.net_commission 
+                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
+                      : '₱24.30'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
+                  <p className="font-semibold">{user?.name || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -476,7 +536,7 @@ export default function PolicyDetailsPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
                     <p className="font-semibold text-lg">
-                      {[customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                      {[customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
                         .filter(Boolean)
                         .join(' ') || 'N/A'}
                     </p>
@@ -598,46 +658,7 @@ export default function PolicyDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Commission Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Commission Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Gross Commission</p>
-                  <p className="font-semibold text-lg">
-                    {policyData.commission_log?.gross_commission 
-                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
-                      : '₱23.82'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Agent</p>
-                  <p className="font-semibold">{user?.name || 'N/A'}</p>
-                  <p className="text-sm text-muted-foreground">{user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Net Commission</p>
-                  <p className="font-semibold text-lg">
-                    {policyData.commission_log?.net_commission 
-                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
-                      : '₱24.3'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Product</p>
-                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Travel Information */}
           <Card>
@@ -845,104 +866,6 @@ export default function PolicyDetailsPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Policy Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Policy Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
-                <p className="font-semibold">{policyDetails?.PlanCode || 'TMPHPC2'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
-                <p className="font-semibold">{policyDetails?.CarrierCode || 'OONAPH'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Product Code</p>
-                <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
-                <p className="font-semibold">{policyData.agent_code_used}</p>
-              </div>
-              {policyDetails?.PremiumTaxAmt && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
-                  <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
-                </div>
-              )}
-              {policyDetails?.LGT && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">LGT</p>
-                  <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
-                </div>
-              )}
-              
-              {/* Important Dates moved here */}
-              {policyDetails?.ProposalDate && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
-                  <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
-                </div>
-              )}
-              {policyDetails?.QuotationDate && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
-                  <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
-                </div>
-              )}
-              {policyData.transaction_date && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
-                  <p className="font-semibold">{new Date(policyData.transaction_date).toLocaleDateString()}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Created At</p>
-                <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Updated At</p>
-                <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Commission Information */}
-          {policyData.commission_log && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Additional Commission Info
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Rate</p>
-                  <p className="font-semibold">{policyData.commission_log.commission_rate}%</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">VAT Amount</p>
-                  <p className="font-semibold">₱{Number(policyData.commission_log.vat_amount || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Withholding Tax</p>
-                  <p className="font-semibold">₱{Number(policyData.commission_log.withholding_tax_amount || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Base Commission</p>
-                  <p className="font-semibold">₱{Number(policyData.commission_log.base_commission || 0).toLocaleString()}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Discount Information */}
           {promoCode && (
             <Card>

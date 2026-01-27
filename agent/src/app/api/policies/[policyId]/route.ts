@@ -128,7 +128,7 @@ export async function GET(
         // Extract customer name from PolicyCustomerList[0]
         if (policyDetails?.PolicyCustomerList?.[0]) {
           const customer = policyDetails.PolicyCustomerList[0]
-          customerName = [customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+          customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
             .filter(Boolean)
             .join(' ')
             .trim()
@@ -183,6 +183,28 @@ export async function GET(
             TempData: {
               "MaskAfter-Mobile": "+63******1548",
               "MaskAfter-IdNo": "A01234562"
+            }
+          },
+          {
+            Title: "Miss",
+            FirstName: "Hanna",
+            MiddleName: "",
+            LastName: "Miraflores",
+            Suffix: "",
+            Email: "nelsmiraflores@gmail.com",
+            Mobile: "+63******1548",
+            DateOfBirth: "1989-01-18",
+            Gender: "F",
+            AddressLine1: "Purok 4",
+            AddressLine2: "Brgy Del Carmen (pob)",
+            City: "166708",
+            AddrProvince: "166700",
+            PostCode: "8418",
+            IdTypeCode: "PAS",
+            IdNo: "A01234565",
+            TempData: {
+              "MaskAfter-Mobile": "+63******1548",
+              "MaskAfter-IdNo": "A01234565"
             }
           }
         ],
@@ -251,7 +273,7 @@ export async function GET(
                 Mobile: "+63******1548",
                 DateOfBirth: "2017-01-30",
                 Age: 8,
-                Gender: "M",
+                Gender: "F",
                 IsMainInsured: "N",
                 IsAdultTraveller: "N",
                 TempData: {
@@ -271,6 +293,51 @@ export async function GET(
                   { PolicyElementId: 2313358269, CoverageName: "Baggage Delay Benefit (After First 12 hrs)" },
                   { PolicyElementId: 2313358270, CoverageName: "Flight Delay" },
                   { PolicyElementId: 2313358271, CoverageName: "Medical Evacuation" }
+                ]
+              },
+              {
+                PolicyElementId: 2313358229,
+                FirstName: "Hanna",
+                MiddleName: "",
+                LastName: "Miraflores",
+                InsuredName: "Hanna Miraflores",
+                Email: "nelsmiraflores@gmail.com",
+                Mobile: "+63******1548",
+                DateOfBirth: "1989-01-18",
+                Age: 37,
+                Gender: "F",
+                IsMainInsured: "N",
+                IsAdultTraveller: "Y",
+                TempData: {
+                  "MaskAfter-Mobile": "+63******1548",
+                  "MaskAfter-IdNo": "A01234565"
+                },
+                PolicyCoverageList: [
+                  { PolicyElementId: 2313358289, CoverageName: "Accidental Death, Dismemberment and Disablement" },
+                  { PolicyElementId: 2313358290, CoverageName: "Unprovoked Murder and Assault" },
+                  { PolicyElementId: 2313358291, CoverageName: "Sabotage and Terrorism" },
+                  { PolicyElementId: 2313358292, CoverageName: "Accidental Death" },
+                  { PolicyElementId: 2313358293, CoverageName: "COVID-19 Overseas Medical Costs" },
+                  { PolicyElementId: 2313358294, CoverageName: "Coronavirus -19 (perday , maximum of 7days)" },
+                  { PolicyElementId: 2313358295, CoverageName: "Sickness (perday , maximum of 10days)" },
+                  { PolicyElementId: 2313358296, CoverageName: "Accidents (perday, maximum of 10days)" },
+                  { PolicyElementId: 2313358297, CoverageName: "Cashless Hospitalization" },
+                  { PolicyElementId: 2313358298, CoverageName: "Follow-up Care" },
+                  { PolicyElementId: 2313358299, CoverageName: "Civil/Personal Liability" },
+                  { PolicyElementId: 2313358300, CoverageName: "Trip Cancellation" },
+                  { PolicyElementId: 2313358301, CoverageName: "Emergency Trip Termination" },
+                  { PolicyElementId: 2313358302, CoverageName: "Loss of Cash" },
+                  { PolicyElementId: 2313358303, CoverageName: "Loss of Travel Documents abroad" },
+                  { PolicyElementId: 2313358304, CoverageName: "Loss Of Checked In Baggage" },
+                  { PolicyElementId: 2313358305, CoverageName: "Baggage Delay Benefit (After First 12 hrs)" },
+                  { PolicyElementId: 2313358306, CoverageName: "Flight Delay" },
+                  { PolicyElementId: 2313358307, CoverageName: "Damage of Checked in Baggage" },
+                  { PolicyElementId: 2313358308, CoverageName: "Loss of Laptop" },
+                  { PolicyElementId: 2313358309, CoverageName: "Aircraft Hijacking" },
+                  { PolicyElementId: 2313358310, CoverageName: "Damage to Laptop" },
+                  { PolicyElementId: 2313358311, CoverageName: "Emergency Repatriation Expense" },
+                  { PolicyElementId: 2313358312, CoverageName: "Medical Evacuation" },
+                  { PolicyElementId: 2313358313, CoverageName: "Return of Mortal Remains" }
                 ]
               }
             ]
