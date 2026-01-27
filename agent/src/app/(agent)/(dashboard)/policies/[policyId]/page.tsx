@@ -57,7 +57,18 @@ export default function PolicyDetailsPage() {
   }
 
   const policyData = policy.data
-  const policyDetails = policyData.policy_details
+  
+  // Parse policy_details if it's a JSON string
+  let policyDetails = policyData.policy_details
+  if (typeof policyDetails === 'string') {
+    try {
+      policyDetails = JSON.parse(policyDetails)
+      console.log('Agent Policy Details - Successfully parsed policy_details JSON string')
+    } catch (e) {
+      console.log('Agent Policy Details - Failed to parse policy_details JSON:', e)
+      policyDetails = null
+    }
+  }
   
   // Debug logging to see what data we're receiving
   console.log('Agent Policy Details - Full policy data:', policyData)
@@ -486,39 +497,6 @@ export default function PolicyDetailsPage() {
                   <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
                 </div>
               </div>
-
-              <Separator />
-
-              {/* Commission Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
-                  <p className="font-semibold">
-                    {policyData.commission_log?.gross_commission 
-                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
-                      : '₱23.82'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                  <p className="font-semibold">
-                    {policyData.commission_log?.net_commission 
-                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
-                      : '₱24.30'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                  <p className="font-semibold">{user?.name || 'N/A'}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
-                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
@@ -745,6 +723,47 @@ export default function PolicyDetailsPage() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Commission Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Commission Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
+                  <p className="font-semibold">
+                    {policyData.commission_log?.gross_commission 
+                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
+                      : '₱23.82'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
+                  <p className="font-semibold">
+                    {policyData.commission_log?.net_commission 
+                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
+                      : '₱24.30'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
+                  <p className="font-semibold">{user?.name || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
