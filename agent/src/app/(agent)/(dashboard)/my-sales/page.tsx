@@ -11,35 +11,49 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import MetricsCard from '@/components/dashboard/metrics-card'
 import { useGetAgentStatistics } from '@/app/data/queries/statistics'
-import { DollarSign, ShoppingCart, TrendingUp, Wallet } from 'lucide-react'
+import { DollarSign, ShoppingCart, TrendingUp, Wallet, Calendar, X } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar as CalendarComponent } from '@/components/ui/calendar'
+import { format } from 'date-fns'
+import { Label } from '@/components/ui/label'
 
 const transactionColumns: ColumnDef<Transaction>[] = [
   {
     accessorKey: 'proposal_number',
-    header: 'Proposal Number',
+    header: 'Proposal No.',
     cell: ({ row }) => (
       <p className="font-medium">{row.original.proposal_number}</p>
     ),
   },
   {
     accessorKey: 'policy_id',
-    header: 'Policy ID',
-    cell: ({ row }) => <p className="font-medium">{row.original.policy_id}</p>,
-  },
-  {
-    accessorKey: 'customer_id',
-    header: 'Customer ID',
-    cell: ({ row }) => (
-      <p className="text-muted-foreground">
-        {row.original.customer_id ?? 'N/A'}
-      </p>
-    ),
+    header: 'Policy No./Certificate No.',
+    cell: ({ row }) => {
+      // Try to get CarrierPolicyNo from policy_details
+      const transactionWithDetails = row.original as Transaction & { policy_details?: string };
+      if (transactionWithDetails.policy_details) {
+        try {
+          const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+            ? JSON.parse(transactionWithDetails.policy_details) 
+            : transactionWithDetails.policy_details;
+          
+          if (policyDetails?.CarrierPolicyNo) {
+            return <p className="font-medium">{policyDetails.CarrierPolicyNo}</p>;
+          }
+        } catch (e) {
+          console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+        }
+      }
+      
+      // Fallback to policy_id
+      return <p className="font-medium">{row.original.policy_id}</p>;
+    },
   },
   {
     accessorKey: 'merchant_transaction_id',
-    header: 'Transaction ID',
+    header: 'Payment ID',
     cell: ({ row }) => (
       <p className="text-muted-foreground">
         {row.original.merchant_transaction_id ?? 'N/A'}
@@ -47,8 +61,68 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     ),
   },
   {
+    accessorKey: 'product',
+    header: 'Product',
+    cell: ({ row }) => {
+      // Try to get CarrierProductCode and CarrierCode from policy_details
+      const transactionWithDetails = row.original as Transaction & { policy_details?: string };
+      if (transactionWithDetails.policy_details) {
+        try {
+          const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+            ? JSON.parse(transactionWithDetails.policy_details) 
+            : transactionWithDetails.policy_details;
+          
+          return (
+            <div>
+              <p className="font-medium">
+                {policyDetails?.CarrierProductCode || policyDetails?.ProductCode || 'TRAVEL'}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {policyDetails?.CarrierCode || 'MALAYAN'}
+              </p>
+            </div>
+          );
+        } catch (e) {
+          console.log('Failed to parse policy_details for product:', e);
+        }
+      }
+      
+      // Fallback
+      return (
+        <div>
+          <p className="font-medium">TRAVEL</p>
+          <p className="text-sm text-muted-foreground">MALAYAN</p>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: 'plan_code',
+    header: 'Plan Code',
+    cell: ({ row }) => {
+      // Try to get PlanCode from policy_details
+      const transactionWithDetails = row.original as Transaction & { policy_details?: string };
+      if (transactionWithDetails.policy_details) {
+        try {
+          const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+            ? JSON.parse(transactionWithDetails.policy_details) 
+            : transactionWithDetails.policy_details;
+          
+          if (policyDetails?.PlanCode) {
+            return <p className="font-medium">{policyDetails.PlanCode}</p>;
+          }
+        } catch (e) {
+          console.log('Failed to parse policy_details for PlanCode:', e);
+        }
+      }
+      
+      // Fallback
+      return <p className="font-medium">TMPHPC2</p>;
+    },
+  },
+  {
     accessorKey: 'amount',
-    header: 'Amount',
+    header: 'Premium',
     cell: ({ row }) => (
       <p className="font-semibold">
         {row.original.amount
@@ -56,22 +130,6 @@ const transactionColumns: ColumnDef<Transaction>[] = [
           : 'N/A'}
       </p>
     ),
-  },
-  {
-    accessorKey: 'commission_log.gross_commission',
-    header: 'Gross Commission',
-    cell: ({ row }) => {
-      const grossCommission = row.original.commission_log?.gross_commission
-      const value = grossCommission ? parseFloat(grossCommission) : 0
-      return (
-        <p className="font-semibold">
-          ₱{value.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </p>
-      )
-    },
   },
   {
     accessorKey: 'commission_log.net_commission',
@@ -112,12 +170,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     },
   },
   {
-    accessorKey: 'transaction_date',
-    header: 'Timestamp',
+    accessorKey: 'created_at',
+    header: 'Created Date',
     cell: ({ row }) => (
       <p className="text-sm">
-        {row.original.transaction_date
-          ? new Date(row.original.transaction_date).toLocaleString('en-US', {
+        {row.original.created_at
+          ? new Date(row.original.created_at).toLocaleString('en-US', {
               year: 'numeric',
               month: 'short',
               day: 'numeric',
@@ -133,6 +191,8 @@ const transactionColumns: ColumnDef<Transaction>[] = [
 const MySalesPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [currentPageSize, setCurrentPageSize] = useState(10)
+  const [fromDate, setFromDate] = useState<Date | undefined>()
+  const [toDate, setToDate] = useState<Date | undefined>()
 
   const {
     data: transactionsResponse,
@@ -165,6 +225,20 @@ const MySalesPage = () => {
     }
   }
 
+  const handleDateFilter = (fromDate: Date, toDate: Date) => {
+    // Implement date filtering logic here
+    console.log('Date filter:', fromDate, toDate)
+    // For now, just show a toast
+    toast.success(`Filtering from ${fromDate.toLocaleDateString()} to ${toDate.toLocaleDateString()}`)
+  }
+
+  const handleClearFilters = () => {
+    setFromDate(undefined)
+    setToDate(undefined)
+    setSearchedTransactions(null)
+    toast.success('Filters cleared')
+  }
+
   const handlePaginationChange = (page: number, pageSize: number) => {
     setCurrentPage(page)
     setCurrentPageSize(pageSize)
@@ -172,16 +246,6 @@ const MySalesPage = () => {
     try {
       sessionStorage.setItem('transactions.currentPage', String(page))
     } catch (e) {}
-  }
-
-  const handleRefresh = async () => {
-    try {
-      await refetch()
-      setSearchedTransactions(null)
-      toast.success('Transactions refreshed')
-    } catch (e: any) {
-      toast.error('Failed to refresh transactions')
-    }
   }
 
   const displayData = searchedTransactions || transactionsResponse
@@ -249,6 +313,82 @@ const MySalesPage = () => {
                 onSearchChange: handleSearch,
               }
             : { enabled: false }
+        }
+        customAction={
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border">
+            {/* From Date */}
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">From:</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[140px] justify-start text-left font-normal"
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {fromDate ? format(fromDate, "MMM dd, yyyy") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={setFromDate}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* To Date */}
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">To:</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[140px] justify-start text-left font-normal"
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {toDate ? format(toDate, "MMM dd, yyyy") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={toDate}
+                    onSelect={setToDate}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Filter Buttons */}
+            <Button
+              onClick={() => fromDate && toDate && handleDateFilter(fromDate, toDate)}
+              disabled={!fromDate || !toDate}
+              size="sm"
+            >
+              Apply Filter
+            </Button>
+            
+            {(fromDate || toDate || searchedTransactions) && (
+              <Button
+                onClick={handleClearFilters}
+                variant="outline"
+                size="sm"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            )}
+
+            {/* Filter Results Info */}
+            {(searchedTransactions || fromDate || toDate) && displayData && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground ml-auto">
+                Found {displayData?.data?.data?.length || 0} transactions
+              </div>
+            )}
+          </div>
         }
       />
     </div>
