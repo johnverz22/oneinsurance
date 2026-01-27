@@ -180,7 +180,7 @@ export function AgentPolicyDataTable({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search by Policy number or Policyholder"
+              placeholder="Search by Policy No./Certificate No. or Policyholder"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -252,7 +252,7 @@ export function AgentPolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Policy Number</TableHead>
+              <TableHead>Policy No./Certificate No.</TableHead>
               <TableHead>Policyholder</TableHead>
               <TableHead>Plan Name</TableHead>
               <TableHead>Plan Type</TableHead>

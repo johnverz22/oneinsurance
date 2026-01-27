@@ -15,10 +15,6 @@ export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
   const agentId = searchParams.get('agent_id')
 
-  console.log('Transactions API - token:', token ? 'present' : 'missing')
-  console.log('Transactions API - agentId:', agentId)
-  console.log('Transactions API - searchParams:', searchParams.toString())
-
   if (!token) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -30,7 +26,10 @@ export async function GET(req: NextRequest) {
     let url: string
 
     if (agentId) {
-      // For agent-specific transactions, use commission logs which support agent filtering
+      // For agent-specific transactions, use commission logs as the primary source of real data
+      // This ensures we only show actual transactions that belong to the specific agent
+      console.log('Admin Transactions API - Fetching real transactions for agent:', agentId)
+      
       const commissionParams = new URLSearchParams()
       commissionParams.append('agent_id', agentId)
       commissionParams.append('page', searchParams.get('page') || '1')
@@ -38,441 +37,147 @@ export async function GET(req: NextRequest) {
       commissionParams.append('sort_by', 'created_at')
       commissionParams.append('sort_order', 'desc')
       
+      // Add any additional filters from the original search params
+      for (const [key, value] of searchParams.entries()) {
+        if (key !== 'agent_id' && key !== 'page' && key !== 'per_page') {
+          commissionParams.append(key, value)
+        }
+      }
+      
       url = `${config.BASE_URL}/admin/commission-logs?${commissionParams.toString()}`
-      console.log('Transactions API - Calling commission logs for agent transactions:', url)
-    } else {
-      // For general admin transactions
-      url = `${config.BASE_URL}/admin/transactions?${searchParams.toString()}`
-      console.log('Transactions API - Calling general transactions URL:', url)
-    }
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: token,
-        Accept: 'application/json',
-      },
-    })
-
-    console.log('Transactions API - Response status:', response.status)
-    console.log('Transactions API - Full response data:', JSON.stringify(response.data, null, 2))
-    console.log('Transactions API - Response data structure:', {
-      success: response.data?.success,
-      dataExists: !!response.data?.data,
-      dataLength: response.data?.data?.data?.length || 0,
-      totalRecords: response.data?.data?.total || 0
-    })
-
-    // If we're getting commission logs for agent transactions, transform the data
-    if (agentId && response.data?.data?.data) {
-      console.log('Transactions API - Transforming commission data for agent:', agentId)
+      console.log('Admin Transactions API - Fetching from commission logs:', url)
       
-      // Sample PolicyCustomerList data from policy_travel.json for demonstration
-      const sampleCustomers = [
-        {
-          Title: "Mister",
-          FirstName: "arnel",
-          MiddleName: "",
-          LastName: "miraflores",
-          Suffix: "",
-          Email: "nelsmiraflores@gmail.com",
-          Mobile: "+63******1548",
-          DateOfBirth: "1982-09-21",
-          Gender: "M"
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: token,
+          Accept: 'application/json',
         },
-        {
-          Title: "Miss",
-          FirstName: "Hanna",
-          MiddleName: "",
-          LastName: "Miraflores",
-          Suffix: "",
-          Email: "nelsmiraflores@gmail.com",
-          Mobile: "+63******1548",
-          DateOfBirth: "1989-01-18",
-          Gender: "F"
-        }
-      ]
+      })
       
-      const transformedData = {
-        success: true,
-        message: 'Transactions retrieved successfully',
-        data: {
-          data: response.data.data.data.map((commission: any, index: number) => {
-            // Use PolicyCustomerList[0] data for policy holder names
-            const customerIndex = index % sampleCustomers.length
-            const customer = sampleCustomers[customerIndex]
-            const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
-              .filter(Boolean)
-              .join(' ')
-              .trim()
-            
-            console.log(`Commission ${commission.id} - Using customer: ${customerName}`)
-            
-            return {
-              id: commission.id,
-              certificate_number: `CERT-${commission.id.toString().padStart(6, '0')}`,
-              policy_holder: customerName, // Customer name from PolicyCustomerList[0]
-              plan_name: commission.product.name,
-              plan_type: commission.product.category || 'Insurance',
-              premium: commission.total_net_premium,
-              currency: 'PHP',
-              coverage_start: commission.period_start || commission.created_at,
-              coverage_end: commission.period_end || commission.created_at,
-              status: 'active',
-              policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
-              transaction_date: commission.created_at,
-              provider: commission.provider?.name || 'Insurance Provider',
-              policy_details: JSON.stringify({
-                PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
-                CarrierPolicyNo: `P00${(86998 + commission.id).toString()}`,
-                ProposalNo: `PTRAVEL000000${(919 + commission.id).toString().padStart(4, '0')}`,
-                ProductName: "Travel Insurance",
-                ProductCode: "TRAVEL",
-                CarrierProductCode: "TRAVEL",
-                PlanCode: "TMPHPC2",
-                CarrierCode: "MALAYAN",
-                GrossPremium: 258,
-                EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
-                ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
-                TravelType: index % 3 === 0 ? "INDIVIDUAL" : index % 3 === 1 ? "FAMILY" : "GROUP",
-                TripType: "SINGLE",
-                NoOfTravellers: 3,
-                NoOfAdults: 2,
-                NoOfChildren: 1,
-                IsRenewable: "Y",
-                PolicyCustomerList: [customer]
-              })
-            }
-          }),
-          total: response.data.data.total,
-          current_page: response.data.data.current_page,
-          last_page: response.data.data.last_page,
-          per_page: response.data.data.per_page,
-          from: response.data.data.from,
-          to: response.data.data.to,
-        }
-      }
-      console.log('Transactions API - Transformed data length:', transformedData.data.data.length)
-      return NextResponse.json(transformedData, { status: 200, headers })
-    } else if (agentId && response.data?.data?.data?.length === 0) {
-      // If no agent-specific data, try getting all commission logs and filter by agent
-      console.log('Transactions API - No agent-specific data, trying all commission logs')
-      try {
-        const allCommissionUrl = `${config.BASE_URL}/admin/commission-logs?page=1&per_page=100&sort_by=created_at&sort_order=desc`
-        console.log('Transactions API - Fetching all commission logs:', allCommissionUrl)
-        
-        const allCommissionResponse = await axios.get(allCommissionUrl, {
-          headers: {
-            Authorization: token,
-            Accept: 'application/json',
-          },
-        })
-        
-        console.log('Transactions API - All commission logs response:', {
-          status: allCommissionResponse.status,
-          totalRecords: allCommissionResponse.data?.data?.total || 0,
-          dataLength: allCommissionResponse.data?.data?.data?.length || 0
-        })
-        
-        // Filter by agent ID
-        const allCommissions = allCommissionResponse.data?.data?.data || []
-        const agentCommissions = allCommissions.filter((commission: any) => 
-          commission.agent_id === parseInt(agentId) || commission.agent?.id === parseInt(agentId)
-        )
-        
-        console.log('Transactions API - Filtered agent commissions:', agentCommissions.length)
-        
-        if (agentCommissions.length > 0) {
-          // Sample PolicyCustomerList data from policy_travel.json for demonstration
-          const sampleCustomers = [
-            {
-              Title: "Mister",
-              FirstName: "arnel",
-              MiddleName: "",
-              LastName: "miraflores",
-              Suffix: "",
-              Email: "nelsmiraflores@gmail.com",
-              Mobile: "+63******1548",
-              DateOfBirth: "1982-09-21",
-              Gender: "M"
-            },
-            {
-              Title: "Miss",
-              FirstName: "Hanna",
-              MiddleName: "",
-              LastName: "Miraflores",
-              Suffix: "",
-              Email: "nelsmiraflores@gmail.com",
-              Mobile: "+63******1548",
-              DateOfBirth: "1989-01-18",
-              Gender: "F"
-            }
-          ]
-          
-          const transformedData = {
-            success: true,
-            message: 'Transactions retrieved successfully',
-            data: {
-              data: agentCommissions.map((commission: any, index: number) => {
-                // Use PolicyCustomerList[0] data for policy holder names
-                const customerIndex = index % sampleCustomers.length
-                const customer = sampleCustomers[customerIndex]
-                const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
-                  .filter(Boolean)
-                  .join(' ')
-                  .trim()
-                
-                console.log(`Commission ${commission.id} (fallback) - Using customer: ${customerName}`)
-                
-                return {
-                  id: commission.id,
-                  certificate_number: `CERT-${commission.id.toString().padStart(6, '0')}`,
-                  policy_holder: customerName, // Customer name from PolicyCustomerList[0]
-                  plan_name: commission.product.name,
-                  plan_type: commission.product.category || 'Insurance',
-                  premium: commission.total_net_premium,
-                  currency: 'PHP',
-                  coverage_start: commission.period_start || commission.created_at,
-                  coverage_end: commission.period_end || commission.created_at,
-                  status: 'active',
-                  policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
-                  transaction_date: commission.created_at,
-                  provider: commission.provider?.name || 'Insurance Provider',
-                  policy_details: JSON.stringify({
-                    PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
-                    CarrierPolicyNo: `P00${(86998 + commission.id).toString()}`,
-                    ProposalNo: `PTRAVEL000000${(919 + commission.id).toString().padStart(4, '0')}`,
-                    ProductName: "Travel Insurance",
-                    ProductCode: "TRAVEL",
-                    CarrierProductCode: "TRAVEL",
-                    PlanCode: "TMPHPC2",
-                    CarrierCode: "MALAYAN",
-                    GrossPremium: 258,
-                    EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
-                    ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
-                    TravelType: index % 3 === 0 ? "INDIVIDUAL" : index % 3 === 1 ? "FAMILY" : "GROUP",
-                    TripType: "SINGLE",
-                    NoOfTravellers: 3,
-                    NoOfAdults: 2,
-                    NoOfChildren: 1,
-                    IsRenewable: "Y",
-                    PolicyCustomerList: [customer]
-                  })
-                }
-              }),
-              total: agentCommissions.length,
-              current_page: 1,
-              last_page: 1,
-              per_page: agentCommissions.length,
-              from: 1,
-              to: agentCommissions.length,
-            }
-          }
-          console.log('Transactions API - Returning filtered data with length:', transformedData.data.data.length)
-          return NextResponse.json(transformedData, { status: 200, headers })
-        }
-      } catch (fallbackError) {
-        console.error('Transactions API - Fallback error:', fallbackError)
-      }
-    }
-
-    // If still no data, return mock data for testing with PolicyCustomerList[0] data
-    if (agentId) {
-      console.log('Transactions API - No real data found, returning mock data with PolicyCustomerList[0] extraction for testing')
+      console.log('Admin Transactions API - Commission logs response:', {
+        status: response.status,
+        dataExists: !!response.data?.data,
+        dataLength: response.data?.data?.data?.length || 0,
+        totalRecords: response.data?.data?.total || 0
+      })
       
-      // Sample PolicyCustomerList data from policy_travel.json
-      const samplePolicyDetails = {
-        PolicyCustomerList: [
-          {
-            Title: "Mister",
-            FirstName: "arnel",
-            MiddleName: "",
-            LastName: "miraflores",
-            Suffix: "",
-            Email: "nelsmiraflores@gmail.com",
-            Mobile: "+63******1548",
-            DateOfBirth: "1982-09-21",
-            Gender: "M",
-            AddressLine1: "Purok 4",
-            AddressLine2: "Brgy Del Carmen (Pob)",
-            City: "166708",
-            AddrProvince: "166700",
-            PostCode: "8418",
-            IdTypeCode: "PAS",
-            IdNo: "A01234562",
-            TempData: {
-              "MaskAfter-Mobile": "+63******1548",
-              "MaskAfter-IdNo": "A01234562"
-            }
-          }
-        ]
-      }
-      
-      // Extract customer name from PolicyCustomerList[0]
-      const customer = samplePolicyDetails.PolicyCustomerList[0]
-      const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
-        .filter(Boolean)
-        .join(' ')
-        .trim()
-      
-      console.log('Mock data - Extracted customer name:', customerName)
-      
-      const mockData = {
-        success: true,
-        message: 'Mock transactions with PolicyCustomerList[0] extraction',
-        data: {
-          data: [
-            {
-              id: 1,
-              certificate_number: `CERT-000001`,
-              policy_holder: customerName, // Using PolicyCustomerList[0] data
-              plan_name: 'OONA Travel',
-              plan_type: 'Insurance',
-              premium: '119.23',
-              currency: 'PHP',
-              coverage_start: '2026-01-14',
-              coverage_end: '2026-01-14',
-              status: 'active',
-              policy_id: `POL-000001`,
-              transaction_date: '2026-01-14T00:00:00Z',
-              provider: 'OONA Insurance',
-              policy_details: JSON.stringify({
-                PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
-                CarrierPolicyNo: "P0086999",
-                ProposalNo: "PTRAVEL0000000919",
-                ProductName: "Travel Insurance",
-                ProductCode: "TRAVEL",
-                CarrierProductCode: "TRAVEL",
-                PlanCode: "TMPHPC2",
-                CarrierCode: "MALAYAN",
-                GrossPremium: 258,
-                EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
-                ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
+      if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
+        // Transform commission logs to transaction format with real policy data
+        const transformedData = {
+          success: true,
+          message: 'Real agent transactions from commission logs',
+          data: {
+            data: response.data.data.data.map((commission: any) => {
+              // Extract real customer data from commission log
+              const customerName = commission.customer_name || 
+                                 commission.policy_holder || 
+                                 (commission.agent ? `${commission.agent.first_name || ''} ${commission.agent.last_name || ''}`.trim() : '') ||
+                                 'N/A'
+              
+              // Create real policy details structure
+              const realPolicyDetails = {
+                PolicyId: commission.policy_id || `POL-${commission.id}`,
+                CarrierPolicyNo: commission.policy_number || `P00${commission.id.toString().padStart(5, '0')}`,
+                ProposalNo: commission.proposal_number || `PROP-${commission.id.toString().padStart(6, '0')}`,
+                ProductName: commission.product?.name || commission.plan_name || 'Insurance Policy',
+                ProductCode: commission.product?.code || 'INS',
+                CarrierProductCode: commission.product?.code || 'INS',
+                PlanCode: commission.plan_code || commission.product?.plan_code || 'PLAN001',
+                CarrierCode: commission.carrier_code || commission.provider?.code || 'CARRIER',
+                GrossPremium: commission.total_net_premium || commission.premium || commission.amount || 0,
+                EffectiveDate: commission.period_start || commission.coverage_start || commission.created_at,
+                ExpiryDate: commission.period_end || commission.coverage_end || commission.created_at,
                 TravelType: "INDIVIDUAL",
                 TripType: "SINGLE",
-                NoOfTravellers: 3,
-                NoOfAdults: 2,
-                NoOfChildren: 1,
+                NoOfTravellers: 1,
+                NoOfAdults: 1,
+                NoOfChildren: 0,
                 IsRenewable: "Y",
-                PolicyCustomerList: [customer]
-              })
-            },
-            {
-              id: 2,
-              certificate_number: `CERT-000002`,
-              policy_holder: 'Miss Hanna Miraflores', // Second customer from PolicyCustomerList
-              plan_name: 'OONA Travel',
-              plan_type: 'Insurance',
-              premium: '145.02',
-              currency: 'PHP',
-              coverage_start: '2026-01-15',
-              coverage_end: '2026-01-15',
-              status: 'active',
-              policy_id: `POL-000002`,
-              transaction_date: '2026-01-15T00:00:00Z',
-              provider: 'OONA Insurance',
-              policy_details: JSON.stringify({
-                PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
-                CarrierPolicyNo: "P0087000",
-                ProposalNo: "PTRAVEL0000000920",
-                ProductName: "Travel Insurance",
-                ProductCode: "TRAVEL",
-                CarrierProductCode: "TRAVEL",
-                PlanCode: "TMPHPC2",
-                CarrierCode: "MALAYAN",
-                GrossPremium: 258,
-                EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
-                ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
-                TravelType: "FAMILY",
-                TripType: "SINGLE",
-                NoOfTravellers: 3,
-                NoOfAdults: 2,
-                NoOfChildren: 1,
-                IsRenewable: "Y",
-                PolicyCustomerList: [customer]
-              })
-            },
-            {
-              id: 4,
-              certificate_number: `CERT-000004`,
-              policy_holder: customerName, // Using PolicyCustomerList[0] data
-              plan_name: 'OONA Travel',
-              plan_type: 'Insurance',
-              premium: '589.62',
-              currency: 'PHP',
-              coverage_start: '2026-01-15',
-              coverage_end: '2026-01-15',
-              status: 'active',
-              policy_id: `POL-000004`,
-              transaction_date: '2026-01-15T00:00:00Z',
-              provider: 'OONA Insurance',
-            },
-            {
-              id: 5,
-              certificate_number: `CERT-000005`,
-              policy_holder: customerName, // Using PolicyCustomerList[0] data
-              plan_name: 'OONA Travel',
-              plan_type: 'Insurance',
-              premium: '145.02',
-              currency: 'PHP',
-              coverage_start: '2026-01-16',
-              coverage_end: '2026-01-16',
-              status: 'active',
-              policy_id: `POL-000005`,
-              transaction_date: '2026-01-16T00:00:00Z',
-              provider: 'OONA Insurance',
-            },
-            {
-              id: 9,
-              certificate_number: `CERT-000009`,
-              policy_holder: 'Miss Hanna Miraflores', // Second customer from PolicyCustomerList
-              plan_name: 'Malayan Travel',
-              plan_type: 'Insurance',
-              premium: '258',
-              currency: 'PHP',
-              coverage_start: '2026-01-16',
-              coverage_end: '2026-01-16',
-              status: 'active',
-              policy_id: `POL-000009`,
-              transaction_date: '2026-01-16T00:00:00Z',
-              provider: 'Malayan Insurance',
-            },
-            {
-              id: 10,
-              certificate_number: `CERT-000010`,
-              policy_holder: customerName, // Using PolicyCustomerList[0] data
-              plan_name: 'OONA Travel',
-              plan_type: 'Insurance',
-              premium: '238.23',
-              currency: 'PHP',
-              coverage_start: '2026-01-16',
-              coverage_end: '2026-01-16',
-              status: 'active',
-              policy_id: `POL-000010`,
-              transaction_date: '2026-01-16T00:00:00Z',
-              provider: 'OONA Insurance',
-            }
-          ],
-          total: 6,
+                PolicyCustomerList: [{
+                  FirstName: customerName.split(' ')[0] || 'Customer',
+                  MiddleName: "",
+                  LastName: customerName.split(' ').slice(1).join(' ') || '',
+                  Suffix: "",
+                  Email: commission.customer_email || commission.agent?.email || 'N/A',
+                  Mobile: commission.customer_phone || commission.agent?.phone || 'N/A',
+                  DateOfBirth: commission.customer_dob || '1990-01-01',
+                  Gender: "M"
+                }]
+              }
+              
+              return {
+                id: commission.id,
+                certificate_number: commission.policy_number || `CERT-${commission.id.toString().padStart(6, '0')}`,
+                policy_holder: customerName,
+                plan_name: commission.product?.name || commission.plan_name || 'Insurance Policy',
+                plan_type: commission.product?.category || commission.plan_type || 'Insurance',
+                premium: commission.total_net_premium || commission.premium || commission.amount || 0,
+                currency: commission.currency || 'PHP',
+                coverage_start: commission.period_start || commission.coverage_start || commission.created_at,
+                coverage_end: commission.period_end || commission.coverage_end || commission.created_at,
+                status: commission.status || 'active',
+                policy_id: commission.policy_id || `POL-${commission.id.toString().padStart(6, '0')}`,
+                transaction_date: commission.transaction_date || commission.created_at,
+                created_at: commission.created_at,
+                updated_at: commission.updated_at,
+                provider: commission.provider?.name || commission.provider || 'Insurance Provider',
+                agent_id: commission.agent_id || agentId,
+                agent: commission.agent,
+                gross_commission: commission.gross_commission,
+                net_commission: commission.net_commission,
+                policy_details: JSON.stringify(realPolicyDetails),
+                customer_name: customerName
+              }
+            }),
+            total: response.data.data.total,
+            current_page: response.data.data.current_page,
+            last_page: response.data.data.last_page,
+            per_page: response.data.data.per_page,
+            from: response.data.data.from,
+            to: response.data.data.to,
+          }
+        }
+        
+        console.log('Admin Transactions API - Returning real agent transactions, count:', transformedData.data.data.length)
+        return NextResponse.json(transformedData, { status: 200, headers })
+      }
+      
+      // If no commission logs found, return empty result (no mock data)
+      console.log('Admin Transactions API - No real transactions found for agent:', agentId)
+      return NextResponse.json({
+        success: true,
+        message: `No transactions found for agent ID: ${agentId}`,
+        data: {
+          data: [],
+          total: 0,
           current_page: 1,
           last_page: 1,
           per_page: 15,
-          from: 1,
-          to: 6,
+          from: 0,
+          to: 0,
         }
-      }
-      return NextResponse.json(mockData, { status: 200, headers })
+      }, { status: 200, headers })
+      
+    } else {
+      // For general admin transactions (no specific agent)
+      url = `${config.BASE_URL}/admin/transactions?${searchParams.toString()}`
+      console.log('Admin Transactions API - Fetching general transactions:', url)
+      
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: token,
+          Accept: 'application/json',
+        },
+      })
+      
+      return NextResponse.json(response.data, { status: 200, headers })
     }
 
-    return NextResponse.json(response.data, { status: 200, headers })
   } catch (error) {
-    console.error('Transactions API - Error fetching transactions:', error)
-    console.error('Transactions API - URL that failed:', agentId ? 
-      `${config.BASE_URL}/admin/commission-logs?agent_id=${agentId}` : 
-      `${config.BASE_URL}/admin/transactions?${searchParams.toString()}`
-    )
+    console.error('Admin Transactions API - Error:', error)
     
     if (axios.isAxiosError(error)) {
-      console.error('Transactions API - Axios error details:', {
+      console.error('Admin Transactions API - Axios error:', {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data
