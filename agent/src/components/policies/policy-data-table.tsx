@@ -106,7 +106,7 @@ export function PolicyDataTable({
         <div className="relative max-w-sm flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search by Policy number or Policyholder"
+            placeholder="Search by Policy No./Certificate No. or Policyholder"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -218,7 +218,7 @@ export function PolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Policy Number</TableHead>
+              <TableHead>Policy No./Certificate No.</TableHead>
               <TableHead>Policyholder</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Plan Code</TableHead>
