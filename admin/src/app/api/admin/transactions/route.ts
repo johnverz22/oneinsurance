@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
             // Use PolicyCustomerList[0] data for policy holder names
             const customerIndex = index % sampleCustomers.length
             const customer = sampleCustomers[customerIndex]
-            const customerName = [customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+            const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
               .filter(Boolean)
               .join(' ')
               .trim()
@@ -121,6 +121,26 @@ export async function GET(req: NextRequest) {
               policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
               transaction_date: commission.created_at,
               provider: commission.provider?.name || 'Insurance Provider',
+              policy_details: JSON.stringify({
+                PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
+                CarrierPolicyNo: `P00${(86998 + commission.id).toString()}`,
+                ProposalNo: `PTRAVEL000000${(919 + commission.id).toString().padStart(4, '0')}`,
+                ProductName: "Travel Insurance",
+                ProductCode: "TRAVEL",
+                CarrierProductCode: "TRAVEL",
+                PlanCode: "TMPHPC2",
+                CarrierCode: "MALAYAN",
+                GrossPremium: 258,
+                EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
+                ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
+                TravelType: index % 3 === 0 ? "INDIVIDUAL" : index % 3 === 1 ? "FAMILY" : "GROUP",
+                TripType: "SINGLE",
+                NoOfTravellers: 3,
+                NoOfAdults: 2,
+                NoOfChildren: 1,
+                IsRenewable: "Y",
+                PolicyCustomerList: [customer]
+              })
             }
           }),
           total: response.data.data.total,
@@ -196,7 +216,7 @@ export async function GET(req: NextRequest) {
                 // Use PolicyCustomerList[0] data for policy holder names
                 const customerIndex = index % sampleCustomers.length
                 const customer = sampleCustomers[customerIndex]
-                const customerName = [customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
                   .filter(Boolean)
                   .join(' ')
                   .trim()
@@ -217,6 +237,26 @@ export async function GET(req: NextRequest) {
                   policy_id: `POL-${commission.id.toString().padStart(6, '0')}`,
                   transaction_date: commission.created_at,
                   provider: commission.provider?.name || 'Insurance Provider',
+                  policy_details: JSON.stringify({
+                    PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
+                    CarrierPolicyNo: `P00${(86998 + commission.id).toString()}`,
+                    ProposalNo: `PTRAVEL000000${(919 + commission.id).toString().padStart(4, '0')}`,
+                    ProductName: "Travel Insurance",
+                    ProductCode: "TRAVEL",
+                    CarrierProductCode: "TRAVEL",
+                    PlanCode: "TMPHPC2",
+                    CarrierCode: "MALAYAN",
+                    GrossPremium: 258,
+                    EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
+                    ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
+                    TravelType: index % 3 === 0 ? "INDIVIDUAL" : index % 3 === 1 ? "FAMILY" : "GROUP",
+                    TripType: "SINGLE",
+                    NoOfTravellers: 3,
+                    NoOfAdults: 2,
+                    NoOfChildren: 1,
+                    IsRenewable: "Y",
+                    PolicyCustomerList: [customer]
+                  })
                 }
               }),
               total: agentCommissions.length,
@@ -269,7 +309,7 @@ export async function GET(req: NextRequest) {
       
       // Extract customer name from PolicyCustomerList[0]
       const customer = samplePolicyDetails.PolicyCustomerList[0]
-      const customerName = [customer.Title, customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+      const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
         .filter(Boolean)
         .join(' ')
         .trim()
@@ -295,6 +335,26 @@ export async function GET(req: NextRequest) {
               policy_id: `POL-000001`,
               transaction_date: '2026-01-14T00:00:00Z',
               provider: 'OONA Insurance',
+              policy_details: JSON.stringify({
+                PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
+                CarrierPolicyNo: "P0086999",
+                ProposalNo: "PTRAVEL0000000919",
+                ProductName: "Travel Insurance",
+                ProductCode: "TRAVEL",
+                CarrierProductCode: "TRAVEL",
+                PlanCode: "TMPHPC2",
+                CarrierCode: "MALAYAN",
+                GrossPremium: 258,
+                EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
+                ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
+                TravelType: "INDIVIDUAL",
+                TripType: "SINGLE",
+                NoOfTravellers: 3,
+                NoOfAdults: 2,
+                NoOfChildren: 1,
+                IsRenewable: "Y",
+                PolicyCustomerList: [customer]
+              })
             },
             {
               id: 2,
@@ -310,6 +370,26 @@ export async function GET(req: NextRequest) {
               policy_id: `POL-000002`,
               transaction_date: '2026-01-15T00:00:00Z',
               provider: 'OONA Insurance',
+              policy_details: JSON.stringify({
+                PolicyId: "2313358218,800D06111A0359670135D86674DB9B5E",
+                CarrierPolicyNo: "P0087000",
+                ProposalNo: "PTRAVEL0000000920",
+                ProductName: "Travel Insurance",
+                ProductCode: "TRAVEL",
+                CarrierProductCode: "TRAVEL",
+                PlanCode: "TMPHPC2",
+                CarrierCode: "MALAYAN",
+                GrossPremium: 258,
+                EffectiveDate: "2026-01-26", // Real dates from policy_travel.json
+                ExpiryDate: "2026-01-28", // Real dates from policy_travel.json
+                TravelType: "FAMILY",
+                TripType: "SINGLE",
+                NoOfTravellers: 3,
+                NoOfAdults: 2,
+                NoOfChildren: 1,
+                IsRenewable: "Y",
+                PolicyCustomerList: [customer]
+              })
             },
             {
               id: 4,

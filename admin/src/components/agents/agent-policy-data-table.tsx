@@ -97,6 +97,7 @@ export function AgentPolicyDataTable({
   const handleSearchSubmit = () => {
     if (searchKeyword.trim()) {
       const filtered = transactions.filter((transaction: any) => 
+        transaction.policy_id?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         transaction.certificate_number?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         transaction.policy_holder?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
         transaction.plan_name?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
@@ -179,7 +180,7 @@ export function AgentPolicyDataTable({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search by Certificate number or Policyholder"
+              placeholder="Search by Policy number or Policyholder"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -251,7 +252,7 @@ export function AgentPolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Certificate Number</TableHead>
+              <TableHead>Policy Number</TableHead>
               <TableHead>Policyholder</TableHead>
               <TableHead>Plan Name</TableHead>
               <TableHead>Plan Type</TableHead>
@@ -270,7 +271,25 @@ export function AgentPolicyDataTable({
                       onClick={() => handleViewPolicy(`POL-${transaction.id.toString().padStart(6, '0')}`)}
                       className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
                     >
-                      {transaction.certificate_number || transaction.proposal_number || `CERT-${transaction.id.toString().padStart(6, '0')}`}
+                      {(() => {
+                        // Try to get CarrierPolicyNo from policy_details
+                        if (transaction.policy_details) {
+                          try {
+                            const policyDetails = typeof transaction.policy_details === 'string' 
+                              ? JSON.parse(transaction.policy_details) 
+                              : transaction.policy_details;
+                            
+                            if (policyDetails?.CarrierPolicyNo) {
+                              return policyDetails.CarrierPolicyNo;
+                            }
+                          } catch (e) {
+                            console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+                          }
+                        }
+                        
+                        // Fallback to policy_id or other identifiers
+                        return transaction.policy_id || transaction.certificate_number || transaction.proposal_number || `POL-${transaction.id.toString().padStart(6, '0')}`;
+                      })()}
                     </button>
                   </TableCell>
                   <TableCell className="font-medium">
@@ -283,9 +302,58 @@ export function AgentPolicyDataTable({
                      transaction.amount ? `₱${parseFloat(transaction.amount).toLocaleString()}` : 'N/A'}
                   </TableCell>
                   <TableCell>
-                    {transaction.coverage_start && transaction.coverage_end
-                      ? `${format(new Date(transaction.coverage_start), 'MMM dd, yyyy')} - ${format(new Date(transaction.coverage_end), 'MMM dd, yyyy')}`
-                      : transaction.created_at ? format(new Date(transaction.created_at), 'MMM dd, yyyy') : 'N/A'}
+                    {(() => {
+                      // Try to get EffectiveDate and ExpiryDate from policy_details
+                      if (transaction.policy_details) {
+                        try {
+                          const policyDetails = typeof transaction.policy_details === 'string' 
+                            ? JSON.parse(transaction.policy_details) 
+                            : transaction.policy_details;
+                          
+                          if (policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) {
+                            const startDate = new Date(policyDetails.EffectiveDate);
+                            const endDate = new Date(policyDetails.ExpiryDate);
+                            const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                            
+                            return (
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {startDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {endDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {diffDays} Day{diffDays !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            );
+                          }
+                        } catch (e) {
+                          console.log('Failed to parse policy_details for dates:', e);
+                        }
+                      }
+                      
+                      // Fallback to coverage_start and coverage_end if available
+                      if (transaction.coverage_start && transaction.coverage_end) {
+                        const startDate = new Date(transaction.coverage_start);
+                        const endDate = new Date(transaction.coverage_end);
+                        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                        
+                        return (
+                          <div>
+                            <p className="text-sm font-medium">
+                              {startDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {endDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {diffDays} Day{diffDays !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        );
+                      }
+                      
+                      // Final fallback to created_at
+                      return transaction.created_at ? format(new Date(transaction.created_at), 'MMM dd, yyyy') : 'N/A';
+                    })()}
                   </TableCell>
                   <TableCell>{transaction.currency || 'PHP'}</TableCell>
                   <TableCell>
