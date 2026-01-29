@@ -106,7 +106,7 @@ export function PolicyDataTable({
         <div className="relative max-w-sm flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search by Policy No./Certificate No. or Policyholder"
+            placeholder="Search by Carrier Policy No., IMO Policy No., or Policyholder"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -218,7 +218,8 @@ export function PolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Policy No./Certificate No.</TableHead>
+              <TableHead>Carrier Policy No.</TableHead>
+              <TableHead>IMO Policy No.</TableHead>
               <TableHead>Policyholder</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Plan Code</TableHead>
@@ -261,22 +262,18 @@ export function PolicyDataTable({
                             }
                           }
                           
-                          // Fallback to proposal_number if CarrierPolicyNo is not available
+                          // Fallback to proposal_number
                           return transaction.proposal_number || 'N/A';
                         })()}
                       </button>
                     </TableCell>
                     <TableCell>
-                      <div>
-                        <p className="font-medium">
-                          {transaction.customer_name || `Customer ID: ${transaction.customer_id}` || 'N/A'}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="font-medium">
+                      <button
+                        onClick={() => handleViewPolicy(transaction)}
+                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
                         {(() => {
-                          // Try to get CarrierProductCode from policy_details
+                          // Try to get PolicyNo from policy_details
                           const transactionWithDetails = transaction as Transaction & { policy_details?: string };
                           if (transactionWithDetails.policy_details) {
                             try {
@@ -284,9 +281,80 @@ export function PolicyDataTable({
                                 ? JSON.parse(transactionWithDetails.policy_details) 
                                 : transactionWithDetails.policy_details;
                               
+                              if (policyDetails?.PolicyNo) {
+                                return policyDetails.PolicyNo;
+                              }
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for PolicyNo:', e);
+                            }
+                          }
+                          
+                          // Fallback to proposal_number
+                          return transaction.proposal_number || 'N/A';
+                        })()}
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">
+                          {(() => {
+                            // Try to extract policy holder from policy_details using IsPolicyHolder: 'Y' logic
+                            const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                            if (transactionWithDetails.policy_details) {
+                              try {
+                                const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                                  ? JSON.parse(transactionWithDetails.policy_details) 
+                                  : transactionWithDetails.policy_details;
+                                
+                                if (policyDetails?.PolicyCustomerList?.length > 0) {
+                                  // Find the policy holder using IsPolicyHolder: 'Y' logic
+                                  const policyHolder = policyDetails.PolicyCustomerList.find((customer: any) => customer.IsPolicyHolder === 'Y') 
+                                    || policyDetails.PolicyCustomerList[0]; // Fallback to first customer
+                                  
+                                  const policyHolderName = [policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName, policyHolder.Suffix]
+                                    .filter(Boolean)
+                                    .join(' ')
+                                    .trim();
+                                  
+                                  if (policyHolderName) {
+                                    return policyHolderName;
+                                  }
+                                }
+                              } catch (e) {
+                                console.log('Failed to parse policy_details for policy holder:', e);
+                              }
+                            }
+                            
+                            // Fallback to transaction.customer_name
+                            return transaction.customer_name || `Customer ID: ${transaction.customer_id}` || 'N/A';
+                          })()}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium">
+                        {(() => {
+                          // Try to get CarrierPlanDesc from CustomFields first
+                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
+                          if (transactionWithDetails.policy_details) {
+                            try {
+                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
+                                ? JSON.parse(transactionWithDetails.policy_details) 
+                                : transactionWithDetails.policy_details;
+                              
+                              console.log('Agent Policy Table - Policy Details:', policyDetails);
+                              console.log('Agent Policy Table - CustomFields:', policyDetails?.CustomFields);
+                              
+                              if (policyDetails?.CustomFields?.CarrierPlanDesc) {
+                                console.log('Agent Policy Table - Using CustomFields.CarrierPlanDesc:', policyDetails.CustomFields.CarrierPlanDesc);
+                                return policyDetails.CustomFields.CarrierPlanDesc;
+                              }
+                              
+                              // Fallback to CarrierProductCode or ProductCode
+                              console.log('Agent Policy Table - Using fallback CarrierProductCode/ProductCode');
                               return policyDetails?.CarrierProductCode || policyDetails?.ProductCode || 'TRAVEL';
                             } catch (e) {
-                              console.log('Failed to parse policy_details for CarrierProductCode:', e);
+                              console.log('Failed to parse policy_details for CustomFields or CarrierProductCode:', e);
                             }
                           }
                           
@@ -445,7 +513,7 @@ export function PolicyDataTable({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={10} className="h-24 text-center text-gray-500">
                   {isLoading ? 'Loading...' : 'No policies found'}
                 </TableCell>
               </TableRow>
