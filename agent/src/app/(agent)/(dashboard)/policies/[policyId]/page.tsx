@@ -79,14 +79,15 @@ export default function PolicyDetailsPage() {
   // We'll use transaction data to display the information
 
   // Extract customer information from multiple sources
-  // 1. First try policy details customer list (PolicyCustomerList)
-  // 2. Then try customer_name from transaction
-  // 3. Finally use fallback data
-  const policyCustomer = policyDetails?.PolicyCustomerList?.[0]
+  // 1. First try to find the policy holder (IsPolicyHolder: 'Y') from PolicyCustomerList
+  // 2. Then fallback to first customer in PolicyCustomerList
+  // 3. Finally use transaction customer_name
+  const policyHolder = policyDetails?.PolicyCustomerList?.find(customer => customer.IsPolicyHolder === 'Y') 
+    || policyDetails?.PolicyCustomerList?.[0];
   const transactionCustomerName = policyData.customer_name
-  const customer = policyCustomer
+  const customer = policyHolder
   
-  console.log('Agent Policy Details - Extracted customer:', customer)
+  console.log('Agent Policy Details - Extracted policy holder:', policyHolder)
   console.log('Agent Policy Details - Transaction customer name:', transactionCustomerName)
   const insuredPerson = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]
   const coverages = insuredPerson?.PolicyCoverageList || []
@@ -137,9 +138,9 @@ export default function PolicyDetailsPage() {
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `Policy Number: ${policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}`,
+        `Policy No.: ${policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}`, // Only show Carrier Policy No. to clients
         `Proposal Number: ${policyDetails?.ProposalNo || policyData.proposal_number}`,
-        `Carrier Proposal No: ${policyDetails?.CarrierProposalNo || 'N/A'}`,
+        `Reference Number: ${policyDetails?.CarrierProposalNo || policyDetails?.ProposalNo || 'N/A'}`,
         `Status: ${policyData.status}`,
         `Agent Code: ${policyData.agent_code_used}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
@@ -353,8 +354,14 @@ export default function PolicyDetailsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Policy Number</p>
-                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}</p>
+                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
+                  <p className="font-semibold text-blue-600">{(policyDetails as any)?.PolicyNo || policyData.policy_id || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">InsureMO middleware reference</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Carrier Policy No.</p>
+                  <p className="font-semibold text-green-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">Carrier side reference</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Reference Number</p>

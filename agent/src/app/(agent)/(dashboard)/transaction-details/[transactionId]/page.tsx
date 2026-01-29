@@ -13,7 +13,10 @@ import Image from 'next/image'
 
 // Mock data based on the images you provided
 const mockTransactionData = {
-  policyNumber: 'POTRAVEL00000428',
+  // Use consistent reference IDs with Certificate of Coverage
+  policyNumber: 'P0086998', // CarrierPolicyNo - same as Certificate
+  proposalNumber: 'PTRAVEL0000000919', // ProposalNo - same as Certificate
+  carrierProposalNo: 'POTRAVEL00000428', // CarrierProposalNo
   planName: 'TM CSL ASIAN W/ COVID 500K',
   
   // Customer Information
@@ -97,6 +100,16 @@ export default function TransactionDetailsPage() {
   const transactionId = params.transactionId as string
   const [activeTab, setActiveTab] = useState<'coverage' | 'invoice'>('coverage')
 
+  // TODO: Replace with actual API call to fetch transaction details
+  // For now, using mock data but with consistent reference IDs
+  const transactionData = {
+    ...mockTransactionData,
+    // These should come from the actual policy API response
+    policyNumber: 'P0086998', // CarrierPolicyNo from policy_details
+    proposalNumber: 'PTRAVEL0000000919', // ProposalNo from policy_details  
+    carrierProposalNo: 'POTRAVEL00000428', // CarrierProposalNo from policy_details
+  }
+
   const handleDownloadPDF = () => {
     if (activeTab === 'coverage') {
       toast.success('Downloading Confirmation of Coverage PDF...')
@@ -167,7 +180,11 @@ export default function TransactionDetailsPage() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">Confirmation of Coverage</h1>
-                  <p className="text-gray-600">#{mockTransactionData.policyNumber}</p>
+                  <div className="space-y-1 text-gray-600">
+                    <p>Policy Number: #{transactionData.policyNumber}</p>
+                    <p>Proposal Number: #{transactionData.proposalNumber}</p>
+                    <p>Reference: #{transactionData.carrierProposalNo}</p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <Image
@@ -184,11 +201,11 @@ export default function TransactionDetailsPage() {
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Policy Number</h3>
-                  <p className="text-lg font-semibold">{mockTransactionData.policyNumber}</p>
+                  <p className="text-lg font-semibold">{transactionData.policyNumber}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Plan Name</h3>
-                  <p className="text-lg font-semibold">{mockTransactionData.planName}</p>
+                  <p className="text-lg font-semibold">{transactionData.planName}</p>
                 </div>
               </div>
 
@@ -197,20 +214,20 @@ export default function TransactionDetailsPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">Issued To</h3>
                   <div className="space-y-1">
-                    <p className="font-medium">{mockTransactionData.customer.name}</p>
-                    <p>{mockTransactionData.customer.address}</p>
-                    <p>{mockTransactionData.customer.additionalInfo}</p>
-                    <p>{mockTransactionData.customer.code}</p>
-                    <p>{mockTransactionData.customer.email}</p>
-                    <p>{mockTransactionData.customer.phone}</p>
+                    <p className="font-medium">{transactionData.customer.name}</p>
+                    <p>{transactionData.customer.address}</p>
+                    <p>{transactionData.customer.additionalInfo}</p>
+                    <p>{transactionData.customer.code}</p>
+                    <p>{transactionData.customer.email}</p>
+                    <p>{transactionData.customer.phone}</p>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">Travel Details</h3>
                   <div className="space-y-1">
-                    <p><span className="font-medium">Destination/s:</span> {mockTransactionData.travel.destination}</p>
-                    <p><span className="font-medium">Travel Type:</span> {mockTransactionData.travel.type}</p>
-                    <p><span className="font-medium">Duration:</span> {mockTransactionData.travel.duration}</p>
+                    <p><span className="font-medium">Destination/s:</span> {transactionData.travel.destination}</p>
+                    <p><span className="font-medium">Travel Type:</span> {transactionData.travel.type}</p>
+                    <p><span className="font-medium">Duration:</span> {transactionData.travel.duration}</p>
                   </div>
                 </div>
               </div>
@@ -222,7 +239,7 @@ export default function TransactionDetailsPage() {
                   <h3 className="text-sm font-medium text-gray-500">SUM INSURED</h3>
                 </div>
                 <div className="space-y-3">
-                  {mockTransactionData.coverages.map((coverage, index) => (
+                  {transactionData.coverages.map((coverage, index) => (
                     <div key={index} className="flex justify-between items-center py-2">
                       <p className="text-gray-900">{coverage}</p>
                       <p className="text-gray-600">Included</p>
@@ -279,7 +296,11 @@ export default function TransactionDetailsPage() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">Invoice</h1>
-                  <p className="text-gray-600">#{mockTransactionData.policyNumber}</p>
+                  <div className="space-y-1 text-gray-600">
+                    <p>Policy Number: #{transactionData.policyNumber}</p>
+                    <p>Proposal Number: #{transactionData.proposalNumber}</p>
+                    <p>Reference: #{transactionData.carrierProposalNo}</p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <Image
@@ -296,11 +317,11 @@ export default function TransactionDetailsPage() {
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Policy Number</h3>
-                  <p className="text-lg font-semibold">{mockTransactionData.policyNumber}</p>
+                  <p className="text-lg font-semibold">{transactionData.policyNumber}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Payment Method</h3>
-                  <p className="text-lg font-semibold">{mockTransactionData.invoice.paymentMethod}</p>
+                  <p className="text-lg font-semibold">{transactionData.invoice.paymentMethod}</p>
                 </div>
               </div>
 
@@ -309,19 +330,19 @@ export default function TransactionDetailsPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">From</h3>
                   <div className="space-y-1">
-                    <p className="font-semibold">{mockTransactionData.invoice.from.company}</p>
-                    <p>{mockTransactionData.invoice.from.address}</p>
-                    <p>{mockTransactionData.invoice.from.street}</p>
-                    <p>{mockTransactionData.invoice.from.phone}</p>
-                    <p>{mockTransactionData.invoice.from.email}</p>
+                    <p className="font-semibold">{transactionData.invoice.from.company}</p>
+                    <p>{transactionData.invoice.from.address}</p>
+                    <p>{transactionData.invoice.from.street}</p>
+                    <p>{transactionData.invoice.from.phone}</p>
+                    <p>{transactionData.invoice.from.email}</p>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">To</h3>
                   <div className="space-y-1">
-                    <p className="font-medium">{mockTransactionData.customer.name}</p>
-                    <p>{mockTransactionData.customer.address}, {mockTransactionData.customer.additionalInfo}</p>
-                    <p>{mockTransactionData.customer.email}</p>
+                    <p className="font-medium">{transactionData.customer.name}</p>
+                    <p>{transactionData.customer.address}, {transactionData.customer.additionalInfo}</p>
+                    <p>{transactionData.customer.email}</p>
                   </div>
                 </div>
               </div>
@@ -335,17 +356,17 @@ export default function TransactionDetailsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-semibold">{mockTransactionData.invoice.description}</p>
-                      <p className="text-gray-600">{mockTransactionData.invoice.route}</p>
-                      <p className="text-gray-600">{mockTransactionData.invoice.duration}</p>
+                      <p className="font-semibold">{transactionData.invoice.description}</p>
+                      <p className="text-gray-600">{transactionData.invoice.route}</p>
+                      <p className="text-gray-600">{transactionData.invoice.duration}</p>
                     </div>
-                    <p className="font-semibold text-lg">{mockTransactionData.invoice.amount}</p>
+                    <p className="font-semibold text-lg">{transactionData.invoice.amount}</p>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center pt-4 border-t mt-6">
                   <p className="text-lg font-semibold">Total Amount</p>
-                  <p className="text-xl font-bold">{mockTransactionData.invoice.totalAmount}</p>
+                  <p className="text-xl font-bold">{transactionData.invoice.totalAmount}</p>
                 </div>
               </div>
 
@@ -363,15 +384,15 @@ export default function TransactionDetailsPage() {
                 <div className="grid grid-cols-3 gap-8">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Status</p>
-                    <p className="font-semibold text-green-600">{mockTransactionData.policy.status}</p>
+                    <p className="font-semibold text-green-600">{transactionData.policy.status}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Issue Date</p>
-                    <p className="font-semibold">{mockTransactionData.policy.issueDate}</p>
+                    <p className="font-semibold">{transactionData.policy.issueDate}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Coverage Period</p>
-                    <p className="font-semibold">{mockTransactionData.policy.coveragePeriod}</p>
+                    <p className="font-semibold">{transactionData.policy.coveragePeriod}</p>
                   </div>
                 </div>
               </div>
