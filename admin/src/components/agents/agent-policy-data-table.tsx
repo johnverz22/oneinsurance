@@ -180,7 +180,7 @@ export function AgentPolicyDataTable({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search by Policy No./Certificate No. or Policyholder"
+              placeholder="Search by Carrier Policy No., IMO Policy No., or Policyholder"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -252,7 +252,8 @@ export function AgentPolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Policy No./Certificate No.</TableHead>
+              <TableHead>Carrier Policy No.</TableHead>
+              <TableHead>IMO Policy No.</TableHead>
               <TableHead>Policyholder</TableHead>
               <TableHead>Plan Name</TableHead>
               <TableHead>Plan Type</TableHead>
@@ -287,15 +288,93 @@ export function AgentPolicyDataTable({
                           }
                         }
                         
+                        // Fallback to certificate_number or proposal_number
+                        return transaction.certificate_number || transaction.proposal_number || 'N/A';
+                      })()}
+                    </button>
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => handleViewPolicy(`POL-${transaction.id.toString().padStart(6, '0')}`)}
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors"
+                    >
+                      {(() => {
+                        // Try to get PolicyNo from policy_details
+                        if (transaction.policy_details) {
+                          try {
+                            const policyDetails = typeof transaction.policy_details === 'string' 
+                              ? JSON.parse(transaction.policy_details) 
+                              : transaction.policy_details;
+                            
+                            if (policyDetails?.PolicyNo) {
+                              return policyDetails.PolicyNo;
+                            }
+                          } catch (e) {
+                            console.log('Failed to parse policy_details for PolicyNo:', e);
+                          }
+                        }
+                        
                         // Fallback to policy_id or other identifiers
-                        return transaction.policy_id || transaction.certificate_number || transaction.proposal_number || `POL-${transaction.id.toString().padStart(6, '0')}`;
+                        return transaction.policy_id || `POL-${transaction.id.toString().padStart(6, '0')}`;
                       })()}
                     </button>
                   </TableCell>
                   <TableCell className="font-medium">
-                    {transaction.policy_holder || 'N/A'}
+                    {(() => {
+                      // Try to extract policy holder from policy_details using IsPolicyHolder: 'Y' logic
+                      if (transaction.policy_details) {
+                        try {
+                          const policyDetails = typeof transaction.policy_details === 'string' 
+                            ? JSON.parse(transaction.policy_details) 
+                            : transaction.policy_details;
+                          
+                          if (policyDetails?.PolicyCustomerList?.length > 0) {
+                            // Find the policy holder using IsPolicyHolder: 'Y' logic
+                            const policyHolder = policyDetails.PolicyCustomerList.find((customer: any) => customer.IsPolicyHolder === 'Y') 
+                              || policyDetails.PolicyCustomerList[0]; // Fallback to first customer
+                            
+                            const policyHolderName = [policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName, policyHolder.Suffix]
+                              .filter(Boolean)
+                              .join(' ')
+                              .trim();
+                            
+                            if (policyHolderName) {
+                              return policyHolderName;
+                            }
+                          }
+                        } catch (e) {
+                          console.log('Failed to parse policy_details for policy holder:', e);
+                        }
+                      }
+                      
+                      // Fallback to transaction.policy_holder
+                      return transaction.policy_holder || 'N/A';
+                    })()}
                   </TableCell>
-                  <TableCell>{transaction.plan_name || 'N/A'}</TableCell>
+                  <TableCell>{(() => {
+                    // Try to get CarrierPlanDesc from CustomFields first, then fallback to plan_name
+                    if (transaction.policy_details) {
+                      try {
+                        const policyDetails = typeof transaction.policy_details === 'string' 
+                          ? JSON.parse(transaction.policy_details) 
+                          : transaction.policy_details;
+                        
+                        console.log('Admin Policy Table - Policy Details:', policyDetails);
+                        console.log('Admin Policy Table - CustomFields:', policyDetails?.CustomFields);
+                        
+                        if (policyDetails?.CustomFields?.CarrierPlanDesc) {
+                          console.log('Admin Policy Table - Using CustomFields.CarrierPlanDesc:', policyDetails.CustomFields.CarrierPlanDesc);
+                          return policyDetails.CustomFields.CarrierPlanDesc;
+                        }
+                      } catch (e) {
+                        console.log('Failed to parse policy_details for CustomFields:', e);
+                      }
+                    }
+                    
+                    // Fallback to transaction.plan_name
+                    console.log('Admin Policy Table - Using fallback plan_name:', transaction.plan_name);
+                    return transaction.plan_name || 'N/A';
+                  })()}</TableCell>
                   <TableCell>{transaction.plan_type || 'Insurance'}</TableCell>
                   <TableCell>
                     {transaction.premium ? `₱${parseFloat(transaction.premium).toLocaleString()}` : 
@@ -365,7 +444,7 @@ export function AgentPolicyDataTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                   {isSearchMode ? 'No policies found matching your search' : 'No policies found for this agent'}
                 </TableCell>
               </TableRow>
