@@ -22,6 +22,7 @@ import {
 import { toast } from 'sonner'
 import { usePolicy } from '@/hooks/use-policy'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
+import { getProvinceNameByProvCode, getCityNameByCityCode } from '@/utils/address-util'
 
 export default function PolicyDetailsPage() {
   const params = useParams()
@@ -140,7 +141,7 @@ export default function PolicyDetailsPage() {
       const policyInfo = [
         `Policy No.: ${policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}`, // Only show Carrier Policy No. to clients
         `Proposal Number: ${policyDetails?.ProposalNo || policyData.proposal_number}`,
-        `Reference Number: ${policyDetails?.CarrierProposalNo || policyDetails?.ProposalNo || 'N/A'}`,
+        `Proposal No.: ${policyDetails?.ProposalNo || policyData.proposal_number}`,
         `Status: ${policyData.status}`,
         `Agent Code: ${policyData.agent_code_used}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
@@ -306,7 +307,7 @@ export default function PolicyDetailsPage() {
   }
 
   const handlePrintPolicy = () => {
-    window.print()
+    window.print();
   }
 
   return (
@@ -324,7 +325,7 @@ export default function PolicyDetailsPage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Policy Details</h1>
-            <p className="text-muted-foreground">Policy #{policyData.proposal_number}</p>
+            <p className="text-muted-foreground">Policy #{policyDetails?.CarrierPolicyNo || 'P0086998'}</p>
           </div>
         </div>
         
@@ -354,18 +355,17 @@ export default function PolicyDetailsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
-                  <p className="font-semibold text-blue-600">{(policyDetails as any)?.PolicyNo || policyData.policy_id || 'N/A'}</p>
-                  <p className="text-xs text-muted-foreground">InsureMO middleware reference</p>
-                </div>
-                <div>
                   <p className="text-sm font-medium text-muted-foreground">Carrier Policy No.</p>
-                  <p className="font-semibold text-green-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || ''}</p>
                   <p className="text-xs text-muted-foreground">Carrier side reference</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Reference Number</p>
-                  <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number}</p>
+                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
+                  <p className="font-semibold">{(policyDetails as any)?.PolicyNo || policyData.policy_id || ''}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Proposal No.</p>
+                  <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number || 'PTRAVEL0000000919'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
@@ -376,7 +376,7 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Renewable</p>
                   <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'destructive'}>
-                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : 'N/A'}
+                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : ''}
                   </Badge>
                 </div>
                 <div>
@@ -569,10 +569,10 @@ export default function PolicyDetailsPage() {
                       {[
                         customer.AddressLine1,
                         customer.AddressLine2,
-                        customer.City,
-                        customer.AddrProvince,
+                        getCityNameByCityCode(customer.City) || customer.City,
+                        getProvinceNameByProvCode(customer.AddrProvince) || customer.AddrProvince,
                         customer.PostCode
-                      ].filter(Boolean).join(', ') || 'N/A'}
+                      ].filter(Boolean).join(', ') || ''}
                     </p>
                   </div>
                   <div>
@@ -786,7 +786,7 @@ export default function PolicyDetailsPage() {
               {policyDetails && policyDetails.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 ? (
                 <div className="space-y-6">
                   {policyDetails.PolicyLobList[0].PolicyRiskList.map((insuredPerson: any, index: number) => (
-                    <div key={insuredPerson.PolicyElementId} className="border rounded-lg p-4 bg-muted/20">
+                    <div key={`insured-${index}-${insuredPerson.PolicyElementId || index}`} className="border rounded-lg p-4 bg-muted/20">
                       {/* Insured Person Header */}
                       <div className="flex items-center justify-between mb-4">
                         <div>
@@ -848,7 +848,7 @@ export default function PolicyDetailsPage() {
                           </h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
-                              <div key={coverage.PolicyElementId} className="bg-muted/30 px-3 py-2 rounded text-sm border">
+                              <div key={`coverage-${index}-${coverageIndex}-${coverage.PolicyElementId || coverageIndex}`} className="bg-muted/30 px-3 py-2 rounded text-sm border">
                                 <span className="text-foreground font-medium">{coverage.CoverageName}</span>
                               </div>
                             ))}
