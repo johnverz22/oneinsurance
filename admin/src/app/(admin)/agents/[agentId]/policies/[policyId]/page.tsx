@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { useGetAgentById } from '@/app/data/queries/agents'
 import { useGetPolicyDetails } from '@/app/data/queries/policies'
 import { useAuthStore } from '@/store/auth-store'
+import { getProvinceNameByProvCode, getCityNameByCityCode } from '@/utils/address-util'
 
 interface AgentPolicyDetailsPageProps {
   params: Promise<{
@@ -238,7 +239,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   }
 
   const handlePrintPolicy = () => {
-    window.print()
+    window.print();
   }
 
   return (
@@ -257,7 +258,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           <div>
             <h1 className="text-2xl font-bold">Policy Details</h1>
             <p className="text-muted-foreground">
-              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Certificate: {policyData.certificate_number || 'N/A'}
+              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Policy: {policyDetails?.CarrierPolicyNo || 'P0086998'}
             </p>
           </div>
         </div>
@@ -288,29 +289,28 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
-                  <p className="font-semibold text-blue-600">{policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}</p>
-                  <p className="text-xs text-muted-foreground">InsureMO middleware reference</p>
-                </div>
-                <div>
                   <p className="text-sm font-medium text-muted-foreground">Carrier Policy No.</p>
-                  <p className="font-semibold text-green-600">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || ''}</p>
                   <p className="text-xs text-muted-foreground">Carrier side reference</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Reference Number</p>
-                  <p className="font-semibold">{policyData.certificate_number || 'N/A'}</p>
+                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
+                  <p className="font-semibold">{policyDetails?.PolicyNo || policyData.policy_id || ''}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Proposal No.</p>
+                  <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number || 'PTRAVEL0000000919'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
-                  <Badge variant="secondary" className={getStatusColor(policyData.status || 'N/A')}>
-                    {policyData.status || 'N/A'}
+                  <Badge variant="secondary" className={getStatusColor(policyData.status || '')}>
+                    {policyData.status || ''}
                   </Badge>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Renewable</p>
                   <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'destructive'}>
-                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : 'N/A'}
+                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : ''}
                   </Badge>
                 </div>
                 <div>
@@ -499,10 +499,10 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                       {[
                         customer.AddressLine1,
                         customer.AddressLine2,
-                        customer.City,
-                        customer.AddrProvince,
+                        getCityNameByCityCode(customer.City) || customer.City,
+                        getProvinceNameByProvCode(customer.AddrProvince) || customer.AddrProvince,
                         customer.PostCode
-                      ].filter(Boolean).join(', ') || 'N/A'}
+                      ].filter(Boolean).join(', ') || ''}
                     </p>
                   </div>
                   <div>
@@ -655,58 +655,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             </CardContent>
           </Card>
 
-          {/* Commission Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Commission Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
-                  <p className="font-semibold">
-                    {policyData.gross_commission 
-                      ? `₱${Number(policyData.gross_commission).toLocaleString()}`
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                  <p className="font-semibold">
-                    {policyData.net_commission 
-                      ? `₱${Number(policyData.net_commission).toLocaleString()}`
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                  <p className="font-semibold">
-                    {policyData.agent 
-                      ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || 'N/A'
-                      : 'N/A'
-                    }
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {policyData.agent?.email || 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
-                  <p className="font-semibold">
-                    {policyData.product?.name || policyData.plan_name || 'N/A'}
-                  </p>
-                  {policyData.product?.category && (
-                    <p className="text-xs text-muted-foreground">{policyData.product.category}</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Policy Risk List */}
           <Card>
@@ -720,7 +669,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               {policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 ? (
                 <div className="space-y-6">
                   {policyDetails.PolicyLobList[0].PolicyRiskList.map((insuredPerson: any, index: number) => (
-                    <div key={insuredPerson.PolicyElementId} className="border rounded-lg p-4 bg-muted/20">
+                    <div key={`insured-${index}-${insuredPerson.PolicyElementId || index}`} className="border rounded-lg p-4 bg-muted/20">
                       {/* Insured Person Header */}
                       <div className="flex items-center justify-between mb-4">
                         <div>
@@ -782,7 +731,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                           </h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
-                              <div key={coverage.PolicyElementId} className="bg-muted/30 px-3 py-2 rounded text-sm border">
+                              <div key={`coverage-${index}-${coverageIndex}-${coverage.PolicyElementId || coverageIndex}`} className="bg-muted/30 px-3 py-2 rounded text-sm border">
                                 <span className="text-foreground font-medium">{coverage.CoverageName}</span>
                               </div>
                             ))}
@@ -803,35 +752,54 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Enhanced Commission Information */}
-          {policyData.commission_log && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Additional Commission Info
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Rate</p>
-                  <p className="font-semibold">{policyData.commission_log.commission_rate || '0'}%</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">VAT Amount</p>
-                  <p className="font-semibold">₱{Number(policyData.commission_log.vat_amount || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Withholding Tax</p>
-                  <p className="font-semibold">₱{Number(policyData.commission_log.withholding_tax_amount || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Base Commission</p>
-                  <p className="font-semibold">₱{Number(policyData.commission_log.base_commission || 0).toLocaleString()}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Commission Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Commission
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Commission Rate</p>
+                <p className="font-semibold">{policyData.commission_log?.commission_rate || ''}%</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">VAT Amount</p>
+                <p className="font-semibold">₱{Number(policyData.commission_log?.vat_amount || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Withholding Tax</p>
+                <p className="font-semibold">₱{Number(policyData.commission_log?.withholding_tax_amount || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Base Commission</p>
+                <p className="font-semibold">₱{Number(policyData.commission_log?.base_commission || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
+                <p className="font-semibold">
+                  {policyData.net_commission 
+                    ? `₱${Number(policyData.net_commission).toLocaleString()}`
+                    : ''
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Agent</p>
+                <p className="font-semibold">
+                  {policyData.agent 
+                    ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || ''
+                    : ''
+                  }
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {policyData.agent?.email || ''}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Discount Information */}
           {promoCode && (
