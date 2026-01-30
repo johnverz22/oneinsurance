@@ -106,7 +106,7 @@ export function PolicyDataTable({
         <div className="relative max-w-sm flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search by Carrier Policy No., IMO Policy No., or Policyholder"
+            placeholder="Search by Carrier Policy No., IMO Policy No., or Policy Holder"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -220,7 +220,7 @@ export function PolicyDataTable({
             <TableRow>
               <TableHead>Carrier Policy No.</TableHead>
               <TableHead>IMO Policy No.</TableHead>
-              <TableHead>Policyholder</TableHead>
+              <TableHead>Policy Holder</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Plan Code</TableHead>
               <TableHead>Premium</TableHead>
@@ -358,7 +358,8 @@ export function PolicyDataTable({
                             }
                           }
                           
-                          return 'TRAVEL';
+                          // If no real backend data available, show empty string
+                          return '';
                         })()}
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -400,8 +401,8 @@ export function PolicyDataTable({
                             }
                           }
                           
-                          // Fallback to carrier_product_code or default
-                          return transactionWithDetails.carrier_product_code || 'Travel Plan';
+                          // Fallback to carrier_product_code or empty string
+                          return transactionWithDetails.carrier_product_code || '';
                         })()}
                       </p>
                       <p className="text-sm text-muted-foreground">
