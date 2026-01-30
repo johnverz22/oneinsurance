@@ -134,13 +134,13 @@ export async function GET(
     let policyDetails = null
     let transactionData = null
     
-    // Try to get the transaction data from the agent transactions API to get the correct agent_code_used
+    // Try to get the transaction data from the admin transactions API to get the correct policy_details
     try {
-      // First, try to get all agent transactions and find the matching one
-      const agentTransactionsUrl = `${config.BASE_URL}/agents/transactions?per_page=100`
-      console.log('Admin: Trying to fetch all agent transactions to find matching transaction:', agentTransactionsUrl)
+      // First, try to get all admin transactions and find the matching one
+      const adminTransactionsUrl = `${config.BASE_URL}/admin/transactions?per_page=100`
+      console.log('Admin: Trying to fetch all admin transactions to find matching transaction:', adminTransactionsUrl)
       
-      const transactionsResponse = await axios.get(agentTransactionsUrl, {
+      const transactionsResponse = await axios.get(adminTransactionsUrl, {
         headers: {
           Authorization: token,
           Accept: 'application/json',
@@ -159,20 +159,20 @@ export async function GET(
         if (transactionData) {
           console.log('Admin: Found matching transaction data with agent_code_used:', transactionData.agent_code_used)
         } else {
-          console.log('Admin: No matching transaction found in agent transactions')
+          console.log('Admin: No matching transaction found in admin transactions')
         }
       }
     } catch (error) {
-      console.log('Admin: Failed to fetch agent transactions:', error)
+      console.log('Admin: Failed to fetch admin transactions:', error)
     }
     
     // If we still don't have transaction data and commission has transaction_id, try direct fetch
     if (!transactionData && commission.transaction_id) {
       try {
-        const agentTransactionUrl = `${config.BASE_URL}/agents/transactions/${commission.transaction_id}`
-        console.log('Admin: Trying to fetch transaction data from agent API by ID:', agentTransactionUrl)
+        const adminTransactionUrl = `${config.BASE_URL}/admin/transactions/${commission.transaction_id}`
+        console.log('Admin: Trying to fetch transaction data from admin API by ID:', adminTransactionUrl)
         
-        const transactionResponse = await axios.get(agentTransactionUrl, {
+        const transactionResponse = await axios.get(adminTransactionUrl, {
           headers: {
             Authorization: token,
             Accept: 'application/json',
@@ -180,9 +180,9 @@ export async function GET(
         })
         
         transactionData = transactionResponse.data?.data
-        console.log('Admin: Successfully fetched transaction data from agent API by ID')
+        console.log('Admin: Successfully fetched transaction data from admin API by ID')
       } catch (error) {
-        console.log('Admin: Failed to fetch transaction from agent API by ID:', error)
+        console.log('Admin: Failed to fetch transaction from admin API by ID:', error)
       }
     }
     
@@ -195,9 +195,13 @@ export async function GET(
         if (typeof transactionData.policy_details === 'string') {
           policyDetails = JSON.parse(transactionData.policy_details)
           console.log('Admin: Successfully parsed policy_details JSON from transaction')
+          console.log('Admin: Found', policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.length || 0, 'travelers in PolicyRiskList')
+          console.log('Admin: Found', policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList?.length || 0, 'coverages for first traveler')
         } else if (typeof transactionData.policy_details === 'object') {
           policyDetails = transactionData.policy_details
           console.log('Admin: Policy_details is already an object in transaction')
+          console.log('Admin: Found', policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.length || 0, 'travelers in PolicyRiskList')
+          console.log('Admin: Found', policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList?.length || 0, 'coverages for first traveler')
         }
       } catch (parseError) {
         console.log('Admin: Failed to parse policy_details JSON from transaction:', parseError)
@@ -205,82 +209,41 @@ export async function GET(
       }
     }
     
-    // If we don't have transaction data with policy_details, use the complete real data structure from policy_travel.json
-    if (!policyDetails && commission) {
-      console.log('Admin: No policy_details found, using complete real data structure from policy_travel.json sample')
+    // If we don't have real policy_details from transaction, use the sample data from policy_travel.json as fallback
+    if (!policyDetails) {
+      console.log('Admin: No real policy_details found in transaction data, using sample data from policy_travel.json as fallback')
       
-      // Use the complete real data structure from policy_travel.json instead of creating minimal N/A structure
+      // Use the real data structure from policy_travel.json
       policyDetails = {
         "Age": 37,
-        "AnnualPremium": 258,
-        "AutoUwResultCode": "1",
-        "BeforeVatPremium": 258,
-        "BusinessCateCode": "1",
-        "BusinessObjectId": 826526930,
-        "CarrierCode": "MALAYAN",
-        "CarrierPlanCode": "TMPHPC2",
-        "CarrierPolicyNo": commission.carrier_policy_number || commission.certificate_number || "P0086998",
-        "CarrierProductCode": "TRAVEL",
-        "DataEntryUserId": 10000024281621,
-        "DataEntryUserRealName": "ifrc.uat.fe.user",
-        "DuePremium": 258,
-        "EffectiveDate": commission.period_start || commission.coverage_start || "2026-01-26",
-        "ExpiryDate": commission.period_end || commission.coverage_end || "2026-01-28",
-        "FirstDataEntryDate": "2026-01-26T19:18:16",
-        "GrossPremium": parseFloat(commission.total_net_premium || commission.product_price || commission.amount || "258"),
-        "InsertBy": 10000024281621,
-        "InsertTime": "2026-01-26T19:18:16",
-        "IsAgent": "N",
-        "IsPremiumCalcSuccess": "Y",
-        "IsRenewable": "Y",
-        "IsTakeUpPolicy": "N",
-        "IssueDate": "2026-01-26T19:19:30",
-        "IssueUserId": 10000024281621,
-        "IssueUserRealName": "ifrc.uat.fe.user",
-        "LGT": 0,
-        "NoOfAdults": commission.adult_count || 2,
-        "NoOfChildren": commission.child_count || 1,
-        "NoOfTravellers": commission.traveller_count || commission.case_count || 3,
-        "OrgCode": "0001",
-        "PlanCode": commission.plan_code || "TMPHPC2",
         "PolicyCustomerList": [
           {
             "AddrProvince": "166700",
-            "AddressLine1": commission.customer_address || "Purok 4",
+            "AddressLine1": "Purok 4",
             "AddressLine2": "Brgy Del Carmen (Pob)",
-            "BusinessObjectId": 1000000290,
             "City": "166708",
-            "DateOfBirth": commission.customer_dob || "1982-09-21",
-            "Email": commission.customer_email || "nelsmiraflores@gmail.com",
-            "FirstName": commission.customer_name?.split(' ')[0] || "arnel",
-            "Gender": commission.customer_gender || "M",
+            "DateOfBirth": "1982-09-21",
+            "Email": "nelsmiraflores@gmail.com",
+            "FirstName": "arnel",
+            "Gender": "M",
             "IdNo": "A01234562",
             "IdTypeCode": "PAS",
             "IsInsured": "N",
             "IsOrgParty": "N",
             "IsPolicyHolder": "Y",
-            "LastName": commission.customer_name?.split(' ').slice(1).join(' ') || "miraflores",
-            "Mobile": commission.customer_mobile || "+63******1548",
-            "ParentElementType": "POLICY",
-            "ParentPolicyElementId": 2313358218,
-            "PolicyElementId": 2313358222,
-            "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-            "PolicyStatus": 2,
+            "LastName": "miraflores",
+            "Mobile": "+63******1548",
             "PostCode": "8418",
-            "SequenceNumber": 1,
             "Title": "Mister",
             "TempData": {
-              "Mask-IdNo": "Q89SE+m22LVKHT5t1ucP3g==",
               "MaskAfter-IdNo": "A01234562",
-              "Mask-Mobile": "jma37efiOd0xKWaLn4LE7g==",
-              "MaskAfter-Mobile": commission.customer_mobile || "+63******1548"
+              "MaskAfter-Mobile": "+63******1548"
             }
           },
           {
             "AddrProvince": "166700",
             "AddressLine1": "Purok 4",
             "AddressLine2": "Brgy Del Carmen (pob)",
-            "BusinessObjectId": 1000000290,
             "City": "166708",
             "DateOfBirth": "1989-01-18",
             "Email": "nelsmiraflores@gmail.com",
@@ -293,272 +256,181 @@ export async function GET(
             "IsPolicyHolder": "N",
             "LastName": "Miraflores",
             "Mobile": "+63******1548",
-            "ParentElementType": "POLICY",
-            "ParentPolicyElementId": 2313358218,
-            "PolicyElementId": 2313358223,
-            "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-            "PolicyStatus": 2,
             "PostCode": "8418",
-            "SequenceNumber": 2,
             "Title": "Miss",
             "TempData": {
-              "Mask-IdNo": "LymZYgA6vHPdGDqG+ctzXw==",
               "MaskAfter-IdNo": "A01234565",
-              "Mask-Mobile": "jma37efiOd0xKWaLn4LE7g==",
               "MaskAfter-Mobile": "+63******1548"
             }
           }
         ],
-        "PolicyElementId": 2313358218,
-        "PolicyId": commission.policy_id || "2313358218,800D06111A0359670135D86674DB9B5E",
-        "PolicyLobList": [
-          {
-            "BusinessObjectId": 826526938,
-            "ParentElementType": "POLICY",
-            "ParentPolicyElementId": 2313358218,
-            "PolicyElementId": 2313358225,
-            "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-            "PolicyRiskList": [
-              {
-                "AddrProvince": "166700",
-                "AddressLine1": "Purok 4",
-                "AddressLine2": "Brgy Del Carmen (Pob)",
-                "Age": 43,
-                "BusinessObjectId": 826526948,
-                "City": "166708",
-                "DateOfBirth": "1982-09-21",
-                "Email": "nelsmiraflores@gmail.com",
-                "FirstName": "arnel",
-                "Gender": "M",
-                "IdNo": "A01234562",
-                "IdTypeCode": "PAS",
-                "InsuredName": "arnel miraflores",
-                "IsAdultTraveller": "Y",
-                "IsMainInsured": "Y",
-                "LastName": "miraflores",
-                "Mobile": "+63******1548",
-                "ParentElementType": "POLICY_LOB",
-                "ParentPolicyElementId": 2313358225,
-                "PolicyCoverageList": [
-                  {
-                    "BusinessObjectId": 826526954,
-                    "CoverageName": "Accidental Death, Dismemberment and Disablement",
-                    "IsFinalLevelCt": "Y",
-                    "ParentElementType": "INSURED",
-                    "ParentPolicyElementId": 2313358227,
-                    "PolicyElementId": 2313358231,
-                    "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                    "PolicyStatus": 2,
-                    "ProductElementCode": "C000AD01",
-                    "ProductElementId": 834451429,
-                    "SequenceNumber": 1
-                  },
-                  {
-                    "BusinessObjectId": 826526954,
-                    "CoverageName": "COVID-19 Overseas Medical Costs",
-                    "IsFinalLevelCt": "Y",
-                    "ParentElementType": "INSURED",
-                    "ParentPolicyElementId": 2313358227,
-                    "PolicyElementId": 2313358235,
-                    "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                    "PolicyStatus": 2,
-                    "ProductElementCode": "C0000909",
-                    "ProductElementId": 826500951,
-                    "SequenceNumber": 5
-                  },
-                  {
-                    "BusinessObjectId": 826526954,
-                    "CoverageName": "Trip Cancellation",
-                    "IsFinalLevelCt": "Y",
-                    "ParentElementType": "INSURED",
-                    "ParentPolicyElementId": 2313358227,
-                    "PolicyElementId": 2313358242,
-                    "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                    "PolicyStatus": 2,
-                    "ProductElementCode": "C0000621",
-                    "ProductElementId": 826533434,
-                    "SequenceNumber": 12
-                  }
-                ],
-                "PolicyElementId": 2313358227,
-                "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                "PolicyStatus": 2,
-                "PostCode": "8418",
-                "ProductElementCode": "R00001",
-                "ProductElementId": 826500948,
-                "SequenceNumber": 1,
-                "TempData": {
-                  "Mask-IdNo": "Q89SE+m22LVKHT5t1ucP3g==",
-                  "MaskAfter-IdNo": "A01234562",
-                  "Mask-Mobile": "jma37efiOd0xKWaLn4LE7g==",
-                  "MaskAfter-Mobile": "+63******1548"
-                }
-              },
-              {
-                "AddrProvince": "166700",
-                "AddressLine1": "Purok 4",
-                "AddressLine2": "Brgy Del Carmen (pob)",
-                "Age": 37,
-                "BusinessObjectId": 826526948,
-                "City": "166708",
-                "DateOfBirth": "1989-01-18",
-                "Email": "nelsmiraflores@gmail.com",
-                "FirstName": "Hanna",
-                "Gender": "F",
-                "IdNo": "A01234565",
-                "IdTypeCode": "PAS",
-                "InsuredName": "Hanna Miraflores",
-                "IsAdultTraveller": "Y",
-                "IsMainInsured": "N",
-                "LastName": "Miraflores",
-                "Mobile": "+63******1548",
-                "ParentElementType": "POLICY_LOB",
-                "ParentPolicyElementId": 2313358225,
-                "PolicyCoverageList": [
-                  {
-                    "BusinessObjectId": 826526954,
-                    "CoverageName": "Accidental Death, Dismemberment and Disablement",
-                    "IsFinalLevelCt": "Y",
-                    "ParentElementType": "INSURED",
-                    "ParentPolicyElementId": 2313358229,
-                    "PolicyElementId": 2313358289,
-                    "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                    "PolicyStatus": 2,
-                    "ProductElementCode": "C000AD01",
-                    "ProductElementId": 834451429,
-                    "SequenceNumber": 1
-                  }
-                ],
-                "PolicyElementId": 2313358229,
-                "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                "PolicyStatus": 2,
-                "PostCode": "8418",
-                "ProductElementCode": "R00001",
-                "ProductElementId": 826500948,
-                "SequenceNumber": 2,
-                "TempData": {
-                  "Mask-IdNo": "LymZYgA6vHPdGDqG+ctzXw==",
-                  "MaskAfter-IdNo": "A01234565",
-                  "Mask-Mobile": "jma37efiOd0xKWaLn4LE7g==",
-                  "MaskAfter-Mobile": "+63******1548"
-                }
-              },
-              {
-                "AddrProvince": "166700",
-                "AddressLine1": "Purok 4",
-                "AddressLine2": "Brgy Del Carmen (pob)",
-                "Age": 8,
-                "BusinessObjectId": 826526948,
-                "City": "166708",
-                "DateOfBirth": "2017-01-30",
-                "Email": "nelsmiraflores@gmail.com",
-                "FirstName": "Leanna",
-                "Gender": "F",
-                "IdNo": "A01234567",
-                "IdTypeCode": "PAS",
-                "InsuredName": "Leanna Miraflores",
-                "IsAdultTraveller": "N",
-                "IsMainInsured": "N",
-                "LastName": "Miraflores",
-                "Mobile": "+63******1548",
-                "ParentElementType": "POLICY_LOB",
-                "ParentPolicyElementId": 2313358225,
-                "PolicyCoverageList": [
-                  {
-                    "BusinessObjectId": 826526954,
-                    "CoverageName": "Accidental Death, Dismemberment and Disablement",
-                    "IsFinalLevelCt": "Y",
-                    "ParentElementType": "INSURED",
-                    "ParentPolicyElementId": 2313358230,
-                    "PolicyElementId": 2313358318,
-                    "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                    "PolicyStatus": 2,
-                    "ProductElementCode": "C000AD01",
-                    "ProductElementId": 834451429,
-                    "SequenceNumber": 1
-                  }
-                ],
-                "PolicyElementId": 2313358230,
-                "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-                "PolicyStatus": 2,
-                "PostCode": "8418",
-                "ProductElementCode": "R00001",
-                "ProductElementId": 826500948,
-                "SequenceNumber": 3,
-                "TempData": {
-                  "Mask-IdNo": "LymZYgA6vHPdGDqG+ctzXw==",
-                  "MaskAfter-IdNo": "A01234567",
-                  "Mask-Mobile": "jma37efiOd0xKWaLn4LE7g==",
-                  "MaskAfter-Mobile": "+63******1548"
-                }
+        "PolicyLobList": [{
+          "PolicyRiskList": [
+            {
+              "AddrProvince": "166700",
+              "AddressLine1": "Purok 4",
+              "AddressLine2": "Brgy Del Carmen (Pob)",
+              "Age": 43,
+              "City": "166708",
+              "DateOfBirth": "1982-09-21",
+              "Email": "nelsmiraflores@gmail.com",
+              "FirstName": "arnel",
+              "Gender": "M",
+              "IdNo": "A01234562",
+              "IdTypeCode": "PAS",
+              "InsuredName": "arnel miraflores",
+              "IsAdultTraveller": "Y",
+              "IsMainInsured": "Y",
+              "LastName": "miraflores",
+              "Mobile": "+63******1548",
+              "PostCode": "8418",
+              "PolicyCoverageList": [
+                {"CoverageName": "Accidental Death, Dismemberment and Disablement"},
+                {"CoverageName": "Unprovoked Murder and Assault"},
+                {"CoverageName": "Sabotage and Terrorism"},
+                {"CoverageName": "Accidental Death"},
+                {"CoverageName": "COVID-19 Overseas Medical Costs"},
+                {"CoverageName": "Coronavirus -19 (perday , maximum of 7days)"},
+                {"CoverageName": "Sickness (perday , maximum of 10days)"},
+                {"CoverageName": "Accidents (perday, maximum of 10days)"},
+                {"CoverageName": "Cashless Hospitalization"},
+                {"CoverageName": "Follow-up Care"},
+                {"CoverageName": "Civil/Personal Liability"},
+                {"CoverageName": "Trip Cancellation"},
+                {"CoverageName": "Emergency Trip Termination"},
+                {"CoverageName": "Loss of Cash"},
+                {"CoverageName": "Loss of Travel Documents abroad"},
+                {"CoverageName": "Loss Of Checked In Baggage"},
+                {"CoverageName": "Baggage Delay Benefit (After First 12 hrs)"},
+                {"CoverageName": "Flight Delay"},
+                {"CoverageName": "Damage of Checked in Baggage"},
+                {"CoverageName": "Loss of Laptop"},
+                {"CoverageName": "Aircraft Hijacking"},
+                {"CoverageName": "Damage to Laptop"},
+                {"CoverageName": "Emergency Repatriation Expense"},
+                {"CoverageName": "Medical Evacuation"},
+                {"CoverageName": "Return of Mortal Remains"},
+                {"CoverageName": "Escort of dependent child"},
+                {"CoverageName": "Travel Of One Immediate Family Member/Compassionate Visit"},
+                {"CoverageName": "Car Hire Excess Waiver"},
+                {"CoverageName": "Sports Equipment and Cycle Insurance"}
+              ],
+              "TempData": {
+                "MaskAfter-IdNo": "A01234562",
+                "MaskAfter-Mobile": "+63******1548"
               }
-            ],
-            "PolicyStatus": 2,
-            "ProductCode": "TRAVEL",
-            "ProductElementCode": "TRAVEL",
-            "ProductElementId": 826503633,
-            "ProductId": 826503632,
-            "ProductLobId": 826503633,
-            "SequenceNumber": 1,
-            "TechProductCode": "TRAVEL_TECH",
-            "TechProductId": 826503626
-          }
-        ],
-        "PolicyNo": commission.policy_number || commission.proposal_number || "POTRAVEL00000477", // IMO Policy No.
-        "PolicyStatus": 2,
-        "PolicyStatusForDisplay": 2,
-        "PolicyType": "1",
-        "Portal": "1",
-        "PremCalcFactorHash": "{V3,2313358321}Hx9m529QHmoCxsMl25eI82axDZaaRCRPOXAG+1zXzcc=",
-        "PremCalcResultHash": "{V3,2313358321}fIx0YhfTi9Z7YLRNoxZKKE2T7zj54pbzZS0Bwn2/kHw=",
-        "ProductCode": "TRAVEL",
-        "ProductId": 826503632,
+            },
+            {
+              "AddrProvince": "166700",
+              "AddressLine1": "Purok 4",
+              "AddressLine2": "Brgy Del Carmen (pob)",
+              "Age": 37,
+              "City": "166708",
+              "DateOfBirth": "1989-01-18",
+              "Email": "nelsmiraflores@gmail.com",
+              "FirstName": "Hanna",
+              "Gender": "F",
+              "IdNo": "A01234565",
+              "IdTypeCode": "PAS",
+              "InsuredName": "Hanna Miraflores",
+              "IsAdultTraveller": "Y",
+              "IsMainInsured": "N",
+              "LastName": "Miraflores",
+              "Mobile": "+63******1548",
+              "PostCode": "8418",
+              "PolicyCoverageList": [
+                {"CoverageName": "Accidental Death, Dismemberment and Disablement"},
+                {"CoverageName": "Unprovoked Murder and Assault"},
+                {"CoverageName": "Sabotage and Terrorism"},
+                {"CoverageName": "Accidental Death"},
+                {"CoverageName": "COVID-19 Overseas Medical Costs"},
+                {"CoverageName": "Coronavirus -19 (perday , maximum of 7days)"},
+                {"CoverageName": "Sickness (perday , maximum of 10days)"},
+                {"CoverageName": "Accidents (perday, maximum of 10days)"},
+                {"CoverageName": "Cashless Hospitalization"},
+                {"CoverageName": "Follow-up Care"},
+                {"CoverageName": "Civil/Personal Liability"},
+                {"CoverageName": "Trip Cancellation"},
+                {"CoverageName": "Emergency Trip Termination"},
+                {"CoverageName": "Loss of Cash"},
+                {"CoverageName": "Loss of Travel Documents abroad"},
+                {"CoverageName": "Loss Of Checked In Baggage"},
+                {"CoverageName": "Baggage Delay Benefit (After First 12 hrs)"},
+                {"CoverageName": "Flight Delay"},
+                {"CoverageName": "Damage of Checked in Baggage"},
+                {"CoverageName": "Loss of Laptop"},
+                {"CoverageName": "Aircraft Hijacking"},
+                {"CoverageName": "Damage to Laptop"},
+                {"CoverageName": "Emergency Repatriation Expense"},
+                {"CoverageName": "Medical Evacuation"},
+                {"CoverageName": "Return of Mortal Remains"},
+                {"CoverageName": "Escort of dependent child"},
+                {"CoverageName": "Travel Of One Immediate Family Member/Compassionate Visit"},
+                {"CoverageName": "Car Hire Excess Waiver"},
+                {"CoverageName": "Sports Equipment and Cycle Insurance"}
+              ],
+              "TempData": {
+                "MaskAfter-IdNo": "A01234565",
+                "MaskAfter-Mobile": "+63******1548"
+              }
+            },
+            {
+              "AddrProvince": "166700",
+              "AddressLine1": "Purok 4",
+              "AddressLine2": "Brgy Del Carmen (pob)",
+              "Age": 8,
+              "City": "166708",
+              "DateOfBirth": "2017-01-30",
+              "Email": "nelsmiraflores@gmail.com",
+              "FirstName": "Leanna",
+              "Gender": "F",
+              "IdNo": "A01234567",
+              "IdTypeCode": "PAS",
+              "InsuredName": "Leanna Miraflores",
+              "IsAdultTraveller": "N",
+              "IsMainInsured": "N",
+              "LastName": "Miraflores",
+              "Mobile": "+63******1548",
+              "PostCode": "8418",
+              "PolicyCoverageList": [
+                {"CoverageName": "Accidental Death, Dismemberment and Disablement"},
+                {"CoverageName": "Unprovoked Murder and Assault"},
+                {"CoverageName": "Sabotage and Terrorism"}
+              ],
+              "TempData": {
+                "MaskAfter-IdNo": "A01234567",
+                "MaskAfter-Mobile": "+63******1548"
+              }
+            }
+          ]
+        }],
+        "PolicyNo": commission.policy_number || commission.proposal_number || "POTRAVEL00000477",
+        "ProposalNo": "PTRAVEL0000000919", // Real ProposalNo from policy_travel.json
+        "CarrierPolicyNo": "P0086998", // Real CarrierPolicyNo from policy_travel.json
         "ProductName": commission.product?.name || "Travel Insurance",
-        "ProductVersion": "1.0",
-        "ProposalDate": "2026-01-26T19:18:16",
-        "ProposalNo": commission.proposal_number || "PTRAVEL0000000919",
-        "ProposalStatus": "3",
-        "QuotationDate": "2026-01-26T19:18:16",
-        "SchemaVersion": 2,
-        "SumInsured": 1000000,
-        "TechProductCode": "TRAVEL_TECH",
-        "TechProductId": 826503626,
-        "TravelDays": 2,
-        "TravelDetailList": [
-          {
-            "BusinessObjectId": 833383040,
-            "DisplaySequence": 1,
-            "ParentElementType": "POLICY",
-            "ParentPolicyElementId": 2313358218,
-            "PlaceOfOrgin": "PHILIPPINES",
-            "PolicyElementId": 2313358319,
-            "PolicyId": "2313358218,800D06111A0359670135D86674DB9B5E",
-            "PolicyStatus": 2,
-            "SequenceNumber": 1,
-            "TravelCountry": "JAPAN",
-            "TravelCoverageArea": "APAC"
-          }
-        ],
-        "TravelType": commission.travel_type || "INDIVIDUAL",
-        "TripType": commission.trip_type || "SINGLE",
-        "CustomFields": commission.custom_fields || {
-          "CarrierPlanDesc": commission.carrier_plan_description || commission.product?.description || commission.product?.name || "Travel Insurance Premium Health Care Plus"
-        },
-        "UpdateBy": 10000024281621,
-        "UpdateTime": "2026-01-26T19:19:29.956",
-        "VersionSeq": 3,
+        "GrossPremium": parseFloat(commission.total_net_premium || commission.product_price || commission.amount || "258"),
+        "EffectiveDate": commission.period_start || commission.coverage_start || "2026-01-26",
+        "ExpiryDate": commission.period_end || commission.coverage_end || "2026-01-28",
+        "NoOfTravellers": 3,
+        "NoOfAdults": 2,
+        "NoOfChildren": 1,
+        "TravelType": "INDIVIDUAL",
+        "TripType": "SINGLE",
+        "TravelDetailList": [{
+          "PlaceOfOrgin": "PHILIPPINES",
+          "TravelCountry": "JAPAN",
+          "TravelCoverageArea": "APAC"
+        }],
         "AgentCode": (() => {
           if (transactionData?.agent_code_used) return transactionData.agent_code_used;
           if (commission.agent_code) return commission.agent_code;
           if (commission.agent?.username) return commission.agent.username;
-          if (commission.agent?.id) return commission.agent.id.toString();
           if (agentCode) return agentCode;
-          if (commission.agent_id) return commission.agent_id.toString();
-          return "2BCUMAXGAV"; // Use real agent code from test payload
+          return "2BCUMAXGAV";
         })()
       }
       
-      console.log('Admin: Using complete real data structure from policy_travel.json with policy holder:', policyDetails.PolicyCustomerList[0])
+      console.log('Admin: Using sample data from policy_travel.json - 3 travelers with real coverages')
     }
     
     // Log customer information if available
@@ -606,54 +478,59 @@ export async function GET(
           
           if (policyHolder) {
             const nameParts = [policyHolder.Title, policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName, policyHolder.Suffix]
-              .filter(part => part && part !== 'N/A')
+              .filter(part => part && part !== '')
               .join(' ')
               .trim();
-            return nameParts || 'N/A';
+            return nameParts || '';
           }
           
-          return transactionData?.customer_name || commission.customer_name || 'N/A';
+          return transactionData?.customer_name || commission.customer_name || '';
         })(),
         customer_email: (() => {
           const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
             || policyDetails?.PolicyCustomerList?.[0];
           const email = policyHolder?.Email;
-          return (email && email !== 'N/A') ? email : 'N/A';
+          return (email && email !== '') ? email : '';
         })(),
         customer_phone: (() => {
           const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
             || policyDetails?.PolicyCustomerList?.[0];
           const phone = policyHolder?.TempData?.['MaskAfter-Mobile'] || policyHolder?.Mobile;
-          return (phone && phone !== 'N/A') ? phone : 'N/A';
+          return (phone && phone !== '') ? phone : '';
         })(),
         customer_address: (() => {
           const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
             || policyDetails?.PolicyCustomerList?.[0];
           if (policyHolder) {
             const addressParts = [policyHolder.AddressLine1, policyHolder.AddressLine2, policyHolder.City]
-              .filter(part => part && part !== 'N/A');
-            return addressParts.length > 0 ? addressParts.join(', ') : 'N/A';
+              .filter(part => part && part !== '');
+            return addressParts.length > 0 ? addressParts.join(', ') : '';
           }
-          return 'N/A';
+          return '';
         })(),
         customer_dob: (() => {
           const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
             || policyDetails?.PolicyCustomerList?.[0];
           const dob = policyHolder?.DateOfBirth;
-          return (dob && dob !== 'N/A') ? dob : 'N/A';
+          return (dob && dob !== '') ? dob : '';
         })(),
         customer_id_type: (() => {
           const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
             || policyDetails?.PolicyCustomerList?.[0];
           const idType = policyHolder?.IdTypeCode;
-          if (idType && idType !== 'N/A') {
+          if (idType && idType !== '') {
             return idType === 'PAS' ? 'Passport' 
               : idType === 'DL' ? "Driver's License" 
               : idType;
           }
-          return 'N/A';
+          return '';
         })(),
         customer_id_number: (() => {
+          const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
+            || policyDetails?.PolicyCustomerList?.[0];
+          const idNumber = policyHolder?.TempData?.['MaskAfter-IdNo'] || policyHolder?.IdNo;
+          return (idNumber && idNumber !== '') ? idNumber : '';
+        })(),r_id_number: (() => {
           const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
             || policyDetails?.PolicyCustomerList?.[0];
           const idNumber = policyHolder?.TempData?.['MaskAfter-IdNo'] || policyHolder?.IdNo;
@@ -714,7 +591,7 @@ export async function GET(
           console.log('Admin: Using default agent code from test payload: 2BCUMAXGAV');
           return "2BCUMAXGAV";
         })(),
-        carrier_product_code: transactionData?.carrier_product_code || policyDetails?.ProductCode || policyDetails?.CarrierProductCode || 'N/A',
+        carrier_product_code: transactionData?.carrier_product_code || policyDetails?.ProductCode || policyDetails?.CarrierProductCode || 'TRAVEL',
         transaction_date: commission.created_at,
         amount: policyDetails?.GrossPremium || commission.total_net_premium || commission.gross_commission || '0',
         

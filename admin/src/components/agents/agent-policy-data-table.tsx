@@ -180,7 +180,7 @@ export function AgentPolicyDataTable({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search by Carrier Policy No., IMO Policy No., or Policyholder"
+              placeholder="Search by Carrier Policy No., IMO Policy No., or Policy Holder"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -254,7 +254,7 @@ export function AgentPolicyDataTable({
             <TableRow>
               <TableHead>Carrier Policy No.</TableHead>
               <TableHead>IMO Policy No.</TableHead>
-              <TableHead>Policyholder</TableHead>
+              <TableHead>Policy Holder</TableHead>
               <TableHead>Plan Name</TableHead>
               <TableHead>Plan Type</TableHead>
               <TableHead>Premium</TableHead>
@@ -351,30 +351,7 @@ export function AgentPolicyDataTable({
                       return transaction.policy_holder || 'N/A';
                     })()}
                   </TableCell>
-                  <TableCell>{(() => {
-                    // Try to get CarrierPlanDesc from CustomFields first, then fallback to plan_name
-                    if (transaction.policy_details) {
-                      try {
-                        const policyDetails = typeof transaction.policy_details === 'string' 
-                          ? JSON.parse(transaction.policy_details) 
-                          : transaction.policy_details;
-                        
-                        console.log('Admin Policy Table - Policy Details:', policyDetails);
-                        console.log('Admin Policy Table - CustomFields:', policyDetails?.CustomFields);
-                        
-                        if (policyDetails?.CustomFields?.CarrierPlanDesc) {
-                          console.log('Admin Policy Table - Using CustomFields.CarrierPlanDesc:', policyDetails.CustomFields.CarrierPlanDesc);
-                          return policyDetails.CustomFields.CarrierPlanDesc;
-                        }
-                      } catch (e) {
-                        console.log('Failed to parse policy_details for CustomFields:', e);
-                      }
-                    }
-                    
-                    // Fallback to transaction.plan_name
-                    console.log('Admin Policy Table - Using fallback plan_name:', transaction.plan_name);
-                    return transaction.plan_name || 'N/A';
-                  })()}</TableCell>
+                  <TableCell></TableCell>
                   <TableCell>{transaction.plan_type || 'Insurance'}</TableCell>
                   <TableCell>
                     {transaction.premium ? `₱${parseFloat(transaction.premium).toLocaleString()}` : 
