@@ -96,13 +96,50 @@ export function AgentPolicyDataTable({
 
   const handleSearchSubmit = () => {
     if (searchKeyword.trim()) {
-      const filtered = transactions.filter((transaction: any) => 
-        transaction.policy_id?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        transaction.certificate_number?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        transaction.policy_holder?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        transaction.plan_name?.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-        transaction.proposal_number?.toLowerCase().includes(searchKeyword.toLowerCase())
-      )
+      const filtered = transactions.filter((transaction: any) => {
+        const searchTerm = searchKeyword.toLowerCase()
+        
+        // Search in basic transaction fields
+        const basicMatch = (
+          transaction.policy_id?.toLowerCase().includes(searchTerm) ||
+          transaction.certificate_number?.toLowerCase().includes(searchTerm) ||
+          transaction.policy_holder?.toLowerCase().includes(searchTerm) ||
+          transaction.customer_name?.toLowerCase().includes(searchTerm) ||
+          transaction.proposal_number?.toLowerCase().includes(searchTerm)
+        )
+        
+        // Search in policy_details for CarrierPolicyNo and PolicyNo
+        let policyDetailsMatch = false
+        if (transaction.policy_details) {
+          try {
+            const policyDetails = typeof transaction.policy_details === 'string' 
+              ? JSON.parse(transaction.policy_details) 
+              : transaction.policy_details
+            
+            policyDetailsMatch = (
+              policyDetails?.CarrierPolicyNo?.toLowerCase().includes(searchTerm) ||
+              policyDetails?.PolicyNo?.toLowerCase().includes(searchTerm) ||
+              policyDetails?.ProposalNo?.toLowerCase().includes(searchTerm)
+            )
+            
+            // Also search in PolicyCustomerList for customer names
+            if (policyDetails?.PolicyCustomerList?.length > 0) {
+              policyDetailsMatch = policyDetailsMatch || policyDetails.PolicyCustomerList.some((customer: any) => {
+                const customerName = [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                  .filter(Boolean)
+                  .join(' ')
+                  .toLowerCase()
+                return customerName.includes(searchTerm)
+              })
+            }
+          } catch (e) {
+            console.log('Failed to parse policy_details for search:', e)
+          }
+        }
+        
+        return basicMatch || policyDetailsMatch
+      })
+      
       setFilteredData(filtered)
       setIsSearchMode(true)
     }

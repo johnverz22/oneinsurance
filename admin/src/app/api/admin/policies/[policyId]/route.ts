@@ -404,7 +404,26 @@ export async function GET(
             }
           ]
         }],
-        "PolicyNo": commission.policy_number || commission.proposal_number || "POTRAVEL00000477",
+        "PolicyNo": (() => {
+          // Try to get PolicyNo from commission data first
+          if (commission.policy_number) return commission.policy_number;
+          if (commission.proposal_number) return commission.proposal_number;
+          
+          // If we have policy_details, try to extract PolicyNo from it
+          if (commission.policy_details) {
+            try {
+              const policyDetailsObj = typeof commission.policy_details === 'string' 
+                ? JSON.parse(commission.policy_details) 
+                : commission.policy_details;
+              if (policyDetailsObj.PolicyNo) return policyDetailsObj.PolicyNo;
+              if (policyDetailsObj.ProposalNo) return policyDetailsObj.ProposalNo;
+            } catch (e) {
+              console.log('Admin Policy Detail: Failed to parse policy_details for PolicyNo:', e);
+            }
+          }
+          
+          return null; // Return null if no real data found
+        })(),
         "ProposalNo": "PTRAVEL0000000919", // Real ProposalNo from policy_travel.json
         "CarrierPolicyNo": "P0086998", // Real CarrierPolicyNo from policy_travel.json
         "ProductName": commission.product?.name || "Travel Insurance",
