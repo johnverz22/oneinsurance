@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { PolicyDataTable } from '@/components/policies/policy-data-table'
-import { useSearchTransactions } from '@/app/data/mutations/agent/transactions'
 import { toast } from 'sonner'
 import { TransactionsResponse } from '@/types/agent/transactions'
 
@@ -29,19 +28,42 @@ export default function PoliciesPage() {
     refetch,
   } = useGetTransactions(currentPage)
   
-  const { mutateAsync: searchTransactions } = useSearchTransactions()
   const [isSearching, setIsSearching] = useState(false)
 
   const handleSearch = async (keyword: string) => {
     try {
       setIsSearching(true)
-      const result = await searchTransactions({ keyword })
-      setSearchedTransactions(result)
-      toast.success(`Found ${result.data.data.length} policies matching "${keyword}"`)
+      
+      // Use client-side search instead of backend search
+      if (!transactionsResponse?.data?.data) {
+        toast.error('No data available to search')
+        return
+      }
+      
+      const filtered = transactionsResponse.data.data.filter(transaction => {
+        const searchTerm = keyword.toLowerCase()
+        return (
+          transaction.policy_id?.toLowerCase().includes(searchTerm) ||
+          transaction.proposal_number?.toLowerCase().includes(searchTerm) ||
+          transaction.customer_name?.toLowerCase().includes(searchTerm) ||
+          transaction.agent_code_used?.toLowerCase().includes(searchTerm) ||
+          transaction.carrier_product_code?.toLowerCase().includes(searchTerm)
+        )
+      })
+      
+      const searchResult = {
+        ...transactionsResponse,
+        data: {
+          ...transactionsResponse.data,
+          data: filtered
+        }
+      }
+      
+      setSearchedTransactions(searchResult)
+      toast.success(`Found ${filtered.length} policies matching "${keyword}"`)
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || 'Error searching policies'
-      )
+      console.error('Search error:', error)
+      toast.error('Error searching policies')
     } finally {
       setIsSearching(false)
     }

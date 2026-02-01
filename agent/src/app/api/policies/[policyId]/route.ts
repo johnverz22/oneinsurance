@@ -339,9 +339,28 @@ export async function GET(
             }
           ]
         }],
-        "PolicyNo": transaction.policy_number || transaction.proposal_number || "POTRAVEL00000477",
+        "PolicyNo": (() => {
+          // Try to get PolicyNo from transaction data first
+          if (transaction.policy_number) return transaction.policy_number;
+          if (transaction.proposal_number) return transaction.proposal_number;
+          
+          // If we have policy_details, try to extract PolicyNo from it
+          if (transaction.policy_details) {
+            try {
+              const policyDetailsObj = typeof transaction.policy_details === 'string' 
+                ? JSON.parse(transaction.policy_details) 
+                : transaction.policy_details;
+              if (policyDetailsObj.PolicyNo) return policyDetailsObj.PolicyNo;
+              if (policyDetailsObj.ProposalNo) return policyDetailsObj.ProposalNo;
+            } catch (e) {
+              console.log('Agent Policy Detail: Failed to parse policy_details for PolicyNo:', e);
+            }
+          }
+          
+          return null; // Return null if no real data found
+        })(),
         "ProposalNo": "PTRAVEL0000000919", // Real ProposalNo from policy_travel.json
-        "CarrierPolicyNo": "P0086998", // Real CarrierPolicyNo from policy_travel.json
+        "CarrierPolicyNo": "P0086998", // Using consistent value until backend provides unique values
         "ProductName": (transaction.commission_log?.product?.name) || transaction.product_name || "Travel Insurance",
         "GrossPremium": parseFloat(transaction.amount || transaction.commission_log?.total_net_premium || "258"),
         "EffectiveDate": transaction.coverage_start || "2026-01-26",

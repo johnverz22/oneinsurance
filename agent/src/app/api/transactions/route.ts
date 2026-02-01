@@ -72,6 +72,26 @@ export async function GET(request: NextRequest) {
               }
             }
             
+            // Extract real IMO Policy Number from each transaction (same as admin portal)
+            let realIMOPolicyNo = transaction.policy_number || transaction.proposal_number
+            
+            // If we have policy_details, try to extract PolicyNo from it
+            if (!realIMOPolicyNo && transaction.policy_details) {
+              try {
+                const policyDetailsObj = typeof transaction.policy_details === 'string' 
+                  ? JSON.parse(transaction.policy_details) 
+                  : transaction.policy_details
+                realIMOPolicyNo = policyDetailsObj.PolicyNo || policyDetailsObj.ProposalNo
+              } catch (e) {
+                console.log('Agent: Failed to parse policy_details for PolicyNo:', e)
+              }
+            }
+            
+            // Use real data only - don't generate IDs, consistent with admin portal
+            if (!realIMOPolicyNo) {
+              realIMOPolicyNo = transaction.proposal_number || null
+            }
+            
             // If policy_details is missing, create complete policy details with real data from policy_travel.json structure
             if (!policyDetails) {
               const minimalPolicyDetails = {
@@ -83,7 +103,7 @@ export async function GET(request: NextRequest) {
                 "BusinessObjectId": 826526930,
                 "CarrierCode": transaction.carrier_code || (transaction.commission_log?.provider?.name) || "MALAYAN",
                 "CarrierPlanCode": transaction.plan_code || "TMPHPC2",
-                "CarrierPolicyNo": transaction.certificate_number || transaction.carrier_policy_number || "P0086998",
+                "CarrierPolicyNo": "P0086998", // Using consistent value until backend provides unique values
                 "CarrierProductCode": transaction.carrier_product_code || (transaction.commission_log?.product?.carrier_product_code) || "TRAVEL",
                 "DataEntryUserId": 10000024281621,
                 "DataEntryUserRealName": "ifrc.uat.fe.user",
@@ -368,7 +388,7 @@ export async function GET(request: NextRequest) {
                     "TechProductId": 826503626
                   }
                 ],
-                "PolicyNo": transaction.policy_number || transaction.proposal_number || "POTRAVEL00000477", // IMO Policy No.
+                "PolicyNo": realIMOPolicyNo, // IMO Policy No.
                 "PolicyStatus": 2,
                 "PolicyStatusForDisplay": 2,
                 "PolicyType": "1",
