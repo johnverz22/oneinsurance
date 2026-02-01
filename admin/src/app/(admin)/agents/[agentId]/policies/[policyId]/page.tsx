@@ -239,11 +239,115 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   }
 
   const handlePrintPolicy = () => {
+    // Add print styles dynamically for single column layout
+    const printStyles = `
+      @media print {
+        /* Hide everything first */
+        body * {
+          visibility: hidden;
+        }
+        
+        /* Show only the main content */
+        .policy-details-content, .policy-details-content * {
+          visibility: visible;
+        }
+        
+        /* Position the print content */
+        .policy-details-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          background: white !important;
+          color: black !important;
+          font-family: Arial, sans-serif !important;
+          font-size: 14px !important;
+          line-height: 1.5 !important;
+          padding: 20px !important;
+        }
+        
+        /* Hide UI elements */
+        .no-print, button, .btn, nav, header, footer, .sidebar {
+          display: none !important;
+        }
+        
+        /* Single column layout */
+        .print-single-column {
+          display: block !important;
+          width: 100% !important;
+          max-width: none !important;
+        }
+        
+        /* Override grid layouts to single column */
+        .grid {
+          display: block !important;
+        }
+        
+        .grid > div {
+          margin-bottom: 15px !important;
+        }
+        
+        /* Larger text for better readability */
+        .print-title {
+          font-size: 24px !important;
+          font-weight: bold !important;
+          margin-bottom: 20px !important;
+          text-align: center !important;
+        }
+        
+        .print-section-title {
+          font-size: 18px !important;
+          font-weight: bold !important;
+          margin: 25px 0 15px 0 !important;
+          border-bottom: 2px solid #333 !important;
+          padding-bottom: 5px !important;
+        }
+        
+        .print-field-label {
+          font-size: 14px !important;
+          font-weight: bold !important;
+          color: #555 !important;
+          margin-bottom: 5px !important;
+        }
+        
+        .print-field-value {
+          font-size: 16px !important;
+          margin-bottom: 15px !important;
+          padding-left: 10px !important;
+        }
+        
+        /* Card styling for print */
+        .print-card {
+          margin-bottom: 30px !important;
+          page-break-inside: avoid !important;
+        }
+        
+        /* Coverage items styling */
+        .print-coverage-item {
+          font-size: 14px !important;
+          margin-bottom: 8px !important;
+          padding: 5px 0 !important;
+          border-bottom: 1px solid #eee !important;
+        }
+      }
+    `;
+    
+    // Add styles to head
+    const styleElement = document.createElement('style');
+    styleElement.textContent = printStyles;
+    document.head.appendChild(styleElement);
+    
+    // Trigger print
     window.print();
+    
+    // Remove styles after printing
+    setTimeout(() => {
+      document.head.removeChild(styleElement);
+    }, 1000);
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 policy-details-content">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -256,7 +360,20 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             Back to Policies
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Policy Details</h1>
+            <h1 className="text-2xl font-bold">
+              {(() => {
+                const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
+                const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
+                const carrierName = carrierCode === 'MALAYAN' ? 'Malayan' : 
+                                  carrierCode === 'OONAPH' ? 'Oona' : 
+                                  carrierCode
+                const productName = productCode === 'TRAVEL' ? 'Travel Insurance' : 
+                                  productCode === 'HEALTH' ? 'Health Insurance' : 
+                                  productCode === 'MOTOR' ? 'Motor Insurance' : 
+                                  `${productCode} Insurance`
+                return `${productName} Policy Details - ${carrierName}`
+              })()}
+            </h1>
             <p className="text-muted-foreground">
               {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Policy: {policyDetails?.CarrierPolicyNo || 'P0086998'}
             </p>

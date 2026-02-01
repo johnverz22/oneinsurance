@@ -102,21 +102,30 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
   return (
     <div className="space-y-6">
       {/* Header with agent info and back button */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleBackClick}
+            className="rounded-full"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'}
+            </p>
+          </div>
+        </div>
+        
         <Button
           variant="outline"
-          size="icon"
-          onClick={handleBackClick}
-          className="rounded-full"
+          onClick={() => router.push(`/agents/${agentId}/profile`)}
         >
-          <ArrowLeft className="h-4 w-4" />
+          View Agent Profile
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'}
-          </p>
-        </div>
       </div>
 
       {/* Transaction History Card */}
