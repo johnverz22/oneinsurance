@@ -22,13 +22,19 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const dateFrom = searchParams.get('date_from')
   const dateTo = searchParams.get('date_to')
+  const agentId = searchParams.get('agent_id')
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-one-insurance.intel-soln.com.ph/api/v1'
   
   try {
+    const params = new URLSearchParams()
+    if (dateFrom) params.append('date_from', dateFrom)
+    if (dateTo) params.append('date_to', dateTo)
+    if (agentId) params.append('agent_id', agentId)
+    
     let url = `${baseUrl}/admin/agent-statistics`
-    if (dateFrom && dateTo) {
-      url += `?date_from=${dateFrom}&date_to=${dateTo}`
+    if (params.toString()) {
+      url += `?${params.toString()}`
     }
 
     const response = await axios.get(

@@ -17,13 +17,18 @@ export interface AgentStatisticsResponse {
   }>
 }
 
-export const useAgentStatistics = (dateFrom: string, dateTo: string) => {
+export const useAgentStatistics = (dateFrom?: string, dateTo?: string, agentId?: number) => {
   const { accessToken } = useAuthStore()
 
   return useQuery({
-    queryKey: ['agent-statistics', dateFrom, dateTo],
+    queryKey: ['agent-statistics', dateFrom, dateTo, agentId],
     queryFn: async () => {
-      const url = `/api/admin/statistics?date_from=${dateFrom}&date_to=${dateTo}`
+      const params = new URLSearchParams()
+      if (dateFrom) params.append('date_from', dateFrom)
+      if (dateTo) params.append('date_to', dateTo)
+      if (agentId) params.append('agent_id', agentId.toString())
+      
+      const url = `/api/admin/statistics?${params.toString()}`
       const token = `Bearer ${accessToken}`
       
       try {
@@ -35,9 +40,23 @@ export const useAgentStatistics = (dateFrom: string, dateTo: string) => {
         return response.data
       } catch (error) {
         console.error('Error fetching agent statistics:', error)
+        
+        // If agent-specific statistics fail, return null instead of throwing
+        if (axios.isAxiosError(error) && error.response?.status === 422 && agentId) {
+          console.log('Agent-specific statistics not supported by backend, returning null')
+          return null
+        }
+        
         throw error
       }
     },
-    enabled: !!accessToken && !!dateFrom && !!dateTo,
+    enabled: !!accessToken,
+    // Don't retry on 422 errors for agent-specific requests
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 422 && agentId) {
+        return false
+      }
+      return failureCount < 3
+    },
   })
 }

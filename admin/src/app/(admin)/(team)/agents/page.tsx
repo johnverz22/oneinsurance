@@ -184,9 +184,19 @@ export default function AgentsPage() {
   // Dynamic actions based on agent status
   const getActionsForAgent = (agent: Agent): AgentDataTableAction<Agent>[] => {
     const status = agent.status.toLowerCase()
+    
+    // Common actions for all agents
+    const commonActions: AgentDataTableAction<Agent>[] = [
+      {
+        label: 'View Profile',
+        icon: <ArrowUpRight className="h-4 w-4" />,
+        onClick: (agent: Agent) => router.push(`/agents/${agent.id}/profile`),
+      },
+    ]
 
     if (status === 'for interview') {
       return [
+        ...commonActions,
         {
           label: isSendingSignupLink ? 'Sending...' : 'Send Signup link',
           icon: <Check className="h-4 w-4" />,
@@ -195,6 +205,7 @@ export default function AgentsPage() {
       ]
     } else if (status === 'active') {
       return [
+        ...commonActions,
         {
           label: 'View Documents',
           icon: <Edit2 className="h-4 w-4" />,
@@ -209,6 +220,7 @@ export default function AgentsPage() {
       ]
     } else if (status === 'pending') {
       return [
+        ...commonActions,
         {
           label: 'Review Document',
           icon: <Edit2 className="h-4 w-4" />,
@@ -222,6 +234,7 @@ export default function AgentsPage() {
       ]
     } else if (status === 'inactive') {
       return [
+        ...commonActions,
         {
           label: 'Review Document',
           icon: <Edit2 className="h-4 w-4" />,
@@ -236,7 +249,7 @@ export default function AgentsPage() {
       ]
     }
 
-    return []
+    return commonActions
   }
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)

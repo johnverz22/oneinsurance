@@ -26,6 +26,11 @@ export const AgentSchema = z.object({
   address: z.string().nullable(),
   is_super_admin: z.number(),
   birth_date: z.string().nullable(),
+  agent_code: z.string().nullable().optional(), // Add agent_code field
+  code: z.string().nullable().optional(), // Alternative agent code field
+  name: z.string().nullable().optional(), // Add name field for display
+  profile_photo_url: z.string().nullable().optional(), // Add profile photo field
+  referral_code: z.string().nullable().optional(), // Add referral code field
   created_at: z.string(),
   updated_at: z.string(),
 })
