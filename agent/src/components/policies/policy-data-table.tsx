@@ -298,6 +298,14 @@ export function PolicyDataTable({
                       <div>
                         <p className="font-medium">
                           {(() => {
+                            // Debug logging to see what data we have
+                            console.log('Agent Policy Table - Transaction data:', {
+                              id: transaction.id,
+                              customer_name: transaction.customer_name,
+                              policy_details: transaction.policy_details ? 'Present' : 'Missing',
+                              commission_log: transaction.commission_log ? 'Present' : 'Missing'
+                            });
+                            
                             // Try to extract policy holder from policy_details using IsPolicyHolder: 'Y' logic
                             const transactionWithDetails = transaction as Transaction & { policy_details?: string };
                             if (transactionWithDetails.policy_details) {
@@ -306,10 +314,17 @@ export function PolicyDataTable({
                                   ? JSON.parse(transactionWithDetails.policy_details) 
                                   : transactionWithDetails.policy_details;
                                 
+                                console.log('Agent Policy Table - Parsed policy details:', {
+                                  hasCustomerList: !!policyDetails?.PolicyCustomerList,
+                                  customerListLength: policyDetails?.PolicyCustomerList?.length || 0
+                                });
+                                
                                 if (policyDetails?.PolicyCustomerList?.length > 0) {
                                   // Find the policy holder using IsPolicyHolder: 'Y' logic
                                   const policyHolder = policyDetails.PolicyCustomerList.find((customer: any) => customer.IsPolicyHolder === 'Y') 
                                     || policyDetails.PolicyCustomerList[0]; // Fallback to first customer
+                                  
+                                  console.log('Agent Policy Table - Policy holder found:', policyHolder);
                                   
                                   const policyHolderName = [policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName, policyHolder.Suffix]
                                     .filter(Boolean)
@@ -317,16 +332,37 @@ export function PolicyDataTable({
                                     .trim();
                                   
                                   if (policyHolderName) {
+                                    console.log('Agent Policy Table - Found policy holder from PolicyCustomerList:', policyHolderName);
                                     return policyHolderName;
                                   }
                                 }
                               } catch (e) {
-                                console.log('Failed to parse policy_details for policy holder:', e);
+                                console.log('Agent Policy Table - Failed to parse policy_details for policy holder:', e);
                               }
                             }
                             
-                            // Fallback to transaction.customer_name
-                            return transaction.customer_name || `Customer ID: ${transaction.customer_id}` || 'N/A';
+                            // Fallback to transaction.customer_name (enhanced by API)
+                            if (transaction.customer_name && transaction.customer_name !== 'N/A' && !transaction.customer_name.includes('Customer ID:')) {
+                              console.log('Agent Policy Table - Using transaction.customer_name:', transaction.customer_name);
+                              return transaction.customer_name;
+                            }
+                            
+                            // Final fallback - try to get from commission_log if available
+                            const transactionWithCommission = transaction as Transaction & { commission_log?: any };
+                            if (transactionWithCommission.commission_log) {
+                              const commissionLog = transactionWithCommission.commission_log;
+                              const commissionCustomerName = commissionLog.customer_name || 
+                                                           commissionLog.policy_holder_name ||
+                                                           (commissionLog.agent ? `${commissionLog.agent.first_name || ''} ${commissionLog.agent.last_name || ''}`.trim() : null);
+                              
+                              if (commissionCustomerName && commissionCustomerName !== 'N/A') {
+                                console.log('Agent Policy Table - Using commission_log customer name:', commissionCustomerName);
+                                return commissionCustomerName;
+                              }
+                            }
+                            
+                            console.log('Agent Policy Table - No customer name found, using fallback');
+                            return 'Policy Holder';
                           })()}
                         </p>
                       </div>

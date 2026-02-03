@@ -430,20 +430,14 @@ export default function PolicyDetailsPage() {
           <div>
             <h1 className="text-2xl font-bold">
               {(() => {
+                const carrierPolicyNo = policyDetails?.CarrierPolicyNo || 'P0086998'
                 const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
                 const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
-                const carrierName = carrierCode === 'MALAYAN' ? 'Malayan' : 
-                                  carrierCode === 'OONAPH' ? 'Oona' : 
-                                  carrierCode
-                const productName = productCode === 'TRAVEL' ? 'Travel Insurance' : 
-                                  productCode === 'HEALTH' ? 'Health Insurance' : 
-                                  productCode === 'MOTOR' ? 'Motor Insurance' : 
-                                  `${productCode} Insurance`
-                return `${productName} Policy Details - ${carrierName}`
+                return `Policy ${carrierPolicyNo} > ${carrierCode} ${productCode}`
               })()}
             </h1>
             <p className="text-muted-foreground">
-              {policyDetails?.CarrierPolicyNo || 'P0086998'} • {policyDetails?.ProposalNo || policyData.proposal_number || 'PTRAVEL0000000919'}
+              {policyData.customer_name || 'Policy Holder'} • {policyData.agent_code_used || 'Agent Code'}
             </p>
           </div>
         </div>
