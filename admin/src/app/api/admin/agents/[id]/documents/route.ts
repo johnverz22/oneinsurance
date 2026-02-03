@@ -26,8 +26,9 @@ export async function GET(
   try {
     const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
     
-    // Try to fetch agent documents using the same endpoint that agents use
-    const url = `${baseUrl}/agents/files/list?folder_id=&limit=50&page=1&agent_id=${id}`
+    // Use the correct admin endpoint to get files for a specific user/agent
+    // From Google Drive File Management API: GET /admin/files/user/{user_id}
+    const url = `${baseUrl}/admin/files/user/${id}?limit=50&page=1`
     
     console.log('Admin: Fetching agent documents from:', url)
 
