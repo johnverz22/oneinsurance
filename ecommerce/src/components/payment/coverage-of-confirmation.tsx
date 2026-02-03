@@ -107,7 +107,7 @@ export function CoverageOfConfirmation({
                 Confirmation of Coverage
               </h1>
               <p className="text-sm text-gray-600">
-                #{policyData.CarrierPolicyNo || policyData.PolicyNo || 'PQTRAVEL001'}
+                #{policyData.PolicyNo || 'PQTRAVEL001'}
               </p>
             </div>
 
@@ -125,7 +125,7 @@ export function CoverageOfConfirmation({
             <div>
               <p className="text-xs font-medium text-gray-500">Policy Number</p>
               <p className="mt-1 text-sm text-gray-800">
-                {policyData.CarrierPolicyNo || policyData.PolicyNo}
+                {policyData.PolicyNo}
               </p>
             </div>
 

@@ -82,52 +82,6 @@ function TravelInsurancePageSSR() {
       } catch (error) {
         console.error('Failed to fetch coverage options:', error)
         setClientRequest({ status: 'error' })
-        
-        // TEMPORARY: For local development when API is not accessible
-        // Remove this in production
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Development mode: Using mock data due to network issues')
-          
-          // Set mock insurance plans data
-          const mockInsurancePlans = {
-            success: true,
-            message: 'Mock data for development',
-            data: [{
-              CarrierCode: 'MALAYAN',
-              Plans: [
-                {
-                  CarrierPlanCode: 'TM_CSL_ASIAN_W_COVID_500K',
-                  CarrierPlanDesc: 'TM CSL ASIAN W/ COVID 500K',
-                  CarrierProductCode: 'TRAVEL',
-                  GrossPremium: 105.11,
-                  MainBenefits: [
-                    {
-                      BenefitCode: 'MEDICAL_EXPENSE',
-                      BenefitDesc: 'Medical Expenses',
-                      Silimit: '500000',
-                      DefaultLimitDesc: 'Up to ₱500,000',
-                      LimitModeDesc: 'Per Incident'
-                    }
-                  ],
-                  AddonBenefits: [],
-                  LGTAmount: 12.5
-                }
-              ]
-            }]
-          }
-          
-          setInsurancePlans(mockInsurancePlans)
-          setClientRequest({
-            id: 'dev-mock-id',
-            status: 'success',
-          })
-          
-          const coverageOptions = document.getElementById('coverage-options')
-          coverageOptions?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          })
-        }
       }
     }
 
