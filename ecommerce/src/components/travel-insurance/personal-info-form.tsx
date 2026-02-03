@@ -85,6 +85,7 @@ export function PersonalInfoForm() {
           travelDetails,
           coverageOption,
           travelersInfo: value.travelers,
+          customFields: {},
         },
         agentCode!
       )

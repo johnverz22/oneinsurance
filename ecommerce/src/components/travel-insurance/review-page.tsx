@@ -292,7 +292,7 @@ export function TravelInsuranceReviewPage() {
                         <p className="font-semibold">
                           {traveler.beneficiary.dateOfBirth
                             ? new Date(
-                                traveler.beneficiary.dateOfBirth
+                                traveler.beneficiary.dateOfBirth!
                               ).toDateString()
                             : 'N/A'}
                         </p>

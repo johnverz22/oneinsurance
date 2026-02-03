@@ -63,7 +63,7 @@ export function PaymentSuccessDialog({
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `travel-insurance-invoice-${policyData.CarrierPolicyNo || policyData.PolicyNo}.txt`
+    a.download = `travel-insurance-invoice-${policyData.PolicyNo}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -89,7 +89,7 @@ export function PaymentSuccessDialog({
 TRAVEL INSURANCE INVOICE
 ========================
 
-Policy Number: ${policyData.CarrierPolicyNo || policyData.PolicyNo}
+Policy Number: ${policyData.PolicyNo}
 Proposal Number: ${policyData.ProposalNo}
 Invoice Date: ${format(new Date(), 'PPP')}
 
@@ -162,7 +162,7 @@ Thank you for choosing our travel insurance service!
 <body>
     <div class="header">
         <h1>Travel Insurance Invoice</h1>
-        <p>Policy Number: ${policyData.CarrierPolicyNo || policyData.PolicyNo}</p>
+        <p>Policy Number: ${policyData.PolicyNo}</p>
         <p>Invoice Date: ${format(new Date(), 'PPP')}</p>
     </div>
     
@@ -309,7 +309,7 @@ Thank you for choosing our travel insurance service!
 CERTIFICATE OF COVERAGE
 =======================
 
-Policy Number: ${policyData.CarrierPolicyNo || policyData.PolicyNo}
+Policy Number: ${policyData.PolicyNo}
 Proposal Number: ${policyData.ProposalNo}
 Issue Date: ${format(new Date(), 'PPP')}
 
@@ -368,7 +368,7 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')
                   a.href = url
-                  a.download = `certificate-of-coverage-${policyData.CarrierPolicyNo || policyData.PolicyNo}.txt`
+                  a.download = `certificate-of-coverage-${policyData.PolicyNo}.txt`
                   document.body.appendChild(a)
                   a.click()
                   document.body.removeChild(a)
@@ -398,7 +398,7 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                     Policy Number
                   </span>
                   <Badge variant="outline" className="font-mono text-sm">
-                    {policyData.CarrierPolicyNo || policyData.PolicyNo}
+                    {policyData.PolicyNo}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">

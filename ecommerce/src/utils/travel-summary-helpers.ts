@@ -104,7 +104,7 @@ export const transformToCOCData = (
 
   return {
     policyNumber: policyData?.PolicyNo ?? '', // IMO Policy No. (internal use only)
-    carrierPolicyNumber: policyData?.CarrierPolicyNo ?? policyData?.PolicyNo ?? '', // Carrier Policy No. (for client documents)
+    carrierPolicyNumber: policyData?.PolicyNo ?? '', // Carrier Policy No. (for client documents)
     proposalNumber: quoteData?.ProposalNo ?? '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
 
