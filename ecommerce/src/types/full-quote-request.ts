@@ -9,6 +9,7 @@ export interface PolicyCustomer {
   Gender: string
   IdNo: string
   IdTypeCode: string
+  IsPolicyHolder?: string // 'Y' or 'N' - marks the policy holder
   LastName: string
   MiddleName?: string | null
   Mobile: string

@@ -142,7 +142,7 @@ export function ReviewCoverage() {
                   </div>
                 </div>
                 <div className="bg-tertiary w-max self-end rounded-full px-6 py-2 text-center text-base font-bold text-white">
-                  PHP {plan.GrossPremium.toLocaleString()}
+                  PHP {plan.DuePremium.toLocaleString()}
                 </div>
               </div>
             </div>

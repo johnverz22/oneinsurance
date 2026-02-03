@@ -119,19 +119,15 @@ export default function AvailTravelInsurance() {
         </div>
 
         <div className={cn('relative lg:w-2/5', { hidden: step > 3 })}>
-          {step <= 2 ? (
-            <PlanPaymentReview
-              stage="initial"
-              grossPremium={
-                Number(coverageOption.selectedPlan?.GrossPremium) || 0
-              }
-            />
-          ) : (
-            <PlanPaymentReview
-              stage="final"
-              grossPremium={apiResponse?.data.GrossPremium || 0}
-            />
-          )}
+          <PlanPaymentReview
+            stage={step <= 2 ? "initial" : "final"}
+            grossPremium={
+              // Use full quote response premium when available (step 3+), otherwise use selected plan premium
+              step >= 3 && apiResponse?.data?.DuePremium 
+                ? Number(apiResponse.data.DuePremium)
+                : Number(coverageOption.selectedPlan?.DuePremium) || 0
+            }
+          />
         </div>
       </div>
     </div>

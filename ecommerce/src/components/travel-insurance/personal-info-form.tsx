@@ -939,6 +939,8 @@ export function PersonalInfoForm() {
                                 />
                               </div>
 
+                              {/* DISABLED: Beneficiary form disabled until further notice */}
+                              {false && (
                               <Card className="mt-6 shadow-none">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                                   <div className="text-lg font-semibold">
@@ -1173,6 +1175,7 @@ export function PersonalInfoForm() {
                                   )}
                                 </form.Subscribe>
                               </Card>
+                              )}
                             </div>
                           </TabsContent>
                         )
