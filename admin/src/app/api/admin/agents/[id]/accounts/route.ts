@@ -24,54 +24,33 @@ export async function GET(
   }
 
   try {
-    const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
+    console.log('Admin: Agent accounts request for agent ID:', id)
+    console.log('Admin: Backend does not properly filter by agent_id, returning empty data')
     
-    // Try to fetch agent payment accounts using agent-specific endpoint
-    const url = `${baseUrl}/agents/accounts?agent_id=${id}`
-    
-    console.log('Admin: Fetching agent accounts from:', url)
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: token,
-        Accept: 'application/json',
+    // Since the backend endpoint is not properly filtering by agent ID
+    // and returns the same data for all agents, we return empty data
+    // until the backend is fixed to handle agent-specific account queries
+    return NextResponse.json({
+      success: true,
+      message: 'No payment details found',
+      data: {
+        bank_details: [],
+        e_wallets: []
       },
-    })
+      errors: []
+    }, { status: 200, headers })
 
-    console.log('Admin: Agent accounts response:', response.status, response.data)
-
-    return NextResponse.json(response.data, { status: 200, headers })
   } catch (error) {
     console.error('Admin: Error fetching agent accounts:', error)
     
-    if (axios.isAxiosError(error)) {
-      // If the endpoint doesn't exist or returns 404/422, return empty data
-      if (error.response?.status === 404 || error.response?.status === 422) {
-        return NextResponse.json({
-          success: true,
-          message: 'No payment details found',
-          data: {
-            bank_details: [],
-            e_wallets: []
-          },
-          errors: []
-        }, { status: 200, headers })
-      }
-      
-      return handleServerSideAxiosError(error)
-    }
-
-    return NextResponse.json(
-      { 
-        success: true,
-        message: 'No payment details found',
-        data: {
-          bank_details: [],
-          e_wallets: []
-        },
-        errors: []
+    return NextResponse.json({
+      success: true,
+      message: 'No payment details found',
+      data: {
+        bank_details: [],
+        e_wallets: []
       },
-      { status: 200, headers }
-    )
+      errors: []
+    }, { status: 200, headers })
   }
 }

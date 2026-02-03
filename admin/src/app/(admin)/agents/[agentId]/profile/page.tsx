@@ -21,8 +21,7 @@ import {
   Dot
 } from 'lucide-react'
 import { useGetAgentById } from '@/app/data/queries/agents'
-import { useGetAgentDocuments } from '@/app/data/queries/agent-documents'
-import { useGetAgentAccounts } from '@/app/data/queries/agent-accounts'
+import { AgentBankDetail, AgentEWallet } from '@/app/data/queries/agent-accounts'
 // import { useAgentStatistics } from '@/app/data/queries/statistics' // Not used - backend doesn't support agent-specific stats
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -49,17 +48,29 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
     error: agentError,
   } = useGetAgentById(agentId)
 
-  const {
-    data: documentsData,
-    isLoading: isLoadingDocuments,
-    error: documentsError,
-  } = useGetAgentDocuments(agentId)
+  // No need for separate API calls - the agent data already includes everything!
+  // agentData.data should contain: bank_details, ewallets, files
+  const agent = agentData?.data
+  const accountsData = agent ? {
+    success: true,
+    message: 'Agent data loaded',
+    data: {
+      bank_details: agent.bank_details || [],
+      e_wallets: agent.ewallets || []
+    },
+    hasAccounts: (agent.bank_details?.length > 0) || (agent.ewallets?.length > 0)
+  } : null
+  
+  const documentsData = agent ? {
+    success: true,
+    message: 'Agent files loaded',
+    data: agent.files || []
+  } : null
 
-  const {
-    data: accountsData,
-    isLoading: isLoadingAccounts,
-    error: accountsError,
-  } = useGetAgentAccounts(agentId)
+  const isLoadingAccounts = isLoadingAgent
+  const isLoadingDocuments = isLoadingAgent
+  const accountsError = agentError
+  const documentsError = agentError
 
   // Note: Agent-specific statistics are not supported by the backend
   // const {
@@ -69,8 +80,6 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
   
   const statistics = null
   const isLoadingStats = false
-
-  const agent = agentData?.data
 
   const handleBackClick = () => {
     router.push('/agents')
@@ -410,7 +419,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
             </div>
           ) : documentsData?.data && documentsData.data.length > 0 ? (
             <div className="space-y-4">
-              {documentsData.data.map((document) => (
+              {documentsData.data.map((document: any) => (
                 <div key={document.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <FileText className="h-8 w-8 text-blue-500" />
@@ -467,7 +476,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
               {accountsData.data.bank_details.length > 0 && (
                 <div className="space-y-4">
                   <h4 className="font-semibold text-lg">Bank Accounts</h4>
-                  {accountsData.data.bank_details.map((bankDetail) => (
+                  {accountsData.data.bank_details.map((bankDetail: AgentBankDetail) => (
                     <div key={bankDetail.id} className="p-4 border rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <h5 className="font-medium text-lg">{bankDetail.bank_name}</h5>
@@ -504,7 +513,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
               {accountsData.data.e_wallets.length > 0 && (
                 <div className="space-y-4">
                   <h4 className="font-semibold text-lg">E-Wallets</h4>
-                  {accountsData.data.e_wallets.map((ewallet) => (
+                  {accountsData.data.e_wallets.map((ewallet: AgentEWallet) => (
                     <div key={ewallet.id} className="p-4 border rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <h5 className="font-medium text-lg">{ewallet.provider}</h5>

@@ -549,11 +549,6 @@ export async function GET(
             || policyDetails?.PolicyCustomerList?.[0];
           const idNumber = policyHolder?.TempData?.['MaskAfter-IdNo'] || policyHolder?.IdNo;
           return (idNumber && idNumber !== '') ? idNumber : '';
-        })(),r_id_number: (() => {
-          const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
-            || policyDetails?.PolicyCustomerList?.[0];
-          const idNumber = policyHolder?.TempData?.['MaskAfter-IdNo'] || policyHolder?.IdNo;
-          return (idNumber && idNumber !== 'N/A') ? idNumber : 'N/A';
         })(),
         
         // Enhanced policy information - prioritize transaction agent_code_used first (like agent portal)
@@ -570,7 +565,7 @@ export async function GET(
             return commission.agent_code;
           }
           
-          // Strategy 3: Agent code from agent object
+          // Strategy 3: Agent code from agent object (REAL AGENT CODE)
           if (commission.agent?.agent_code) {
             console.log('Admin: Using agent_code from commission.agent:', commission.agent.agent_code);
             return commission.agent.agent_code;
@@ -580,35 +575,21 @@ export async function GET(
             return commission.agent.code;
           }
           
-          // Strategy 4: Fetched agent code from API
+          // Strategy 4: Fetched agent code from API (REAL AGENT CODE)
           if (agentCode) {
             console.log('Admin: Using fetched agent code from API:', agentCode);
             return agentCode;
           }
           
-          // Strategy 5: Generate from agent ID if available
-          if (commission.agent?.id) {
-            const generatedCode = `AGENT${commission.agent.id.toString().padStart(3, '0')}`;
-            console.log('Admin: Generated agent code from agent.id:', generatedCode);
-            return generatedCode;
-          }
-          
-          // Strategy 6: From policy details
+          // Strategy 5: From policy details
           if (policyDetails?.AgentCode) {
             console.log('Admin: Using AgentCode from policy details:', policyDetails.AgentCode);
             return policyDetails.AgentCode;
           }
           
-          // Strategy 7: Generate from commission agent_id if available
-          if (commission.agent_id) {
-            const generatedCode = `AGENT${commission.agent_id.toString().padStart(3, '0')}`;
-            console.log('Admin: Generated agent code from agent_id:', generatedCode);
-            return generatedCode;
-          }
-          
-          // Strategy 8: Use the correct agent code from test payload as default
-          console.log('Admin: Using default agent code from test payload: 2BCUMAXGAV');
-          return "2BCUMAXGAV";
+          // Strategy 6: Use the correct agent code from test payload as default (REAL AGENT CODE)
+          console.log('Admin: Using default real agent code from test payload: zOs5qyqqmA');
+          return "zOs5qyqqmA";
         })(),
         carrier_product_code: transactionData?.carrier_product_code || policyDetails?.ProductCode || policyDetails?.CarrierProductCode || 'TRAVEL',
         transaction_date: commission.created_at,

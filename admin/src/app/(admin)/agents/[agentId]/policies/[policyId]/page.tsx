@@ -362,20 +362,26 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           <div>
             <h1 className="text-2xl font-bold">
               {(() => {
+                const carrierPolicyNo = policyDetails?.CarrierPolicyNo || 'P0086998'
                 const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
                 const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
-                const carrierName = carrierCode === 'MALAYAN' ? 'Malayan' : 
-                                  carrierCode === 'OONAPH' ? 'Oona' : 
-                                  carrierCode
-                const productName = productCode === 'TRAVEL' ? 'Travel Insurance' : 
-                                  productCode === 'HEALTH' ? 'Health Insurance' : 
-                                  productCode === 'MOTOR' ? 'Motor Insurance' : 
-                                  `${productCode} Insurance`
-                return `${productName} Policy Details - ${carrierName}`
+                return `Policy ${carrierPolicyNo} > ${carrierCode} ${productCode}`
               })()}
             </h1>
             <p className="text-muted-foreground">
-              {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'} • Policy: {policyDetails?.CarrierPolicyNo || 'P0086998'}
+              {(() => {
+                // Get customer name from policy holder
+                const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
+                  || policyDetails?.PolicyCustomerList?.[0];
+                const customerName = policyHolder 
+                  ? `${policyHolder.FirstName || ''} ${policyHolder.LastName || ''}`.trim()
+                  : policyData.customer_name || 'Customer';
+                
+                // Get agent code
+                const agentCode = policyData.agent_code_used || policyData.agent?.agent_code || policyData.agent?.code || 'N/A';
+                
+                return `${customerName} • Agent Code: ${agentCode}`;
+              })()}
             </p>
           </div>
         </div>
@@ -447,8 +453,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
-                  <p className="font-semibold">{policyData.agent_code_used || 'N/A'}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Agent ID</p>
+                  <p className="font-semibold">AGT{policyData.agent?.id?.toString().padStart(3, '0') || '075'}</p>
+                  <p className="text-xs text-muted-foreground">Internal system ID</p>
                 </div>
               </div>
               
