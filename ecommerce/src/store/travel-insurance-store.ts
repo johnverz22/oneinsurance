@@ -390,7 +390,6 @@ export const useFullQuoteResponseStore = create<FullQuoteResponseStore>()(
     ),
     {
       name: 'policy-store',
-      storage: createJSONStorage(() => sessionStorage),
     }
   )
 )
