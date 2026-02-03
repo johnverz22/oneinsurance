@@ -1,21 +1,36 @@
 import { z } from 'zod'
 
-// Transaction Schema
+// Enhanced Transaction Schema that matches what the agent API returns
 export const TransactionSchema = z.object({
   id: z.number(),
-  agent_id: z.number(),
-  agent_code_used: z.string(),
-  proposal_number: z.string(),
-  policy_id: z.string(),
-  merchant_transaction_id: z.string().nullable(),
-  amount: z.number().or(z.string()).nullable(),
-  customer_id: z.number().nullable(),
-  transaction_status: z.string().nullable(),
-  transaction_date: z.string().datetime().nullable(),
-  status: z.enum(['pending', 'completed', 'failed', 'cancelled']),
+  agent_id: z.number().optional(),
+  agent_code_used: z.string().optional(),
+  proposal_number: z.string().optional(),
+  policy_id: z.string().optional(),
+  certificate_number: z.string().optional(),
+  merchant_transaction_id: z.string().nullable().optional(),
+  amount: z.number().or(z.string()).nullable().optional(),
+  customer_id: z.number().nullable().optional(),
+  customer_name: z.string().optional(), // Enhanced field from agent API
+  policy_holder: z.string().optional(), // Enhanced field from agent API
+  transaction_status: z.string().nullable().optional(),
+  transaction_date: z.string().datetime().nullable().optional(),
+  status: z.enum(['pending', 'completed', 'failed', 'cancelled', 'active']).optional(),
+  plan_name: z.string().optional(),
+  plan_type: z.string().optional(),
+  premium: z.number().or(z.string()).optional(),
+  currency: z.string().optional(),
+  coverage_start: z.string().optional(),
+  coverage_end: z.string().optional(),
+  provider: z.string().optional(),
+  policy_details: z.string().optional(), // JSON string with policy details
+  commission_log: z.any().optional(), // Commission log data
+  agent: z.any().optional(), // Agent data
+  gross_commission: z.string().or(z.number()).optional(),
+  net_commission: z.string().or(z.number()).optional(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-  deleted_at: z.string().datetime().nullable(),
+  deleted_at: z.string().datetime().nullable().optional(),
 })
 
 // Pagination Link Schema

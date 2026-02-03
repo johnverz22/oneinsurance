@@ -180,7 +180,7 @@ export default function TransactionsPage() {
           createSortableHeader('Amount', column, 'font-bold'),
         cell: ({ row }) => {
           const amount = row.original.amount
-          if (amount === null) return '-'
+          if (amount === null || amount === undefined) return '-'
           return typeof amount === 'string'
             ? `₱ ${parseFloat(amount).toFixed(2)}`
             : `₱${amount.toFixed(2)}`
@@ -202,7 +202,7 @@ export default function TransactionsPage() {
                     : 'bg-gray-100 text-gray-800'
             }`}
           >
-            {row.original.status.toUpperCase()}
+            {row.original.status?.toUpperCase() || 'UNKNOWN'}
           </span>
         ),
       },
