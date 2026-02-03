@@ -7,32 +7,49 @@ import { createResponseSchema } from './base-api-response'
 
 export const AgentSchema = z.object({
   id: z.number(),
-  company_id: z.number().nullable(),
-  role: z.number(),
-  username: z.string().nullable(),
-  first_name: z.string(),
-  middle_name: z.string().nullable(),
-  last_name: z.string(),
-  designation: z.string().nullable(),
-  job_description: z.string().nullable(),
-  avatar: z.string().nullable(),
+  company_id: z.number().nullable().optional(),
+  role: z.union([z.number(), z.string()]).optional(),
+  username: z.string().nullable().optional(),
+  name: z.string().optional(), // Backend uses 'name' field
+  first_name: z.string().optional(),
+  middle_name: z.string().nullable().optional(),
+  last_name: z.string().optional(),
+  designation: z.string().nullable().optional(),
+  job_description: z.string().nullable().optional(),
+  avatar: z.string().nullable().optional(),
   email: z.string().email(),
-  email_verified_at: z.string().nullable(),
+  email_verified_at: z.string().nullable().optional(),
   status: z.string(),
-  phone: z.string().nullable(),
-  phone_verified_at: z.string().nullable(),
-  phone_description: z.string().nullable(),
-  telephone: z.string().nullable(),
-  address: z.string().nullable(),
-  is_super_admin: z.number(),
-  birth_date: z.string().nullable(),
-  agent_code: z.string().nullable().optional(), // Add agent_code field
-  code: z.string().nullable().optional(), // Alternative agent code field
-  name: z.string().nullable().optional(), // Add name field for display
-  profile_photo_url: z.string().nullable().optional(), // Add profile photo field
-  referral_code: z.string().nullable().optional(), // Add referral code field
+  phone: z.string().nullable().optional(),
+  phone_verified_at: z.string().nullable().optional(),
+  phone_description: z.string().nullable().optional(),
+  telephone: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  is_super_admin: z.number().optional(),
+  birth_date: z.string().nullable().optional(),
+  agent_code: z.string().nullable().optional(),
+  code: z.string().nullable().optional(),
+  profile_photo_url: z.string().nullable().optional(),
+  referral_code: z.string().nullable().optional(),
   created_at: z.string(),
   updated_at: z.string(),
+  // Backend includes these nested objects
+  settings: z.object({
+    id: z.number(),
+    agent_id: z.number(),
+    code: z.string(),
+    email_notifications: z.number(),
+    sms_notifications: z.number(),
+    push_notifications: z.number(),
+    dark_mode: z.number(),
+    language: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }).optional(),
+  bank_details: z.array(z.any()).optional(),
+  ewallets: z.array(z.any()).optional(),
+  line_of_businesses: z.array(z.any()).optional(),
+  files: z.array(z.any()).optional(),
 })
 
 export const PaginationLinkSchema = z.object({

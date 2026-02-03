@@ -59,6 +59,7 @@ export default function AgentsPage() {
     refetch,
   } = useGetAgents({ 
     page,
+    per_page: 15,
     sort_by: 'created_at',
     sort_order: 'desc'
   })
@@ -104,7 +105,22 @@ export default function AgentsPage() {
 
   // Get agents data
   const agentsOnly = React.useMemo(() => {
-    return agentsData?.data.data || []
+    return agentsData?.data?.data || []
+  }, [agentsData])
+
+  // Debug pagination data
+  React.useEffect(() => {
+    if (agentsData) {
+      console.log('Frontend received data structure:', JSON.stringify(agentsData, null, 2))
+      console.log('Pagination debug:', {
+        page: agentsData.data?.current_page,
+        perPage: agentsData.data?.per_page,
+        total: agentsData.data?.total,
+        lastPage: agentsData.data?.last_page,
+        paginatedLength: agentsData.data?.data?.length,
+        shouldShowPagination: agentsData.data?.last_page > 1
+      })
+    }
   }, [agentsData])
 
   useEffect(() => {
@@ -132,13 +148,13 @@ export default function AgentsPage() {
         ),
       },
       {
-        accessorKey: 'first_name',
+        accessorKey: 'name',
         header: 'Agent',
         cell: ({ row }) => {
           const a = row.original
           return (
             <div className="font-medium">
-              {a.first_name} {a.last_name}
+              {a.name}
             </div>
           )
         },
@@ -268,8 +284,7 @@ export default function AgentsPage() {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false)
   const [selectedToUpdate, setSelectedToUpdate] = useState<Agent | null>(null)
   const [updatePayload, setUpdatePayload] = useState({
-    first_name: '',
-    last_name: '',
+    name: '',
     phone: '',
     designation: 'Agent',
   })
@@ -305,8 +320,7 @@ export default function AgentsPage() {
 
     setSelectedToUpdate(agent)
     setUpdatePayload({
-      first_name: agent.first_name,
-      last_name: agent.last_name,
+      name: agent.name || '',
       phone: agent.phone ?? '',
       designation: 'Agent',
     })
@@ -513,7 +527,7 @@ export default function AgentsPage() {
 
   function handleExportToCSV(): void {
     const dataToExport = isSearchMode
-      ? (searchResults?.data.data ?? [])
+      ? (searchResults?.data?.data ?? [])
       : agentsOnly
 
     if (dataToExport.length === 0) {
@@ -603,7 +617,7 @@ export default function AgentsPage() {
             {isSearchMode && (
               <div className="text-muted-foreground mb-4 text-sm">
                 Showing search results for "{searchKey}" - Found{' '}
-                {displayData?.data.data?.length || 0} result(s)
+                {displayData?.data?.data?.length || 0} result(s)
               </div>
             )}
 
@@ -629,77 +643,79 @@ export default function AgentsPage() {
             )}
 
             {/* Pagination */}
-            {!isSearchMode && displayData?.data && displayData.data.last_page > 1 && (
+            {!isSearchMode && displayData?.data && displayData.data.total > 0 && (
               <div className="mt-6 flex items-center justify-between border-t pt-4">
                 <div className="text-sm text-gray-600">
                   Showing {displayData.data.from || 0} to{' '}
                   {displayData.data.to || 0} of{' '}
                   {displayData.data.total || 0} results
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                    disabled={displayData.data.current_page === 1}
-                    className="rounded-full"
-                  >
-                    Previous
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from(
-                      { length: displayData.data.last_page },
-                      (_, i) => i + 1
-                    )
-                      .filter((pageNum) => {
-                        const current = displayData.data.current_page
-                        return (
-                          pageNum === 1 ||
-                          pageNum === displayData.data.last_page ||
-                          (pageNum >= current - 1 && pageNum <= current + 1)
-                        )
-                      })
-                      .map((pageNum, index, array) => (
-                        <React.Fragment key={pageNum}>
-                          {index > 0 && array[index - 1] !== pageNum - 1 && (
-                            <span className="px-2">...</span>
-                          )}
-                          <Button
-                            variant={
-                              displayData.data.current_page === pageNum
-                                ? 'default'
-                                : 'outline'
-                            }
-                            size="sm"
-                            onClick={() => setPage(pageNum)}
-                            className={`h-8 w-8 rounded-full p-0 ${
-                              displayData.data.current_page === pageNum
-                                ? 'bg-green-600 hover:bg-green-700'
-                                : ''
-                            }`}
-                          >
-                            {pageNum}
-                          </Button>
-                        </React.Fragment>
-                      ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setPage((prev) =>
-                        Math.min(displayData.data.last_page, prev + 1)
+                {displayData.data.last_page > 1 && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                      disabled={displayData.data.current_page === 1}
+                      className="rounded-full"
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from(
+                        { length: displayData.data.last_page },
+                        (_, i) => i + 1
                       )
-                    }
-                    disabled={
-                      displayData.data.current_page ===
-                      displayData.data.last_page
-                    }
-                    className="rounded-full"
-                  >
-                    Next
-                  </Button>
-                </div>
+                        .filter((pageNum) => {
+                          const current = displayData.data.current_page
+                          return (
+                            pageNum === 1 ||
+                            pageNum === displayData.data.last_page ||
+                            (pageNum >= current - 1 && pageNum <= current + 1)
+                          )
+                        })
+                        .map((pageNum, index, array) => (
+                          <React.Fragment key={pageNum}>
+                            {index > 0 && array[index - 1] !== pageNum - 1 && (
+                              <span className="px-2">...</span>
+                            )}
+                            <Button
+                              variant={
+                                displayData.data.current_page === pageNum
+                                  ? 'default'
+                                  : 'outline'
+                              }
+                              size="sm"
+                              onClick={() => setPage(pageNum)}
+                              className={`h-8 w-8 rounded-full p-0 ${
+                                displayData.data.current_page === pageNum
+                                  ? 'bg-green-600 hover:bg-green-700'
+                                  : ''
+                              }`}
+                            >
+                              {pageNum}
+                            </Button>
+                          </React.Fragment>
+                        ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setPage((prev) =>
+                          Math.min(displayData.data.last_page, prev + 1)
+                        )
+                      }
+                      disabled={
+                        displayData.data.current_page ===
+                        displayData.data.last_page
+                      }
+                      className="rounded-full"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -770,9 +786,7 @@ function DeleteDialog(
           <AlertDialogDescription>
             Are you sure you want to delete{' '}
             <strong>
-              {selectedAgent
-                ? `${selectedAgent.first_name} ${selectedAgent.last_name}`
-                : 'this agent'}
+              {selectedAgent?.name || 'this agent'}
             </strong>
             ? This action cannot be undone.
           </AlertDialogDescription>
@@ -811,9 +825,7 @@ function ActivateDialog(
           <AlertDialogDescription>
             Are you sure you want to activate{' '}
             <strong>
-              {selectedToActivate
-                ? `${selectedToActivate.first_name} ${selectedToActivate.last_name}`
-                : 'this agent'}
+              {selectedToActivate?.name || 'this agent'}
             </strong>
             ?
           </AlertDialogDescription>
@@ -842,7 +854,7 @@ function UpdateDialog(
   isUpdateOpen: boolean,
   setIsUpdateOpen: React.Dispatch<React.SetStateAction<boolean>>,
   selectedToUpdate: Agent | null,
-  updatePayload: { first_name: string; last_name: string; phone: string },
+  updatePayload: { name: string; phone: string },
   setUpdatePayload: React.Dispatch<React.SetStateAction<any>>,
   setIsSaveConfirmOpen: React.Dispatch<React.SetStateAction<boolean>>,
   isUpdating: boolean
@@ -855,9 +867,7 @@ function UpdateDialog(
           <AlertDialogDescription>
             Update details for{' '}
             <strong>
-              {selectedToUpdate
-                ? `${selectedToUpdate.first_name} ${selectedToUpdate.last_name}`
-                : 'this agent'}
+              {selectedToUpdate?.name || 'this agent'}
             </strong>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -865,29 +875,16 @@ function UpdateDialog(
         <ScrollArea className="relative h-full max-h-[64vh] pb-4">
           <div className="grid gap-2 py-2">
             <div>
-              <Label>First name</Label>
+              <Label>Name</Label>
               <Input
-                value={updatePayload.first_name}
+                value={updatePayload.name}
                 onChange={(e) =>
                   setUpdatePayload({
                     ...updatePayload,
-                    first_name: e.target.value,
+                    name: e.target.value,
                   })
                 }
-                placeholder="First name"
-              />
-            </div>
-            <div>
-              <Label>Last name</Label>
-              <Input
-                value={updatePayload.last_name}
-                onChange={(e) =>
-                  setUpdatePayload({
-                    ...updatePayload,
-                    last_name: e.target.value,
-                  })
-                }
-                placeholder="Last name"
+                placeholder="Full name"
               />
             </div>
             <div>
@@ -937,9 +934,7 @@ function ConfirmUpdateDialog(
           <AlertDialogDescription>
             Are you sure you want to save changes to{' '}
             <strong>
-              {selectedToUpdate
-                ? `${selectedToUpdate.first_name} ${selectedToUpdate.last_name}`
-                : 'this agent'}
+              {selectedToUpdate?.name || 'this agent'}
             </strong>
             ?
           </AlertDialogDescription>
@@ -1010,7 +1005,7 @@ function DetailsDialog(
                 <div>
                   <Label className="text-xs text-gray-500">Name:</Label>
                   <div className="font-medium">
-                    {agent.first_name} {agent.last_name}
+                    {agent.name}
                   </div>
                 </div>
                 <div>
