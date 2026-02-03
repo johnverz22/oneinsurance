@@ -27,12 +27,13 @@ export function CustomerInfoCard({ customers }: CustomerInfoCardProps) {
     if (customer.IsMainInsured === 'Y') {
       roles.push('Main Insured')
     } else {
-      roles.push('Beneficiary')
+      // FIXED: Additional insured should be labeled as "Additional Insured", not "Beneficiary"
+      roles.push('Additional Insured')
     }
     if (customer.IsAdultTraveller === 'Y') {
       roles.push('Adult')
     } else {
-      roles.push('Non-Adult')
+      roles.push('Child')
     }
     return roles
   }

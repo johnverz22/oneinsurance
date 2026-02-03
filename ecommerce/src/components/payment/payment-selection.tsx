@@ -30,6 +30,7 @@ import {
   IssueQuoteResponse,
 } from '@/types/travel-insurance/policy-types'
 import { useIssueQuoteRequest } from '@/app/data/mutations/issue-quote-request'
+import { getCustomFields, validateCustomFields } from '@/utils/custom-fields-storage'
 import { usePaymentAuth, usePaymentSubmit } from '@/app/data/mutations/payment'
 import {
   useFullQuoteResponseStore,
@@ -141,8 +142,15 @@ export default function PaymentSelection() {
       setIsIssuingQuote(true)
 
       // Issue the quote
+      const customFields = getCustomFields()
+      const isValidCustomFields = validateCustomFields(customFields)
+      
+      console.log('Issue Quote - CustomFields retrieved:', customFields)
+      console.log('Issue Quote - CustomFields validation:', isValidCustomFields)
+      
       const issueQuoteRequestBody = {
         ProposalNo: data.proposal_number,
+        CustomFields: customFields, // Include CustomFields in the request
       } satisfies IssueQuoteRequest
 
       const response = await issueQuote({
@@ -234,8 +242,15 @@ export default function PaymentSelection() {
   async function handleCardPaymentIssueQuote(
     paymentRequest: PaymentSubmitRequest
   ) {
+    const customFields = getCustomFields()
+    const isValidCustomFields = validateCustomFields(customFields)
+    
+    console.log('Card Payment Issue Quote - CustomFields retrieved:', customFields)
+    console.log('Card Payment Issue Quote - CustomFields validation:', isValidCustomFields)
+    
     const issueQuoteRequestBody = {
       ProposalNo: apiResponse.data.ProposalNo,
+      CustomFields: customFields, // Include CustomFields in the request
     } satisfies IssueQuoteRequest
 
     const response = await issueQuote({

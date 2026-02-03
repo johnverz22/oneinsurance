@@ -272,8 +272,8 @@ export function TravelInsuranceReviewPage() {
                   </p>
                 </div>
 
-                {/* Beneficiary for this traveler */}
-                {traveler.beneficiary && traveler.beneficiary.firstName && (
+                {/* DISABLED: Beneficiary display disabled until further notice */}
+                {false && traveler.beneficiary && traveler.beneficiary.firstName && (
                   <div className="border-t pt-4">
                     <h5 className="text-primary dark:text-accent mb-3 text-lg font-semibold">
                       Beneficiary

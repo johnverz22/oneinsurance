@@ -12,7 +12,8 @@ import { Coverage } from '../payment/coverage-of-confirmation'
 
 type COCRendererProps = {
   cocData: {
-    policyNumber: string
+    policyNumber: string // IMO Policy No. (internal use only)
+    carrierPolicyNumber: string // Carrier Policy No. (for client documents)
     proposalNumber: string
     invoiceDate: string
     customers: {
@@ -53,7 +54,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
         <View>
           <Text style={styles.title}>Coverage of Confirmation</Text>
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
-          <Text style={styles.policyNo}>Policy #{cocData.policyNumber}</Text>
+          <Text style={styles.policyNo}>Policy #{cocData.carrierPolicyNumber}</Text>
         </View>
         <Image src="/images/IFRC.png" style={styles.logo} />
       </View>
