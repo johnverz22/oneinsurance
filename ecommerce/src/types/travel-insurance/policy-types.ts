@@ -240,4 +240,8 @@ export interface FullQuoteRequest {
 
 export type IssueQuoteRequest = {
   ProposalNo: string
+  CustomFields?: {
+    CarrierPlanDesc?: string
+    [key: string]: any
+  }
 }

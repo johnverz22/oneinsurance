@@ -17,6 +17,7 @@ import {
   PaymentSubmitRequest,
   PaymentSubmitResponse,
 } from '@/types/payment'
+import { CustomFields } from '@/utils/custom-fields-storage'
 
 export type ClientRequest = {
   id?: string | undefined
@@ -39,6 +40,7 @@ export type TravelInsuranceStoreState = {
   selectedPaymentBrand: PaymentBrand | null
   paymentBillingDetails?: PaymentSubmitRequest | null
   quoteRefetchCount: number
+  customFields: CustomFields // Store custom fields for persistence
 }
 
 export type TravelInsuranceStoreActions = {
@@ -62,6 +64,9 @@ export type TravelInsuranceStoreActions = {
   setSelectedPaymentBrand: (brand: PaymentBrand | null) => void
   setPaymentBillingDetails: (details: PaymentSubmitRequest | null) => void
   setRefCode: (refCode: string | null) => void
+  updateCustomFields: (fields: Partial<CustomFields>) => void
+  setCustomFields: (fields: CustomFields) => void
+  resetCustomFields: () => void
 }
 
 export type TravelInsuranceStore = TravelInsuranceStoreState &
@@ -133,6 +138,7 @@ const initialState = {
   paymentBillingDetails: null,
   quoteRefetchCount: 0,
   refCode: null,
+  customFields: {}, // Initialize empty custom fields
 } satisfies TravelInsuranceStoreState
 
 export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
@@ -206,6 +212,12 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
       setPaymentBillingDetails: (details) =>
         set({ paymentBillingDetails: details }),
       setRefCode: (refCode) => set({ refCode }),
+      updateCustomFields: (fields) =>
+        set((state) => ({
+          customFields: { ...state.customFields, ...fields },
+        })),
+      setCustomFields: (fields) => set({ customFields: fields }),
+      resetCustomFields: () => set({ customFields: {} }),
     }),
     {
       name: 'travel-insurance-form',
