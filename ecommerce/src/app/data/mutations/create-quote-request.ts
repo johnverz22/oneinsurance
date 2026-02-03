@@ -17,11 +17,44 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/compare-quote`
     const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
 
+    console.log('Making request to:', url)
+    console.log('With token:', token ? 'Token present' : 'No token')
+    console.log('Request data:', data)
+
     const result = await axios.post<InitCompareQuote>(url, data, {
-      headers: { Authorization: token },
+      headers: { 
+        Authorization: token,
+        'Content-Type': 'application/json'
+      },
+      timeout: 30000, // 30 second timeout
     })
     return result.data
-  } catch (error) {
+  } catch (error: any) {
+    console.error('API Error Details:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method
+    })
+    
+    if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+      throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
+    }
+    
+    if (error.response?.status === 404) {
+      throw new Error('API endpoint not found. Please contact support.')
+    }
+    
+    if (error.response?.status === 401) {
+      throw new Error('Authentication failed. Please refresh the page and try again.')
+    }
+    
+    if (error.response?.status >= 500) {
+      throw new Error('Server error. Please try again later.')
+    }
+    
     throw error
   }
 }
@@ -29,13 +62,25 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
 export const useCreateQuoteRequest = () => {
   return useMutation({
     mutationFn: async (values: TravelInsuranceFormData) => {
+      // Debug environment variables
+      console.log('Environment check:', {
+        baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+        hasToken: !!process.env.NEXT_PUBLIC_ACCESS_TOKEN,
+        tokenLength: process.env.NEXT_PUBLIC_ACCESS_TOKEN?.length
+      })
+
       const initCompareQuoteRequoteBody =
         travelInsuranceSchemaToInitCompareQuote(values)
       try {
         const response = await initCompareQuote(initCompareQuoteRequoteBody)
 
         return response.data.ClientRequestId
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Mutation error:', error)
+        // Re-throw with more user-friendly message
+        if (error.message.includes('Network Error')) {
+          throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
+        }
         throw error
       }
     },

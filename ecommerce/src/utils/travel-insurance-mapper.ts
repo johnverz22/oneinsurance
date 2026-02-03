@@ -93,7 +93,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
 
   const policyCustomerList: PolicyCustomer[] = []
 
-  travelInsurance.travelersInfo.map((traveler) => {
+  travelInsurance.travelersInfo.map((traveler, index) => {
     const dobDate =
       traveler.dateOfBirth instanceof Date
         ? traveler.dateOfBirth
@@ -110,6 +110,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       Gender: traveler.gender,
       IdNo: traveler.idNumber,
       IdTypeCode: traveler.idType,
+      IsPolicyHolder: index === 0 ? 'Y' : 'N', // First traveler is the policy holder
       LastName: traveler.lastName,
       MiddleName: traveler.middleName || '',
       Mobile: `+63${traveler.mobileNumber}`,
@@ -130,7 +131,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
 
     const travelerAge = calculateAge(dobDate)
 
-    // Add traveler as main insured
+    // Add traveler as insured person
     policyRiskList.push({
       FirstName: traveler.firstName,
       LastName: traveler.lastName,
@@ -154,43 +155,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       Suffix: traveler.suffix === 'No Suffix' ? '' : traveler.suffix,
     } as PolicyRisk)
 
-    // If traveler has a beneficiary, add them as non-main insured with traveler's details
-    if (
-      traveler.beneficiary &&
-      traveler.beneficiary.firstName &&
-      traveler.beneficiary.firstName.length > 0
-    ) {
-      const beneficiary = traveler.beneficiary
-      const beneficiaryDobDate =
-        beneficiary.dateOfBirth instanceof Date
-          ? beneficiary.dateOfBirth
-          : new Date(beneficiary.dateOfBirth!)
-
-      const beneficiaryAge = calculateAge(beneficiaryDobDate)
-
-      policyRiskList.push({
-        FirstName: beneficiary.firstName,
-        LastName: beneficiary.lastName,
-        MiddleName: beneficiary.middleName || '',
-        AddrProvince: traveler.address.province, // Use traveler's address
-        AddressLine1: traveler.address.line1,
-        AddressLine2: traveler.address.line2 || 'null',
-        Age: beneficiaryAge,
-        City: traveler.address.city,
-        DateOfBirth: beneficiaryDobDate.toISOString().split('T').at(0),
-        Email: traveler.email, // Use traveler's email
-        Gender: traveler.gender, // Use traveler's gender
-        IdNo: traveler.idNumber, // Use traveler's ID
-        IdTypeCode: traveler.idType,
-        IsAdultTraveller: beneficiaryAge >= 18 ? 'Y' : 'N',
-        IsMainInsured: 'N', // Beneficiaries are not main insured
-        Mobile: `+63${traveler.mobileNumber}`, // Use traveler's mobile
-        PolicyCoverageList: policyCoverageList,
-        PostCode: traveler.address.zipCode,
-        ProductElementCode: 'R00001',
-        Suffix: traveler.suffix || '', // Use traveler's suffix
-      } as PolicyRisk)
-    }
+    // NOTE: Beneficiary form is disabled - no beneficiary processing
   })
 
   const travelDetailList = travelInsurance.travelDetails.travelDetailList.map(

@@ -32,6 +32,7 @@ function TravelInsurancePageSSR() {
     setClientRequest,
     setFormModified,
     resetAvailForm,
+    setInsurancePlans,
   } = useTravelInsuranceStore()
   const router = useRouter()
   const { mutateAsync } = useCreateQuoteRequest()
@@ -79,6 +80,7 @@ function TravelInsurancePageSSR() {
           block: 'start',
         })
       } catch (error) {
+        console.error('Failed to fetch coverage options:', error)
         setClientRequest({ status: 'error' })
       }
     }

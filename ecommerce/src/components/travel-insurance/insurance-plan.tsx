@@ -66,7 +66,7 @@ export function TravelInsurancePlan({
           </div>
 
           <div className="bg-tertiary w-max rounded-full px-6 py-2 text-center text-base font-bold text-white">
-            ₱ {plan.GrossPremium.toLocaleString()}
+            ₱ {plan.DuePremium.toLocaleString()}
           </div>
         </div>
 
