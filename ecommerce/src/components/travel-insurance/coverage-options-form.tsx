@@ -19,7 +19,7 @@ import { useAgentCodeStore } from '@/store/agent-code-store'
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
 import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
-import { storeCarrierPlanDesc } from '@/utils/custom-fields-storage'
+import { storeCarrierPlanDesc, storePlanName } from '@/utils/custom-fields-storage'
 
 function ServerConnectionIssue() {
   return (
@@ -251,21 +251,22 @@ export function CoverageOptionsForm() {
       return
     }
     
-    // Store CarrierPlanDesc in CustomFields for persistence
+    // Store PlanName in CustomFields for the issue-quote API
     const customFields = {
-      CarrierPlanDesc: plan.CarrierPlanDesc,
-      // Add other fields as needed in the future
+      PlanName: plan.CarrierPlanDesc, // Store as PlanName for issue-quote API
+      CarrierPlanDesc: plan.CarrierPlanDesc, // Keep for backward compatibility
     }
     
     // Store in localStorage for immediate access
     storeCarrierPlanDesc(plan.CarrierPlanDesc)
+    storePlanName(plan.CarrierPlanDesc) // Store PlanName specifically
     
     // Store in Zustand store for app-wide access
     updateCustomFields(customFields)
     
     updateCoverageOption({ selectedPlan: plan, carrierCode })
     
-    console.log('Plan selected - CustomFields stored:', customFields)
+    console.log('Plan selected - CustomFields stored for issue-quote:', customFields)
     
     // close websocket/echo connection before navigating away
     closeEchoConnection()
