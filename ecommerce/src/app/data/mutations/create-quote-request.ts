@@ -14,16 +14,13 @@ export type TravelQuoteRequestArgs = {
 
 export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/compare-quote`
-    const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
-
-    console.log('Making request to:', url)
-    console.log('With token:', token ? 'Token present' : 'No token')
+    const url = `/api/travel-insurance/compare-quote`
+    
+    console.log('Making request to local API:', url)
     console.log('Request data:', data)
 
     const result = await axios.post<InitCompareQuote>(url, data, {
       headers: { 
-        Authorization: token,
         'Content-Type': 'application/json'
       },
       timeout: 30000, // 30 second timeout

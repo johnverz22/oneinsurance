@@ -240,7 +240,16 @@ export interface FullQuoteRequest {
 
 export type IssueQuoteRequest = {
   ProposalNo: string
-  CustomFields?: {
+  PolicyPaymentInfoList?: Array<{
+    PaymentReferenceNo: string
+    PaymentDate: string
+    Amount: string
+    PaymentMode: string
+    PaymentStatus: string
+    IsInstallment: string
+  }>
+  CustomField?: {
+    PlanName?: string
     CarrierPlanDesc?: string
     [key: string]: any
   }

@@ -4,7 +4,9 @@
  */
 
 export interface CustomFields {
+  PlanName?: string
   CarrierPlanDesc?: string
+  CarrierProductName?: string
   [key: string]: any
 }
 
@@ -69,10 +71,24 @@ export function getCarrierPlanDesc(): string | undefined {
 }
 
 /**
+ * Store PlanName specifically
+ */
+export function storePlanName(planName: string): void {
+  storeCustomFields({ PlanName: planName })
+}
+
+/**
+ * Get PlanName specifically
+ */
+export function getPlanName(): string | undefined {
+  const fields = getCustomFields()
+  return fields.PlanName
+}
+
+/**
  * Validate that required custom fields are present
  */
 export function validateCustomFields(fields: CustomFields): boolean {
-  // Add validation logic here if needed
-  // For now, we just check if CarrierPlanDesc exists and is not empty
-  return Boolean(fields.CarrierPlanDesc && fields.CarrierPlanDesc.trim().length > 0)
+  // Check if PlanName exists and is not empty (primary requirement for issue-quote)
+  return Boolean(fields.PlanName && fields.PlanName.trim().length > 0)
 }

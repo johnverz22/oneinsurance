@@ -12,13 +12,12 @@ export function useFullQuoteRequest() {
       fullQuoteRequest: FullQuoteRequest
     }) => {
       try {
-        const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/quote/travel/full-quote`,
+          `/api/travel-insurance/full-quote`,
           fullQuoteRequest,
           {
             headers: {
-              Authorization: token,
+              'Content-Type': 'application/json',
             },
           }
         )
