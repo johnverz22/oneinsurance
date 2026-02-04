@@ -42,9 +42,22 @@ export default function PoliciesPage() {
       
       const filtered = transactionsResponse.data.data.filter(transaction => {
         const searchTerm = keyword.toLowerCase()
+        
+        // Try to get CarrierPolicyNo from policy_details for search
+        let carrierPolicyNo = ''
+        if (transaction.policy_details) {
+          try {
+            const policyDetails = typeof transaction.policy_details === 'string' 
+              ? JSON.parse(transaction.policy_details) 
+              : transaction.policy_details;
+            carrierPolicyNo = policyDetails?.CarrierPolicyNo || ''
+          } catch (e) {
+            console.log('Failed to parse policy_details for search:', e)
+          }
+        }
+        
         return (
-          transaction.policy_id?.toLowerCase().includes(searchTerm) ||
-          transaction.proposal_number?.toLowerCase().includes(searchTerm) ||
+          carrierPolicyNo.toLowerCase().includes(searchTerm) ||
           transaction.customer_name?.toLowerCase().includes(searchTerm) ||
           transaction.agent_code_used?.toLowerCase().includes(searchTerm) ||
           transaction.carrier_product_code?.toLowerCase().includes(searchTerm)

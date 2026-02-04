@@ -106,7 +106,7 @@ export function PolicyDataTable({
         <div className="relative max-w-sm flex-1">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search by Carrier Policy No., IMO Policy No., or Policy Holder"
+            placeholder="Search by Policy No. or Policy Holder"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
@@ -218,8 +218,7 @@ export function PolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Carrier Policy No.</TableHead>
-              <TableHead>IMO Policy No.</TableHead>
+              <TableHead>Policy No.</TableHead>
               <TableHead>Policy Holder</TableHead>
               <TableHead>Product</TableHead>
               <TableHead>Plan Code</TableHead>
@@ -262,35 +261,8 @@ export function PolicyDataTable({
                             }
                           }
                           
-                          // Fallback to proposal_number
-                          return transaction.proposal_number || 'N/A';
-                        })()}
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <button
-                        onClick={() => handleViewPolicy(transaction)}
-                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                      >
-                        {(() => {
-                          // Try to get PolicyNo from policy_details
-                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                          if (transactionWithDetails.policy_details) {
-                            try {
-                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                                ? JSON.parse(transactionWithDetails.policy_details) 
-                                : transactionWithDetails.policy_details;
-                              
-                              if (policyDetails?.PolicyNo) {
-                                return policyDetails.PolicyNo;
-                              }
-                            } catch (e) {
-                              console.log('Failed to parse policy_details for PolicyNo:', e);
-                            }
-                          }
-                          
-                          // Fallback to proposal_number
-                          return transaction.proposal_number || 'N/A';
+                          // Show N/A if not available
+                          return 'N/A';
                         })()}
                       </button>
                     </TableCell>
@@ -550,7 +522,7 @@ export function PolicyDataTable({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={9} className="h-24 text-center text-gray-500">
                   {isLoading ? 'Loading...' : 'No policies found'}
                 </TableCell>
               </TableRow>
