@@ -13,6 +13,8 @@ import { PaymentSubmitRequest } from '@/types/payment'
 type InvoiceRendererProps = {
   invoiceData: {
     policyNumber: string
+    carrierPolicyNumber?: string
+    planName?: string
     proposalNumber: string
     invoiceDate: string
     customer: {
@@ -54,7 +56,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           <View>
             <Text style={styles.invoiceTitle}>Invoice</Text>
             <Text style={styles.invoiceNumber}>
-              #{invoiceData.policyNumber}
+              #{localStorage.getItem('payment_transaction_id') || invoiceData.policyNumber}
             </Text>
           </View>
           <Image style={styles.logo} src="/images/IFRC.png" />
@@ -63,7 +65,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
         <View style={styles.infoSection}>
           <View style={styles.infoBlock}>
             <Text style={styles.infoLabel}>Policy Number</Text>
-            <Text style={styles.infoText}>{invoiceData.policyNumber}</Text>
+            <Text style={styles.infoText}>{invoiceData.carrierPolicyNumber || invoiceData.policyNumber}</Text>
           </View>
 
           <View style={styles.infoBlock}>
@@ -87,7 +89,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           </View>
           <View style={styles.infoBlock}>
             <Text style={styles.infoLabel}>To</Text>
-            <Text style={styles.infoTitle}>{invoiceData.customer.name}</Text>
+            <Text style={styles.infoTitle}>{invoiceData.customer.name.toUpperCase()}</Text>
             <Text style={styles.infoText}>{invoiceData.customer.address}</Text>
             <Text style={styles.infoText}>{invoiceData.customer.email}</Text>
             <Text style={styles.infoText}>{invoiceData.customer.phone}</Text>
@@ -106,7 +108,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           {/* Travel Insurance Coverage */}
           <View style={styles.tableRow}>
             <View style={styles.colDescription}>
-              <Text style={styles.cellText}>{invoiceData.policy.plan}</Text>
+              <Text style={styles.cellText}>{invoiceData.planName || invoiceData.policy.plan}</Text>
               <Text
                 style={[
                   styles.cellText,
@@ -121,14 +123,14 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
             </View>
             <Text style={[styles.cellText, styles.colUnits]}>1</Text>
             <Text style={[styles.cellText, styles.colPrice]}>
-              PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
+              PHP {invoiceData.payment.basePremium.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             </Text>
           </View>
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
             <Text style={styles.totalAmount}>
-              PHP {invoiceData.payment.basePremium.toFixed(2).toLocaleString()}
+              PHP {invoiceData.payment.basePremium.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
             </Text>
           </View>
         </View>

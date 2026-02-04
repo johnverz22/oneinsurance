@@ -289,6 +289,11 @@ export default function PaymentSelection() {
     setIsProcessing(true)
     try {
       setPaymentBillingDetails(paymentRequest)
+      
+      // Generate and store payment ID in localStorage before submission
+      const paymentId = generateTransactionId()
+      localStorage.setItem('payment_transaction_id', paymentId)
+      
       const authResponse = await getPaymentAuth()
       if (!authResponse?.access_token) {
         alert('Payment authentication failed. Please try again.')
@@ -300,7 +305,7 @@ export default function PaymentSelection() {
       const paymentResult = await submitPayment({
         data: {
           ...paymentRequest,
-          merchant_transaction_id: generateTransactionId(),
+          merchant_transaction_id: paymentId,
         },
         brand_token: authResponse.access_token,
       })
@@ -339,6 +344,11 @@ export default function PaymentSelection() {
     setIsProcessing(true)
     try {
       setPaymentBillingDetails(paymentRequest)
+      
+      // Generate and store payment ID in localStorage before submission
+      const paymentId = generateTransactionId()
+      localStorage.setItem('payment_transaction_id', paymentId)
+      
       // Step 1: Get payment authentication
       const authResponse = await getPaymentAuth()
       if (!authResponse?.access_token) {
@@ -348,7 +358,10 @@ export default function PaymentSelection() {
 
       // Step 2: Submit payment
       const paymentResult = await submitPayment({
-        data: paymentRequest,
+        data: {
+          ...paymentRequest,
+          merchant_transaction_id: paymentId,
+        },
         brand_token: authResponse.access_token,
       })
 
