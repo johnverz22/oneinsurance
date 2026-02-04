@@ -28,7 +28,20 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     | 'selectedPaymentBrand'
     | 'paymentBillingDetails'
   >,
-  agentCode: string
+  agentCode: string,
+  kycProfile?: {
+    email: string
+    firstName: string
+    lastName: string
+    dateOfBirth: Date
+    gender: 'male' | 'female' | 'prefer not to say'
+    phoneNumber: string
+    country: string
+    state: string
+    city: string
+    zipCode: string
+    address: string
+  }
 ) {
   const plan = travelInsurance.coverageOption.selectedPlan!
 
@@ -93,6 +106,34 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
 
   const policyCustomerList: PolicyCustomer[] = []
 
+  // If KYC profile is provided, add it as the policy holder first
+  if (kycProfile) {
+    const kycDobDate = kycProfile.dateOfBirth instanceof Date 
+      ? kycProfile.dateOfBirth 
+      : new Date(kycProfile.dateOfBirth)
+
+    policyCustomerList.push({
+      AddrProvince: kycProfile.state,
+      AddressLine1: kycProfile.address,
+      AddressLine2: null,
+      City: kycProfile.city,
+      DateOfBirth: kycDobDate.toISOString().split('T').at(0),
+      Email: kycProfile.email,
+      FirstName: kycProfile.firstName,
+      Gender: kycProfile.gender === 'male' ? 'M' : kycProfile.gender === 'female' ? 'F' : 'M',
+      IdNo: '', // KYC profile might not have ID number, will need to be filled separately
+      IdTypeCode: 'PAS', // Default to passport, can be updated
+      IsPolicyHolder: 'Y', // KYC signer is the policy holder
+      LastName: kycProfile.lastName,
+      MiddleName: '',
+      Mobile: `+63${kycProfile.phoneNumber}`,
+      PostCode: kycProfile.zipCode,
+      Suffix: '',
+      Title: kycProfile.gender === 'female' ? 'Miss' : 'Mister',
+    } as PolicyCustomer)
+  }
+
+  // Add travelers to the policy customer list
   travelInsurance.travelersInfo.map((traveler, index) => {
     const dobDate =
       traveler.dateOfBirth instanceof Date
@@ -110,7 +151,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       Gender: traveler.gender,
       IdNo: traveler.idNumber,
       IdTypeCode: traveler.idType,
-      IsPolicyHolder: index === 0 ? 'Y' : 'N', // First traveler is the policy holder
+      IsPolicyHolder: 'N', // Travelers are not policy holders when KYC profile is provided, or first traveler is policy holder when no KYC
       LastName: traveler.lastName,
       MiddleName: traveler.middleName || '',
       Mobile: `+63${traveler.mobileNumber}`,
@@ -119,6 +160,11 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       Title: traveler.gender === 'F' ? 'Miss' : 'Mister',
     } as PolicyCustomer)
   })
+
+  // If no KYC profile provided, set first traveler as policy holder (backward compatibility)
+  if (!kycProfile && policyCustomerList.length > 0) {
+    policyCustomerList[0].IsPolicyHolder = 'Y'
+  }
 
   const policyRiskList: PolicyRisk[] = []
 

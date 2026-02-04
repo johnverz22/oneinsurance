@@ -40,6 +40,7 @@ import {
 } from '@/types/travel-insurance/policy-types'
 import { FullQuoteResponseValidationErrorSchema } from '@/types/travel-insurance/error-travel-response'
 import { useAgentCodeStore } from '@/store/agent-code-store'
+import { useSignInStateStore } from '@/store/signin-store'
 import { mapTravelInsuranceStoreToFullQuoteRequest } from '@/utils/travel-insurance-mapper'
 import { useFullQuoteRequest } from '@/app/data/mutations/full-quote-request'
 import { CircleCheck, OctagonAlert } from 'lucide-react'
@@ -62,6 +63,7 @@ export function PersonalInfoForm() {
   const { agentCode } = useAgentCodeStore()
   const { mutateAsync } = useFullQuoteRequest()
   const { setApiResponse } = useFullQuoteResponseStore()
+  const signinState = useSignInStateStore()
 
   const [selectedProvinceCode, setSelectedProvinceCode] = useState<
     Record<number, string>
@@ -87,7 +89,21 @@ export function PersonalInfoForm() {
           travelersInfo: value.travelers,
           customFields: {},
         },
-        agentCode!
+        agentCode!,
+        // Pass KYC profile if user is signed in
+        signinState.email ? {
+          email: signinState.email,
+          firstName: signinState.firstName,
+          lastName: signinState.lastName,
+          dateOfBirth: signinState.dateOfBirth,
+          gender: signinState.gender,
+          phoneNumber: signinState.phoneNumber,
+          country: signinState.country,
+          state: signinState.state,
+          city: signinState.city,
+          zipCode: signinState.zipCode,
+          address: signinState.address,
+        } : undefined
       )
 
       const fullQuoteResponse = await mutateAsync({
