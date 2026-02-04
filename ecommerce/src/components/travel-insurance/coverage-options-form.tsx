@@ -19,7 +19,7 @@ import { useAgentCodeStore } from '@/store/agent-code-store'
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
 import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
-import { storeCarrierPlanDesc, storePlanName } from '@/utils/custom-fields-storage'
+import { storePlanName } from '@/utils/custom-fields-storage'
 
 function ServerConnectionIssue() {
   return (
@@ -251,14 +251,12 @@ export function CoverageOptionsForm() {
       return
     }
     
-    // Store PlanName in CustomFields for the issue-quote API
+    // Store only PlanName in CustomFields for the issue-quote API
     const customFields = {
-      PlanName: plan.CarrierPlanDesc, // Store as PlanName for issue-quote API
-      CarrierPlanDesc: plan.CarrierPlanDesc, // Keep for backward compatibility
+      PlanName: plan.CarrierPlanDesc, // Use CarrierPlanDesc value as PlanName
     }
     
     // Store in localStorage for immediate access
-    storeCarrierPlanDesc(plan.CarrierPlanDesc)
     storePlanName(plan.CarrierPlanDesc) // Store PlanName specifically
     
     // Store in Zustand store for app-wide access
