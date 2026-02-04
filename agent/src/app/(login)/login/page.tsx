@@ -18,10 +18,10 @@ import {
   type LoginAgentResponse,
 } from '@/types/agent/auth'
 import { useLoginAgent } from '@/app/data/mutations/agent/auth-agent'
+import { useSendOTP } from '@/app/data/mutations/otp'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { toast } from 'sonner'
 import { NotVerifiedEmailError } from '@/lib/errors'
-import { useSendOTP } from '@/app/data/mutations/otp'
 
 const INPUT_FIELD = 'bg-[#F3F5FC] border-0 dark:bg-[#1A1A1A] w-full'
 
@@ -31,7 +31,7 @@ export default function LoginPage() {
   const [loginError, setLoginError] = useState<string | null>(null)
   const { mutateAsync: loginAgent } = useLoginAgent()
   const { mutateAsync: sendOTP } = useSendOTP()
-  const { login, isAuthenticated } = useAgentAuthStore()
+  const { isAuthenticated } = useAgentAuthStore()
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {

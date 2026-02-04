@@ -34,23 +34,41 @@ export const CommissionLogSchema = z.object({
   deleted_at: z.string().datetime().nullable(),
 })
 
+// Product Schema
+export const ProductSchema = z.object({
+  id: z.number(),
+  lob_id: z.number(),
+  carrier_product_code: z.string(),
+  provider_id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  status: z.string(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
+  deleted_at: z.string().datetime().nullable(),
+})
+
 // Transaction Schema
 export const TransactionSchema = z.object({
   id: z.number(),
   agent_id: z.number(),
   agent_code_used: z.string(),
   proposal_number: z.string(),
+  plan_name: z.string().nullable(), // New field from API
+  product_name: z.string().nullable(), // New field from API
+  carrier_product_code: z.string(),
   policy_id: z.string(),
-  policy_details: z.string().nullable().optional(), // Add policy_details field
-  carrier_product_code: z.string().optional(), // Add carrier_product_code field
+  policy_details: z.string().nullable().optional(),
   merchant_transaction_id: z.string().nullable(),
   amount: z.number().or(z.string()).nullable(),
   customer_id: z.number().nullable(),
-  customer_name: z.string().nullable().optional(), // Add customer name field
+  customer_name: z.string().nullable().optional(),
   transaction_status: z.string().nullable(),
   transaction_date: z.string().datetime().nullable(),
   status: z.enum(['pending', 'completed', 'failed', 'cancelled']),
+  transaction_status_code: z.string().optional(),
   commission_log: CommissionLogSchema.nullable().optional(),
+  product: ProductSchema.optional(), // New product object from API
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
   deleted_at: z.string().datetime().nullable(),
@@ -89,6 +107,7 @@ export const TransactionsResponseSchema = z.object({
 
 // TypeScript Types derived from Zod schemas
 export type CommissionLog = z.infer<typeof CommissionLogSchema>
+export type Product = z.infer<typeof ProductSchema>
 export type Transaction = z.infer<typeof TransactionSchema>
 export type PaginationLink = z.infer<typeof PaginationLinkSchema>
 export type TransactionsData = z.infer<typeof TransactionsDataSchema>

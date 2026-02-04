@@ -6,137 +6,163 @@ import { ColumnDef } from '@tanstack/react-table'
 import { useGetTransactions } from '@/app/data/queries/transactions'
 import { useSearchTransactions } from '@/app/data/mutations/agent/transactions'
 import { TransactionsResponse, Transaction } from '@/types/agent/transactions'
-import { DataTable, PaginatedResponse } from '@/components/ui/data-table'
-import { Badge } from '@/components/ui/badge'
+import { DataTable } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
-import MetricsCard from '@/components/dashboard/metrics-card'
-import { useGetAgentStatistics } from '@/app/data/queries/statistics'
-import { DollarSign, ShoppingCart, TrendingUp, Wallet, Calendar, X } from 'lucide-react'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Calendar, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { Label } from '@/components/ui/label'
+import { 
+  getProductName, 
+  parsePolicyDetails 
+} from '@/utils/product-mappings'
 
 const transactionColumns: ColumnDef<Transaction>[] = [
   {
-    accessorKey: 'proposal_number',
-    header: 'Proposal No.',
-    cell: ({ row }) => (
-      <p className="font-medium">{row.original.proposal_number}</p>
-    ),
-  },
-  {
-    accessorKey: 'policy_id',
-    header: 'Policy No./Certificate No.',
+    accessorKey: 'policy_no',
+    header: 'Policy No.',
     cell: ({ row }) => {
-      // Try to get CarrierPolicyNo from policy_details
-      const transactionWithDetails = row.original as Transaction & { policy_details?: string };
-      if (transactionWithDetails.policy_details) {
-        try {
-          const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-            ? JSON.parse(transactionWithDetails.policy_details) 
-            : transactionWithDetails.policy_details;
-          
-          if (policyDetails?.CarrierPolicyNo) {
-            return <p className="font-medium">{policyDetails.CarrierPolicyNo}</p>;
-          }
-        } catch (e) {
-          console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
-        }
+      const transaction = row.original;
+      
+      // Try to get CarrierPolicyNo from policy_details first
+      const policyDetails = parsePolicyDetails(transaction.policy_details || undefined);
+      
+      if (policyDetails?.CarrierPolicyNo) {
+        return <p className="font-medium">{policyDetails.CarrierPolicyNo}</p>;
       }
       
-      // Fallback to policy_id
-      return <p className="font-medium">{row.original.policy_id}</p>;
+      // Fallback to policy_id if available
+      if (transaction.policy_id && transaction.policy_id.trim() !== '') {
+        return <p className="font-medium">{transaction.policy_id}</p>;
+      }
+      
+      // Show N/A if not available
+      return <p className="font-medium text-muted-foreground">N/A</p>;
+    },
+  },
+  {
+    accessorKey: 'certificate_no',
+    header: 'Certificate No.',
+    cell: ({ row }) => {
+      // For now, always show N/A as Certificate No. is different from Policy No.
+      return <p className="font-medium text-muted-foreground">N/A</p>;
     },
   },
   {
     accessorKey: 'merchant_transaction_id',
     header: 'Payment ID',
-    cell: ({ row }) => (
-      <p className="text-muted-foreground">
-        {row.original.merchant_transaction_id ?? 'N/A'}
-      </p>
-    ),
+    cell: ({ row }) => {
+      const paymentId = row.original.merchant_transaction_id
+      const status = row.original.status || row.original.transaction_status
+      
+      // Color mapping for payment statuses
+      const getStatusColor = (status: string) => {
+        const lowerStatus = status.toLowerCase()
+        switch (lowerStatus) {
+          case 'completed':
+            return { text: 'text-green-600', bg: 'bg-green-600' }
+          case 'pending':
+            return { text: 'text-yellow-600', bg: 'bg-yellow-600' }
+          case 'failed':
+          case 'cancelled':
+            return { text: 'text-red-600', bg: 'bg-red-600' }
+          default:
+            return { text: 'text-gray-600', bg: 'bg-gray-600' }
+        }
+      }
+
+      return (
+        <div>
+          <p className="text-muted-foreground">
+            {paymentId && paymentId.trim() !== '' ? paymentId : 'N/A'}
+          </p>
+          {status && (
+            <div className="flex items-center gap-1 mt-1">
+              <div className={cn('size-2 rounded-full', getStatusColor(status).bg)} />
+              <span className={cn('text-xs font-medium', getStatusColor(status).text)}>
+                {status.toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'product',
     header: 'Product',
     cell: ({ row }) => {
-      // Try to get CarrierProductCode and CarrierCode from policy_details
-      const transactionWithDetails = row.original as Transaction & { policy_details?: string };
-      if (transactionWithDetails.policy_details) {
-        try {
-          const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-            ? JSON.parse(transactionWithDetails.policy_details) 
-            : transactionWithDetails.policy_details;
-          
-          return (
-            <div>
-              <p className="font-medium">
-                {policyDetails?.CarrierProductCode || policyDetails?.ProductCode || 'TRAVEL'}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {policyDetails?.CarrierCode || 'MALAYAN'}
-              </p>
-            </div>
-          );
-        } catch (e) {
-          console.log('Failed to parse policy_details for product:', e);
-        }
+      const transaction = row.original;
+      
+      // Only use product_name from API - no fallbacks
+      const productName = transaction.product_name;
+      
+      if (productName && productName.trim() !== '') {
+        return <p className="font-medium">{productName}</p>;
       }
       
-      // Fallback
-      return (
-        <div>
-          <p className="font-medium">TRAVEL</p>
-          <p className="text-sm text-muted-foreground">MALAYAN</p>
-        </div>
-      );
+      return <p className="font-medium text-muted-foreground">N/A</p>;
     },
   },
   {
-    accessorKey: 'plan_code',
-    header: 'Plan Code',
+    accessorKey: 'plan',
+    header: 'Plan',
     cell: ({ row }) => {
-      // Try to get PlanCode from policy_details
-      const transactionWithDetails = row.original as Transaction & { policy_details?: string };
-      if (transactionWithDetails.policy_details) {
-        try {
-          const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-            ? JSON.parse(transactionWithDetails.policy_details) 
-            : transactionWithDetails.policy_details;
-          
-          if (policyDetails?.PlanCode) {
-            return <p className="font-medium">{policyDetails.PlanCode}</p>;
-          }
-        } catch (e) {
-          console.log('Failed to parse policy_details for PlanCode:', e);
-        }
+      const transaction = row.original;
+      
+      // Only use plan_name from API - no fallbacks
+      const planName = transaction.plan_name;
+      
+      if (planName && planName.trim() !== '') {
+        return <p className="font-medium">{planName}</p>;
       }
       
-      // Fallback
-      return <p className="font-medium">TMPHPC2</p>;
+      return <p className="font-medium text-muted-foreground">N/A</p>;
     },
   },
   {
     accessorKey: 'amount',
     header: 'Premium',
-    cell: ({ row }) => (
-      <p className="font-semibold">
-        {row.original.amount
-          ? `₱${row.original.amount.toLocaleString()}`
-          : 'N/A'}
-      </p>
-    ),
+    cell: ({ row }) => {
+      const amount = row.original.amount
+      
+      if (!amount || amount === 0) {
+        return <p className="font-semibold text-muted-foreground">N/A</p>
+      }
+      
+      const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount
+      if (isNaN(numericAmount)) {
+        return <p className="font-semibold text-muted-foreground">N/A</p>
+      }
+      
+      return (
+        <p className="font-semibold">
+          ₱{numericAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+      )
+    },
   },
   {
-    accessorKey: 'commission_log.net_commission',
+    accessorKey: 'net_commission',
     header: 'Net Commission',
     cell: ({ row }) => {
-      const netCommission = row.original.commission_log?.net_commission
-      const value = netCommission ? parseFloat(netCommission) : 0
+      // Get agent's specific commission
+      const agentCommission = row.original.commission_log?.agent_commission
+      
+      if (!agentCommission) {
+        return <p className="font-semibold text-muted-foreground">N/A</p>
+      }
+      
+      const value = parseFloat(agentCommission)
+      if (isNaN(value)) {
+        return <p className="font-semibold text-muted-foreground">N/A</p>
+      }
+      
       return (
         <p className="font-semibold">
           ₱{value.toLocaleString(undefined, {
@@ -148,43 +174,36 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     },
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const status = row.original.status
-      const color =
-        status === 'completed'
-          ? { text: 'text-green-600', bg: 'bg-green-600' }
-          : status === 'pending'
-            ? { text: 'text-yellow-600', bg: 'bg-yellow-600' }
-            : status === 'failed'
-              ? { text: 'text-red-600', bg: 'bg-red-600' }
-              : { text: 'text-gray-600', bg: 'bg-gray-600' }
-
-      return (
-        <Badge variant="secondary" className="flex w-fit items-center gap-2">
-          <div className={cn('size-2.5 rounded-full', color.bg)} />
-          <span className={color.text}>{status.toUpperCase()}</span>
-        </Badge>
-      )
-    },
-  },
-  {
     accessorKey: 'created_at',
     header: 'Created Date',
-    cell: ({ row }) => (
-      <p className="text-sm">
-        {row.original.created_at
-          ? new Date(row.original.created_at).toLocaleString('en-US', {
+    cell: ({ row }) => {
+      const createdAt = row.original.created_at
+      
+      if (!createdAt) {
+        return <p className="text-sm text-muted-foreground">N/A</p>
+      }
+      
+      try {
+        const date = new Date(createdAt)
+        if (isNaN(date.getTime())) {
+          return <p className="text-sm text-muted-foreground">N/A</p>
+        }
+        
+        return (
+          <p className="text-sm">
+            {date.toLocaleString('en-US', {
               year: 'numeric',
               month: 'short',
               day: 'numeric',
               hour: '2-digit',
               minute: '2-digit',
-            })
-          : 'N/A'}
-      </p>
-    ),
+            })}
+          </p>
+        )
+      } catch (error) {
+        return <p className="text-sm text-muted-foreground">N/A</p>
+      }
+    },
   },
 ]
 
@@ -301,7 +320,7 @@ const MySalesPage = () => {
         columns={transactionColumns}
         renderMode="table"
         searchKey={['proposal_number', 'policy_id', 'customer_id']}
-        searchPlaceholder="proposal number, policy ID, or customer ID"
+        searchPlaceholder="policy number or customer ID"
         isLoading={isLoading || isSearching}
         alternateColors
         pagination={
