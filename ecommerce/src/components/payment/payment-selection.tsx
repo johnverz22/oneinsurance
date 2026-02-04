@@ -150,7 +150,7 @@ export default function PaymentSelection() {
       
       const issueQuoteRequestBody = {
         ProposalNo: data.proposal_number,
-        CustomFields: customFields, // Include CustomFields in the request
+        CustomField: customFields, // Use CustomField (singular) as per API specification
       } satisfies IssueQuoteRequest
 
       const response = await issueQuote({
@@ -250,7 +250,7 @@ export default function PaymentSelection() {
     
     const issueQuoteRequestBody = {
       ProposalNo: apiResponse.data.ProposalNo,
-      CustomFields: customFields, // Include CustomFields in the request
+      CustomField: customFields, // Use CustomField (singular) as per API specification
     } satisfies IssueQuoteRequest
 
     const response = await issueQuote({
