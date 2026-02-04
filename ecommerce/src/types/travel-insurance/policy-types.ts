@@ -140,6 +140,7 @@ export const TravelPolicyDataSchema = z.object({
   BusinessObjectId: z.number(),
   CarrierCode: z.string(),
   CarrierPlanCode: z.string(),
+  CarrierPolicyNo: z.string().optional(),
   CarrierProductCode: z.string(),
   DataEntryUserId: z.number(),
   DataEntryUserRealName: z.string(),
@@ -148,6 +149,8 @@ export const TravelPolicyDataSchema = z.object({
   ExpiryDate: z.string(),
   FirstDataEntryDate: z.string(),
   GrossPremium: z.number(),
+  InsertBy: z.number().optional(),
+  InsertTime: z.string().optional(),
   IsAgent: z.string(),
   IsPremiumCalcSuccess: z.string(),
   IsRenewable: z.string().optional(),
@@ -174,6 +177,7 @@ export const TravelPolicyDataSchema = z.object({
   PremCalcResultHash: z.string(),
   ProductCode: z.string(),
   ProductId: z.number(),
+  ProductName: z.string().optional(),
   ProductVersion: z.string(),
   PromoCodeList: z.array(PromoCodeSchema).optional(),
   ProposalDate: z.string(),
@@ -188,6 +192,8 @@ export const TravelPolicyDataSchema = z.object({
   TravelDetailList: z.array(TravelDetailSchema),
   TravelType: z.string(),
   TripType: z.string(),
+  UpdateBy: z.number().optional(),
+  UpdateTime: z.string().optional(),
   VersionSeq: z.number(),
 })
 
