@@ -54,7 +54,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
         <View>
           <Text style={styles.title}>Coverage of Confirmation</Text>
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
-          <Text style={styles.policyNo}>Policy #{cocData.carrierPolicyNumber}</Text>
+          <Text style={styles.policyNo}>#{localStorage.getItem('payment_transaction_id') || cocData.policyNumber}</Text>
         </View>
         <Image src="/images/IFRC.png" style={styles.logo} />
       </View>
@@ -92,7 +92,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
             </Text>
             {cocData.customers.map((c, i) => (
               <View key={i} style={styles.customerBlock}>
-                <Text style={styles.customerName}>{c.name}</Text>
+                <Text style={styles.customerName}>{c.name.toUpperCase()}</Text>
                 <Text style={styles.customerText}>{c.address}</Text>
                 <Text style={styles.customerText}>{c.email}</Text>
                 <Text style={styles.customerText}>(+63) {c.phone}</Text>
