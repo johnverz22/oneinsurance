@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Transaction, TransactionsData } from '@/types/agent/transactions'
 import { cn } from '@/lib/utils'
-import { MoreHorizontal, Search, X, AlertCircle, FileText } from 'lucide-react'
+import { MoreHorizontal, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
@@ -96,9 +96,7 @@ export function TransactionDataTable({
   onClearSearch,
 }: TransactionDataTableProps) {
   const [localSearchTerm, setLocalSearchTerm] = useState('')
-  const router = useRouter()
   const transactions = data?.data || []
-  const total = data?.total || 0
 
   const handleSearch = () => {
     if (onSearch) {
@@ -111,7 +109,7 @@ export function TransactionDataTable({
     onClearSearch()
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch()
     }
@@ -127,7 +125,7 @@ export function TransactionDataTable({
             placeholder="Search by proposal number, policy ID, or customer ID..."
             value={localSearchTerm}
             onChange={(e) => setLocalSearchTerm(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             className="pl-9"
           />
         </div>

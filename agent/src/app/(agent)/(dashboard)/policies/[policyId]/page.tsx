@@ -139,9 +139,7 @@ export default function PolicyDetailsPage() {
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `Policy No.: ${policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}`, // Only show Carrier Policy No. to clients
-        `Proposal Number: ${policyDetails?.ProposalNo || policyData.proposal_number}`,
-        `Proposal No.: ${policyDetails?.ProposalNo || policyData.proposal_number}`,
+        `Policy No.: ${policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}`, // Only show Carrier Policy No. to agents
         `Status: ${policyData.status}`,
         `Agent Code: ${policyData.agent_code_used}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
@@ -296,7 +294,7 @@ export default function PolicyDetailsPage() {
       pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, pageHeight - 15)
       
       // Save the PDF
-      const fileName = `Policy_Certificate_${policyDetails?.ProposalNo || policyData.proposal_number}.pdf`
+      const fileName = `Policy_Certificate_${policyDetails?.CarrierPolicyNo || policyData.policy_id}.pdf`
       pdf.save(fileName)
       
       toast.success('Policy certificate downloaded successfully!')
@@ -468,17 +466,9 @@ export default function PolicyDetailsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Carrier Policy No.</p>
+                  <p className="text-sm font-medium text-muted-foreground">Policy No.</p>
                   <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || ''}</p>
                   <p className="text-xs text-muted-foreground">Carrier side reference</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
-                  <p className="font-semibold">{(policyDetails as any)?.PolicyNo || policyData.policy_id || ''}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Proposal No.</p>
-                  <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number || 'PTRAVEL0000000919'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Status</p>
