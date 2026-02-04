@@ -250,7 +250,6 @@ export type IssueQuoteRequest = {
   }>
   CustomField?: {
     PlanName?: string
-    CarrierPlanDesc?: string
     [key: string]: any
   }
 }

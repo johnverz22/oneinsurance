@@ -5,8 +5,6 @@
 
 export interface CustomFields {
   PlanName?: string
-  CarrierPlanDesc?: string
-  CarrierProductName?: string
   [key: string]: any
 }
 
