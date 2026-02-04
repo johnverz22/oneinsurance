@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,8 +12,8 @@ import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
 import { CoverageOfConfirmation } from './coverage-of-confirmation'
 import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
-import Image from 'next/image'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import { getPlanName } from '@/utils/custom-fields-storage'
 import {
   getCityNameByCityCode,
   getProvinceNameByProvCode,
@@ -98,7 +99,7 @@ export function PaymentSuccessInline({
                 <div>
                   <h1 className="text-3xl font-bold text-gray-800">Invoice</h1>
                   <p className="text-sm text-gray-600">
-                    #{policyData.PolicyNo}
+                    #{localStorage.getItem('payment_transaction_id') || policyData.PolicyNo}
                   </p>
                 </div>
 
@@ -118,7 +119,7 @@ export function PaymentSuccessInline({
                     Policy Number
                   </p>
                   <p className="mt-1 text-sm text-gray-800">
-                    {policyData.PolicyNo}
+                    {policyData.CarrierPolicyNo || policyData.PolicyNo}
                   </p>
                 </div>
                 <div>
@@ -151,8 +152,7 @@ export function PaymentSuccessInline({
                   <p className="mb-3 text-xs font-medium text-gray-500">To</p>
                   <div className="text-sm">
                     <p className="font-bold text-gray-800">
-                      {paymentBillingDetails?.first_name}{' '}
-                      {paymentBillingDetails?.last_name}
+                      {(paymentBillingDetails?.first_name + ' ' + paymentBillingDetails?.last_name).toUpperCase()}
                     </p>
                     <p className="text-gray-600">
                       {paymentBillingDetails?.address_line_one},{' '}
@@ -184,7 +184,7 @@ export function PaymentSuccessInline({
                     <tr className="border-b border-gray-100">
                       <td className="py-4">
                         <p className="text-sm font-medium text-gray-800">
-                          {quoteData.CarrierPlanCode}
+                          {getPlanName() || quoteData.CarrierPlanCode}
                         </p>
                         <p className="text-xs text-gray-500">{destinations}</p>
                         <p className="text-xs text-gray-500">
@@ -200,7 +200,7 @@ export function PaymentSuccessInline({
                         PHP{' '}
                         {INVOICE_DATA.payment.basePremium
                           .toFixed(2)
-                          .toLocaleString()}
+                          .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                       </td>
                     </tr>
                   </tbody>
@@ -215,7 +215,7 @@ export function PaymentSuccessInline({
                       PHP{' '}
                       {INVOICE_DATA.payment.basePremium
                         .toFixed(2)
-                        .toLocaleString()}
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                     </span>
                   </div>
                 </div>

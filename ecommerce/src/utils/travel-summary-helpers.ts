@@ -34,6 +34,8 @@ export const transformToInvoiceData = (
 
   return {
     policyNumber: policyData.PolicyNo || '',
+    carrierPolicyNumber: policyData.CarrierPolicyNo || '',
+    planName: localStorage.getItem('planName') || '',
     proposalNumber: policyData.ProposalNo || '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
     customer: {
@@ -104,7 +106,7 @@ export const transformToCOCData = (
 
   return {
     policyNumber: policyData?.PolicyNo ?? '', // IMO Policy No. (internal use only)
-    carrierPolicyNumber: policyData?.PolicyNo ?? '', // Carrier Policy No. (for client documents)
+    carrierPolicyNumber: policyData?.CarrierPolicyNo ?? policyData?.PolicyNo ?? '', // Carrier Policy No. (for client documents)
     proposalNumber: quoteData?.ProposalNo ?? '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
 

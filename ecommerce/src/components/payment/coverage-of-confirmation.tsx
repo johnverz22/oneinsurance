@@ -107,7 +107,7 @@ export function CoverageOfConfirmation({
                 Confirmation of Coverage
               </h1>
               <p className="text-sm text-gray-600">
-                #{policyData.PolicyNo || 'PQTRAVEL001'}
+                #{localStorage.getItem('payment_transaction_id') || policyData.PolicyNo || 'PQTRAVEL001'}
               </p>
             </div>
 
@@ -125,7 +125,7 @@ export function CoverageOfConfirmation({
             <div>
               <p className="text-xs font-medium text-gray-500">Policy Number</p>
               <p className="mt-1 text-sm text-gray-800">
-                {policyData.PolicyNo}
+                {policyData.CarrierPolicyNo || policyData.PolicyNo}
               </p>
             </div>
 
@@ -147,7 +147,7 @@ export function CoverageOfConfirmation({
                 {quoteData.PolicyCustomerList?.map((customer, i) => (
                   <div key={i} className="mb-2">
                     <p className="font-bold text-gray-800">
-                      {customer.FirstName} {customer.LastName}
+                      {(customer.FirstName + ' ' + customer.LastName).toUpperCase()}
                     </p>
                     <p className="text-gray-600">{customer.AddressLine1}</p>
                     <p className="text-gray-600">{customer.AddressLine2}</p>

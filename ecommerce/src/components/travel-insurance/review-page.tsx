@@ -38,6 +38,7 @@ import {
 import { COMPANIES } from '@/constants/companies'
 import Image from 'next/image'
 import { useAgentCodeStore } from '@/store/agent-code-store'
+import { useSignInStateStore } from '@/store/signin-store'
 
 export function TravelInsuranceReviewPage() {
   const { travelersInfo, coverageOption, nextStep, prevStep } =
