@@ -90,8 +90,16 @@ export function PersonalInfoForm() {
           customFields: {},
         },
         agentCode!,
-        // Pass KYC profile if user is signed in
-        signinState.email ? {
+        // Pass KYC profile only if user has valid email and name
+        signinState.email && 
+        signinState.email.trim() !== '' && 
+        signinState.firstName && 
+        signinState.firstName.trim() !== '' &&
+        signinState.firstName !== 'Juan' && // Not default value
+        signinState.lastName && 
+        signinState.lastName.trim() !== '' &&
+        signinState.lastName !== 'Dela Cruz' // Not default value
+        ? {
           email: signinState.email,
           firstName: signinState.firstName,
           lastName: signinState.lastName,
