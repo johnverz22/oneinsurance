@@ -445,7 +445,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          First Name
+                                          First Name <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                           value={nameField.state.value}
@@ -506,7 +506,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Last Name
+                                          Last Name <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                           value={lastNameField.state.value}
@@ -575,7 +575,7 @@ export function PersonalInfoForm() {
                                   children={(field) => (
                                     <div className="space-y-2">
                                       <Label className="text-primary block">
-                                        Gender
+                                        Gender <span className="text-red-500">*</span>
                                       </Label>
                                       <div className="border-muted-foreground/30 flex w-full items-center justify-center gap-2 rounded-full border p-1">
                                         <div
@@ -615,7 +615,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Date of Birth
+                                          Date of Birth <span className="text-red-500">*</span>
                                         </Label>
                                         <div>
                                           <DateTimePicker
@@ -654,7 +654,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Email
+                                          Email <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                           value={emailField.state.value}
@@ -684,7 +684,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Mobile Number
+                                          Mobile Number <span className="text-red-500">*</span>
                                         </Label>
                                         <div className="dark:bg-input/30 border-muted-foreground/30 flex items-center gap-2 rounded-full border pl-2">
                                           <span>+63</span>
@@ -716,7 +716,7 @@ export function PersonalInfoForm() {
                                   children={(field) => (
                                     <div className="w-full space-y-2">
                                       <Label className="text-primary block">
-                                        ID Type
+                                        ID Type <span className="text-red-500">*</span>
                                       </Label>
 
                                       <Select
@@ -758,7 +758,7 @@ export function PersonalInfoForm() {
                                       <div className="w-full space-y-2">
                                         <div className="flex justify-between">
                                           <Label className="text-primary block">
-                                            ID Number
+                                            ID Number <span className="text-red-500">*</span>
                                           </Label>
                                           {idType && (
                                             <p className="text-muted-foreground text-xs">
@@ -793,7 +793,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          State / Province
+                                          State / Province <span className="text-red-500">*</span>
                                         </Label>
                                         <Select
                                           value={provinceField.state.value}
@@ -836,7 +836,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          City / Municipality
+                                          City / Municipality <span className="text-red-500">*</span>
                                         </Label>
                                         <Select
                                           value={cityField.state.value}
@@ -895,7 +895,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          ZIP Code
+                                          ZIP Code <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                           value={zipField.state.value}
@@ -920,7 +920,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Address Line 1
+                                          Address Line 1 <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                           maxLength={45}
@@ -964,8 +964,8 @@ export function PersonalInfoForm() {
                                 />
                               </div>
 
-                              {/* DISABLED: Beneficiary form disabled until further notice */}
-                              {false && (
+                              {/* Beneficiary form enabled */}
+                              {true && (
                               <Card className="mt-6 shadow-none">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                                   <div className="text-lg font-semibold">

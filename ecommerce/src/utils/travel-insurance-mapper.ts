@@ -1,6 +1,7 @@
 import { TravelInsuranceStoreState } from '@/store/travel-insurance-store'
 import {
   FullQuoteRequest,
+  Nominee,
   PolicyCoverage,
   PolicyCustomer,
   PolicyLob,
@@ -167,6 +168,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
   }
 
   const policyRiskList: PolicyRisk[] = []
+  const nomineeList: Nominee[] = []
 
   travelInsurance.travelersInfo.forEach((traveler) => {
     // Ensure we have a proper Date object for date of birth
@@ -201,7 +203,20 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       Suffix: traveler.suffix === 'No Suffix' ? '' : traveler.suffix,
     } as PolicyRisk)
 
-    // NOTE: Beneficiary form is disabled - no beneficiary processing
+    // Process beneficiaries for NomineeList
+    if (traveler.hasBeneficiary && traveler.beneficiary && traveler.beneficiary.firstName) {
+      const beneficiaryDob = traveler.beneficiary.dateOfBirth instanceof Date
+        ? traveler.beneficiary.dateOfBirth
+        : new Date(traveler.beneficiary.dateOfBirth!)
+
+      nomineeList.push({
+        FirstName: traveler.beneficiary.firstName,
+        MiddleName: traveler.beneficiary.middleName || null,
+        LastName: traveler.beneficiary.lastName!,
+        DateOfBirth: beneficiaryDob.toISOString().split('T').at(0)!,
+        Relationship: traveler.beneficiary.relationship!,
+      } as Nominee)
+    }
   })
 
   const travelDetailList = travelInsurance.travelDetails.travelDetailList.map(
@@ -212,6 +227,8 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       DisplaySequence: td.DisplaySequence,
     })
   )
+
+  console.log('Travel Insurance Mapper: Using AgentCode:', agentCode)
 
   return {
     AgentCode: agentCode,
@@ -227,6 +244,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     LGT: parseInt(plan.LGTAmount.toString()),
     NoOfAdults: travelInsurance.travelDetails.noOfAdults,
     NoOfChildren: travelInsurance.travelDetails.noOfChildren,
+    NomineeList: nomineeList.length > 0 ? nomineeList : undefined,
     PlanCode: travelInsurance.coverageOption.selectedPlan!.CarrierPlanCode,
     PolicyCustomerList: policyCustomerList,
     PolicyLobList: [

@@ -18,6 +18,14 @@ export interface PolicyCustomer {
   Title: string
 }
 
+export interface Nominee {
+  FirstName: string
+  MiddleName?: string | null
+  LastName: string
+  DateOfBirth: string // ISO date string (YYYY-MM-DD)
+  Relationship: string
+}
+
 export interface PolicyCoverage {
   ProductElementCode: string
 }
@@ -74,6 +82,7 @@ export interface FullQuoteRequest {
   LGT: number
   NoOfAdults: number
   NoOfChildren: number
+  NomineeList?: Nominee[] // Optional list of nominees/beneficiaries
   PlanCode: string
   PolicyCustomerList: PolicyCustomer[]
   PolicyLobList: PolicyLob[]
