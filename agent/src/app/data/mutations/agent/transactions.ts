@@ -10,7 +10,7 @@ export function useSearchTransactions() {
     mutationFn: async ({ keyword }: { keyword: string }) => {
       const token = `Bearer ${accessToken}`
       const response = await axios.post(
-        '/api/transactions/search',
+        '/api/transactions/search', // This correctly routes to /agents/transactions/search via the API route
         {
           keyword,
         },

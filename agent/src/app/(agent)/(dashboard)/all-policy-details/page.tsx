@@ -87,7 +87,7 @@ export default function AllPolicyDetailsPage() {
       // Header
       pdf.setFontSize(20)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('All Policies - Confirmation of Coverage', 20, yPosition)
+      pdf.text('All Policies - Certificate of Coverage', 20, yPosition)
       
       yPosition += 10
       pdf.setFontSize(12)
@@ -113,7 +113,30 @@ export default function AllPolicyDetailsPage() {
         pdf.setFont('helvetica', 'normal')
         
         const details = [
-          `Policy Number: ${transaction.policy_id}`,
+          `Policy Number: ${(() => {
+            // First try to get CarrierPolicyNo from policy_details if available
+            if (transaction.policy_details) {
+              try {
+                const policyDetails = typeof transaction.policy_details === 'string' 
+                  ? JSON.parse(transaction.policy_details) 
+                  : transaction.policy_details;
+                
+                if (policyDetails?.CarrierPolicyNo) {
+                  return policyDetails.CarrierPolicyNo;
+                }
+              } catch (e) {
+                console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+              }
+            }
+            
+            // Fallback to carrier_policy_no field if available
+            if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
+              return transaction.carrier_policy_no;
+            }
+            
+            // If no CarrierPolicyNo available, show N/A
+            return 'N/A';
+          })()}`,
           `Proposal Number: ${transaction.proposal_number}`,
           `Amount: ₱${transaction.amount?.toLocaleString() || 'N/A'}`,
           `Status: ${transaction.status?.toUpperCase() || 'N/A'}`,
@@ -234,7 +257,7 @@ export default function AllPolicyDetailsPage() {
               {/* Header */}
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">All Policies - Confirmation of Coverage</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">All Policies - Certificate of Coverage</h1>
                   <p className="text-gray-600">{transactions.length} Active Policies</p>
                 </div>
                 <div className="text-right">
@@ -258,7 +281,30 @@ export default function AllPolicyDetailsPage() {
                     <div className="grid grid-cols-2 gap-8 mb-6">
                       <div>
                         <h3 className="text-sm font-medium text-gray-500 mb-2">Policy Number</h3>
-                        <p className="text-lg font-semibold">{transaction.policy_id}</p>
+                        <p className="text-lg font-semibold">{(() => {
+                          // First try to get CarrierPolicyNo from policy_details if available
+                          if (transaction.policy_details) {
+                            try {
+                              const policyDetails = typeof transaction.policy_details === 'string' 
+                                ? JSON.parse(transaction.policy_details) 
+                                : transaction.policy_details;
+                              
+                              if (policyDetails?.CarrierPolicyNo) {
+                                return policyDetails.CarrierPolicyNo;
+                              }
+                            } catch (e) {
+                              console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+                            }
+                          }
+                          
+                          // Fallback to carrier_policy_no field if available
+                          if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
+                            return transaction.carrier_policy_no;
+                          }
+                          
+                          // If no CarrierPolicyNo available, show N/A
+                          return 'N/A';
+                        })()}</p>
                       </div>
                       <div>
                         <h3 className="text-sm font-medium text-gray-500 mb-2">Proposal Number</h3>

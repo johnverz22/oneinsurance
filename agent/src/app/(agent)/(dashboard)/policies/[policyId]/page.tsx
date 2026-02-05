@@ -139,7 +139,7 @@ export default function PolicyDetailsPage() {
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `Policy No.: ${policyDetails?.CarrierPolicyNo || policyData.policy_id || 'N/A'}`, // Only show Carrier Policy No. to agents
+        `Policy No.: ${policyDetails?.CarrierPolicyNo || 'N/A'}`, // Only show Carrier Policy No. to agents
         `Status: ${policyData.status}`,
         `Agent Code: ${policyData.agent_code_used}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
@@ -294,7 +294,7 @@ export default function PolicyDetailsPage() {
       pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, pageHeight - 15)
       
       // Save the PDF
-      const fileName = `Policy_Certificate_${policyDetails?.CarrierPolicyNo || policyData.policy_id}.pdf`
+      const fileName = `Policy_Certificate_${policyDetails?.CarrierPolicyNo || 'N/A'}.pdf`
       pdf.save(fileName)
       
       toast.success('Policy certificate downloaded successfully!')
@@ -428,7 +428,7 @@ export default function PolicyDetailsPage() {
           <div>
             <h1 className="text-2xl font-bold">
               {(() => {
-                const carrierPolicyNo = policyDetails?.CarrierPolicyNo || 'P0086998'
+                const carrierPolicyNo = policyDetails?.CarrierPolicyNo || 'N/A'
                 const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
                 const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
                 return `Policy ${carrierPolicyNo} > ${carrierCode} ${productCode}`
@@ -467,7 +467,7 @@ export default function PolicyDetailsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Policy No.</p>
-                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || policyData.policy_id || ''}</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Carrier side reference</p>
                 </div>
                 <div>
