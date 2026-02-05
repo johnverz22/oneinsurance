@@ -1,97 +1,31 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { 
   ArrowLeft, 
   Download, 
-  Printer
+  Printer,
+  Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import axios from 'axios'
 
-// Mock data based on the images you provided
-const mockTransactionData = {
-  // Use consistent reference IDs with Certificate of Coverage
-  policyNumber: 'P0086998', // CarrierPolicyNo - same as Certificate
-  proposalNumber: 'PTRAVEL0000000919', // ProposalNo - same as Certificate
-  carrierProposalNo: 'POTRAVEL00000428', // CarrierProposalNo
-  planName: 'TM CSL ASIAN W/ COVID 500K',
-  
-  // Customer Information
-  customer: {
-    name: 'asf asdf',
-    address: 'adasf',
-    additionalInfo: 'asdfs',
-    code: '6341',
-    email: 'a@gmail.com',
-    phone: '(+63) 9933232333'
-  },
-
-  // Travel Details
-  travel: {
-    destination: 'PHILIPPINES → JAPAN',
-    type: 'INDIVIDUAL',
-    duration: '3 days'
-  },
-
-  // Coverage List
-  coverages: [
-    'Accidental Death, Dismemberment and Disablement',
-    'Unprovoked Murder and Assault',
-    'Sabotage and Terrorism',
-    'Accidental Death',
-    'COVID-19 Overseas Medical Costs',
-    'Coronavirus -19 (perday , maximum of 7days)',
-    'Sickness (perday , maximum of 10days)',
-    'Accidents (perday, maximum of 10days)',
-    'Cashless Hospitalization',
-    'Follow-up Care',
-    'Civil/Personal Liability',
-    'Trip Cancellation',
-    'Emergency Trip Termination',
-    'Loss of Cash',
-    'Loss of Travel Documents abroad',
-    'Loss Of Checked In Baggage',
-    'Baggage Delay Benefit (After First 12 hrs)',
-    'Flight Delay',
-    'Damage of Checked in Baggage',
-    'Loss of Laptop',
-    'Aircraft Hijacking',
-    'Damage to Laptop',
-    'Emergency Repatriation Expense',
-    'Medical Evacuation',
-    'Return of Mortal Remains',
-    'Escort of dependent child',
-    'Travel Of One Immediate Family Member/Compassionate Visit',
-    'Car Hire Excess Waiver',
-    'Sports Equipment and Cycle Insurance'
-  ],
-
-  // Policy Details
-  policy: {
-    status: 'Active',
-    issueDate: 'Jan 21, 2026',
-    coveragePeriod: 'Jan 21, 2026 - Jan 23, 2026'
-  },
-
-  // Invoice Details
-  invoice: {
-    paymentMethod: 'Digital Payment',
-    from: {
-      company: 'IFRC Digitech Online Payment Gateway',
-      address: '6th Floor Padilla Building',
-      street: 'F. Ortigas Jr. Road, Ortigas Center, Pasig City',
-      phone: 'TEL: +632 8633 5681',
-      email: 'concierge@ifrcinsurance.com'
-    },
-    description: 'TMPHPC2',
-    route: 'PHILIPPINES → JAPAN',
-    duration: '2 Days • INDIVIDUAL',
-    amount: 'PHP 258.00',
-    totalAmount: 'PHP 258.00'
+interface TransactionData {
+  id: string
+  policy_details: any
+  customer_name: string
+  amount: string
+  status: string
+  transaction_date: string
+  merchant_transaction_id: string
+  carrier_policy_no: string
+  product: {
+    name: string
   }
+  plan_name: string
 }
 
 export default function TransactionDetailsPage() {
@@ -99,29 +33,99 @@ export default function TransactionDetailsPage() {
   const router = useRouter()
   const transactionId = params.transactionId as string
   const [activeTab, setActiveTab] = useState<'coverage' | 'invoice'>('coverage')
+  const [transactionData, setTransactionData] = useState<TransactionData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // TODO: Replace with actual API call to fetch transaction details
-  // For now, using mock data but with consistent reference IDs
-  const transactionData = {
-    ...mockTransactionData,
-    // These should come from the actual policy API response
-    policyNumber: 'P0086998', // CarrierPolicyNo from policy_details
-    proposalNumber: 'PTRAVEL0000000919', // ProposalNo from policy_details  
-    carrierProposalNo: 'POTRAVEL00000428', // CarrierProposalNo from policy_details
-  }
+  useEffect(() => {
+    const fetchTransactionData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Fetch transaction data from the backend
+        const response = await axios.get(`/api/transactions/${transactionId}`)
+        
+        if (response.data?.success && response.data?.data) {
+          setTransactionData(response.data.data)
+        } else {
+          setError('Transaction not found')
+        }
+      } catch (error: any) {
+        console.error('Error fetching transaction data:', error)
+        setError(error.response?.data?.message || 'Failed to load transaction data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (transactionId) {
+      fetchTransactionData()
+    }
+  }, [transactionId])
 
   const handleDownloadPDF = () => {
     if (activeTab === 'coverage') {
-      toast.success('Downloading Confirmation of Coverage PDF...')
+      toast.success('Downloading Certificate of Coverage PDF...')
     } else {
       toast.success('Downloading Invoice PDF...')
     }
-    // Here you would implement actual PDF generation
+    // TODO: Implement actual PDF generation
   }
 
   const handlePrint = () => {
     window.print()
   }
+
+  // Parse policy details if available
+  let policyDetails = null
+  if (transactionData?.policy_details) {
+    try {
+      policyDetails = typeof transactionData.policy_details === 'string' 
+        ? JSON.parse(transactionData.policy_details) 
+        : transactionData.policy_details
+    } catch (e) {
+      console.log('Failed to parse policy_details:', e)
+    }
+  }
+
+  // Extract policy holder information
+  const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
+    || policyDetails?.PolicyCustomerList?.[0]
+
+  // Extract travel details
+  const travelDetails = policyDetails?.TravelDetailList?.[0]
+  
+  // Extract coverage list
+  const coverages = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList || []
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading transaction details...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !transactionData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || 'Transaction not found'}</p>
+          <Button onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Transactions
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Get policy number (CarrierPolicyNo with N/A fallback)
+  const policyNumber = policyDetails?.CarrierPolicyNo || transactionData.carrier_policy_no || 'N/A'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,16 +178,16 @@ export default function TransactionDetailsPage() {
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-sm border min-h-[800px]">
           {activeTab === 'coverage' ? (
-            // Confirmation of Coverage Document
+            // Certificate of Coverage Document
             <div className="p-8">
               {/* Header */}
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Confirmation of Coverage</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Certificate of Coverage</h1>
                   <div className="space-y-1 text-gray-600">
-                    <p>Policy Number: #{transactionData.policyNumber}</p>
-                    <p>Proposal Number: #{transactionData.proposalNumber}</p>
-                    <p>Reference: #{transactionData.carrierProposalNo}</p>
+                    <p>Policy Number: #{policyNumber}</p>
+                    <p>Proposal Number: #{policyDetails?.ProposalNo || 'N/A'}</p>
+                    <p>Transaction ID: #{transactionData.merchant_transaction_id || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -201,11 +205,11 @@ export default function TransactionDetailsPage() {
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Policy Number</h3>
-                  <p className="text-lg font-semibold">{transactionData.policyNumber}</p>
+                  <p className="text-lg font-semibold">{policyNumber}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Plan Name</h3>
-                  <p className="text-lg font-semibold">{transactionData.planName}</p>
+                  <p className="text-lg font-semibold">{transactionData.plan_name || policyDetails?.CarrierPlanCode || 'N/A'}</p>
                 </div>
               </div>
 
@@ -214,20 +218,40 @@ export default function TransactionDetailsPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">Issued To</h3>
                   <div className="space-y-1">
-                    <p className="font-medium">{transactionData.customer.name}</p>
-                    <p>{transactionData.customer.address}</p>
-                    <p>{transactionData.customer.additionalInfo}</p>
-                    <p>{transactionData.customer.code}</p>
-                    <p>{transactionData.customer.email}</p>
-                    <p>{transactionData.customer.phone}</p>
+                    {policyHolder ? (
+                      <>
+                        <p className="font-medium uppercase">
+                          {[policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName]
+                            .filter(Boolean).join(' ')}
+                        </p>
+                        <p>{policyHolder.AddressLine1 || 'N/A'}</p>
+                        <p>{policyHolder.AddressLine2 || ''}</p>
+                        <p>{policyHolder.PostCode || ''}</p>
+                        <p>{policyHolder.Email || 'N/A'}</p>
+                        <p>{policyHolder.Mobile || 'N/A'}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium uppercase">{transactionData.customer_name || 'N/A'}</p>
+                        <p>N/A</p>
+                        <p>N/A</p>
+                        <p>N/A</p>
+                        <p>N/A</p>
+                        <p>N/A</p>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">Travel Details</h3>
                   <div className="space-y-1">
-                    <p><span className="font-medium">Destination/s:</span> {transactionData.travel.destination}</p>
-                    <p><span className="font-medium">Travel Type:</span> {transactionData.travel.type}</p>
-                    <p><span className="font-medium">Duration:</span> {transactionData.travel.duration}</p>
+                    <p><span className="font-medium">Destination/s:</span> {
+                      travelDetails ? `${travelDetails.PlaceOfOrgin || 'N/A'} → ${travelDetails.TravelCountry || 'N/A'}` : 'N/A'
+                    }</p>
+                    <p><span className="font-medium">Travel Type:</span> {policyDetails?.TravelType || 'N/A'}</p>
+                    <p><span className="font-medium">Duration:</span> {
+                      policyDetails?.TravelDays ? `${policyDetails.TravelDays} days` : 'N/A'
+                    }</p>
                   </div>
                 </div>
               </div>
@@ -239,12 +263,18 @@ export default function TransactionDetailsPage() {
                   <h3 className="text-sm font-medium text-gray-500">SUM INSURED</h3>
                 </div>
                 <div className="space-y-3">
-                  {transactionData.coverages.map((coverage, index) => (
-                    <div key={index} className="flex justify-between items-center py-2">
-                      <p className="text-gray-900">{coverage}</p>
-                      <p className="text-gray-600">Included</p>
+                  {coverages.length > 0 ? (
+                    coverages.map((coverage: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center py-2">
+                        <p className="text-gray-900">{coverage.CoverageName}</p>
+                        <p className="text-gray-600">Included</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No coverage details available</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -262,15 +292,22 @@ export default function TransactionDetailsPage() {
                 <div className="grid grid-cols-3 gap-8">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Status</p>
-                    <p className="font-semibold text-green-600">{mockTransactionData.policy.status}</p>
+                    <p className="font-semibold text-green-600">{transactionData.status || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Issue Date</p>
-                    <p className="font-semibold">{mockTransactionData.policy.issueDate}</p>
+                    <p className="font-semibold">
+                      {policyDetails?.IssueDate ? new Date(policyDetails.IssueDate).toLocaleDateString() : 
+                       transactionData.transaction_date ? new Date(transactionData.transaction_date).toLocaleDateString() : 'N/A'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Coverage Period</p>
-                    <p className="font-semibold">{mockTransactionData.policy.coveragePeriod}</p>
+                    <p className="font-semibold">
+                      {policyDetails?.EffectiveDate && policyDetails?.ExpiryDate ? 
+                        `${new Date(policyDetails.EffectiveDate).toLocaleDateString()} - ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}` : 
+                        'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -285,7 +322,7 @@ export default function TransactionDetailsPage() {
               {/* Download Button */}
               <div className="text-center pt-4">
                 <Button onClick={handleDownloadPDF} className="bg-gray-900 hover:bg-gray-800">
-                  Generate And Download Confirmation of Coverage
+                  Generate And Download Certificate of Coverage
                 </Button>
               </div>
             </div>
@@ -297,9 +334,9 @@ export default function TransactionDetailsPage() {
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">Invoice</h1>
                   <div className="space-y-1 text-gray-600">
-                    <p>Policy Number: #{transactionData.policyNumber}</p>
-                    <p>Proposal Number: #{transactionData.proposalNumber}</p>
-                    <p>Reference: #{transactionData.carrierProposalNo}</p>
+                    <p>Policy Number: #{policyNumber}</p>
+                    <p>Proposal Number: #{policyDetails?.ProposalNo || 'N/A'}</p>
+                    <p>Transaction ID: #{transactionData.merchant_transaction_id || 'N/A'}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -317,11 +354,11 @@ export default function TransactionDetailsPage() {
               <div className="grid grid-cols-2 gap-8 mb-8">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Policy Number</h3>
-                  <p className="text-lg font-semibold">{transactionData.policyNumber}</p>
+                  <p className="text-lg font-semibold">{policyNumber}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Payment Method</h3>
-                  <p className="text-lg font-semibold">{transactionData.invoice.paymentMethod}</p>
+                  <p className="text-lg font-semibold">Digital Payment</p>
                 </div>
               </div>
 
@@ -330,19 +367,32 @@ export default function TransactionDetailsPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">From</h3>
                   <div className="space-y-1">
-                    <p className="font-semibold">{transactionData.invoice.from.company}</p>
-                    <p>{transactionData.invoice.from.address}</p>
-                    <p>{transactionData.invoice.from.street}</p>
-                    <p>{transactionData.invoice.from.phone}</p>
-                    <p>{transactionData.invoice.from.email}</p>
+                    <p className="font-semibold">IFRC Digitech Online Payment Gateway</p>
+                    <p>6th Floor Padilla Building</p>
+                    <p>F. Ortigas Jr. Road, Ortigas Center, Pasig City</p>
+                    <p>TEL: +632 8633 5681</p>
+                    <p>concierge@ifrcinsurance.com</p>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-4">To</h3>
                   <div className="space-y-1">
-                    <p className="font-medium">{transactionData.customer.name}</p>
-                    <p>{transactionData.customer.address}, {transactionData.customer.additionalInfo}</p>
-                    <p>{transactionData.customer.email}</p>
+                    {policyHolder ? (
+                      <>
+                        <p className="font-medium uppercase">
+                          {[policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName]
+                            .filter(Boolean).join(' ')}
+                        </p>
+                        <p>{policyHolder.AddressLine1 || 'N/A'}, {policyHolder.AddressLine2 || ''}</p>
+                        <p>{policyHolder.Email || 'N/A'}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium uppercase">{transactionData.customer_name || 'N/A'}</p>
+                        <p>N/A</p>
+                        <p>N/A</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -356,17 +406,25 @@ export default function TransactionDetailsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-semibold">{transactionData.invoice.description}</p>
-                      <p className="text-gray-600">{transactionData.invoice.route}</p>
-                      <p className="text-gray-600">{transactionData.invoice.duration}</p>
+                      <p className="font-semibold">{transactionData.plan_name || policyDetails?.CarrierPlanCode || 'N/A'}</p>
+                      <p className="text-gray-600">
+                        {travelDetails ? `${travelDetails.PlaceOfOrgin || 'N/A'} → ${travelDetails.TravelCountry || 'N/A'}` : 'N/A'}
+                      </p>
+                      <p className="text-gray-600">
+                        {policyDetails?.TravelDays ? `${policyDetails.TravelDays} Days` : 'N/A'} • {policyDetails?.TravelType || 'N/A'}
+                      </p>
                     </div>
-                    <p className="font-semibold text-lg">{transactionData.invoice.amount}</p>
+                    <p className="font-semibold text-lg">
+                      {transactionData.amount ? `PHP ${Number(transactionData.amount).toLocaleString()}` : 'N/A'}
+                    </p>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center pt-4 border-t mt-6">
                   <p className="text-lg font-semibold">Total Amount</p>
-                  <p className="text-xl font-bold">{transactionData.invoice.totalAmount}</p>
+                  <p className="text-xl font-bold">
+                    {transactionData.amount ? `PHP ${Number(transactionData.amount).toLocaleString()}` : 'N/A'}
+                  </p>
                 </div>
               </div>
 
@@ -384,15 +442,22 @@ export default function TransactionDetailsPage() {
                 <div className="grid grid-cols-3 gap-8">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Status</p>
-                    <p className="font-semibold text-green-600">{transactionData.policy.status}</p>
+                    <p className="font-semibold text-green-600">{transactionData.status || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Issue Date</p>
-                    <p className="font-semibold">{transactionData.policy.issueDate}</p>
+                    <p className="font-semibold">
+                      {policyDetails?.IssueDate ? new Date(policyDetails.IssueDate).toLocaleDateString() : 
+                       transactionData.transaction_date ? new Date(transactionData.transaction_date).toLocaleDateString() : 'N/A'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Coverage Period</p>
-                    <p className="font-semibold">{transactionData.policy.coveragePeriod}</p>
+                    <p className="font-semibold">
+                      {policyDetails?.EffectiveDate && policyDetails?.ExpiryDate ? 
+                        `${new Date(policyDetails.EffectiveDate).toLocaleDateString()} - ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}` : 
+                        'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>

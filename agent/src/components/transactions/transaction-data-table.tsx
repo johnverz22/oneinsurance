@@ -40,7 +40,34 @@ interface TableColumn {
 
 const columns: TableColumn[] = [
   { key: 'proposal_number', label: 'Proposal Number' },
-  { key: 'policy_id', label: 'Policy ID' },
+  { 
+    key: 'policy_id', 
+    label: 'Policy No.',
+    render: (transaction) => {
+      // First try to get CarrierPolicyNo from policy_details if available
+      if (transaction.policy_details) {
+        try {
+          const policyDetails = typeof transaction.policy_details === 'string' 
+            ? JSON.parse(transaction.policy_details) 
+            : transaction.policy_details;
+          
+          if (policyDetails?.CarrierPolicyNo) {
+            return policyDetails.CarrierPolicyNo;
+          }
+        } catch (e) {
+          console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+        }
+      }
+      
+      // Fallback to carrier_policy_no field if available
+      if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
+        return transaction.carrier_policy_no;
+      }
+      
+      // If no CarrierPolicyNo available, show N/A
+      return 'N/A';
+    }
+  },
   {
     key: 'customer_id',
     label: 'Customer ID',
