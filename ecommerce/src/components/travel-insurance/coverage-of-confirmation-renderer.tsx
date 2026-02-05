@@ -167,13 +167,13 @@ export const GenerateAndDownloadCoverNote = ({ cocData }: COCRendererProps) => {
   return (
     <PDFDownloadLink
       document={<COCRenderer cocData={cocData} />}
-      fileName="confirmation-of-coverage.pdf"
+      fileName="certificate-of-coverage.pdf"
     >
       {({ loading }) => (
         <Button className="w-full font-bold" variant="outline" size="lg">
           {loading
-            ? 'Generating Confirmation of Coverage...'
-            : 'Generate And Download Confirmation of Coverage'}
+            ? 'Generating Certificate of Coverage...'
+            : 'Generate And Download Certificate of Coverage'}
         </Button>
       )}
     </PDFDownloadLink>

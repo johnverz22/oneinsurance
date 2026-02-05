@@ -77,7 +77,7 @@ export function PaymentSuccessInline({
           className={`flex items-center gap-2 py-3 ${showCovernote ? 'from-primary to-lilac bg-gradient-to-r text-white' : ''}`}
         >
           <FileText className="h-4 w-4" />
-          Confirmation of Coverage
+          Certificate of Coverage
         </Button>
         <Button
           variant={!showCovernote ? 'default' : 'outline'}
