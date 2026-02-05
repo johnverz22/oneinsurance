@@ -26,7 +26,7 @@ export function generateTravelInsurancePDF(
   const leftCol = 20
   const rightCol = 120
 
-  doc.text(`Policy No: ${data.PolicyNo}`, leftCol, yPos)
+  doc.text(`Policy No: ${(data as any).CarrierPolicyNo || data.PolicyNo || 'N/A'}`, leftCol, yPos)
   doc.text(`Carrier: ${data.CarrierCode}`, rightCol, yPos)
   yPos += 8
 
@@ -204,7 +204,7 @@ export function downloadPolicyPDF(
   filename?: string
 ): void {
   const doc = generateTravelInsurancePDF(apiResponse)
-  const policyNo = apiResponse.PolicyNo || 'policy'
+  const policyNo = (apiResponse as any).CarrierPolicyNo || apiResponse.PolicyNo || 'policy'
   const defaultFilename = `${policyNo}_travel_insurance.pdf`
 
   doc.save(filename || defaultFilename)
