@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,7 +12,6 @@ import {
   X,
   Calendar
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
@@ -36,22 +34,6 @@ interface PolicyDataTableProps {
   currentPage: number
   isSearchMode: boolean
   onDateFilter?: (fromDate: Date, toDate: Date) => void
-}
-
-const getStatusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-    case 'active':
-      return 'bg-green-100 text-green-800 hover:bg-green-200'
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-    case 'failed':
-      return 'bg-red-100 text-red-800 hover:bg-red-200'
-    case 'cancelled':
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-    default:
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-  }
 }
 
 export function PolicyDataTable({
@@ -219,13 +201,12 @@ export function PolicyDataTable({
           <TableHeader>
             <TableRow>
               <TableHead>Policy No.</TableHead>
+              <TableHead>Certificate No.</TableHead>
               <TableHead>Policy Holder</TableHead>
+              <TableHead>Payment ID</TableHead>
               <TableHead>Product</TableHead>
-              <TableHead>Plan Code</TableHead>
+              <TableHead>Plan</TableHead>
               <TableHead>Premium</TableHead>
-              <TableHead>Coverage Period</TableHead>
-              <TableHead>Travel Destination</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Created Date</TableHead>
             </TableRow>
           </TableHeader>
@@ -245,13 +226,12 @@ export function PolicyDataTable({
                         className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                       >
                         {(() => {
-                          // Try to get CarrierPolicyNo from policy_details
-                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                          if (transactionWithDetails.policy_details) {
+                          // First try to get CarrierPolicyNo from policy_details if available
+                          if (transaction.policy_details) {
                             try {
-                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                                ? JSON.parse(transactionWithDetails.policy_details) 
-                                : transactionWithDetails.policy_details;
+                              const policyDetails = typeof transaction.policy_details === 'string' 
+                                ? JSON.parse(transaction.policy_details) 
+                                : transaction.policy_details;
                               
                               if (policyDetails?.CarrierPolicyNo) {
                                 return policyDetails.CarrierPolicyNo;
@@ -261,179 +241,73 @@ export function PolicyDataTable({
                             }
                           }
                           
-                          // Show N/A if not available
+                          // Fallback to carrier_policy_no field if available
+                          if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
+                            return transaction.carrier_policy_no;
+                          }
+                          
+                          // If no CarrierPolicyNo available, show N/A
                           return 'N/A';
                         })()}
                       </button>
                     </TableCell>
                     <TableCell>
+                      <p className="font-medium">N/A</p>
+                    </TableCell>
+                    <TableCell>
                       <div>
-                        <p className="font-medium">
-                          {(() => {
-                            // Debug logging to see what data we have
-                            console.log('Agent Policy Table - Transaction data:', {
-                              id: transaction.id,
-                              customer_name: transaction.customer_name,
-                              policy_details: transaction.policy_details ? 'Present' : 'Missing',
-                              commission_log: transaction.commission_log ? 'Present' : 'Missing'
-                            });
-                            
-                            // Try to extract policy holder from policy_details using IsPolicyHolder: 'Y' logic
-                            const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                            if (transactionWithDetails.policy_details) {
-                              try {
-                                const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                                  ? JSON.parse(transactionWithDetails.policy_details) 
-                                  : transactionWithDetails.policy_details;
-                                
-                                console.log('Agent Policy Table - Parsed policy details:', {
-                                  hasCustomerList: !!policyDetails?.PolicyCustomerList,
-                                  customerListLength: policyDetails?.PolicyCustomerList?.length || 0
-                                });
-                                
-                                if (policyDetails?.PolicyCustomerList?.length > 0) {
-                                  // Find the policy holder using IsPolicyHolder: 'Y' logic
-                                  const policyHolder = policyDetails.PolicyCustomerList.find((customer: any) => customer.IsPolicyHolder === 'Y') 
-                                    || policyDetails.PolicyCustomerList[0]; // Fallback to first customer
-                                  
-                                  console.log('Agent Policy Table - Policy holder found:', policyHolder);
-                                  
-                                  const policyHolderName = [policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName, policyHolder.Suffix]
-                                    .filter(Boolean)
-                                    .join(' ')
-                                    .trim();
-                                  
-                                  if (policyHolderName) {
-                                    console.log('Agent Policy Table - Found policy holder from PolicyCustomerList:', policyHolderName);
-                                    return policyHolderName;
-                                  }
-                                }
-                              } catch (e) {
-                                console.log('Agent Policy Table - Failed to parse policy_details for policy holder:', e);
-                              }
-                            }
-                            
-                            // Fallback to transaction.customer_name (enhanced by API)
-                            if (transaction.customer_name && transaction.customer_name !== 'N/A' && !transaction.customer_name.includes('Customer ID:')) {
-                              console.log('Agent Policy Table - Using transaction.customer_name:', transaction.customer_name);
-                              return transaction.customer_name;
-                            }
-                            
-                            // Final fallback - try to get from commission_log if available
-                            const transactionWithCommission = transaction as Transaction & { commission_log?: any };
-                            if (transactionWithCommission.commission_log) {
-                              const commissionLog = transactionWithCommission.commission_log;
-                              const commissionCustomerName = commissionLog.customer_name || 
-                                                           commissionLog.policy_holder_name ||
-                                                           (commissionLog.agent ? `${commissionLog.agent.first_name || ''} ${commissionLog.agent.last_name || ''}`.trim() : null);
-                              
-                              if (commissionCustomerName && commissionCustomerName !== 'N/A') {
-                                console.log('Agent Policy Table - Using commission_log customer name:', commissionCustomerName);
-                                return commissionCustomerName;
-                              }
-                            }
-                            
-                            console.log('Agent Policy Table - No customer name found, using fallback');
-                            return 'Policy Holder';
-                          })()}
+                        <p className="font-medium uppercase">N/A</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="text-muted-foreground">
+                          {transaction.merchant_transaction_id && transaction.merchant_transaction_id.trim() !== '' ? transaction.merchant_transaction_id : 'N/A'}
                         </p>
+                        {transaction.status && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <div className={cn('size-2 rounded-full', (() => {
+                              const status = transaction.status.toLowerCase()
+                              switch (status) {
+                                case 'completed':
+                                  return 'bg-green-600'
+                                case 'pending':
+                                  return 'bg-yellow-600'
+                                case 'failed':
+                                case 'cancelled':
+                                  return 'bg-red-600'
+                                default:
+                                  return 'bg-gray-600'
+                              }
+                            })())} />
+                            <span className={cn('text-xs font-medium', (() => {
+                              const status = transaction.status.toLowerCase()
+                              switch (status) {
+                                case 'completed':
+                                  return 'text-green-600'
+                                case 'pending':
+                                  return 'text-yellow-600'
+                                case 'failed':
+                                case 'cancelled':
+                                  return 'text-red-600'
+                                default:
+                                  return 'text-gray-600'
+                              }
+                            })())}>
+                              {transaction.status.toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <p className="font-medium">
-                        {(() => {
-                          // Try to get CarrierPlanDesc from CustomFields first
-                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                          if (transactionWithDetails.policy_details) {
-                            try {
-                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                                ? JSON.parse(transactionWithDetails.policy_details) 
-                                : transactionWithDetails.policy_details;
-                              
-                              console.log('Agent Policy Table - Policy Details:', policyDetails);
-                              console.log('Agent Policy Table - CustomFields:', policyDetails?.CustomFields);
-                              
-                              if (policyDetails?.CustomFields?.CarrierPlanDesc) {
-                                console.log('Agent Policy Table - Using CustomFields.CarrierPlanDesc:', policyDetails.CustomFields.CarrierPlanDesc);
-                                return policyDetails.CustomFields.CarrierPlanDesc;
-                              }
-                              
-                              // Fallback to CarrierProductCode or ProductCode
-                              console.log('Agent Policy Table - Using fallback CarrierProductCode/ProductCode');
-                              return policyDetails?.CarrierProductCode || policyDetails?.ProductCode || 'TRAVEL';
-                            } catch (e) {
-                              console.log('Failed to parse policy_details for CustomFields or CarrierProductCode:', e);
-                            }
-                          }
-                          
-                          // If no real backend data available, show empty string
-                          return '';
-                        })()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {(() => {
-                          // Try to get CarrierCode from policy_details
-                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                          if (transactionWithDetails.policy_details) {
-                            try {
-                              const policyDetails = typeof transaction.policy_details === 'string' 
-                                ? JSON.parse(transaction.policy_details) 
-                                : transaction.policy_details;
-                              
-                              return policyDetails?.CarrierCode || 'MALAYAN';
-                            } catch (e) {
-                              console.log('Failed to parse policy_details for CarrierCode:', e);
-                            }
-                          }
-                          
-                          return 'MALAYAN';
-                        })()}
+                        {transaction.product?.name && transaction.product.name.trim() !== '' ? transaction.product.name : 'N/A'}
                       </p>
                     </TableCell>
                     <TableCell>
                       <p className="font-medium">
-                        {(() => {
-                          // Try to get plan code from policy_details
-                          const transactionWithDetails = transaction as Transaction & { policy_details?: string, carrier_product_code?: string };
-                          if (transactionWithDetails.policy_details) {
-                            try {
-                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                                ? JSON.parse(transactionWithDetails.policy_details) 
-                                : transactionWithDetails.policy_details;
-                              
-                              if (policyDetails?.PlanCode) {
-                                return policyDetails.PlanCode;
-                              }
-                            } catch (e) {
-                              console.log('Failed to parse policy_details for plan code:', e);
-                            }
-                          }
-                          
-                          // Fallback to carrier_product_code or empty string
-                          return transactionWithDetails.carrier_product_code || '';
-                        })()}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {(() => {
-                          // Try to get travel type from policy_details
-                          const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                          if (transactionWithDetails.policy_details) {
-                            try {
-                              const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                                ? JSON.parse(transactionWithDetails.policy_details) 
-                                : transactionWithDetails.policy_details;
-                              
-                              if (policyDetails?.TravelType) {
-                                return policyDetails.TravelType;
-                              }
-                            } catch (e) {
-                              console.log('Failed to parse policy_details for travel type:', e);
-                            }
-                          }
-                          
-                          // Fallback
-                          return 'Individual';
-                        })()}
+                        {transaction.plan_name && transaction.plan_name.trim() !== '' ? transaction.plan_name : 'N/A'}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -444,77 +318,14 @@ export function PolicyDataTable({
                       </p>
                     </TableCell>
                     <TableCell>
-                      {(() => {
-                        // Try to get EffectiveDate and ExpiryDate from policy_details
-                        const transactionWithDetails = transaction as Transaction & { policy_details?: string };
-                        if (transactionWithDetails.policy_details) {
-                          try {
-                            const policyDetails = typeof transactionWithDetails.policy_details === 'string' 
-                              ? JSON.parse(transactionWithDetails.policy_details) 
-                              : transactionWithDetails.policy_details;
-                            
-                            if (policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) {
-                              const startDate = new Date(policyDetails.EffectiveDate);
-                              const endDate = new Date(policyDetails.ExpiryDate);
-                              const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                              
-                              return (
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    {startDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {endDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {diffDays} Day{diffDays !== 1 ? 's' : ''}
-                                  </p>
-                                </div>
-                              );
-                            }
-                          } catch (e) {
-                            console.log('Failed to parse policy_details for dates:', e);
-                          }
-                        }
-                        
-                        // Fallback to transaction date if policy dates not available
-                        return transaction.transaction_date ? (
-                          <div>
-                            <p className="text-sm">
-                              {new Date(transaction.transaction_date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Active Policy
-                            </p>
-                          </div>
-                        ) : 'N/A';
-                      })()}
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">Various Destinations</p>
-                        <p className="text-sm text-muted-foreground">Worldwide Coverage</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className={cn(getStatusColor(transaction.status))}
-                      >
-                        {transaction.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
                       <p className="text-sm">
-                        {new Date(transaction.created_at).toLocaleDateString('en-US', {
+                        {transaction.created_at ? new Date(transaction.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit',
-                        })}
+                        }) : 'N/A'}
                       </p>
                     </TableCell>
                   </TableRow>
@@ -522,7 +333,7 @@ export function PolicyDataTable({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={8} className="h-24 text-center text-gray-500">
                   {isLoading ? 'Loading...' : 'No policies found'}
                 </TableCell>
               </TableRow>

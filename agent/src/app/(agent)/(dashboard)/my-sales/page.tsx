@@ -16,7 +16,6 @@ import { format } from 'date-fns'
 import { Label } from '@/components/ui/label'
 import { 
   getProductName, 
-  parsePolicyDetails 
 } from '@/utils/product-mappings'
 
 const transactionColumns: ColumnDef<Transaction>[] = [
@@ -26,28 +25,36 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const transaction = row.original;
       
-      // Try to get CarrierPolicyNo from policy_details first
-      const policyDetails = parsePolicyDetails(transaction.policy_details || undefined);
-      
-      if (policyDetails?.CarrierPolicyNo) {
-        return <p className="font-medium">{policyDetails.CarrierPolicyNo}</p>;
+      // First try to get CarrierPolicyNo from policy_details if available
+      if (transaction.policy_details) {
+        try {
+          const policyDetails = typeof transaction.policy_details === 'string' 
+            ? JSON.parse(transaction.policy_details) 
+            : transaction.policy_details;
+          
+          if (policyDetails?.CarrierPolicyNo) {
+            return <p className="font-medium">{policyDetails.CarrierPolicyNo}</p>;
+          }
+        } catch (e) {
+          console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
+        }
       }
       
-      // Fallback to policy_id if available
-      if (transaction.policy_id && transaction.policy_id.trim() !== '') {
-        return <p className="font-medium">{transaction.policy_id}</p>;
+      // Fallback to carrier_policy_no field if available
+      if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
+        return <p className="font-medium">{transaction.carrier_policy_no}</p>;
       }
       
-      // Show N/A if not available
-      return <p className="font-medium text-muted-foreground">N/A</p>;
+      // If no CarrierPolicyNo available, show N/A
+      return <p className="font-medium">N/A</p>;
     },
   },
   {
     accessorKey: 'certificate_no',
     header: 'Certificate No.',
     cell: ({ row }) => {
-      // For now, always show N/A as Certificate No. is different from Policy No.
-      return <p className="font-medium text-muted-foreground">N/A</p>;
+      // Certificate No. not available in current backend response
+      return <p className="font-medium">N/A</p>;
     },
   },
   {
@@ -96,14 +103,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const transaction = row.original;
       
-      // Only use product_name from API - no fallbacks
-      const productName = transaction.product_name;
-      
-      if (productName && productName.trim() !== '') {
-        return <p className="font-medium">{productName}</p>;
+      // Use product.name from nested product object
+      if (transaction.product?.name && transaction.product.name.trim() !== '') {
+        return <p className="font-medium">{transaction.product.name}</p>;
       }
       
-      return <p className="font-medium text-muted-foreground">N/A</p>;
+      return <p className="font-medium">N/A</p>;
     },
   },
   {
@@ -112,14 +117,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const transaction = row.original;
       
-      // Only use plan_name from API - no fallbacks
-      const planName = transaction.plan_name;
-      
-      if (planName && planName.trim() !== '') {
-        return <p className="font-medium">{planName}</p>;
+      // plan_name is null in backend response
+      if (transaction.plan_name && transaction.plan_name.trim() !== '') {
+        return <p className="font-medium">{transaction.plan_name}</p>;
       }
       
-      return <p className="font-medium text-muted-foreground">N/A</p>;
+      return <p className="font-medium">N/A</p>;
     },
   },
   {
@@ -129,12 +132,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
       const amount = row.original.amount
       
       if (!amount || amount === 0) {
-        return <p className="font-semibold text-muted-foreground">N/A</p>
+        return <p className="font-semibold">N/A</p>
       }
       
       const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount
       if (isNaN(numericAmount)) {
-        return <p className="font-semibold text-muted-foreground">N/A</p>
+        return <p className="font-semibold">N/A</p>
       }
       
       return (
@@ -151,16 +154,16 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     accessorKey: 'net_commission',
     header: 'Net Commission',
     cell: ({ row }) => {
-      // Get agent's specific commission
+      // commission_log is null in backend response
       const agentCommission = row.original.commission_log?.agent_commission
       
       if (!agentCommission) {
-        return <p className="font-semibold text-muted-foreground">N/A</p>
+        return <p className="font-semibold">N/A</p>
       }
       
       const value = parseFloat(agentCommission)
       if (isNaN(value)) {
-        return <p className="font-semibold text-muted-foreground">N/A</p>
+        return <p className="font-semibold">N/A</p>
       }
       
       return (
@@ -180,13 +183,13 @@ const transactionColumns: ColumnDef<Transaction>[] = [
       const createdAt = row.original.created_at
       
       if (!createdAt) {
-        return <p className="text-sm text-muted-foreground">N/A</p>
+        return <p className="text-sm">N/A</p>
       }
       
       try {
         const date = new Date(createdAt)
         if (isNaN(date.getTime())) {
-          return <p className="text-sm text-muted-foreground">N/A</p>
+          return <p className="text-sm">N/A</p>
         }
         
         return (
@@ -201,7 +204,7 @@ const transactionColumns: ColumnDef<Transaction>[] = [
           </p>
         )
       } catch (error) {
-        return <p className="text-sm text-muted-foreground">N/A</p>
+        return <p className="text-sm">N/A</p>
       }
     },
   },

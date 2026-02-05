@@ -45,13 +45,36 @@ export default function ReferralsPage() {
       }))
   }, [referralCode, agentLOBs])
 
-  const handleCopyLink = (referral: Referral) => {
-    navigator.clipboard.writeText(referral.link)
-    setCopiedId(referral.id)
-    toast.success('Link Copied!', {
-      description: `${referral.description} referral link copied to clipboard.`,
-    })
-    setTimeout(() => setCopiedId(''), 2000)
+  const handleCopyLink = async (referral: Referral) => {
+    try {
+      // Check if clipboard API is available
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(referral.link)
+      } else {
+        // Fallback method for older browsers or non-HTTPS
+        const textArea = document.createElement('textarea')
+        textArea.value = referral.link
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+      }
+      
+      setCopiedId(referral.id)
+      toast.success('Link Copied!', {
+        description: `${referral.description} referral link copied to clipboard.`,
+      })
+      setTimeout(() => setCopiedId(''), 2000)
+    } catch (error) {
+      console.error('Failed to copy link:', error)
+      toast.error('Failed to copy link', {
+        description: 'Please try copying the link manually.',
+      })
+    }
   }
 
   const handleShare = async (referral: Referral) => {
@@ -63,10 +86,12 @@ export default function ReferralsPage() {
           url: referral.link,
         })
       } catch (error) {
-        // Error sharing
+        // If sharing fails, fallback to copying
+        await handleCopyLink(referral)
       }
     } else {
-      handleCopyLink(referral)
+      // If sharing is not supported, copy to clipboard
+      await handleCopyLink(referral)
     }
   }
 
