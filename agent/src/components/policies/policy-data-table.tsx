@@ -208,6 +208,7 @@ export function PolicyDataTable({
               <TableHead>Plan</TableHead>
               <TableHead>Premium</TableHead>
               <TableHead>Created Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -221,12 +222,9 @@ export function PolicyDataTable({
                     })}
                   >
                     <TableCell>
-                      <button
-                        onClick={() => handleViewPolicy(transaction)}
-                        className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                      >
+                      <p className="font-medium">
                         {transaction.policy_number && transaction.policy_number.trim() !== '' ? transaction.policy_number : 'N/A'}
-                      </button>
+                      </p>
                     </TableCell>
                     <TableCell>
                       <p className="font-medium">N/A</p>
@@ -307,12 +305,21 @@ export function PolicyDataTable({
                         }) : 'N/A'}
                       </p>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        onClick={() => handleViewPolicy(transaction)}
+                        variant="link"
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        View
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 )
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={9} className="h-24 text-center text-gray-500">
                   {isLoading ? 'Loading...' : 'No policies found'}
                 </TableCell>
               </TableRow>
