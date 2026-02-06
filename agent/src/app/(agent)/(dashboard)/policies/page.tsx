@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import { useGetTransactions } from '@/app/data/queries/transactions'
+import { useGetCompletedTransactions } from '@/app/data/queries/transactions'
 import { Transaction } from '@/types/agent/transactions'
 import { DataTable } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
@@ -179,7 +179,7 @@ export default function PoliciesPage() {
   const {
     data: transactionsResponse,
     isLoading,
-  } = useGetTransactions(currentPage, currentPageSize)
+  } = useGetCompletedTransactions(currentPage, currentPageSize)
 
   const handleDateFilter = (fromDate: Date, toDate: Date) => {
     console.log('Date filter:', fromDate, toDate)
@@ -201,25 +201,12 @@ export default function PoliciesPage() {
     } catch (e) {}
   }
 
-  // Filter to show only completed transactions
-  const completedTransactions = transactionsResponse?.data?.data?.filter(
-    transaction => transaction.status?.toLowerCase() === 'completed'
-  ) || []
-
-  const displayData = transactionsResponse ? {
-    ...transactionsResponse,
-    data: {
-      ...transactionsResponse.data,
-      data: completedTransactions
-    }
-  } : null
-
   return (
     <div className="relative mx-auto w-full space-y-6">
       <DataTable
         header="Policy Management"
         description="View and manage all your completed insurance policies, certificates, and coverage details."
-        data={displayData?.data?.data ?? []}
+        data={transactionsResponse?.data?.data ?? []}
         columns={policyColumns}
         renderMode="table"
         searchKey={['policy_number', 'policy_holder', 'merchant_transaction_id']}
@@ -227,10 +214,10 @@ export default function PoliciesPage() {
         isLoading={isLoading}
         alternateColors
         pagination={
-          displayData?.data
+          transactionsResponse?.data
             ? {
                 enabled: true,
-                paginatedResponse: displayData.data,
+                paginatedResponse: transactionsResponse.data,
                 onPaginationChange: handlePaginationChange,
               }
             : { enabled: false }
@@ -306,9 +293,9 @@ export default function PoliciesPage() {
               </Button>
             )}
 
-            {(fromDate || toDate) && displayData && (
+            {(fromDate || toDate) && transactionsResponse && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground ml-auto">
-                Found {displayData?.data?.data?.length || 0} policies
+                Found {transactionsResponse?.data?.data?.length || 0} policies
               </div>
             )}
           </div>
