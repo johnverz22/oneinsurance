@@ -225,30 +225,7 @@ export function PolicyDataTable({
                         onClick={() => handleViewPolicy(transaction)}
                         className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                       >
-                        {(() => {
-                          // First try to get CarrierPolicyNo from policy_details if available
-                          if (transaction.policy_details) {
-                            try {
-                              const policyDetails = typeof transaction.policy_details === 'string' 
-                                ? JSON.parse(transaction.policy_details) 
-                                : transaction.policy_details;
-                              
-                              if (policyDetails?.CarrierPolicyNo) {
-                                return policyDetails.CarrierPolicyNo;
-                              }
-                            } catch (e) {
-                              console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
-                            }
-                          }
-                          
-                          // Fallback to carrier_policy_no field if available
-                          if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
-                            return transaction.carrier_policy_no;
-                          }
-                          
-                          // If no CarrierPolicyNo available, show N/A
-                          return 'N/A';
-                        })()}
+                        {transaction.policy_number && transaction.policy_number.trim() !== '' ? transaction.policy_number : 'N/A'}
                       </button>
                     </TableCell>
                     <TableCell>
@@ -256,7 +233,9 @@ export function PolicyDataTable({
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium uppercase">N/A</p>
+                        <p className="font-medium uppercase">
+                          {transaction.policy_holder && transaction.policy_holder.trim() !== '' ? transaction.policy_holder : 'N/A'}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>
