@@ -25,27 +25,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const transaction = row.original;
       
-      // First try to get CarrierPolicyNo from policy_details if available
-      if (transaction.policy_details) {
-        try {
-          const policyDetails = typeof transaction.policy_details === 'string' 
-            ? JSON.parse(transaction.policy_details) 
-            : transaction.policy_details;
-          
-          if (policyDetails?.CarrierPolicyNo) {
-            return <p className="font-medium">{policyDetails.CarrierPolicyNo}</p>;
-          }
-        } catch (e) {
-          console.log('Failed to parse policy_details for CarrierPolicyNo:', e);
-        }
+      // Use the new policy_number field from root of payload (Carrier Policy Number)
+      if (transaction.policy_number && transaction.policy_number.trim() !== '') {
+        return <p className="font-medium">{transaction.policy_number}</p>;
       }
       
-      // Fallback to carrier_policy_no field if available
-      if (transaction.carrier_policy_no && transaction.carrier_policy_no.trim() !== '') {
-        return <p className="font-medium">{transaction.carrier_policy_no}</p>;
-      }
-      
-      // If no CarrierPolicyNo available, show N/A
+      // If no policy_number available, show N/A
       return <p className="font-medium">N/A</p>;
     },
   },
