@@ -57,14 +57,17 @@ export const TransactionSchema = z.object({
   plan_name: z.string().nullable(), // New field from API
   product_name: z.string().nullable(), // New field from API
   carrier_product_code: z.string(),
-  carrier_policy_no: z.string().nullable().optional(), // Field for CarrierPolicyNo
+  carrier_policy_no: z.string().nullable().optional(), // Old field (deprecated)
+  policy_number: z.string().nullable().optional(), // NEW: Carrier Policy Number (source of truth)
+  policy_number_imo: z.string().nullable().optional(), // NEW: IMO Policy Number
+  policy_holder: z.string().nullable().optional(), // NEW: Policy Holder full name (source of truth)
   policy_id: z.string(),
   policy_details: z.string().nullable().optional(),
   merchant_transaction_id: z.string().nullable(),
   amount: z.number().or(z.string()).nullable(),
   customer_id: z.number().nullable(),
   customer_name: z.string().nullable().optional(),
-  policy_holder_name: z.string().nullable().optional(), // Field for policy holder name
+  policy_holder_name: z.string().nullable().optional(), // Old field (deprecated)
   transaction_status: z.string().nullable(),
   transaction_date: z.string().datetime().nullable(),
   status: z.enum(['pending', 'completed', 'failed', 'cancelled']),
