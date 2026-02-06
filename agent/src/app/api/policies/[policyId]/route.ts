@@ -111,7 +111,7 @@ export async function GET(
       )
     }
     
-    // If we don't have policy_details with PolicyCustomerList, use sample data for testing
+    // Parse policy_details from backend - NO FALLBACK DATA
     let policyDetails = null
     let customerName = null
     
@@ -142,254 +142,12 @@ export async function GET(
       } catch (parseError) {
         console.log('Agent: Failed to parse policy_details JSON:', parseError)
       }
-    }
-    
-    // If no real PolicyCustomerList data found, use sample data from policy_travel.json as fallback
-    if (!policyDetails || !policyDetails.PolicyCustomerList?.[0]) {
-      console.log('Agent: No real PolicyCustomerList found in transaction data, using sample data from policy_travel.json as fallback')
-      
-      // Use the real data structure from policy_travel.json
-      policyDetails = {
-        "Age": 37,
-        "PolicyCustomerList": [
-          {
-            "AddrProvince": "166700",
-            "AddressLine1": "Purok 4",
-            "AddressLine2": "Brgy Del Carmen (Pob)",
-            "City": "166708",
-            "DateOfBirth": "1982-09-21",
-            "Email": "nelsmiraflores@gmail.com",
-            "FirstName": "arnel",
-            "Gender": "M",
-            "IdNo": "A01234562",
-            "IdTypeCode": "PAS",
-            "IsInsured": "N",
-            "IsOrgParty": "N",
-            "IsPolicyHolder": "Y",
-            "LastName": "miraflores",
-            "Mobile": "+63******1548",
-            "PostCode": "8418",
-            "Title": "Mister",
-            "TempData": {
-              "MaskAfter-IdNo": "A01234562",
-              "MaskAfter-Mobile": "+63******1548"
-            }
-          },
-          {
-            "AddrProvince": "166700",
-            "AddressLine1": "Purok 4",
-            "AddressLine2": "Brgy Del Carmen (pob)",
-            "City": "166708",
-            "DateOfBirth": "1989-01-18",
-            "Email": "nelsmiraflores@gmail.com",
-            "FirstName": "Hanna",
-            "Gender": "F",
-            "IdNo": "A01234565",
-            "IdTypeCode": "PAS",
-            "IsInsured": "N",
-            "IsOrgParty": "N",
-            "IsPolicyHolder": "N",
-            "LastName": "Miraflores",
-            "Mobile": "+63******1548",
-            "PostCode": "8418",
-            "Title": "Miss",
-            "TempData": {
-              "MaskAfter-IdNo": "A01234565",
-              "MaskAfter-Mobile": "+63******1548"
-            }
-          }
-        ],
-        "PolicyLobList": [{
-          "PolicyRiskList": [
-            {
-              "AddrProvince": "166700",
-              "AddressLine1": "Purok 4",
-              "AddressLine2": "Brgy Del Carmen (Pob)",
-              "Age": 43,
-              "City": "166708",
-              "DateOfBirth": "1982-09-21",
-              "Email": "nelsmiraflores@gmail.com",
-              "FirstName": "arnel",
-              "Gender": "M",
-              "IdNo": "A01234562",
-              "IdTypeCode": "PAS",
-              "InsuredName": "arnel miraflores",
-              "IsAdultTraveller": "Y",
-              "IsMainInsured": "Y",
-              "LastName": "miraflores",
-              "Mobile": "+63******1548",
-              "PostCode": "8418",
-              "PolicyCoverageList": [
-                {"CoverageName": "Accidental Death, Dismemberment and Disablement"},
-                {"CoverageName": "Unprovoked Murder and Assault"},
-                {"CoverageName": "Sabotage and Terrorism"},
-                {"CoverageName": "Accidental Death"},
-                {"CoverageName": "COVID-19 Overseas Medical Costs"},
-                {"CoverageName": "Coronavirus -19 (perday , maximum of 7days)"},
-                {"CoverageName": "Sickness (perday , maximum of 10days)"},
-                {"CoverageName": "Accidents (perday, maximum of 10days)"},
-                {"CoverageName": "Cashless Hospitalization"},
-                {"CoverageName": "Follow-up Care"},
-                {"CoverageName": "Civil/Personal Liability"},
-                {"CoverageName": "Trip Cancellation"},
-                {"CoverageName": "Emergency Trip Termination"},
-                {"CoverageName": "Loss of Cash"},
-                {"CoverageName": "Loss of Travel Documents abroad"},
-                {"CoverageName": "Loss Of Checked In Baggage"},
-                {"CoverageName": "Baggage Delay Benefit (After First 12 hrs)"},
-                {"CoverageName": "Flight Delay"},
-                {"CoverageName": "Damage of Checked in Baggage"},
-                {"CoverageName": "Loss of Laptop"},
-                {"CoverageName": "Aircraft Hijacking"},
-                {"CoverageName": "Damage to Laptop"},
-                {"CoverageName": "Emergency Repatriation Expense"},
-                {"CoverageName": "Medical Evacuation"},
-                {"CoverageName": "Return of Mortal Remains"},
-                {"CoverageName": "Escort of dependent child"},
-                {"CoverageName": "Travel Of One Immediate Family Member/Compassionate Visit"},
-                {"CoverageName": "Car Hire Excess Waiver"},
-                {"CoverageName": "Sports Equipment and Cycle Insurance"}
-              ],
-              "TempData": {
-                "MaskAfter-IdNo": "A01234562",
-                "MaskAfter-Mobile": "+63******1548"
-              }
-            },
-            {
-              "AddrProvince": "166700",
-              "AddressLine1": "Purok 4",
-              "AddressLine2": "Brgy Del Carmen (pob)",
-              "Age": 37,
-              "City": "166708",
-              "DateOfBirth": "1989-01-18",
-              "Email": "nelsmiraflores@gmail.com",
-              "FirstName": "Hanna",
-              "Gender": "F",
-              "IdNo": "A01234565",
-              "IdTypeCode": "PAS",
-              "InsuredName": "Hanna Miraflores",
-              "IsAdultTraveller": "Y",
-              "IsMainInsured": "N",
-              "LastName": "Miraflores",
-              "Mobile": "+63******1548",
-              "PostCode": "8418",
-              "PolicyCoverageList": [
-                {"CoverageName": "Accidental Death, Dismemberment and Disablement"},
-                {"CoverageName": "Unprovoked Murder and Assault"},
-                {"CoverageName": "Sabotage and Terrorism"},
-                {"CoverageName": "Accidental Death"},
-                {"CoverageName": "COVID-19 Overseas Medical Costs"},
-                {"CoverageName": "Coronavirus -19 (perday , maximum of 7days)"},
-                {"CoverageName": "Sickness (perday , maximum of 10days)"},
-                {"CoverageName": "Accidents (perday, maximum of 10days)"},
-                {"CoverageName": "Cashless Hospitalization"},
-                {"CoverageName": "Follow-up Care"},
-                {"CoverageName": "Civil/Personal Liability"},
-                {"CoverageName": "Trip Cancellation"},
-                {"CoverageName": "Emergency Trip Termination"},
-                {"CoverageName": "Loss of Cash"},
-                {"CoverageName": "Loss of Travel Documents abroad"},
-                {"CoverageName": "Loss Of Checked In Baggage"},
-                {"CoverageName": "Baggage Delay Benefit (After First 12 hrs)"},
-                {"CoverageName": "Flight Delay"},
-                {"CoverageName": "Damage of Checked in Baggage"},
-                {"CoverageName": "Loss of Laptop"},
-                {"CoverageName": "Aircraft Hijacking"},
-                {"CoverageName": "Damage to Laptop"},
-                {"CoverageName": "Emergency Repatriation Expense"},
-                {"CoverageName": "Medical Evacuation"},
-                {"CoverageName": "Return of Mortal Remains"},
-                {"CoverageName": "Escort of dependent child"},
-                {"CoverageName": "Travel Of One Immediate Family Member/Compassionate Visit"},
-                {"CoverageName": "Car Hire Excess Waiver"},
-                {"CoverageName": "Sports Equipment and Cycle Insurance"}
-              ],
-              "TempData": {
-                "MaskAfter-IdNo": "A01234565",
-                "MaskAfter-Mobile": "+63******1548"
-              }
-            },
-            {
-              "AddrProvince": "166700",
-              "AddressLine1": "Purok 4",
-              "AddressLine2": "Brgy Del Carmen (pob)",
-              "Age": 8,
-              "City": "166708",
-              "DateOfBirth": "2017-01-30",
-              "Email": "nelsmiraflores@gmail.com",
-              "FirstName": "Leanna",
-              "Gender": "F",
-              "IdNo": "A01234567",
-              "IdTypeCode": "PAS",
-              "InsuredName": "Leanna Miraflores",
-              "IsAdultTraveller": "N",
-              "IsMainInsured": "N",
-              "LastName": "Miraflores",
-              "Mobile": "+63******1548",
-              "PostCode": "8418",
-              "PolicyCoverageList": [
-                {"CoverageName": "Accidental Death, Dismemberment and Disablement"},
-                {"CoverageName": "Unprovoked Murder and Assault"},
-                {"CoverageName": "Sabotage and Terrorism"}
-              ],
-              "TempData": {
-                "MaskAfter-IdNo": "A01234567",
-                "MaskAfter-Mobile": "+63******1548"
-              }
-            }
-          ]
-        }],
-        "PolicyNo": (() => {
-          // Try to get PolicyNo from transaction data first
-          if (transaction.policy_number) return transaction.policy_number;
-          if (transaction.proposal_number) return transaction.proposal_number;
-          
-          // If we have policy_details, try to extract PolicyNo from it
-          if (transaction.policy_details) {
-            try {
-              const policyDetailsObj = typeof transaction.policy_details === 'string' 
-                ? JSON.parse(transaction.policy_details) 
-                : transaction.policy_details;
-              if (policyDetailsObj.PolicyNo) return policyDetailsObj.PolicyNo;
-              if (policyDetailsObj.ProposalNo) return policyDetailsObj.ProposalNo;
-            } catch (e) {
-              console.log('Agent Policy Detail: Failed to parse policy_details for PolicyNo:', e);
-            }
-          }
-          
-          return null; // Return null if no real data found
-        })(),
-        "ProposalNo": "PTRAVEL0000000919", // Real ProposalNo from policy_travel.json
-        "CarrierPolicyNo": "P0086998", // Using consistent value until backend provides unique values
-        "ProductName": (transaction.commission_log?.product?.name) || transaction.product_name || "Travel Insurance",
-        "GrossPremium": parseFloat(transaction.amount || transaction.commission_log?.total_net_premium || "258"),
-        "EffectiveDate": transaction.coverage_start || "2026-01-26",
-        "ExpiryDate": transaction.coverage_end || "2026-01-28",
-        "NoOfTravellers": 3,
-        "NoOfAdults": 2,
-        "NoOfChildren": 1,
-        "TravelType": "INDIVIDUAL",
-        "TripType": "SINGLE",
-        "TravelDetailList": [{
-          "PlaceOfOrgin": "PHILIPPINES",
-          "TravelCountry": "JAPAN",
-          "TravelCoverageArea": "APAC"
-        }]
-      }
-      
-      // Extract customer name from the policy holder
-      const policyHolder = policyDetails.PolicyCustomerList.find((customer: any) => customer.IsPolicyHolder === 'Y') 
-        || policyDetails.PolicyCustomerList[0];
-      customerName = [policyHolder.FirstName, policyHolder.LastName]
-        .filter(Boolean)
-        .join(' ')
-        .trim()
-      
-      console.log('Agent: Using sample data from policy_travel.json - 3 travelers with real coverages')
-      console.log('Agent: Extracted customer name from policy holder:', customerName)
+    } else {
+      console.log('Agent: No policy_details found in transaction data')
     }
     
     // Transform the transaction data to match the expected policy response format
+    // NO FALLBACK DATA - only real backend data
     const policyResponse = {
       success: true,
       message: 'Policy details retrieved successfully',
@@ -398,13 +156,13 @@ export async function GET(
         agent_id: transaction.agent_id || 0,
         agent_code_used: transaction.agent_code_used || '',
         proposal_number: transaction.proposal_number || '',
-        carrier_product_code: transaction.carrier_product_code || 'TRAVEL',
+        carrier_product_code: transaction.carrier_product_code || '',
         policy_id: transaction.policy_id || '',
-        policy_details: policyDetails, // Use enhanced policy details with PolicyCustomerList
+        policy_details: policyDetails, // Only real backend data, null if not available
         merchant_transaction_id: transaction.merchant_transaction_id || null,
-        amount: transaction.amount || null, // Keep as original type (string or number)
+        amount: transaction.amount || null,
         customer_id: transaction.customer_id || null,
-        customer_name: customerName || transaction.customer_name || '', // Use PolicyCustomerList[0] name
+        customer_name: customerName || transaction.customer_name || null, // Use extracted name or transaction name
         transaction_status: transaction.transaction_status || null,
         transaction_date: transaction.transaction_date || null,
         status: transaction.status || 'unknown',
@@ -417,9 +175,8 @@ export async function GET(
     }
     
     console.log('Agent: Returning policy response for transaction ID:', transaction.id)
-    console.log('Agent: Policy details being returned:', JSON.stringify(policyDetails, null, 2))
-    console.log('Agent: Customer name being returned:', customerName)
-    console.log('Agent: Full response data:', JSON.stringify(policyResponse.data, null, 2))
+    console.log('Agent: Policy details available:', !!policyDetails)
+    console.log('Agent: Customer name:', customerName || 'N/A')
     
     return NextResponse.json(policyResponse, {
       status: 200,
