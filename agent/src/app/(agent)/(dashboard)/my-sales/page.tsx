@@ -117,12 +117,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
       const amount = row.original.amount
       
       if (!amount || amount === 0) {
-        return <p className="font-semibold">N/A</p>
+        return <p className="font-semibold">₱0.00</p>
       }
       
       const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount
       if (isNaN(numericAmount)) {
-        return <p className="font-semibold">N/A</p>
+        return <p className="font-semibold">₱0.00</p>
       }
       
       return (
@@ -143,12 +143,12 @@ const transactionColumns: ColumnDef<Transaction>[] = [
       const agentCommission = row.original.commission_log?.agent_commission
       
       if (!agentCommission) {
-        return <p className="font-semibold">N/A</p>
+        return <p className="font-semibold">₱0.00</p>
       }
       
       const value = parseFloat(agentCommission)
       if (isNaN(value)) {
-        return <p className="font-semibold">N/A</p>
+        return <p className="font-semibold">₱0.00</p>
       }
       
       return (

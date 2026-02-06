@@ -228,9 +228,9 @@ export default function PolicyDetailsPage() {
           `Origin: ${travelDetails.PlaceOfOrgin}`,
           `Destination: ${travelDetails.TravelCountry}`,
           `Coverage Area: ${travelDetails.TravelCoverageArea}`,
-          ...(policyDetails?.NoOfTravellers ? [`Number of Travellers: ${policyDetails?.NoOfTravellers}`] : []),
-          ...(policyDetails?.NoOfAdults ? [`Adults: ${policyDetails?.NoOfAdults}`] : []),
-          ...(policyDetails?.NoOfChildren ? [`Children: ${policyDetails?.NoOfChildren}`] : [])
+          ...(policyDetails?.NoOfTravellers ? [`Number of Travellers: ${String(policyDetails.NoOfTravellers)}`] : []),
+          ...(policyDetails?.NoOfAdults ? [`Adults: ${String(policyDetails.NoOfAdults)}`] : []),
+          ...(policyDetails?.NoOfChildren ? [`Children: ${String(policyDetails.NoOfChildren)}`] : [])
         ]
 
         travelInfo.forEach(info => {
@@ -488,11 +488,11 @@ export default function PolicyDetailsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
-                  <p className="font-semibold">{policyDetails?.PlanCode || 'TMPHPC2'}</p>
+                  <p className="font-semibold">{policyDetails?.PlanCode || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
-                  <p className="font-semibold">{policyDetails?.CarrierCode || 'MALAYAN'}</p>
+                  <p className="font-semibold">{policyDetails?.CarrierCode || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Product Code</p>
@@ -542,7 +542,7 @@ export default function PolicyDetailsPage() {
                       ? `₱${policyDetails.GrossPremium.toLocaleString()}`
                       : policyData.amount 
                       ? `₱${Number(policyData.amount).toLocaleString()}`
-                      : 'N/A'
+                      : '₱0.00'
                     }
                   </p>
                 </div>
@@ -560,7 +560,7 @@ export default function PolicyDetailsPage() {
                 )}
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Product</p>
-                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'N/A'}</p>
                 </div>
                 {policyDetails?.PremiumTaxAmt && (
                   <div>
@@ -779,21 +779,28 @@ export default function PolicyDetailsPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
-                    <p className="font-semibold">{policyDetails?.TravelType || 'Individual'}</p>
+                    <p className="font-semibold">{policyDetails?.TravelType || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
-                    <p className="font-semibold">{policyDetails?.TripType || 'Single'}</p>
+                    <p className="font-semibold">{policyDetails?.TripType || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Number of Travellers</p>
                     <p className="font-semibold">
-                      {policyDetails?.NoOfTravellers || 1} 
-                      {policyDetails?.NoOfAdults && policyDetails?.NoOfChildren && 
-                        ` (${policyDetails?.NoOfAdults} Adults, ${policyDetails?.NoOfChildren} Children)`
-                      }
+                      {policyDetails?.NoOfTravellers ? String(policyDetails.NoOfTravellers) : 'N/A'}
                     </p>
                   </div>
+                  {policyDetails?.NoOfAdults && 
+                   policyDetails?.NoOfChildren && 
+                   Number(policyDetails.NoOfChildren) !== 0 ? (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Breakdown</p>
+                      <p className="font-semibold">
+                        {policyDetails.NoOfAdults} Adults, {policyDetails.NoOfChildren} Children
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -851,7 +858,7 @@ export default function PolicyDetailsPage() {
                   <p className="font-semibold">
                     {policyData.commission_log?.gross_commission 
                       ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
-                      : '₱23.82'
+                      : '₱0.00'
                     }
                   </p>
                 </div>
@@ -860,7 +867,7 @@ export default function PolicyDetailsPage() {
                   <p className="font-semibold">
                     {policyData.commission_log?.net_commission 
                       ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
-                      : '₱24.30'
+                      : '₱0.00'
                     }
                   </p>
                 </div>
@@ -871,7 +878,7 @@ export default function PolicyDetailsPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
-                  <p className="font-semibold">{policyDetails?.ProductName || 'Travel Insurance'}</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'N/A'}</p>
                 </div>
               </div>
             </CardContent>
