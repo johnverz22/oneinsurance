@@ -167,6 +167,24 @@ const policyColumns: ColumnDef<Transaction>[] = [
       }
     },
   },
+  {
+    id: 'actions',
+    header: () => <div className="text-right">Actions</div>,
+    cell: ({ row }) => {
+      const router = useRouter()
+      return (
+        <div className="text-right">
+          <Button
+            onClick={() => router.push(`/policies/${row.original.id}`)}
+            variant="link"
+            className="text-blue-600 hover:text-blue-800"
+          >
+            View
+          </Button>
+        </div>
+      )
+    },
+  },
 ]
 
 export default function PoliciesPage() {
@@ -222,12 +240,6 @@ export default function PoliciesPage() {
               }
             : { enabled: false }
         }
-        actions={[
-          {
-            label: 'View Details',
-            onClick: (row) => router.push(`/policies/${row.id}`),
-          },
-        ]}
         customAction={
           <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border">
             <div className="flex items-center gap-2">
