@@ -128,22 +128,21 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
         </Button>
       </div>
 
-      {/* Transaction History Card */}
-      <Card>
-        <CardHeader>
+      {/* Transaction History Section */}
+      <div className="space-y-4">
+        <div>
           <h2 className="text-2xl font-bold">Transaction History</h2>
           <p className="text-muted-foreground">
             View and manage all policy transactions, certificates, and coverage details for this agent.
           </p>
-        </CardHeader>
-        <CardContent>
-          <AgentPolicyDataTable
-            agentId={agentId}
-            onPageChange={handlePageChange}
-            currentPage={currentPage}
-          />
-        </CardContent>
-      </Card>
+        </div>
+        
+        <AgentPolicyDataTable
+          agentId={agentId}
+          onPageChange={handlePageChange}
+          currentPage={currentPage}
+        />
+      </div>
     </div>
   )
 }

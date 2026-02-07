@@ -42,8 +42,9 @@ export function useGetAgentTransactions(agentId: number, page = 1) {
       console.log('useGetAgentTransactions - Making API call for agentId:', agentId, 'page:', page)
       
       try {
+        // Use path: /api/admin/agents/{agentId}/transactions
         const response = await axios.get<TransactionsResponse>(
-          `/api/admin/transactions?agent_id=${agentId}&page=${page}`,
+          `/api/admin/agents/${agentId}/transactions?page=${page}`,
           {
             headers: {
               Authorization: getAuthToken(),

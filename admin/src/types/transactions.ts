@@ -24,6 +24,15 @@ export const TransactionSchema = z.object({
   coverage_end: z.string().optional(),
   provider: z.string().optional(),
   policy_details: z.string().optional(), // JSON string with policy details
+  policy_number: z.string().optional(), // Carrier policy number
+  policy_number_imo: z.string().optional(), // IMO policy number
+  product_name: z.string().optional(), // Product name
+  carrier_product_code: z.string().optional(), // Carrier product code
+  product: z.object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string().optional(),
+  }).optional(), // Product object
   commission_log: z.any().optional(), // Commission log data
   agent: z.any().optional(), // Agent data
   gross_commission: z.string().or(z.number()).optional(),

@@ -139,22 +139,45 @@ export default function AgentsPage() {
   const columns = React.useMemo<ColumnDef<Agent, any>[]>(
     () => [
       {
-        accessorKey: 'id',
-        header: 'Agent ID',
-        cell: ({ row }) => (
-          <div className="font-medium">
-            AGT{String(row.original.id).padStart(3, '0')}
-          </div>
-        ),
+        accessorKey: 'settings.code',
+        header: 'Agent Code',
+        cell: ({ row }) => {
+          const code = row.original.settings?.code
+          return (
+            <div className="font-medium">
+              {code ? code.toUpperCase() : 'N/A'}
+            </div>
+          )
+        },
       },
       {
         accessorKey: 'name',
-        header: 'Agent',
+        header: 'Name',
         cell: ({ row }) => {
-          const a = row.original
+          const name = row.original.name
+          if (!name) return <div className="font-medium">N/A</div>
+          
+          // Capitalize first letter of each word
+          const capitalizedName = name
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+          
           return (
             <div className="font-medium">
-              {a.name}
+              {capitalizedName}
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'role',
+        header: 'Type',
+        cell: ({ row }) => {
+          const role = row.original.role
+          return (
+            <div className="font-medium">
+              {role || 'N/A'}
             </div>
           )
         },
@@ -162,28 +185,41 @@ export default function AgentsPage() {
       {
         accessorKey: 'email',
         header: 'Email',
+        cell: ({ row }) => (
+          <div>
+            {row.original.email || 'N/A'}
+          </div>
+        ),
       },
       {
         accessorKey: 'phone',
-        header: 'Phone Number',
+        header: 'Phone',
+        cell: ({ row }) => (
+          <div>
+            {row.original.phone || 'N/A'}
+          </div>
+        ),
       },
       {
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
-          const status = row.original.status.toLowerCase()
+          const status = row.original.status
+          if (!status) return <div>N/A</div>
+          
+          const statusLower = status.toLowerCase()
           return (
             <Badge
               className={`${
-                status === 'active'
+                statusLower === 'active'
                   ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                  : status === 'pending'
+                  : statusLower === 'pending'
                     ? 'bg-orange-100 text-orange-600 hover:bg-orange-100'
-                    : status === 'approved'
+                    : statusLower === 'approved'
                       ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                      : status === 'for interview'
+                      : statusLower === 'for interview'
                         ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
-                        : status === 'inactive'
+                        : statusLower === 'inactive'
                           ? 'bg-gray-100 text-gray-700 hover:bg-gray-100'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-100'
               }`}
@@ -193,8 +229,25 @@ export default function AgentsPage() {
           )
         },
       },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              router.push(`/agents/${row.original.id}/policies`)
+            }}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            View Transactions
+          </Button>
+        ),
+      },
     ],
-    []
+    [router]
   )
 
   // Dynamic actions based on agent status
@@ -293,8 +346,7 @@ export default function AgentsPage() {
   const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false)
 
   function handleRowClick(agent: Agent) {
-    // Navigate to agent policies page instead of opening modal
-    router.push(`/agents/${agent.id}/policies`)
+    // Row click disabled - use three-dot menu actions instead
   }
 
   function handleDeleteClick(agent: Agent) {
