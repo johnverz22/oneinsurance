@@ -110,6 +110,16 @@ export default function PolicyDetailsPage() {
     }
   }
 
+  // Helper function to capitalize each word (Title Case)
+  const toTitleCase = (str: string) => {
+    if (!str) return str
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+
   const handleDownloadCertificate = async () => {
     try {
       // Import jsPDF
@@ -145,8 +155,8 @@ export default function PolicyDetailsPage() {
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
         ...(policyDetails?.ExpiryDate ? [`Expiry Date: ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}`] : []),
         `Premium Amount: PHP ${policyDetails?.GrossPremium?.toLocaleString() || (policyData.amount ? Number(policyData.amount).toLocaleString() : 'N/A')}`,
-        ...(policyDetails?.DuePremium ? [`Due Premium: PHP ${policyDetails.DuePremium.toLocaleString()}`] : []),
-        ...(policyDetails?.SumInsured ? [`Sum Insured: PHP ${policyDetails.SumInsured.toLocaleString()}`] : []),
+        ...(policyDetails?.DuePremium != null && Number(policyDetails.DuePremium) !== 0 ? [`Due Premium: PHP ${policyDetails.DuePremium.toLocaleString()}`] : []),
+        ...(policyDetails?.SumInsured != null && Number(policyDetails.SumInsured) !== 0 ? [`Sum Insured: PHP ${policyDetails.SumInsured.toLocaleString()}`] : []),
         `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`,
         ...(policyDetails?.PlanCode ? [`Plan Code: ${policyDetails.PlanCode}`] : []),
         ...(policyDetails?.TravelType ? [`Travel Type: ${policyDetails.TravelType}`] : []),
@@ -435,7 +445,7 @@ export default function PolicyDetailsPage() {
               })()}
             </h1>
             <p className="text-muted-foreground">
-              {policyData.customer_name || 'Policy Holder'} • {policyData.agent_code_used || 'Agent Code'}
+              {user?.name ? toTitleCase(user.name) : ''} • {policyData.agent_code_used?.toUpperCase()}
             </p>
           </div>
         </div>
@@ -481,10 +491,6 @@ export default function PolicyDetailsPage() {
                   <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'destructive'}>
                     {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : ''}
                   </Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
-                  <p className="font-semibold">{policyData.agent_code_used}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
@@ -546,13 +552,13 @@ export default function PolicyDetailsPage() {
                     }
                   </p>
                 </div>
-                {policyDetails?.DuePremium && (
+                {(policyDetails?.DuePremium != null && Number(policyDetails.DuePremium) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
                     <p className="font-semibold text-lg text-orange-600">₱{policyDetails.DuePremium.toLocaleString()}</p>
                   </div>
                 )}
-                {policyDetails?.SumInsured && (
+                {(policyDetails?.SumInsured != null && Number(policyDetails.SumInsured) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
                     <p className="font-semibold text-lg text-green-600">₱{policyDetails?.SumInsured?.toLocaleString()}</p>
@@ -562,13 +568,13 @@ export default function PolicyDetailsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Product</p>
                   <p className="font-semibold">{policyDetails?.ProductName || 'N/A'}</p>
                 </div>
-                {policyDetails?.PremiumTaxAmt && (
+                {(policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
                     <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
                   </div>
                 )}
-                {policyDetails?.LGT && (
+                {(policyDetails?.LGT != null && Number(policyDetails.LGT) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">LGT</p>
                     <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
@@ -590,12 +596,6 @@ export default function PolicyDetailsPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
                     <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {policyData.transaction_date && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
-                    <p className="font-semibold">{new Date(policyData.transaction_date).toLocaleDateString()}</p>
                   </div>
                 )}
                 <div>
@@ -624,9 +624,9 @@ export default function PolicyDetailsPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
                     <p className="font-semibold text-lg">
-                      {[customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                      {([customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
                         .filter(Boolean)
-                        .join(' ') || 'N/A'}
+                        .join(' ') || 'N/A').toUpperCase()}
                     </p>
                   </div>
                   <div>
@@ -700,7 +700,7 @@ export default function PolicyDetailsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
-                    <p className="font-semibold text-lg">{transactionCustomerName}</p>
+                    <p className="font-semibold text-lg">{transactionCustomerName.toUpperCase()}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Gender</p>
@@ -791,9 +791,9 @@ export default function PolicyDetailsPage() {
                       {policyDetails?.NoOfTravellers ? String(policyDetails.NoOfTravellers) : 'N/A'}
                     </p>
                   </div>
-                  {policyDetails?.NoOfAdults && 
-                   policyDetails?.NoOfChildren && 
-                   Number(policyDetails.NoOfChildren) !== 0 ? (
+                  {(policyDetails?.NoOfAdults != null && 
+                   policyDetails?.NoOfChildren != null && 
+                   Number(policyDetails.NoOfChildren) !== 0) ? (
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Breakdown</p>
                       <p className="font-semibold">
@@ -843,47 +843,6 @@ export default function PolicyDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Commission Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Commission Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
-                  <p className="font-semibold">
-                    {policyData.commission_log?.gross_commission 
-                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
-                      : '₱0.00'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                  <p className="font-semibold">
-                    {policyData.commission_log?.net_commission 
-                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
-                      : '₱0.00'
-                    }
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                  <p className="font-semibold">{user?.name || 'N/A'}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
-                  <p className="font-semibold">{policyDetails?.ProductName || 'N/A'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Policy Risk List */}
           <Card>
             <CardHeader>
@@ -906,16 +865,16 @@ export default function PolicyDetailsPage() {
                                .filter(Boolean).join(' ') || 'N/A'}
                           </h4>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>{insuredPerson.IsMainInsured === 'Y' ? 'Main Insured' : 'Additional Insured'}</span>
-                            <span>•</span>
                             <span>{insuredPerson.IsAdultTraveller === 'Y' ? 'Adult' : 'Child'}</span>
                             <span>•</span>
                             <span>Age: {insuredPerson.Age || 'N/A'}</span>
                           </div>
                         </div>
-                        <Badge variant={insuredPerson.IsMainInsured === 'Y' ? 'default' : 'secondary'}>
-                          {insuredPerson.IsMainInsured === 'Y' ? 'Primary' : 'Secondary'}
-                        </Badge>
+                        {insuredPerson.IsMainInsured === 'Y' && (
+                          <Badge variant="default">
+                            Main Insured
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Insured Person Details */}
@@ -998,10 +957,108 @@ export default function PolicyDetailsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Beneficiaries */}
+          {policyDetails?.NomineeList && policyDetails.NomineeList.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Beneficiaries
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {policyDetails.NomineeList.map((beneficiary: any, index: number) => (
+                    <div key={`beneficiary-${index}-${beneficiary.PolicyElementId || index}`} className="border rounded-lg p-4 bg-muted/10">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
+                          <p className="font-semibold">
+                            {([beneficiary.FirstName, beneficiary.MiddleName, beneficiary.LastName]
+                              .filter(Boolean)
+                              .join(' ') || 'N/A').toUpperCase()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground mb-1">Relationship</p>
+                          <p className="font-semibold">{beneficiary.Relationship || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground mb-1">Share Percentage</p>
+                          <p className="font-semibold">{beneficiary.SharePercent ? `${beneficiary.SharePercent}%` : 'N/A'}</p>
+                        </div>
+                        {beneficiary.DateOfBirth && (
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
+                            <p className="font-semibold">
+                              {new Date(beneficiary.DateOfBirth).toLocaleDateString('en-US', { 
+                                month: '2-digit', 
+                                day: '2-digit', 
+                                year: 'numeric' 
+                              })}
+                            </p>
+                          </div>
+                        )}
+                        {beneficiary.Gender && (
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground mb-1">Gender</p>
+                            <p className="font-semibold">
+                              {beneficiary.Gender === 'M' ? 'Male' : beneficiary.Gender === 'F' ? 'Female' : beneficiary.Gender}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Commission Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Commission Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
+                  <p className="font-semibold text-lg">
+                    {policyData.commission_log?.gross_commission 
+                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
+                      : '₱0.00'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
+                  <p className="font-semibold text-lg text-green-600">
+                    {policyData.commission_log?.net_commission 
+                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
+                      : '₱0.00'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Agent</p>
+                  <p className="font-semibold">{user?.name || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
+                  <p className="font-semibold">{policyDetails?.ProductName || 'N/A'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Discount Information */}
           {promoCode && (
             <Card>
