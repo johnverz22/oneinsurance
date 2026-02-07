@@ -13,6 +13,7 @@ export interface PaymentHistory {
   agent_id: number
   product_id: number
   provider_id: number
+  transaction_id: number
   case_count: number
   total_net_premium: string
   product_price: string
@@ -32,6 +33,10 @@ export interface PaymentHistory {
   agent: Agent
   product: Product
   provider: Provider
+  transaction: {
+    id: number
+    merchant_transaction_id: string
+  }
 }
 
 export interface Agent {

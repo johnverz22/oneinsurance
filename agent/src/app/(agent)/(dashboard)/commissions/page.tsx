@@ -1,63 +1,213 @@
 'use client'
 
-import {
-  addDays,
-  addMonths,
-  format,
-  getDate,
-  getDaysInMonth,
-  setDate,
-} from 'date-fns'
 import { ColumnDef } from '@tanstack/react-table'
 import { Card } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
-import { PaymentHistoryCard } from '@/components/agent/payment-history-card'
 import { PaymentHistory } from '@/types/agent/payments'
-import { formatPHPAmount } from '@/utils/formatter'
 import {
   usePaymentsHistory,
   usePaymentSummary,
 } from '@/app/data/queries/payments'
 
 const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
-  { accessorKey: 'id' },
-  { accessorKey: 'period' },
-  { accessorKey: 'salesCount' },
-  { accessorKey: 'status' },
-  { accessorKey: 'grossCommission.total' },
-  { accessorKey: 'overriderDeduction.total' },
-  { accessorKey: 'netPayment.amount' },
-  { accessorKey: 'paymentStatus.dueDate' },
-  { accessorKey: 'paymentStatus.paidDate' },
+  {
+    accessorKey: 'transaction.merchant_transaction_id',
+    header: 'Payment ID',
+    cell: ({ row }) => {
+      // Use merchant_transaction_id from transaction object
+      const paymentId = row.original.transaction?.merchant_transaction_id
+      
+      return (
+        <p className="text-muted-foreground font-medium">
+          {paymentId && paymentId.trim() !== '' ? paymentId : 'N/A'}
+        </p>
+      )
+    },
+  },
+  {
+    accessorKey: 'product.name',
+    header: 'Product',
+    cell: ({ row }) => {
+      const productName = row.original.product?.name
+      const providerName = row.original.provider?.name
+      return (
+        <div>
+          <p className="font-medium">
+            {productName && productName.trim() !== '' ? productName : 'N/A'}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {providerName && providerName.trim() !== '' ? providerName : 'N/A'}
+          </p>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'total_net_premium',
+    header: 'Net Premium',
+    cell: ({ row }) => {
+      const netPremium = row.original.total_net_premium
+      if (!netPremium || netPremium === '0' || netPremium === '0.00') {
+        return <p className="font-semibold">₱0.00</p>
+      }
+      const numericAmount = typeof netPremium === 'string' ? parseFloat(netPremium) : netPremium
+      if (isNaN(numericAmount)) {
+        return <p className="font-semibold">₱0.00</p>
+      }
+      return (
+        <p className="font-semibold">
+          ₱{numericAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+      )
+    },
+  },
+  {
+    accessorKey: 'gross_commission',
+    header: 'Gross Commission',
+    cell: ({ row }) => {
+      const grossCommission = row.original.gross_commission
+      if (!grossCommission || grossCommission === '0' || grossCommission === '0.00') {
+        return <p className="font-semibold">₱0.00</p>
+      }
+      const numericAmount = typeof grossCommission === 'string' ? parseFloat(grossCommission) : grossCommission
+      if (isNaN(numericAmount)) {
+        return <p className="font-semibold">₱0.00</p>
+      }
+      return (
+        <p className="font-semibold">
+          ₱{numericAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+      )
+    },
+  },
+  {
+    accessorKey: 'vat_amount',
+    header: 'VAT',
+    cell: ({ row }) => {
+      const vat = row.original.vat_amount
+      const vatPercentage = row.original.vat_percentage
+      if (!vat || vat === '0' || vat === '0.00') {
+        return (
+          <div>
+            <p className="font-semibold">₱0.00</p>
+            <p className="text-xs text-muted-foreground">0%</p>
+          </div>
+        )
+      }
+      const numericAmount = typeof vat === 'string' ? parseFloat(vat) : vat
+      if (isNaN(numericAmount)) {
+        return (
+          <div>
+            <p className="font-semibold">₱0.00</p>
+            <p className="text-xs text-muted-foreground">0%</p>
+          </div>
+        )
+      }
+      return (
+        <div>
+          <p className="font-semibold">
+            ₱{numericAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+          <p className="text-xs text-muted-foreground">{vatPercentage || '0'}%</p>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'withholding_tax_amount',
+    header: 'WHT',
+    cell: ({ row }) => {
+      const wht = row.original.withholding_tax_amount
+      const whtPercentage = row.original.withholding_tax_percentage
+      if (!wht || wht === '0' || wht === '0.00') {
+        return (
+          <div>
+            <p className="font-semibold">₱0.00</p>
+            <p className="text-xs text-muted-foreground">0%</p>
+          </div>
+        )
+      }
+      const numericAmount = typeof wht === 'string' ? parseFloat(wht) : wht
+      if (isNaN(numericAmount)) {
+        return (
+          <div>
+            <p className="font-semibold">₱0.00</p>
+            <p className="text-xs text-muted-foreground">0%</p>
+          </div>
+        )
+      }
+      return (
+        <div>
+          <p className="font-semibold">
+            ₱{numericAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </p>
+          <p className="text-xs text-muted-foreground">{whtPercentage || '0'}%</p>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'net_commission',
+    header: 'Net Commission',
+    cell: ({ row }) => {
+      const netCommission = row.original.net_commission
+      if (!netCommission || netCommission === '0' || netCommission === '0.00') {
+        return <p className="font-semibold text-green-600">₱0.00</p>
+      }
+      const numericAmount = typeof netCommission === 'string' ? parseFloat(netCommission) : netCommission
+      if (isNaN(numericAmount)) {
+        return <p className="font-semibold text-green-600">₱0.00</p>
+      }
+      return (
+        <p className="font-semibold text-green-600">
+          ₱{numericAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
+        </p>
+      )
+    },
+  },
+  {
+    accessorKey: 'created_at',
+    header: 'Created Date',
+    cell: ({ row }) => {
+      const createdAt = row.original.created_at
+      if (!createdAt) {
+        return <p className="text-sm">N/A</p>
+      }
+      try {
+        const date = new Date(createdAt)
+        if (isNaN(date.getTime())) {
+          return <p className="text-sm">N/A</p>
+        }
+        return (
+          <p className="text-sm">
+            {date.toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </p>
+        )
+      } catch (error) {
+        return <p className="text-sm">N/A</p>
+      }
+    },
+  },
 ]
-
-function getPaymentDates(today: Date = new Date()) {
-  const day = getDate(today)
-  const daysInMonth = getDaysInMonth(today)
-
-  let lastPayment: Date
-  let nextPayment: Date
-
-  if (day >= 15 && day < daysInMonth) {
-    lastPayment = setDate(today, 15)
-    nextPayment = setDate(today, daysInMonth >= 30 ? 30 : daysInMonth) // handle shorter months
-  } else if (day >= 30 || (day >= 28 && daysInMonth < 30)) {
-    // after 30th (or last day of short month)
-    lastPayment = setDate(today, daysInMonth >= 30 ? 30 : daysInMonth)
-    const nextMonth = addMonths(today, 1)
-    const daysInNextMonth = getDaysInMonth(nextMonth)
-    nextPayment = setDate(nextMonth, 15)
-  } else {
-    // before 15th
-    lastPayment = setDate(today, 1) // optional: or previous month's 30th
-    nextPayment = setDate(today, 15)
-  }
-
-  return {
-    lastPayment: format(lastPayment, 'PP'),
-    nextPayment: format(nextPayment, 'PP'),
-  }
-}
 
 const PaymentsPage = () => {
   const { data: paymentHistory, isSuccess: isPaymentHistoryFetched, isLoading: isPaymentHistoryLoading, error: paymentHistoryError } =
@@ -158,15 +308,11 @@ const PaymentsPage = () => {
             description="Track your commission payments and earnings"
             data={paymentHistory}
             columns={PAYMENT_HISTORY_COLUMNS}
-            renderMode="list"
+            renderMode="table"
+            searchKey="product"
+            searchPlaceholder="product or provider name"
             isLoading={isPaymentHistoryLoading}
-            numColumns={1}
-            contentRenderer={(row) => (
-              <PaymentHistoryCard history={row.original} />
-            )}
-            containerClassName="gap-6"
-            actions={[]}
-            onRowClick={(client) => {}}
+            alternateColors
           />
         )}
       </div>
