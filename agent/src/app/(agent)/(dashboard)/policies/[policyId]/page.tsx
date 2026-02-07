@@ -1019,6 +1019,81 @@ export default function PolicyDetailsPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Payment Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Payment Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Reference ID</p>
+                  <p className="font-semibold">
+                    {policyData.merchant_transaction_id || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Date</p>
+                  <p className="font-semibold">
+                    {policyData.transaction_date 
+                      ? new Date(policyData.transaction_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Amount</p>
+                  <p className="font-semibold text-lg text-green-600">
+                    {policyDetails?.GrossPremium 
+                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                      : policyData.amount 
+                      ? `₱${Number(policyData.amount).toLocaleString()}`
+                      : '₱0.00'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Brand</p>
+                  <p className="font-semibold">
+                    {(policyData as any).payment_method || (policyData as any).payment_brand || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Payor's Name</p>
+                  <p className="font-semibold">
+                    {customer 
+                      ? ([customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                          .filter(Boolean)
+                          .join(' ') || 'N/A').toUpperCase()
+                      : transactionCustomerName 
+                      ? transactionCustomerName.toUpperCase()
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Payor's Email</p>
+                  <p className="font-semibold">
+                    {customer?.Email || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Payor's Phone</p>
+                  <p className="font-semibold">
+                    {customer?.TempData?.['MaskAfter-Mobile'] || customer?.Mobile || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Commission Details */}
           <Card>
             <CardHeader>
