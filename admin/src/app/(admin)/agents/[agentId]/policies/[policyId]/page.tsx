@@ -437,10 +437,6 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Provider</p>
-                  <p className="font-semibold">{policyData.provider || 'N/A'}</p>
-                </div>
-                <div>
                   <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
                   <p className="font-semibold">{policyDetails?.PlanCode || 'TMPHPC2'}</p>
                 </div>
@@ -450,12 +446,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Product Code</p>
-                  <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
-                  <p className="font-semibold">{policyData.agent_code_used || policyData.agent?.agent_code || policyData.agent?.code || 'N/A'}</p>
-                  <p className="text-xs text-muted-foreground">Agent's unique code</p>
+                  <p className="font-semibold">{policyData.product?.carrier_product_code || policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
                 </div>
               </div>
               
@@ -496,24 +487,38 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Currency</p>
-                  <p className="font-semibold">{policyData.currency || 'N/A'}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
+                  <p className="font-semibold text-lg text-orange-600">
+                    {policyDetails?.DuePremium 
+                      ? `₱${policyDetails.DuePremium.toLocaleString()}`
+                      : policyDetails?.GrossPremium 
+                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                      : policyData.premium 
+                      ? `₱${Number(policyData.premium).toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
+                  <p className="font-semibold text-lg text-green-600">
+                    {policyDetails?.SumInsured 
+                      ? `₱${policyDetails.SumInsured.toLocaleString()}`
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Product</p>
-                  <p className="font-semibold">{policyDetails?.ProductName || policyData.plan_name || 'N/A'}</p>
+                  <p className="font-semibold">{policyData.product?.name || policyDetails?.ProductName || 'N/A'}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Plan Type</p>
-                  <p className="font-semibold">{policyData.plan_type || 'N/A'}</p>
-                </div>
-                {policyDetails?.PremiumTaxAmt && (
+                {policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0 && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
                     <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
                   </div>
                 )}
-                {policyDetails?.LGT && (
+                {policyDetails?.LGT != null && Number(policyDetails.LGT) !== 0 && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">LGT</p>
                     <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
@@ -535,12 +540,6 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
                     <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {policyData.transaction_date && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Transaction Date</p>
-                    <p className="font-semibold">{new Date(policyData.transaction_date).toLocaleDateString()}</p>
                   </div>
                 )}
                 {policyData.created_at && (
@@ -803,16 +802,16 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                                .filter(Boolean).join(' ') || 'N/A'}
                           </h4>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>{insuredPerson.IsMainInsured === 'Y' ? 'Main Insured' : 'Additional Insured'}</span>
-                            <span>•</span>
                             <span>{insuredPerson.IsAdultTraveller === 'Y' ? 'Adult' : 'Child'}</span>
                             <span>•</span>
                             <span>Age: {insuredPerson.Age || 'N/A'}</span>
                           </div>
                         </div>
-                        <Badge variant={insuredPerson.IsMainInsured === 'Y' ? 'default' : 'secondary'}>
-                          {insuredPerson.IsMainInsured === 'Y' ? 'Primary' : 'Secondary'}
-                        </Badge>
+                        {insuredPerson.IsMainInsured === 'Y' && (
+                          <Badge variant="default">
+                            Main Insured
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Insured Person Details */}
@@ -950,34 +949,17 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Commission
+                Commission Details
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Commission Rate</p>
-                <p className="font-semibold">{policyData.commission_log?.commission_rate || ''}%</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">VAT Amount</p>
-                <p className="font-semibold">₱{Number(policyData.commission_log?.vat_amount || 0).toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Withholding Tax</p>
-                <p className="font-semibold">₱{Number(policyData.commission_log?.withholding_tax_amount || 0).toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Base Commission</p>
-                <p className="font-semibold">₱{Number(policyData.commission_log?.base_commission || 0).toLocaleString()}</p>
+                <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
+                <p className="font-semibold">₱{Number(policyData.commission_log?.gross_commission || 0).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                <p className="font-semibold">
-                  {policyData.net_commission 
-                    ? `₱${Number(policyData.net_commission).toLocaleString()}`
-                    : ''
-                  }
-                </p>
+                <p className="font-semibold text-green-600">₱{Number(policyData.commission_log?.net_commission || 0).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Agent</p>
@@ -993,9 +975,10 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                     : 'N/A'
                   }
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {policyData.agent?.email || ''}
-                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
+                <p className="font-semibold">{policyData.product?.name || policyData.plan_name || 'N/A'}</p>
               </div>
             </CardContent>
           </Card>
