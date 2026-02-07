@@ -128,6 +128,23 @@ export const TravelDetailSchema = z.object({
   TravelCoverageArea: z.string(),
 })
 
+// Nominee Schema
+export const NomineeSchema = z.object({
+  FirstName: z.string(),
+  MiddleName: z.string().optional(),
+  LastName: z.string(),
+  DateOfBirth: z.string(),
+  Relationship: z.string(),
+  SharePercent: z.number().optional(),
+  BusinessObjectId: z.number().optional(),
+  ParentElementType: z.string().optional(),
+  ParentPolicyElementId: z.number().optional(),
+  PolicyElementId: z.number().optional(),
+  PolicyId: z.string().optional(),
+  PolicyStatus: z.number().optional(),
+  SequenceNumber: z.number().optional(),
+})
+
 // Policy Details Schema (the JSON string parsed)
 export const PolicyDetailsSchema = z.object({
   Age: z.number(),
@@ -162,6 +179,7 @@ export const PolicyDetailsSchema = z.object({
   NoOfAdults: z.number(),
   NoOfChildren: z.number(),
   NoOfTravellers: z.number(),
+  NomineeList: z.array(NomineeSchema).optional(),
   OldPrimaryKey: z.number(),
   OrgCode: z.string(),
   PlanCode: z.string(),
@@ -244,6 +262,7 @@ export type PolicyRisk = z.infer<typeof PolicyRiskSchema>
 export type PolicyLob = z.infer<typeof PolicyLobSchema>
 export type PromoCode = z.infer<typeof PromoCodeSchema>
 export type TravelDetail = z.infer<typeof TravelDetailSchema>
+export type Nominee = z.infer<typeof NomineeSchema>
 export type PolicyDetails = z.infer<typeof PolicyDetailsSchema>
 export type PolicyResponse = z.infer<typeof PolicyResponseSchema>
 export type PolicyApiResponse = z.infer<typeof PolicyApiResponseSchema>
