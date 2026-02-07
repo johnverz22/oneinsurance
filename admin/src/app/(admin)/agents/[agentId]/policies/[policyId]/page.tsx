@@ -54,7 +54,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
     data: policyResponse,
     isLoading: isLoadingPolicy,
     error: policyError,
-  } = useGetPolicyDetails(policyId)
+  } = useGetPolicyDetails(policyId, agentId)
 
   const agent = agentData?.data
   const policy = policyResponse?.data
@@ -370,17 +370,17 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             </h1>
             <p className="text-muted-foreground">
               {(() => {
-                // Get customer name from policy holder
-                const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
-                  || policyDetails?.PolicyCustomerList?.[0];
-                const customerName = policyHolder 
-                  ? `${policyHolder.FirstName || ''} ${policyHolder.LastName || ''}`.trim()
-                  : policyData.customer_name || 'Customer';
+                // Get agent name with capitalized first letters
+                const agentFirstName = policyData.agent?.first_name || ''
+                const agentLastName = policyData.agent?.last_name || ''
+                const capitalizedFirstName = agentFirstName.charAt(0).toUpperCase() + agentFirstName.slice(1).toLowerCase()
+                const capitalizedLastName = agentLastName.charAt(0).toUpperCase() + agentLastName.slice(1).toLowerCase()
+                const agentName = `${capitalizedFirstName} ${capitalizedLastName}`.trim() || policyData.agent?.name || 'Agent'
                 
-                // Get agent code
+                // Get agent code value
                 const agentCode = policyData.agent_code_used || policyData.agent?.agent_code || policyData.agent?.code || 'N/A';
                 
-                return `${customerName} • Agent Code: ${agentCode}`;
+                return `${agentName} • ${agentCode}`;
               })()}
             </p>
           </div>
@@ -453,9 +453,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Agent ID</p>
-                  <p className="font-semibold">AGT{policyData.agent?.id?.toString().padStart(3, '0') || '075'}</p>
-                  <p className="text-xs text-muted-foreground">Internal system ID</p>
+                  <p className="text-sm font-medium text-muted-foreground">Agent Code</p>
+                  <p className="font-semibold">{policyData.agent_code_used || policyData.agent?.agent_code || policyData.agent?.code || 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">Agent's unique code</p>
                 </div>
               </div>
               
@@ -876,6 +876,75 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Payment Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Payment Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Reference ID</p>
+                <p className="font-semibold">{policyData.id || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Date</p>
+                <p className="font-semibold">
+                  {policyData.transaction_date 
+                    ? new Date(policyData.transaction_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'N/A'
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Amount</p>
+                <p className="font-semibold text-lg text-green-600">
+                  {policyDetails?.GrossPremium 
+                    ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                    : policyData.premium 
+                    ? `₱${Number(policyData.premium).toLocaleString()}`
+                    : 'N/A'
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Brand</p>
+                <p className="font-semibold">
+                  {policyData.payment_method || policyData.payment_brand || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Payor's Name</p>
+                <p className="font-semibold">
+                  {customer 
+                    ? [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                        .filter(Boolean)
+                        .join(' ') || 'N/A'
+                    : policyData.customer_name || policyData.policy_holder || 'N/A'
+                  }
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Payor's Email</p>
+                <p className="font-semibold">
+                  {customer?.Email || policyData.customer_email || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Payor's Phone</p>
+                <p className="font-semibold">
+                  {customer?.TempData?.['MaskAfter-Mobile'] || customer?.Mobile || policyData.customer_phone || 'N/A'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Commission Information */}
           <Card>
             <CardHeader>
@@ -914,8 +983,14 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <p className="text-sm font-medium text-muted-foreground">Agent</p>
                 <p className="font-semibold">
                   {policyData.agent 
-                    ? `${policyData.agent.first_name || ''} ${policyData.agent.last_name || ''}`.trim() || policyData.agent.name || ''
-                    : ''
+                    ? (() => {
+                        const firstName = policyData.agent.first_name || ''
+                        const lastName = policyData.agent.last_name || ''
+                        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
+                        const capitalizedLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase()
+                        return `${capitalizedFirstName} ${capitalizedLastName}`.trim() || policyData.agent.name || 'N/A'
+                      })()
+                    : 'N/A'
                   }
                 </p>
                 <p className="text-xs text-muted-foreground">

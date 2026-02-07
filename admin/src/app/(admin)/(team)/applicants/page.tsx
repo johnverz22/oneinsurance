@@ -123,19 +123,19 @@ export default function ApplicantsPage() {
         },
       },
       {
+        accessorKey: 'application_type',
+        header: 'Type',
+        cell: ({ row }) => (
+          <span className="capitalize">{row.original.application_type || 'N/A'}</span>
+        ),
+      },
+      {
         accessorKey: 'email',
         header: 'Email',
       },
       {
         accessorKey: 'contact_number',
         header: 'Phone Number',
-      },
-      {
-        accessorKey: 'application_type',
-        header: 'Type',
-        cell: ({ row }) => (
-          <span className="capitalize">{row.original.application_type}</span>
-        ),
       },
       {
         accessorKey: 'status',
