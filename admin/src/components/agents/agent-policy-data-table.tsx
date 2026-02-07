@@ -270,16 +270,16 @@ export function AgentPolicyDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Policy No</TableHead>
-              <TableHead>Certificate No</TableHead>
-              <TableHead>Policy Holder</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Premium</TableHead>
-              <TableHead>Coverage Period</TableHead>
-              <TableHead>Currency</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Action</TableHead>
+              <TableHead className="font-bold">Policy No</TableHead>
+              <TableHead className="font-bold">Certificate No</TableHead>
+              <TableHead className="font-bold">Policy Holder</TableHead>
+              <TableHead className="font-bold">Product</TableHead>
+              <TableHead className="font-bold">Plan</TableHead>
+              <TableHead className="font-bold">Premium</TableHead>
+              <TableHead className="font-bold">Coverage Period</TableHead>
+              <TableHead className="font-bold">Currency</TableHead>
+              <TableHead className="font-bold">Status</TableHead>
+              <TableHead className="text-right font-bold">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -332,14 +332,13 @@ export function AgentPolicyDataTable({
                       {(transaction.status || 'pending').toUpperCase()}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                  <TableCell className="text-right">
+                    <button
                       onClick={() => handleViewPolicy(transaction.id)}
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                     >
                       View
-                    </Button>
+                    </button>
                   </TableCell>
                 </TableRow>
               ))
