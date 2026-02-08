@@ -34,8 +34,10 @@ interface AgentPolicyDetailsPageProps {
 
 export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPageProps) {
   const router = useRouter()
+  const searchParams = useParams()
   const [agentId, setAgentId] = React.useState<number | null>(null)
   const [policyId, setPolicyId] = React.useState<string | null>(null)
+  const [merchantTxId, setMerchantTxId] = React.useState<string | null>(null)
   const user = useAuthStore((state) => state.user)
 
   React.useEffect(() => {
@@ -43,6 +45,15 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
       setAgentId(parseInt(agentIdStr))
       setPolicyId(policyIdStr)
     })
+    
+    // Get merchant_transaction_id from URL query params
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const merchantTxIdParam = urlParams.get('merchant_transaction_id')
+      if (merchantTxIdParam) {
+        setMerchantTxId(merchantTxIdParam)
+      }
+    }
   }, [params])
 
   const {
@@ -373,8 +384,8 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 // Get agent name from fetched agent data
                 const agentName = agent?.name || 'N/A'
                 
-                // Get agent code value
-                const agentCode = policyData.agent_code_used || agent?.agent_code || 'N/A';
+                // Get agent code value and make it uppercase
+                const agentCode = (policyData.agent_code_used || agent?.agent_code || 'N/A').toUpperCase();
                 
                 return `${agentName} • ${agentCode}`;
               })()}
@@ -499,7 +510,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
                   <p className="font-semibold text-lg text-green-600">
                     {policyDetails?.SumInsured 
-                      ? `₱${Number(policyDetails.SumInsured).toFixed(2)}`
+                      ? `₱${Number(policyDetails.SumInsured).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
                       : 'N/A'
                     }
                   </p>
@@ -893,7 +904,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Reference ID</p>
-                <p className="font-semibold">{policyData.id || 'N/A'}</p>
+                <p className="font-semibold">{merchantTxId || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Date</p>

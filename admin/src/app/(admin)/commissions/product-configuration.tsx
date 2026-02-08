@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   CommissionConfig,
   CommissionConfigUpdateRequest,
@@ -55,6 +56,15 @@ const commisionConfigurationSchema = z.object({
     .number()
     .min(0, 'Referral Admin overrider commission must be at least 0%')
     .max(10, 'Referral Admin overrider commission cannot exceed 10%'),
+  vat: z
+    .number()
+    .min(0, 'VAT must be at least 0%')
+    .max(100, 'VAT cannot exceed 100%'),
+  witholding_tax: z
+    .number()
+    .min(0, 'Withholding tax must be at least 0%')
+    .max(100, 'Withholding tax cannot exceed 100%'),
+  isWithVAT: z.boolean(),
   effectivity_date: z.string().min(1, 'Effectivity date is required'),
 })
 .refine((data) => data.agent_commission + data.agent_admin_commission === data.base_commission, {
@@ -82,6 +92,9 @@ function mapFormDataToCommissionConfigUpdateRequest(
     referral_overrider_commission: formData.referral_overrider_commission,
     referral_admin_commission: formData.referral_admin_commission,
     referral_admin_overrider_commission: formData.referral_admin_overrider_commission,
+    vat: formData.vat,
+    witholding_tax: formData.witholding_tax,
+    isWithVAT: formData.isWithVAT,
     effectivity_date: formData.effectivity_date,
     status: 'active',
   } satisfies CommissionConfigUpdateRequest
@@ -109,6 +122,9 @@ export default function ProductCommisionConfiguration({
       referral_admin_commission:
         Number(selectedCommissionConfig?.referral_admin_commission || selectedCommissionConfig?.digitech_overriders) ?? 10,
       referral_admin_overrider_commission: Number(selectedCommissionConfig?.referral_admin_overrider_commission || selectedCommissionConfig?.ifrc_admin) ?? 25,
+      vat: Number(selectedCommissionConfig?.vat) ?? 0,
+      witholding_tax: Number(selectedCommissionConfig?.witholding_tax) ?? 0,
+      isWithVAT: selectedCommissionConfig?.isWithVAT ?? false,
       effectivity_date: selectedCommissionConfig?.effectivity_date 
         ? selectedCommissionConfig.effectivity_date.split('T')[0] 
         : new Date().toISOString().split('T')[0],
@@ -151,6 +167,9 @@ export default function ProductCommisionConfiguration({
         referral_overrider_commission: Number(selectedCommissionConfig.referral_overrider_commission || selectedCommissionConfig.digitech_referral),
         referral_admin_commission: Number(selectedCommissionConfig.referral_admin_commission || selectedCommissionConfig.digitech_overriders),
         referral_admin_overrider_commission: Number(selectedCommissionConfig.referral_admin_overrider_commission || selectedCommissionConfig.ifrc_admin),
+        vat: Number(selectedCommissionConfig.vat) ?? 0,
+        witholding_tax: Number(selectedCommissionConfig.witholding_tax) ?? 0,
+        isWithVAT: selectedCommissionConfig.isWithVAT ?? false,
         effectivity_date: selectedCommissionConfig.effectivity_date.split('T')[0],
       })
     }
@@ -238,6 +257,96 @@ export default function ProductCommisionConfiguration({
                               className="h-10 w-full cursor-pointer font-medium [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
                             />
                             <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                          </div>
+                          <FieldInfo field={field} />
+                        </div>
+                      )
+                    }}
+                  />
+
+                  {/* VAT */}
+                  <form.Field
+                    name="vat"
+                    children={(field) => {
+                      return (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-gray-700">
+                            VAT
+                          </Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              name={field.name}
+                              id={field.name}
+                              onChange={(e) => {
+                                field.handleChange(Number(e.target.value))
+                              }}
+                              onBlur={field.handleBlur}
+                              value={field.state.value.toString()}
+                              className="h-10 w-24 text-right font-semibold"
+                              step="0.01"
+                            />
+                            <span className="text-sm text-gray-600">%</span>
+                          </div>
+                          <FieldInfo field={field} />
+                        </div>
+                      )
+                    }}
+                  />
+
+                  {/* Withholding Tax */}
+                  <form.Field
+                    name="witholding_tax"
+                    children={(field) => {
+                      return (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-gray-700">
+                            Withholding Tax
+                          </Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              name={field.name}
+                              id={field.name}
+                              onChange={(e) => {
+                                field.handleChange(Number(e.target.value))
+                              }}
+                              onBlur={field.handleBlur}
+                              value={field.state.value.toString()}
+                              className="h-10 w-24 text-right font-semibold"
+                              step="0.01"
+                            />
+                            <span className="text-sm text-gray-600">%</span>
+                          </div>
+                          <FieldInfo field={field} />
+                        </div>
+                      )
+                    }}
+                  />
+
+                  {/* Is With VAT Checkbox */}
+                  <form.Field
+                    name="isWithVAT"
+                    children={(field) => {
+                      return (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-gray-700">
+                            VAT Status
+                          </Label>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id={field.name}
+                              checked={field.state.value}
+                              onCheckedChange={(checked) => {
+                                field.handleChange(checked === true)
+                              }}
+                            />
+                            <label
+                              htmlFor={field.name}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              Is With VAT
+                            </label>
                           </div>
                           <FieldInfo field={field} />
                         </div>
