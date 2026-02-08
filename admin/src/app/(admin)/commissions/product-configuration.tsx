@@ -4,6 +4,7 @@ import { FieldInfo } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import {
   CommissionConfig,
   CommissionConfigUpdateRequest,
@@ -263,76 +264,50 @@ export default function ProductCommisionConfiguration({
                       )
                     }}
                   />
+                </div>
+              </div>
 
+              {/* Tax Configuration Card */}
+              <div className="rounded-lg border-2 border-gray-300 bg-gray-50 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Tax Configuration</h3>
+                
+                <div className="grid grid-cols-2 gap-6">
                   {/* VAT */}
-                  <form.Field
-                    name="vat"
-                    children={(field) => {
-                      return (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-gray-700">
-                            VAT
-                          </Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              name={field.name}
-                              id={field.name}
-                              onChange={(e) => {
-                                field.handleChange(Number(e.target.value))
-                              }}
-                              onBlur={field.handleBlur}
-                              value={field.state.value.toString()}
-                              className="h-10 w-24 text-right font-semibold"
-                              step="0.01"
-                            />
-                            <span className="text-sm text-gray-600">%</span>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold text-gray-700">
+                      Value-Added Tax (VAT)
+                    </Label>
+                    <form.Field
+                      name="vat"
+                      children={(field) => {
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                name={field.name}
+                                id={field.name}
+                                onChange={(e) => {
+                                  field.handleChange(Number(e.target.value))
+                                }}
+                                onBlur={field.handleBlur}
+                                value={field.state.value.toString()}
+                                className="h-10 w-24 text-right font-semibold"
+                                step="0.01"
+                              />
+                              <span className="text-sm text-gray-600">%</span>
+                            </div>
+                            <FieldInfo field={field} />
                           </div>
-                          <FieldInfo field={field} />
-                        </div>
-                      )
-                    }}
-                  />
-
-                  {/* Withholding Tax */}
-                  <form.Field
-                    name="witholding_tax"
-                    children={(field) => {
-                      return (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-gray-700">
-                            Withholding Tax
-                          </Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              name={field.name}
-                              id={field.name}
-                              onChange={(e) => {
-                                field.handleChange(Number(e.target.value))
-                              }}
-                              onBlur={field.handleBlur}
-                              value={field.state.value.toString()}
-                              className="h-10 w-24 text-right font-semibold"
-                              step="0.01"
-                            />
-                            <span className="text-sm text-gray-600">%</span>
-                          </div>
-                          <FieldInfo field={field} />
-                        </div>
-                      )
-                    }}
-                  />
-
-                  {/* Is With VAT Checkbox */}
-                  <form.Field
-                    name="isWithVAT"
-                    children={(field) => {
-                      return (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-gray-700">
-                            VAT Status
-                          </Label>
+                        )
+                      }}
+                    />
+                    
+                    {/* Enable VAT Checkbox */}
+                    <form.Field
+                      name="isWithVAT"
+                      children={(field) => {
+                        return (
                           <div className="flex items-center gap-2">
                             <Checkbox
                               id={field.name}
@@ -345,14 +320,46 @@ export default function ProductCommisionConfiguration({
                               htmlFor={field.name}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Is With VAT
+                              Enable VAT
                             </label>
+                            <FieldInfo field={field} />
                           </div>
-                          <FieldInfo field={field} />
-                        </div>
-                      )
-                    }}
-                  />
+                        )
+                      }}
+                    />
+                  </div>
+
+                  {/* Withholding Tax */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold text-gray-700">
+                      Withholding Tax (WHT)
+                    </Label>
+                    <form.Field
+                      name="witholding_tax"
+                      children={(field) => {
+                        return (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                name={field.name}
+                                id={field.name}
+                                onChange={(e) => {
+                                  field.handleChange(Number(e.target.value))
+                                }}
+                                onBlur={field.handleBlur}
+                                value={field.state.value.toString()}
+                                className="h-10 w-24 text-right font-semibold"
+                                step="0.01"
+                              />
+                              <span className="text-sm text-gray-600">%</span>
+                            </div>
+                            <FieldInfo field={field} />
+                          </div>
+                        )
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -418,8 +425,8 @@ export default function ProductCommisionConfiguration({
                           name="agent_overrider_commission"
                           children={(field) => (
                             <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-black">
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-gray-900">
                                   Overrider
                                 </Label>
                                 <div className="flex items-center gap-2">
@@ -432,7 +439,7 @@ export default function ProductCommisionConfiguration({
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-black"
+                                    className="h-8 w-16 text-right text-gray-900"
                                   />
                                   <span className="text-muted-foreground text-sm">%</span>
                                 </div>
@@ -483,8 +490,8 @@ export default function ProductCommisionConfiguration({
                           name="agent_admin_overrider_commission"
                           children={(field) => (
                             <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-black">
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-gray-900">
                                   Overrider
                                 </Label>
                                 <div className="flex items-center gap-2">
@@ -497,7 +504,7 @@ export default function ProductCommisionConfiguration({
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-black"
+                                    className="h-8 w-16 text-right text-gray-900"
                                   />
                                   <span className="text-muted-foreground text-sm">%</span>
                                 </div>
@@ -571,8 +578,8 @@ export default function ProductCommisionConfiguration({
                           name="referral_overrider_commission"
                           children={(field) => (
                             <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-black">
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-gray-900">
                                   Overrider
                                 </Label>
                                 <div className="flex items-center gap-2">
@@ -585,7 +592,7 @@ export default function ProductCommisionConfiguration({
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-black"
+                                    className="h-8 w-16 text-right text-gray-900"
                                   />
                                   <span className="text-muted-foreground text-sm">%</span>
                                 </div>
@@ -636,8 +643,8 @@ export default function ProductCommisionConfiguration({
                           name="referral_admin_overrider_commission"
                           children={(field) => (
                             <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-black">
+                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
+                                <Label className="text-sm font-medium text-gray-900">
                                   Overrider
                                 </Label>
                                 <div className="flex items-center gap-2">
@@ -650,7 +657,7 @@ export default function ProductCommisionConfiguration({
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-black"
+                                    className="h-8 w-16 text-right text-gray-900"
                                   />
                                   <span className="text-muted-foreground text-sm">%</span>
                                 </div>
@@ -717,12 +724,11 @@ export default function ProductCommisionConfiguration({
             <div className="space-y-3">
               <p className="text-xl font-bold">Commission Simulator</p>
               <p className="text-base font-light">
-                Preview how commissions will be distributed based on sale amount
+                Preview how commissions will be distributed based on net premium.
               </p>
               <div className="flex items-center gap-4">
-                <Label className="font-semibold">Sale Amount:</Label>
+                <Label className="font-semibold">Net Premium:</Label>
                 <div className="flex items-center">
-                  <span className="mr-2">₱</span>
                   <Input
                     type="number"
                     value={saleAmount}
@@ -752,27 +758,78 @@ export default function ProductCommisionConfiguration({
                 }
                 
                 // Agent-based calculations
-                const agentCommissionTotal =
-                  (field.values.agent_commission / 100) * saleAmount
-                const agentOverriderTotal =
-                  (field.values.agent_overrider_commission / 100) * agentCommissionTotal
-
-                const agentAdminCommissionTotal =
-                  (field.values.agent_admin_commission / 100) * saleAmount
-                const agentAdminOverriderTotal =
-                  (field.values.agent_admin_overrider_commission / 100) * agentAdminCommissionTotal
+                // Step 1: Calculate gross commission for Agent only
+                const agentGrossCommission = saleAmount * (field.values.agent_commission / 100)
+                
+                // Step 2: Calculate VAT amount for Agent
+                const agentVatAmount = agentGrossCommission * (field.values.vat / 100)
+                
+                // Step 3: Apply VAT based on isWithVAT flag for Agent
+                let agentCommissionAfterVAT = agentGrossCommission
+                
+                if (field.values.isWithVAT) {
+                  // VAT enabled: deduct VAT
+                  agentCommissionAfterVAT = agentGrossCommission - agentVatAmount
+                } else {
+                  // VAT disabled: add VAT
+                  agentCommissionAfterVAT = agentGrossCommission + agentVatAmount
+                }
+                
+                // Step 4: Calculate WHT amount for Agent
+                const agentWhtAmount = agentCommissionAfterVAT * (field.values.witholding_tax / 100)
+                
+                // Step 5: Always deduct WHT to get Agent net commission
+                const agentNetCommission = agentCommissionAfterVAT - agentWhtAmount
+                
+                // Calculate overrider (simple percentage, no VAT/WHT)
+                const agentOverriderTotal = agentGrossCommission * (field.values.agent_overrider_commission / 100)
+                
+                // Calculate Admin commission (simple percentage, no VAT/WHT)
+                const agentAdminCommissionTotal = saleAmount * (field.values.agent_admin_commission / 100)
+                const agentAdminOverriderTotal = agentAdminCommissionTotal * (field.values.agent_admin_overrider_commission / 100)
+                
+                // Total Agent Net Commission = only the Agent net commission (not including admin)
+                const totalAgentNetCommission = agentNetCommission
+                
+                // Display values
+                const agentCommissionTotal = agentGrossCommission
 
                 // Referral-based calculations
-                const referralCommissionTotal =
-                  (field.values.referral_commission / 100) * saleAmount
-                const referralOverriderTotal =
-                  (field.values.referral_overrider_commission / 100) *
-                  referralCommissionTotal
+                // Step 1: Calculate gross commission for Referral only
+                const referralGrossCommission = saleAmount * (field.values.referral_commission / 100)
                 
-                const referralAdminCommissionTotal =
-                  (field.values.referral_admin_commission / 100) * saleAmount
-                const referralAdminOverriderTotal =
-                  (field.values.referral_admin_overrider_commission / 100) * referralAdminCommissionTotal
+                // Step 2: Calculate VAT amount for Referral
+                const referralVatAmount = referralGrossCommission * (field.values.vat / 100)
+                
+                // Step 3: Apply VAT based on isWithVAT flag for Referral
+                let referralCommissionAfterVAT = referralGrossCommission
+                
+                if (field.values.isWithVAT) {
+                  // VAT enabled: deduct VAT
+                  referralCommissionAfterVAT = referralGrossCommission - referralVatAmount
+                } else {
+                  // VAT disabled: add VAT
+                  referralCommissionAfterVAT = referralGrossCommission + referralVatAmount
+                }
+                
+                // Step 4: Calculate WHT amount for Referral
+                const referralWhtAmount = referralCommissionAfterVAT * (field.values.witholding_tax / 100)
+                
+                // Step 5: Always deduct WHT to get Referral net commission
+                const referralNetCommission = referralCommissionAfterVAT - referralWhtAmount
+                
+                // Calculate overrider (simple percentage, no VAT/WHT)
+                const referralOverriderTotal = referralGrossCommission * (field.values.referral_overrider_commission / 100)
+                
+                // Calculate Admin commission (simple percentage, no VAT/WHT)
+                const referralAdminCommissionTotal = saleAmount * (field.values.referral_admin_commission / 100)
+                const referralAdminOverriderTotal = referralAdminCommissionTotal * (field.values.referral_admin_overrider_commission / 100)
+                
+                // Total Referral Net Commission = only the Referral net commission (not including admin)
+                const totalReferralNetCommission = referralNetCommission
+                
+                // Display values
+                const referralCommissionTotal = referralGrossCommission
                 
                 return (
                   <div className="space-y-4">
@@ -781,9 +838,13 @@ export default function ProductCommisionConfiguration({
                       {/* Agent-based Distribution */}
                       <div className="rounded-lg border-2 border-blue-300 bg-blue-50/30 p-6 shadow-sm">
                         <div className="mb-4 text-center">
-                          <h4 className="text-base font-bold text-blue-900">
-                            Agent-based Distribution
-                          </h4>
+                          <h4 className="text-base font-bold text-blue-900 mb-3">Agent-based Distribution</h4>
+                        </div>
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-600">Base Commission Rate ({field.values.base_commission}%)</p>
+                            <p className="text-base font-bold">{baseCommissionTotal.toFixed(2)}</p>
+                          </div>
                         </div>
 
                         <div className="space-y-4">
@@ -794,15 +855,15 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-3 py-2 text-[#437AEE]">
-                                <p className="text-sm font-semibold">Agent</p>
+                                <p className="text-sm font-semibold">Agent ({field.values.agent_commission}%)</p>
                                 <p className="font-bold">
-                                  ₱ {agentCommissionTotal.toFixed(2)}
+                                  {agentCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-2 py-1.5 text-[#24A34A]">
-                                <p className="text-xs">Overrider</p>
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
+                                <p className="text-xs">Overrider ({field.values.agent_overrider_commission}%)</p>
                                 <p className="text-sm font-semibold">
-                                  ₱ {agentOverriderTotal.toFixed(2)}
+                                  {agentOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
                             </div>
@@ -815,28 +876,44 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-3 py-2 text-[#9636EA]">
-                                <p className="text-sm font-semibold">Admin</p>
+                                <p className="text-sm font-semibold">Admin ({field.values.agent_admin_commission}%)</p>
                                 <p className="font-bold">
-                                  ₱ {agentAdminCommissionTotal.toFixed(2)}
+                                  {agentAdminCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-2 py-1.5 text-[#F08548]">
-                                <p className="text-xs">Overrider</p>
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
+                                <p className="text-xs">Overrider ({field.values.agent_admin_overrider_commission}%)</p>
                                 <p className="text-sm font-semibold">
-                                  ₱ {agentAdminOverriderTotal.toFixed(2)}
+                                  {agentAdminOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
+                            </div>
+                          </div>
+
+                          {/* VAT and Withholding Tax */}
+                          <div className="space-y-1 border-t pt-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <span>Value-Added Tax ({field.values.vat}%)</span>
+                                {field.values.isWithVAT && (
+                                  <Badge variant="default" className="bg-green-600 text-white text-xs">
+                                    Enabled
+                                  </Badge>
+                                )}
+                              </div>
+                              <span>{field.values.isWithVAT ? '-' : '+'} {agentVatAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Withholding Tax ({field.values.witholding_tax}%)</span>
+                              <span>- {agentWhtAmount.toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="mt-4 flex justify-between border-t-2 border-blue-400 pt-3">
-                          <p className="font-semibold text-blue-900">Agent-based Total:</p>
+                          <p className="font-semibold text-blue-900">Agent Net Commission</p>
                           <p className="font-bold text-blue-900">
-                            ₱{' '}
-                            {(
-                              agentCommissionTotal + agentAdminCommissionTotal
-                            ).toFixed(2)}
+                            ₱ {totalAgentNetCommission.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -844,9 +921,13 @@ export default function ProductCommisionConfiguration({
                       {/* Referral-based Distribution */}
                       <div className="rounded-lg border-2 border-green-300 bg-green-50/30 p-6 shadow-sm">
                         <div className="mb-4 text-center">
-                          <h4 className="text-base font-bold text-green-900">
-                            Referral-based Distribution
-                          </h4>
+                          <h4 className="text-base font-bold text-green-900 mb-3">Referral-based Distribution</h4>
+                        </div>
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-gray-600">Base Commission Rate ({field.values.base_commission}%)</p>
+                            <p className="text-base font-bold">{baseCommissionTotal.toFixed(2)}</p>
+                          </div>
                         </div>
 
                         <div className="space-y-4">
@@ -857,15 +938,15 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-3 py-2 text-[#437AEE]">
-                                <p className="text-sm font-semibold">Referral</p>
+                                <p className="text-sm font-semibold">Referral ({field.values.referral_commission}%)</p>
                                 <p className="font-bold">
-                                  ₱ {referralCommissionTotal.toFixed(2)}
+                                  {referralCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F0FDF4] px-2 py-1.5 text-[#24A34A]">
-                                <p className="text-xs">Overrider</p>
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
+                                <p className="text-xs">Overrider ({field.values.referral_overrider_commission}%)</p>
                                 <p className="text-sm font-semibold">
-                                  ₱ {referralOverriderTotal.toFixed(2)}
+                                  {referralOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
                             </div>
@@ -878,95 +959,46 @@ export default function ProductCommisionConfiguration({
                             </p>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-3 py-2 text-[#9636EA]">
-                                <p className="text-sm font-semibold">Admin</p>
+                                <p className="text-sm font-semibold">Admin ({field.values.referral_admin_commission}%)</p>
                                 <p className="font-bold">
-                                  ₱ {referralAdminCommissionTotal.toFixed(2)}
+                                  {referralAdminCommissionTotal.toFixed(2)}
                                 </p>
                               </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#FFF7ED] px-2 py-1.5 text-[#F08548]">
-                                <p className="text-xs">Overrider</p>
+                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
+                                <p className="text-xs">Overrider ({field.values.referral_admin_overrider_commission}%)</p>
                                 <p className="text-sm font-semibold">
-                                  ₱ {referralAdminOverriderTotal.toFixed(2)}
+                                  {referralAdminOverriderTotal.toFixed(2)}
                                 </p>
                               </div>
+                            </div>
+                          </div>
+
+                          {/* VAT and Withholding Tax */}
+                          <div className="space-y-1 border-t pt-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center gap-2">
+                                <span>Value-Added Tax ({field.values.vat}%)</span>
+                                {field.values.isWithVAT && (
+                                  <Badge variant="default" className="bg-green-600 text-white text-xs">
+                                    Enabled
+                                  </Badge>
+                                )}
+                              </div>
+                              <span>{field.values.isWithVAT ? '-' : '+'} {referralVatAmount.toFixed(2)}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Withholding Tax ({field.values.witholding_tax}%)</span>
+                              <span>- {referralWhtAmount.toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="mt-4 flex justify-between border-t-2 border-green-400 pt-3">
-                          <p className="font-semibold text-green-900">Referral-based Total:</p>
+                          <p className="font-semibold text-green-900">Referral Net Commission</p>
                           <p className="font-bold text-green-900">
-                            ₱{' '}
-                            {(
-                              referralCommissionTotal + referralAdminCommissionTotal
-                            ).toFixed(2)}
+                            ₱ {totalReferralNetCommission.toFixed(2)}
                           </p>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              }}
-            </form.Subscribe>
-            <form.Subscribe>
-              {(field) => {
-                const grossCommission = (field.values.base_commission / 100) * saleAmount
-                const vatAmount = grossCommission * (field.values.vat / 100)
-                const withholdingTaxAmount = grossCommission * (field.values.witholding_tax / 100)
-                
-                let netCommission
-                if (field.values.isWithVAT) {
-                  netCommission = grossCommission - vatAmount - withholdingTaxAmount
-                } else {
-                  netCommission = grossCommission + vatAmount - withholdingTaxAmount
-                }
-                
-                return (
-                  <div className="space-y-3">
-                    {/* Gross Commission */}
-                    <div className="flex items-center justify-between rounded-lg bg-blue-100 p-4 text-black">
-                      <div>
-                        <p className="text-lg font-bold">
-                          Gross Commission (₱ {saleAmount.toLocaleString()} sale):
-                        </p>
-                        <p className="font-light text-sm">
-                          Base commission Rate: {field.values.base_commission}%
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xl font-bold">₱ {grossCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                      </div>
-                    </div>
-
-                    {/* VAT and Withholding Tax Breakdown */}
-                    <div className="rounded-lg border-2 border-gray-300 bg-white p-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium">VAT ({field.values.vat}%):</span>
-                          <span className="font-semibold">{field.values.isWithVAT ? '-' : '+'} ₱ {vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium">Withholding Tax ({field.values.witholding_tax}%):</span>
-                          <span className="font-semibold">- ₱ {withholdingTaxAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{field.values.isWithVAT ? '✓' : '✗'} Is With VAT</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Net Commission */}
-                    <div className="flex items-center justify-between rounded-lg bg-green-100 p-4 text-black border-2 border-green-400">
-                      <div>
-                        <p className="text-lg font-bold text-green-900">
-                          Net Commission:
-                        </p>
-                        <p className="font-light text-sm text-green-800">
-                          After VAT and Withholding Tax
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xl font-bold text-green-900">₱ {netCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       </div>
                     </div>
                   </div>
