@@ -309,22 +309,43 @@ export function AgentPolicyDataTable({
                       : '₱0.00'}
                   </TableCell>
                   <TableCell>
-                    {transaction.coverage_start && transaction.coverage_end ? (
-                      <div>
-                        <p className="text-sm font-medium">
-                          {new Date(transaction.coverage_start).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {new Date(transaction.coverage_end).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {(() => {
-                            const startDate = new Date(transaction.coverage_start)
-                            const endDate = new Date(transaction.coverage_end)
-                            const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-                            return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
-                          })()}
-                        </p>
-                      </div>
-                    ) : 'N/A'}
+                    {(() => {
+                      // Try to get dates from policy_details JSON
+                      let effectiveDate = null
+                      let expiryDate = null
+                      
+                      if (transaction.policy_details) {
+                        try {
+                          const policyDetails = typeof transaction.policy_details === 'string' 
+                            ? JSON.parse(transaction.policy_details) 
+                            : transaction.policy_details
+                          effectiveDate = policyDetails.EffectiveDate
+                          expiryDate = policyDetails.ExpiryDate
+                        } catch (e) {
+                          console.error('Error parsing policy_details:', e)
+                        }
+                      }
+                      
+                      if (effectiveDate && expiryDate) {
+                        const startDate = new Date(effectiveDate)
+                        const endDate = new Date(expiryDate)
+                        const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+                        
+                        return (
+                          <div>
+                            <p className="text-sm font-medium">
+                              {startDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {endDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {diffDays} Day{diffDays !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        )
+                      }
+                      
+                      return 'N/A'
+                    })()}
                   </TableCell>
                   <TableCell>{transaction.currency || 'N/A'}</TableCell>
                   <TableCell>

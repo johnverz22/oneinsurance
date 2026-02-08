@@ -28,7 +28,7 @@ const splitName = (fullName: string) => {
 // Update admin profile
 export const useUpdateAdminProfile = () => {
   const queryClient = useQueryClient()
-  const { getAuthToken, updateUser, user } = useAuthStore()
+  const { getAuthToken, updateUser } = useAuthStore()
 
   return useMutation({
     mutationFn: async ({ id, data }: UpdateAdminProfileParams) => {
@@ -40,31 +40,21 @@ export const useUpdateAdminProfile = () => {
       // Split the name into first_name and last_name as expected by the backend
       const { firstName, lastName } = splitName(data.name)
       
-      // Prepare data in the format expected by the backend API (from Postman collection)
-      const backendData = {
-        id: id, // Include user ID for the API route
+      const response = await axios.put(`/api/admin/profile`, {
+        id,
         first_name: firstName,
         last_name: lastName,
         email: data.email,
-        // Include existing fields to avoid overwriting them
-        designation: user?.designation || 'Admin' // Keep existing designation
-      }
-
-      console.log('Attempting to update admin profile with data:', backendData)
-
-      const response = await axios.put(`/api/admin/profile`, backendData, {
+      }, {
         headers: {
           Authorization: token,
           'Content-Type': 'application/json',
         },
       })
       
-      console.log('Profile update successful:', response.data)
       return response.data
     },
     onSuccess: (response, variables) => {
-      console.log('Profile update successful:', response)
-      
       // Update the local store with the new data
       updateUser({
         name: variables.data.name,

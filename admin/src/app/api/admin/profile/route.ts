@@ -23,11 +23,7 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
     
-    console.log('Admin Profile API - Request body:', body)
-    console.log('Admin Profile API - Token:', token ? 'present' : 'missing')
-
-    // Extract user ID from the request body
-    const userId = body.id || body.user_id
+    const userId = body.id
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID is required' },
@@ -35,11 +31,7 @@ export async function PUT(req: NextRequest) {
       )
     }
 
-    // Use the correct endpoint from the Postman collection: PUT /admin/users/{id}
     const endpoint = `${config.BASE_URL}/admin/users/${userId}`
-    
-    console.log('Admin Profile API - Using endpoint:', endpoint)
-    console.log('Admin Profile API - Request data:', body)
     
     const response = await axios.put(endpoint, body, {
       headers: {
@@ -49,17 +41,10 @@ export async function PUT(req: NextRequest) {
       },
     })
 
-    console.log('Admin Profile API - Success:', response.status)
     return NextResponse.json(response.data, { status: 200, headers })
 
   } catch (error: any) {
-    console.error('Admin Profile API - Error:', error)
     if (axios.isAxiosError(error)) {
-      console.error('Admin Profile API - Error details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
-      })
       return handleServerSideAxiosError(error)
     }
 
