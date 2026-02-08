@@ -166,7 +166,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
         `Status: ${policyData.status || 'N/A'}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
         ...(policyDetails?.ExpiryDate ? [`Expiry Date: ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}`] : []),
-        `Premium Amount: PHP ${policyDetails?.GrossPremium?.toLocaleString() || (policyData.premium ? Number(policyData.premium).toLocaleString() : 'N/A')}`,
+        `Premium Amount: PHP ${policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : (policyData.premium ? Number(policyData.premium).toFixed(2) : 'N/A')}`,
         `Product: ${policyDetails?.ProductName || policyData.plan_name || 'N/A'}`,
       ]
 
@@ -370,15 +370,11 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             </h1>
             <p className="text-muted-foreground">
               {(() => {
-                // Get agent name with capitalized first letters
-                const agentFirstName = policyData.agent?.first_name || ''
-                const agentLastName = policyData.agent?.last_name || ''
-                const capitalizedFirstName = agentFirstName.charAt(0).toUpperCase() + agentFirstName.slice(1).toLowerCase()
-                const capitalizedLastName = agentLastName.charAt(0).toUpperCase() + agentLastName.slice(1).toLowerCase()
-                const agentName = `${capitalizedFirstName} ${capitalizedLastName}`.trim() || policyData.agent?.name || 'Agent'
+                // Get agent name from fetched agent data
+                const agentName = agent?.name || 'N/A'
                 
                 // Get agent code value
-                const agentCode = policyData.agent_code_used || policyData.agent?.agent_code || policyData.agent?.code || 'N/A';
+                const agentCode = policyData.agent_code_used || agent?.agent_code || 'N/A';
                 
                 return `${agentName} • ${agentCode}`;
               })()}
@@ -479,9 +475,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
                   <p className="font-semibold text-lg">
                     {policyDetails?.GrossPremium 
-                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                      ? `₱${Number(policyDetails.GrossPremium).toFixed(2)}`
                       : policyData.premium 
-                      ? `₱${Number(policyData.premium).toLocaleString()}`
+                      ? `₱${Number(policyData.premium).toFixed(2)}`
                       : 'N/A'
                     }
                   </p>
@@ -490,11 +486,11 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
                   <p className="font-semibold text-lg text-orange-600">
                     {policyDetails?.DuePremium 
-                      ? `₱${policyDetails.DuePremium.toLocaleString()}`
+                      ? `₱${Number(policyDetails.DuePremium).toFixed(2)}`
                       : policyDetails?.GrossPremium 
-                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                      ? `₱${Number(policyDetails.GrossPremium).toFixed(2)}`
                       : policyData.premium 
-                      ? `₱${Number(policyData.premium).toLocaleString()}`
+                      ? `₱${Number(policyData.premium).toFixed(2)}`
                       : 'N/A'
                     }
                   </p>
@@ -503,7 +499,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
                   <p className="font-semibold text-lg text-green-600">
                     {policyDetails?.SumInsured 
-                      ? `₱${policyDetails.SumInsured.toLocaleString()}`
+                      ? `₱${Number(policyDetails.SumInsured).toFixed(2)}`
                       : 'N/A'
                     }
                   </p>
@@ -515,13 +511,13 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 {policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0 && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
-                    <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
+                    <p className="font-semibold">₱{Number(policyDetails.PremiumTaxAmt).toFixed(2)}</p>
                   </div>
                 )}
                 {policyDetails?.LGT != null && Number(policyDetails.LGT) !== 0 && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">LGT</p>
-                    <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
+                    <p className="font-semibold">₱{Number(policyDetails.LGT).toFixed(2)}</p>
                   </div>
                 )}
               </div>
@@ -739,9 +735,20 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                     <p className="text-sm font-medium text-muted-foreground">Number of Travellers</p>
                     <p className="font-semibold">
                       {policyDetails?.NoOfTravellers || 'N/A'} 
-                      {policyDetails?.NoOfAdults && policyDetails?.NoOfChildren && 
-                        ` (${policyDetails.NoOfAdults} Adults, ${policyDetails.NoOfChildren} Children)`
-                      }
+                      {(() => {
+                        const adults = policyDetails?.NoOfAdults
+                        const children = policyDetails?.NoOfChildren
+                        const parts = []
+                        
+                        if (adults != null && Number(adults) !== 0) {
+                          parts.push(`${adults} Adult${Number(adults) !== 1 ? 's' : ''}`)
+                        }
+                        if (children != null && Number(children) !== 0) {
+                          parts.push(`${children} Child${Number(children) !== 1 ? 'ren' : ''}`)
+                        }
+                        
+                        return parts.length > 0 ? ` (${parts.join(', ')})` : ''
+                      })()}
                     </p>
                   </div>
                 </div>
@@ -905,9 +912,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <p className="text-sm font-medium text-muted-foreground">Amount</p>
                 <p className="font-semibold text-lg text-green-600">
                   {policyDetails?.GrossPremium 
-                    ? `₱${policyDetails.GrossPremium.toLocaleString()}`
+                    ? `₱${Number(policyDetails.GrossPremium).toFixed(2)}`
                     : policyData.premium 
-                    ? `₱${Number(policyData.premium).toLocaleString()}`
+                    ? `₱${Number(policyData.premium).toFixed(2)}`
                     : 'N/A'
                   }
                 </p>
@@ -963,18 +970,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                <p className="font-semibold">
-                  {policyData.agent 
-                    ? (() => {
-                        const firstName = policyData.agent.first_name || ''
-                        const lastName = policyData.agent.last_name || ''
-                        const capitalizedFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
-                        const capitalizedLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase()
-                        return `${capitalizedFirstName} ${capitalizedLastName}`.trim() || policyData.agent.name || 'N/A'
-                      })()
-                    : 'N/A'
-                  }
-                </p>
+                <p className="font-semibold">{agent?.name || 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
