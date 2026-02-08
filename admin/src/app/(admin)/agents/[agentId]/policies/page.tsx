@@ -113,9 +113,11 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-2xl font-bold text-gray-900">
               {agent ? (agent.name || `${agent.first_name || ''} ${agent.last_name || ''}`.trim() || agent.email || `Agent ID: ${agent.id}`) : 'Loading agent...'}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              {agent?.settings?.code?.toUpperCase() || 'N/A'}
             </p>
           </div>
         </div>
@@ -128,10 +130,10 @@ export default function AgentPoliciesPage({ params }: AgentPoliciesPageProps) {
         </Button>
       </div>
 
-      {/* Transaction History Section */}
+      {/* Policy Management Section */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-2xl font-bold">Transaction History</h2>
+          <h2 className="text-2xl font-bold">Policy Management</h2>
           <p className="text-muted-foreground">
             View and manage all policy transactions, certificates, and coverage details for this agent.
           </p>
