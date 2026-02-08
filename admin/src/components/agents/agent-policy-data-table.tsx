@@ -88,9 +88,12 @@ export function AgentPolicyDataTable({
     )
   }
 
-  const handleViewPolicy = (transactionId: number) => {
-    console.log('AgentPolicyDataTable - Navigating to policy:', transactionId)
-    router.push(`/agents/${agentId}/policies/${transactionId}`)
+  const handleViewPolicy = (transactionId: number, merchantTxId?: string) => {
+    console.log('AgentPolicyDataTable - Navigating to policy:', transactionId, 'merchantTxId:', merchantTxId)
+    const url = merchantTxId 
+      ? `/agents/${agentId}/policies/${transactionId}?merchant_transaction_id=${merchantTxId}`
+      : `/agents/${agentId}/policies/${transactionId}`
+    router.push(url)
   }
 
   const handleSearchSubmit = () => {
@@ -355,7 +358,7 @@ export function AgentPolicyDataTable({
                   </TableCell>
                   <TableCell className="text-right">
                     <button
-                      onClick={() => handleViewPolicy(transaction.id)}
+                      onClick={() => handleViewPolicy(transaction.id, transaction.merchant_transaction_id)}
                       className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                     >
                       View
