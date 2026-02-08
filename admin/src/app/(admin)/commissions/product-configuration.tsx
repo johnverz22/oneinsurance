@@ -739,6 +739,18 @@ export default function ProductCommisionConfiguration({
                 const baseCommissionTotal =
                   (field.values.base_commission / 100) * saleAmount
                 
+                // VAT and Withholding Tax calculations
+                const vatAmount = baseCommissionTotal * (field.values.vat / 100)
+                const withholdingTaxAmount = baseCommissionTotal * (field.values.witholding_tax / 100)
+                
+                // Net commission calculation based on isWithVAT
+                let netCommission
+                if (field.values.isWithVAT) {
+                  netCommission = baseCommissionTotal - vatAmount - withholdingTaxAmount
+                } else {
+                  netCommission = baseCommissionTotal + vatAmount - withholdingTaxAmount
+                }
+                
                 // Agent-based calculations
                 const agentCommissionTotal =
                   (field.values.agent_commission / 100) * saleAmount
@@ -898,19 +910,64 @@ export default function ProductCommisionConfiguration({
             </form.Subscribe>
             <form.Subscribe>
               {(field) => {
-                const totalCommission = (field.values.base_commission / 100) * saleAmount
+                const grossCommission = (field.values.base_commission / 100) * saleAmount
+                const vatAmount = grossCommission * (field.values.vat / 100)
+                const withholdingTaxAmount = grossCommission * (field.values.witholding_tax / 100)
+                
+                let netCommission
+                if (field.values.isWithVAT) {
+                  netCommission = grossCommission - vatAmount - withholdingTaxAmount
+                } else {
+                  netCommission = grossCommission + vatAmount - withholdingTaxAmount
+                }
+                
                 return (
-                  <div className="flex items-center justify-between rounded-lg bg-gray-200 p-4 text-black">
-                    <div>
-                      <p className="text-xl font-bold">
-                        Total Commission (₱ {saleAmount.toLocaleString()} sale):
-                      </p>
-                      <p className="font-light">
-                        Effective commission Rate: {field.values.base_commission}%
-                      </p>
+                  <div className="space-y-3">
+                    {/* Gross Commission */}
+                    <div className="flex items-center justify-between rounded-lg bg-blue-100 p-4 text-black">
+                      <div>
+                        <p className="text-lg font-bold">
+                          Gross Commission (₱ {saleAmount.toLocaleString()} sale):
+                        </p>
+                        <p className="font-light text-sm">
+                          Base commission Rate: {field.values.base_commission}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold">₱ {grossCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xl font-bold">₱ {totalCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+
+                    {/* VAT and Withholding Tax Breakdown */}
+                    <div className="rounded-lg border-2 border-gray-300 bg-white p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium">VAT ({field.values.vat}%):</span>
+                          <span className="font-semibold">{field.values.isWithVAT ? '-' : '+'} ₱ {vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium">Withholding Tax ({field.values.witholding_tax}%):</span>
+                          <span className="font-semibold">- ₱ {withholdingTaxAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{field.values.isWithVAT ? '✓' : '✗'} Is With VAT</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Net Commission */}
+                    <div className="flex items-center justify-between rounded-lg bg-green-100 p-4 text-black border-2 border-green-400">
+                      <div>
+                        <p className="text-lg font-bold text-green-900">
+                          Net Commission:
+                        </p>
+                        <p className="font-light text-sm text-green-800">
+                          After VAT and Withholding Tax
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-green-900">₱ {netCommission.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      </div>
                     </div>
                   </div>
                 )
