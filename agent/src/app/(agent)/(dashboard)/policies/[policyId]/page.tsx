@@ -545,17 +545,26 @@ export default function PolicyDetailsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
                   <p className="font-semibold text-lg">
                     {policyDetails?.GrossPremium 
-                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
-                      : policyData.amount 
-                      ? `₱${Number(policyData.amount).toLocaleString()}`
-                      : '₱0.00'
+                      ? `₱${Number(policyDetails.GrossPremium).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
+                      : 'N/A'
                     }
                   </p>
                 </div>
                 {(policyDetails?.DuePremium != null && Number(policyDetails.DuePremium) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
-                    <p className="font-semibold text-lg text-orange-600">₱{policyDetails.DuePremium.toLocaleString()}</p>
+                    <p className="font-semibold text-lg text-orange-600">
+                      {policyDetails.DuePremium 
+                        ? `₱${Number(policyDetails.DuePremium).toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}`
+                        : 'N/A'
+                      }
+                    </p>
                   </div>
                 )}
                 {(policyDetails?.SumInsured != null && Number(policyDetails.SumInsured) !== 0) && (
@@ -1108,7 +1117,10 @@ export default function PolicyDetailsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
                   <p className="font-semibold text-lg">
                     {policyData.commission_log?.gross_commission 
-                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString()}`
+                      ? `₱${Number(policyData.commission_log.gross_commission).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
                       : '₱0.00'
                     }
                   </p>
@@ -1116,8 +1128,8 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
                   <p className="font-semibold text-lg text-green-600">
-                    {policyData.commission_log?.net_commission 
-                      ? `₱${Number(policyData.commission_log.net_commission).toLocaleString()}`
+                    {policyData.commission_log?.agent_commission 
+                      ? `₱${Number(policyData.commission_log.agent_commission).toLocaleString()}`
                       : '₱0.00'
                     }
                   </p>
