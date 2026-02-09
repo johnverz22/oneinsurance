@@ -278,8 +278,8 @@ export function AgentPolicyDataTable({
               <TableHead className="font-bold">Policy Holder</TableHead>
               <TableHead className="font-bold">Product</TableHead>
               <TableHead className="font-bold">Plan</TableHead>
-              <TableHead className="font-bold">Premium</TableHead>
               <TableHead className="font-bold">Coverage Period</TableHead>
+              <TableHead className="font-bold">Premium</TableHead>
               <TableHead className="font-bold">Currency</TableHead>
               <TableHead className="font-bold">Status</TableHead>
               <TableHead className="text-right font-bold">Action</TableHead>
@@ -303,13 +303,6 @@ export function AgentPolicyDataTable({
                   </TableCell>
                   <TableCell>
                     {transaction.plan_name || 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    {transaction.premium 
-                      ? `₱${parseFloat(transaction.premium).toFixed(2)}` 
-                      : transaction.amount 
-                      ? `₱${parseFloat(transaction.amount).toFixed(2)}` 
-                      : '₱0.00'}
                   </TableCell>
                   <TableCell>
                     {(() => {
@@ -350,6 +343,13 @@ export function AgentPolicyDataTable({
                       return 'N/A'
                     })()}
                   </TableCell>
+                  <TableCell>
+                    {transaction.premium 
+                      ? parseFloat(transaction.premium).toFixed(2)
+                      : transaction.amount 
+                      ? parseFloat(transaction.amount).toFixed(2)
+                      : '0.00'}
+                  </TableCell>
                   <TableCell>{transaction.currency || 'N/A'}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(transaction.status || 'pending')}>
@@ -359,7 +359,7 @@ export function AgentPolicyDataTable({
                   <TableCell className="text-right">
                     <button
                       onClick={() => handleViewPolicy(transaction.id, transaction.merchant_transaction_id)}
-                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer"
                     >
                       View
                     </button>
