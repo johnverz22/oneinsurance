@@ -13,20 +13,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Ensure CustomField object exists and includes PlanName if provided in the request
+    // Ensure CustomField object exists and includes all fields from the request
     const requestBody = {
       ...body,
       CustomField: {
         ...body.CustomField,
-        // Include PlanName if it exists in the request body
-        ...(body.CustomField?.PlanName && { PlanName: body.CustomField.PlanName })
       }
     }
 
     const url = `${process.env.BASE_URL}/quote/travel/issue-quote`
 
     console.log('Travel Insurance Issue Quote URL:', url)
-    console.log('Request body with CustomField:', requestBody)
+    console.log('Request body with CustomField:', JSON.stringify(requestBody, null, 2))
 
     const response = await axios.post(url, requestBody, {
       headers: {
