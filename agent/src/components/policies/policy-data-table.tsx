@@ -290,7 +290,7 @@ export function PolicyDataTable({
                     <TableCell>
                       <p className="font-semibold">
                         {transaction.amount
-                          ? `₱${Number(transaction.amount).toLocaleString()}`
+                          ? Number(transaction.amount).toLocaleString()
                           : 'N/A'}
                       </p>
                     </TableCell>

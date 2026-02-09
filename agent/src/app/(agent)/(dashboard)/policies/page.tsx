@@ -117,17 +117,17 @@ const policyColumns: ColumnDef<Transaction>[] = [
       const amount = row.original.amount
       
       if (!amount || amount === 0) {
-        return <p className="font-semibold">₱0.00</p>
+        return <p className="font-semibold">0.00</p>
       }
       
       const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount
       if (isNaN(numericAmount)) {
-        return <p className="font-semibold">₱0.00</p>
+        return <p className="font-semibold">0.00</p>
       }
       
       return (
         <p className="font-semibold">
-          ₱{numericAmount.toLocaleString(undefined, {
+          {numericAmount.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
