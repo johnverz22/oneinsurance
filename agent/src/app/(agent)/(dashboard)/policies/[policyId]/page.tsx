@@ -544,8 +544,8 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
                   <p className="font-semibold text-lg">
-                    {policyDetails?.GrossPremium 
-                      ? `₱${Number(policyDetails.GrossPremium).toLocaleString(undefined, {
+                    {policyDetails?.DuePremium 
+                      ? `₱${Number(policyDetails.DuePremium).toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2
                         })}`
@@ -553,20 +553,6 @@ export default function PolicyDetailsPage() {
                     }
                   </p>
                 </div>
-                {(policyDetails?.DuePremium != null && Number(policyDetails.DuePremium) !== 0) && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
-                    <p className="font-semibold text-lg text-orange-600">
-                      {policyDetails.DuePremium 
-                        ? `₱${Number(policyDetails.DuePremium).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                          })}`
-                        : 'N/A'
-                      }
-                    </p>
-                  </div>
-                )}
                 {(policyDetails?.SumInsured != null && Number(policyDetails.SumInsured) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
@@ -577,7 +563,8 @@ export default function PolicyDetailsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Product</p>
                   <p className="font-semibold">{policyDetails?.ProductName || 'N/A'}</p>
                 </div>
-                {(policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0) && (
+                {/* Premium Tax and LGT fields hidden - calculations not yet fixed */}
+                {/* {(policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0) && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
                     <p className="font-semibold">₱{policyDetails.PremiumTaxAmt.toLocaleString()}</p>
@@ -588,7 +575,7 @@ export default function PolicyDetailsPage() {
                     <p className="text-sm font-medium text-muted-foreground">LGT</p>
                     <p className="font-semibold">₱{policyDetails.LGT.toLocaleString()}</p>
                   </div>
-                )}
+                )} */}
               </div>
 
               <Separator />
@@ -1060,10 +1047,11 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Amount</p>
                   <p className="font-semibold text-lg text-green-600">
-                    {policyDetails?.GrossPremium 
-                      ? `₱${policyDetails.GrossPremium.toLocaleString()}`
-                      : policyData.amount 
-                      ? `₱${Number(policyData.amount).toLocaleString()}`
+                    {policyData.amount 
+                      ? `₱${Number(policyData.amount).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
                       : '₱0.00'
                     }
                   </p>
