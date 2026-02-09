@@ -373,7 +373,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           <div>
             <h1 className="text-2xl font-bold">
               {(() => {
-                const policyNo = policyData.policy_number || 'N/A'
+                const policyNo = policyDetails?.CarrierPolicyNo || 'N/A'
                 const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
                 const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
                 return `Policy ${policyNo} > ${carrierCode} ${productCode}`
@@ -420,7 +420,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Policy No.</p>
-                  <p className="font-semibold text-blue-600">{policyData.policy_number || 'N/A'}</p>
+                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Carrier side reference</p>
                 </div>
                 <div>
