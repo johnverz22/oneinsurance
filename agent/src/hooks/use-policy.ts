@@ -57,9 +57,12 @@ export function usePolicy(policyId: string) {
             proposal_number: data.data?.proposal_number || '',
             carrier_product_code: data.data?.carrier_product_code || 'PHTRAVEL',
             policy_id: data.data?.policy_id || '',
+            policy_number: data.data?.policy_number || null,
             policy_details: data.data?.policy_details || null, // Preserve policy_details with PolicyCustomerList
             merchant_transaction_id: data.data?.merchant_transaction_id || null,
             amount: data.data?.amount ? (typeof data.data.amount === 'string' ? parseFloat(data.data.amount) : data.data.amount) : null,
+            payment_brand: data.data?.payment_brand || null,
+            payment_method: data.data?.payment_method || null,
             customer_id: data.data?.customer_id || null,
             customer_name: data.data?.customer_name || null, // Add customer name
             transaction_status: data.data?.transaction_status || null,

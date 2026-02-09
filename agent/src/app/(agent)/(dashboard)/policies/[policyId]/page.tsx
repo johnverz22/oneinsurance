@@ -438,10 +438,10 @@ export default function PolicyDetailsPage() {
           <div>
             <h1 className="text-2xl font-bold">
               {(() => {
-                const carrierPolicyNo = policyDetails?.CarrierPolicyNo || 'N/A'
+                const policyNo = policyData.policy_number || 'N/A'
                 const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
                 const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
-                return `Policy ${carrierPolicyNo} > ${carrierCode} ${productCode}`
+                return `Policy ${policyNo} > ${carrierCode} ${productCode}`
               })()}
             </h1>
             <p className="text-muted-foreground">
@@ -477,7 +477,7 @@ export default function PolicyDetailsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Policy No.</p>
-                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
+                  <p className="font-semibold text-blue-600">{policyData.policy_number || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Carrier side reference</p>
                 </div>
                 <div>
@@ -1059,7 +1059,7 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Brand</p>
                   <p className="font-semibold">
-                    {(policyData as any).payment_brand || 'N/A'}
+                    {policyData.payment_brand || 'N/A'}
                   </p>
                 </div>
                 <div>
