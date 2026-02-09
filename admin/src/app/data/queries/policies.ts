@@ -3,15 +3,15 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { handleApiError } from '@/utils/handle-api-error'
 
-export function useGetPolicyDetails(policyId: string | null, agentId: number | null) {
+export function useGetPolicyDetails(policyId: string | null) {
   const { getAuthToken } = useAuthStore()
 
   return useQuery({
-    queryKey: ['policy-details', policyId, agentId],
+    queryKey: ['policy-details', policyId],
     queryFn: async () => {
       try {
         const response = await axios.get(
-          `/api/admin/policies/${policyId}?agent_id=${agentId}`,
+          `/api/admin/policies/${policyId}`,
           {
             headers: {
               Authorization: getAuthToken(),
@@ -24,7 +24,7 @@ export function useGetPolicyDetails(policyId: string | null, agentId: number | n
         handleApiError(error)
       }
     },
-    enabled: !!getAuthToken() && !!policyId && !!agentId,
+    enabled: !!getAuthToken() && !!policyId,
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
   })

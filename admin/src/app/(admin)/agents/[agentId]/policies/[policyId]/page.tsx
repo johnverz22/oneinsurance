@@ -65,7 +65,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
     data: policyResponse,
     isLoading: isLoadingPolicy,
     error: policyError,
-  } = useGetPolicyDetails(policyId, agentId)
+  } = useGetPolicyDetails(policyId)
 
   const agent = agentData?.data
   const policy = policyResponse?.data
@@ -485,20 +485,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
                   <p className="font-semibold text-lg">
-                    ₱{policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : '0.00'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Due Premium</p>
-                  <p className="font-semibold text-lg text-orange-600">
-                    {policyDetails?.DuePremium 
-                      ? `₱${Number(policyDetails.DuePremium).toFixed(2)}`
-                      : policyDetails?.GrossPremium 
-                      ? `₱${Number(policyDetails.GrossPremium).toFixed(2)}`
-                      : policyData.premium 
-                      ? `₱${Number(policyData.premium).toFixed(2)}`
-                      : 'N/A'
-                    }
+                    ₱{policyDetails?.DuePremium ? Number(policyDetails.DuePremium).toFixed(2) : '0.00'}
                   </p>
                 </div>
                 <div>
@@ -514,7 +501,8 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                   <p className="text-sm font-medium text-muted-foreground">Product</p>
                   <p className="font-semibold">{policyData.product?.name || policyDetails?.ProductName || 'N/A'}</p>
                 </div>
-                {policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0 && (
+                {/* Premium Tax and LGT fields hidden - calculations not yet fixed */}
+                {/* {policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0 && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
                     <p className="font-semibold">₱{Number(policyDetails.PremiumTaxAmt).toFixed(2)}</p>
@@ -525,7 +513,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                     <p className="text-sm font-medium text-muted-foreground">LGT</p>
                     <p className="font-semibold">₱{Number(policyDetails.LGT).toFixed(2)}</p>
                   </div>
-                )}
+                )} */}
               </div>
 
               <Separator />
@@ -917,7 +905,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Amount</p>
                 <p className="font-semibold text-lg text-green-600">
-                  ₱{policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : '0.00'}
+                  ₱{policyData.amount ? Number(policyData.amount).toFixed(2) : '0.00'}
                 </p>
               </div>
               <div>
