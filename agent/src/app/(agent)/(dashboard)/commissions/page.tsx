@@ -159,10 +159,10 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
     },
   },
   {
-    accessorKey: 'net_commission',
+    accessorKey: 'agent_commission',
     header: 'Net Commission',
     cell: ({ row }) => {
-      const netCommission = row.original.net_commission
+      const netCommission = row.original.agent_commission
       if (!netCommission || netCommission === '0' || netCommission === '0.00') {
         return <p className="font-semibold text-green-600">₱0.00</p>
       }
