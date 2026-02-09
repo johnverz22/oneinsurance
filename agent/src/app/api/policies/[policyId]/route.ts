@@ -18,98 +18,40 @@ export async function GET(
     const resolvedParams = await params
     policyId = resolvedParams.policyId
     
-    console.log('Fetching policy details for ID:', policyId)
+    console.log('Agent: Fetching policy details for transaction ID:', policyId)
     
-    // Since there might not be a single transaction endpoint, we'll try different approaches
-    let transaction = null
-    let lastError: Error | null = null
+    // Use the same endpoint as admin portal: /api/v1/transactions/{transactionId}
+    const transactionId = policyId
+    const url = `${process.env.BASE_URL}/transactions/${transactionId}`
+    console.log('Agent: Fetching transaction from:', url)
     
-    // Approach 1: Try to get all transactions and find the one with matching ID
-    try {
-      const url = `${process.env.BASE_URL}/agents/transactions?per_page=100`
-      console.log('Fetching all transactions from:', url)
-      
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: token,
-        },
-      })
-      
-      if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
-        // Find the transaction with matching ID
-        transaction = response.data.data.data.find((t: any) => 
-          t.id.toString() === policyId.toString() || 
-          t.policy_id === policyId ||
-          t.proposal_number === policyId
-        )
-        
-        if (transaction) {
-          console.log('Found transaction by searching all transactions:', transaction.id)
-        }
-      }
-    } catch (error) {
-      console.log('Failed to fetch all transactions:', error)
-      lastError = error instanceof Error ? error : new Error(String(error))
-    }
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: token,
+        Accept: 'application/json',
+      },
+    })
     
-    // Approach 2: If not found, try with a direct transaction ID endpoint (might exist)
-    if (!transaction) {
-      try {
-        const url = `${process.env.BASE_URL}/agents/transactions/${policyId}`
-        console.log('Trying direct transaction endpoint:', url)
-        
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: token,
-          },
-        })
-        
-        transaction = response.data?.data || response.data
-        console.log('Found transaction via direct endpoint')
-      } catch (error) {
-        console.log('Direct transaction endpoint failed:', error)
-        lastError = error instanceof Error ? error : new Error(String(error))
-      }
-    }
-    
-    // Approach 3: Try searching by policy_id parameter
-    if (!transaction) {
-      try {
-        const url = `${process.env.BASE_URL}/agents/transactions?policy_id=${policyId}`
-        console.log('Trying policy_id parameter:', url)
-        
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: token,
-          },
-        })
-        
-        if (response.data?.data?.data && Array.isArray(response.data.data.data)) {
-          transaction = response.data.data.data[0]
-          if (transaction) {
-            console.log('Found transaction by policy_id parameter')
-          }
-        }
-      } catch (error) {
-        console.log('Policy_id parameter search failed:', error)
-        lastError = error instanceof Error ? error : new Error(String(error))
-      }
-    }
+    const transaction = response.data?.data
     
     if (!transaction) {
-      console.error('Transaction not found after all attempts. Last error:', lastError)
+      console.error('Agent: Transaction not found')
       return NextResponse.json(
         { 
           success: false, 
           message: 'Policy not found',
           debug: {
-            searchedId: policyId,
-            lastError: lastError?.message || 'Unknown error'
+            transactionId: transactionId
           }
         },
         { status: 404, headers: HEADERS }
       )
     }
+    
+    console.log('Agent: Transaction found:', transaction.id)
+    console.log('Agent: Transaction has policy_details:', !!transaction.policy_details)
+    console.log('Agent: Transaction payment_brand:', transaction.payment_brand)
+    console.log('Agent: Transaction payment_method:', transaction.payment_method)
     
     // Parse policy_details from backend - NO FALLBACK DATA
     let policyDetails = null
@@ -158,9 +100,12 @@ export async function GET(
         proposal_number: transaction.proposal_number || '',
         carrier_product_code: transaction.carrier_product_code || '',
         policy_id: transaction.policy_id || '',
+        policy_number: transaction.policy_number || null,
         policy_details: policyDetails, // Only real backend data, null if not available
         merchant_transaction_id: transaction.merchant_transaction_id || null,
         amount: transaction.amount || null,
+        payment_brand: transaction.payment_brand || null,
+        payment_method: transaction.payment_method || null,
         customer_id: transaction.customer_id || null,
         customer_name: customerName || transaction.customer_name || null, // Use extracted name or transaction name
         transaction_status: transaction.transaction_status || null,
@@ -177,6 +122,8 @@ export async function GET(
     console.log('Agent: Returning policy response for transaction ID:', transaction.id)
     console.log('Agent: Policy details available:', !!policyDetails)
     console.log('Agent: Customer name:', customerName || 'N/A')
+    console.log('Agent: Payment brand in response:', policyResponse.data.payment_brand)
+    console.log('Agent: Policy number in response:', policyResponse.data.policy_number)
     
     return NextResponse.json(policyResponse, {
       status: 200,

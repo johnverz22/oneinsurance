@@ -223,6 +223,7 @@ export const PolicyResponseSchema = z.object({
   proposal_number: z.string(),
   carrier_product_code: z.string(),
   policy_id: z.string(),
+  policy_number: z.string().nullable(),
   policy_details: z.string().nullable().transform((str) => {
     if (!str) return null
     try {
@@ -236,6 +237,8 @@ export const PolicyResponseSchema = z.object({
     if (val === null || val === undefined) return null
     return typeof val === 'string' ? parseFloat(val) : val
   }),
+  payment_brand: z.string().nullable(),
+  payment_method: z.string().nullable(),
   customer_id: z.number().nullable(),
   customer_name: z.string().nullable(), // Add customer name field
   transaction_status: z.string().nullable(),
