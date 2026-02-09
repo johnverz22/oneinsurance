@@ -761,25 +761,21 @@ export default function ProductCommisionConfiguration({
                 // Step 1: Calculate gross commission for Agent only
                 const agentGrossCommission = saleAmount * (field.values.agent_commission / 100)
                 
-                // Step 2: Calculate VAT amount for Agent
+                // Step 2: Calculate VAT amount for Agent (based on gross)
                 const agentVatAmount = agentGrossCommission * (field.values.vat / 100)
                 
-                // Step 3: Apply VAT based on isWithVAT flag for Agent
-                let agentCommissionAfterVAT = agentGrossCommission
+                // Step 3: Calculate WHT amount for Agent (based on gross, not after VAT!)
+                const agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
                 
+                // Step 4: Calculate net commission based on isWithVAT flag
+                let agentNetCommission
                 if (field.values.isWithVAT) {
-                  // VAT enabled: deduct VAT
-                  agentCommissionAfterVAT = agentGrossCommission - agentVatAmount
+                  // VAT enabled: deduct both VAT and WHT
+                  agentNetCommission = agentGrossCommission - agentVatAmount - agentWhtAmount
                 } else {
-                  // VAT disabled: add VAT
-                  agentCommissionAfterVAT = agentGrossCommission + agentVatAmount
+                  // VAT disabled: add VAT, deduct WHT
+                  agentNetCommission = agentGrossCommission + agentVatAmount - agentWhtAmount
                 }
-                
-                // Step 4: Calculate WHT amount for Agent
-                const agentWhtAmount = agentCommissionAfterVAT * (field.values.witholding_tax / 100)
-                
-                // Step 5: Always deduct WHT to get Agent net commission
-                const agentNetCommission = agentCommissionAfterVAT - agentWhtAmount
                 
                 // Calculate overrider (simple percentage, no VAT/WHT)
                 const agentOverriderTotal = agentGrossCommission * (field.values.agent_overrider_commission / 100)
@@ -798,25 +794,21 @@ export default function ProductCommisionConfiguration({
                 // Step 1: Calculate gross commission for Referral only
                 const referralGrossCommission = saleAmount * (field.values.referral_commission / 100)
                 
-                // Step 2: Calculate VAT amount for Referral
+                // Step 2: Calculate VAT amount for Referral (based on gross)
                 const referralVatAmount = referralGrossCommission * (field.values.vat / 100)
                 
-                // Step 3: Apply VAT based on isWithVAT flag for Referral
-                let referralCommissionAfterVAT = referralGrossCommission
+                // Step 3: Calculate WHT amount for Referral (based on gross, not after VAT!)
+                const referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
                 
+                // Step 4: Calculate net commission based on isWithVAT flag
+                let referralNetCommission
                 if (field.values.isWithVAT) {
-                  // VAT enabled: deduct VAT
-                  referralCommissionAfterVAT = referralGrossCommission - referralVatAmount
+                  // VAT enabled: deduct both VAT and WHT
+                  referralNetCommission = referralGrossCommission - referralVatAmount - referralWhtAmount
                 } else {
-                  // VAT disabled: add VAT
-                  referralCommissionAfterVAT = referralGrossCommission + referralVatAmount
+                  // VAT disabled: add VAT, deduct WHT
+                  referralNetCommission = referralGrossCommission + referralVatAmount - referralWhtAmount
                 }
-                
-                // Step 4: Calculate WHT amount for Referral
-                const referralWhtAmount = referralCommissionAfterVAT * (field.values.witholding_tax / 100)
-                
-                // Step 5: Always deduct WHT to get Referral net commission
-                const referralNetCommission = referralCommissionAfterVAT - referralWhtAmount
                 
                 // Calculate overrider (simple percentage, no VAT/WHT)
                 const referralOverriderTotal = referralGrossCommission * (field.values.referral_overrider_commission / 100)
