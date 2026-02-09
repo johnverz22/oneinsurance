@@ -24,6 +24,7 @@ export interface PaymentHistory {
   withholding_tax_percentage: string
   withholding_tax_amount: string
   net_commission: string
+  agent_commission: string
   is_included_in_payout: boolean
   payout_id: string | number | null
   notes: string | null
