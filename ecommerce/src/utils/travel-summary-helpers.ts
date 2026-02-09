@@ -21,7 +21,7 @@ export const transformToInvoiceData = (
   const expiryDate = new Date(quoteData.ExpiryDate)
   const calculatedTravelDays = differenceInDays(expiryDate, effectiveDate) + 1
 
-  const basePremium = quoteData.GrossPremium || 0
+  const basePremium = quoteData.DuePremium || 0
 
   const destinations =
     quoteData.TravelDetailList && quoteData.TravelDetailList.length > 0
