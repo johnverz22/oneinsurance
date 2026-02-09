@@ -30,7 +30,7 @@ import {
   IssueQuoteResponse,
 } from '@/types/travel-insurance/policy-types'
 import { useIssueQuoteRequest } from '@/app/data/mutations/issue-quote-request'
-import { getCustomFields, validateCustomFields } from '@/utils/custom-fields-storage'
+import { getCustomFields, validateCustomFields, storePaymentBrand } from '@/utils/custom-fields-storage'
 import { usePaymentAuth, usePaymentSubmit } from '@/app/data/mutations/payment'
 import {
   useFullQuoteResponseStore,
@@ -238,6 +238,9 @@ export default function PaymentSelection() {
 
   const handleBrandSelect = (brand: PaymentBrand) => {
     setSelectedPaymentBrand(brand)
+    // Store payment brand in localStorage dynamically
+    storePaymentBrand(brand.value)
+    console.log('Payment brand stored in localStorage:', brand.value)
   }
 
   async function handleCardPaymentIssueQuote(
