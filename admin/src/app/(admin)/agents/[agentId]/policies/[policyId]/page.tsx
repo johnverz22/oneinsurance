@@ -177,7 +177,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
         `Status: ${policyData.status || 'N/A'}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
         ...(policyDetails?.ExpiryDate ? [`Expiry Date: ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}`] : []),
-        `Premium Amount: PHP ${policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : (policyData.premium ? Number(policyData.premium).toFixed(2) : 'N/A')}`,
+        `Premium Amount: PHP ${policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : 'N/A'}`,
         `Product: ${policyDetails?.ProductName || policyData.plan_name || 'N/A'}`,
       ]
 
@@ -485,12 +485,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
                   <p className="font-semibold text-lg">
-                    {policyDetails?.GrossPremium 
-                      ? `₱${Number(policyDetails.GrossPremium).toFixed(2)}`
-                      : policyData.premium 
-                      ? `₱${Number(policyData.premium).toFixed(2)}`
-                      : 'N/A'
-                    }
+                    ₱{policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : '0.00'}
                   </p>
                 </div>
                 <div>
@@ -922,12 +917,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Amount</p>
                 <p className="font-semibold text-lg text-green-600">
-                  {policyDetails?.GrossPremium 
-                    ? `₱${Number(policyDetails.GrossPremium).toFixed(2)}`
-                    : policyData.premium 
-                    ? `₱${Number(policyData.premium).toFixed(2)}`
-                    : 'N/A'
-                  }
+                  ₱{policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : '0.00'}
                 </p>
               </div>
               <div>
@@ -977,7 +967,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                <p className="font-semibold text-green-600">₱{Number(policyData.commission_log?.net_commission || 0).toFixed(2)}</p>
+                <p className="font-semibold text-green-600">₱{Number(policyData.commission_log?.agent_commission || 0).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Agent</p>
