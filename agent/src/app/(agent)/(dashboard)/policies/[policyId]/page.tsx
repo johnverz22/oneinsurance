@@ -1059,7 +1059,7 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Brand</p>
                   <p className="font-semibold">
-                    {(policyData as any).payment_method || (policyData as any).payment_brand || 'N/A'}
+                    {(policyDetails as any)?.CustomField?.PaymentBrand || 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -1101,7 +1101,8 @@ export default function PolicyDetailsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
-                <div>
+                {/* Gross Commission field hidden */}
+                {/* <div>
                   <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
                   <p className="font-semibold text-lg">
                     {policyData.commission_log?.gross_commission 
@@ -1112,7 +1113,7 @@ export default function PolicyDetailsPage() {
                       : '₱0.00'
                     }
                   </p>
-                </div>
+                </div> */}
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
                   <p className="font-semibold text-lg text-green-600">
