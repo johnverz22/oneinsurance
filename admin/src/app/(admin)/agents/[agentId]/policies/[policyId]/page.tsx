@@ -911,7 +911,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Brand</p>
                 <p className="font-semibold">
-                  {policyData.payment_method || policyData.payment_brand || 'N/A'}
+                  {(policyDetails as any)?.CustomField?.PaymentBrand || 'N/A'}
                 </p>
               </div>
               <div>
@@ -949,10 +949,11 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              {/* Gross Commission field hidden */}
+              {/* <div>
                 <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
                 <p className="font-semibold">₱{Number(policyData.commission_log?.gross_commission || 0).toFixed(2)}</p>
-              </div>
+              </div> */}
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
                 <p className="font-semibold text-green-600">₱{Number(policyData.commission_log?.agent_commission || 0).toFixed(2)}</p>
