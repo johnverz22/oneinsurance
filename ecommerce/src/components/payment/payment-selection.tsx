@@ -225,7 +225,7 @@ export default function PaymentSelection() {
     productReferenceId:
       `${apiResponse?.data?.BusinessObjectId}` || 'ITEM-HZ5RHQD9D',
     productDescription: apiResponse?.data?.ProductCode || 'Travel Insurance',
-    amount: apiResponse?.data?.GrossPremium || 0,
+    amount: apiResponse?.data?.DuePremium || 0,
     currency: 'PHP',
     description:
       coverageOption.selectedPlan?.CarrierPlanDesc ||
@@ -445,7 +445,7 @@ export default function PaymentSelection() {
             <p className="text-muted-foreground text-xs">Total Amount</p>
             <p className="text-primary text-2xl font-bold">
               ₱
-              {apiResponse?.data?.GrossPremium?.toLocaleString('en-PH', {
+              {apiResponse?.data?.DuePremium?.toLocaleString('en-PH', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               }) || '0.00'}
