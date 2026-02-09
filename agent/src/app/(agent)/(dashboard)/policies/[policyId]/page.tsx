@@ -1059,7 +1059,7 @@ export default function PolicyDetailsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Brand</p>
                   <p className="font-semibold">
-                    {(policyDetails as any)?.CustomField?.PaymentBrand || 'N/A'}
+                    {(policyData as any).payment_brand || 'N/A'}
                   </p>
                 </div>
                 <div>
