@@ -84,6 +84,21 @@ export function getPlanName(): string | undefined {
 }
 
 /**
+ * Store PaymentBrand specifically
+ */
+export function storePaymentBrand(paymentBrand: string): void {
+  storeCustomFields({ PaymentBrand: paymentBrand })
+}
+
+/**
+ * Get PaymentBrand specifically
+ */
+export function getPaymentBrand(): string | undefined {
+  const fields = getCustomFields()
+  return fields.PaymentBrand
+}
+
+/**
  * Validate that required custom fields are present
  */
 export function validateCustomFields(fields: CustomFields): boolean {
