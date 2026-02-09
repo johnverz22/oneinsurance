@@ -16,8 +16,6 @@ export async function GET(
 ) {
   const token = req.headers.get('Authorization')
   const { policyId } = await params
-  const searchParams = req.nextUrl.searchParams
-  const agentId = searchParams.get('agent_id')
 
   if (!token) {
     return NextResponse.json(
@@ -27,29 +25,12 @@ export async function GET(
   }
 
   try {
-    console.log('Admin Policy Details: Fetching policy details for ID:', policyId)
-    console.log('Admin Policy Details: Agent ID:', agentId)
+    console.log('Admin Policy Details: Fetching policy details for transaction ID:', policyId)
     
-    // The policyId is the transaction ID
+    // The policyId is the transaction ID - fetch directly from the transaction endpoint
     const transactionId = policyId
-    
-    if (!agentId) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Agent ID is required',
-          debug: {
-            policyId,
-            agentId
-          }
-        },
-        { status: 400, headers }
-      )
-    }
-    
-    // Fetch all transactions for this agent and find the specific one
-    const url = `${config.BASE_URL}/transactions/completed/agent/${agentId}?per_page=100`
-    console.log('Admin Policy Details: Fetching agent transactions from:', url)
+    const url = `${config.BASE_URL}/transactions/${transactionId}`
+    console.log('Admin Policy Details: Fetching transaction from:', url)
     
     const response = await axios.get(url, {
       headers: {
@@ -58,37 +39,16 @@ export async function GET(
       },
     })
     
-    const transactions = response.data?.data?.data
-    
-    if (!transactions || !Array.isArray(transactions)) {
-      console.error('Admin Policy Details: No transactions found for agent')
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'No transactions found for this agent',
-          debug: {
-            agentId,
-            transactionId
-          }
-        },
-        { status: 404, headers }
-      )
-    }
-    
-    // Find the specific transaction
-    const transaction = transactions.find((t: any) => t.id.toString() === transactionId.toString())
+    const transaction = response.data?.data
     
     if (!transaction) {
-      console.error('Admin Policy Details: Transaction not found in agent transactions')
+      console.error('Admin Policy Details: Transaction not found')
       return NextResponse.json(
         { 
           success: false, 
           message: 'Policy not found',
           debug: {
-            searchedId: policyId,
-            transactionId: transactionId,
-            agentId: agentId,
-            availableTransactionIds: transactions.map((t: any) => t.id)
+            transactionId: transactionId
           }
         },
         { status: 404, headers }
@@ -152,6 +112,8 @@ export async function GET(
         carrier_product_code: transaction.carrier_product_code || null,
         transaction_date: transaction.transaction_date || transaction.created_at || null,
         amount: transaction.amount || null,
+        payment_method: transaction.payment_method || null,
+        payment_brand: transaction.payment_brand || null,
         
         // Commission details
         commission_log: transaction.commission_log || null,
@@ -185,7 +147,6 @@ export async function GET(
         error: error.message,
         debug: {
           policyId,
-          agentId,
           errorType: error.constructor.name
         }
       },
