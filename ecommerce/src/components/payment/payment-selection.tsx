@@ -235,6 +235,7 @@ export default function PaymentSelection() {
     other_reference_1_caption: 'proposal',
   }
 
+
   const handleBrandSelect = (brand: PaymentBrand) => {
     setSelectedPaymentBrand(brand)
   }
