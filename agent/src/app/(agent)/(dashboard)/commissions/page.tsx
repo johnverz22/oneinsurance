@@ -48,15 +48,15 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
     cell: ({ row }) => {
       const netPremium = row.original.total_net_premium
       if (!netPremium || netPremium === '0' || netPremium === '0.00') {
-        return <p className="font-semibold">₱0.00</p>
+        return <p className="font-semibold">0.00</p>
       }
       const numericAmount = typeof netPremium === 'string' ? parseFloat(netPremium) : netPremium
       if (isNaN(numericAmount)) {
-        return <p className="font-semibold">₱0.00</p>
+        return <p className="font-semibold">0.00</p>
       }
       return (
         <p className="font-semibold">
-          ₱{numericAmount.toLocaleString(undefined, {
+          {numericAmount.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
@@ -70,15 +70,15 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
     cell: ({ row }) => {
       const grossCommission = row.original.gross_commission
       if (!grossCommission || grossCommission === '0' || grossCommission === '0.00') {
-        return <p className="font-semibold">₱0.00</p>
+        return <p className="font-semibold">0.00</p>
       }
       const numericAmount = typeof grossCommission === 'string' ? parseFloat(grossCommission) : grossCommission
       if (isNaN(numericAmount)) {
-        return <p className="font-semibold">₱0.00</p>
+        return <p className="font-semibold">0.00</p>
       }
       return (
         <p className="font-semibold">
-          ₱{numericAmount.toLocaleString(undefined, {
+          {numericAmount.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
@@ -95,7 +95,7 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
       if (!vat || vat === '0' || vat === '0.00') {
         return (
           <div>
-            <p className="font-semibold">₱0.00</p>
+            <p className="font-semibold">0.00</p>
             <p className="text-xs text-muted-foreground">0%</p>
           </div>
         )
@@ -104,7 +104,7 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
       if (isNaN(numericAmount)) {
         return (
           <div>
-            <p className="font-semibold">₱0.00</p>
+            <p className="font-semibold">0.00</p>
             <p className="text-xs text-muted-foreground">0%</p>
           </div>
         )
@@ -112,7 +112,7 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
       return (
         <div>
           <p className="font-semibold">
-            ₱{numericAmount.toLocaleString(undefined, {
+            {numericAmount.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -131,7 +131,7 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
       if (!wht || wht === '0' || wht === '0.00') {
         return (
           <div>
-            <p className="font-semibold">₱0.00</p>
+            <p className="font-semibold">0.00</p>
             <p className="text-xs text-muted-foreground">0%</p>
           </div>
         )
@@ -140,7 +140,7 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
       if (isNaN(numericAmount)) {
         return (
           <div>
-            <p className="font-semibold">₱0.00</p>
+            <p className="font-semibold">0.00</p>
             <p className="text-xs text-muted-foreground">0%</p>
           </div>
         )
@@ -148,7 +148,7 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
       return (
         <div>
           <p className="font-semibold">
-            ₱{numericAmount.toLocaleString(undefined, {
+            {numericAmount.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
@@ -164,15 +164,15 @@ const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
     cell: ({ row }) => {
       const netCommission = row.original.agent_commission
       if (!netCommission || netCommission === '0' || netCommission === '0.00') {
-        return <p className="font-semibold text-green-600">₱0.00</p>
+        return <p className="font-semibold text-green-600">0.00</p>
       }
       const numericAmount = typeof netCommission === 'string' ? parseFloat(netCommission) : netCommission
       if (isNaN(numericAmount)) {
-        return <p className="font-semibold text-green-600">₱0.00</p>
+        return <p className="font-semibold text-green-600">0.00</p>
       }
       return (
         <p className="font-semibold text-green-600">
-          ₱{numericAmount.toLocaleString(undefined, {
+          {numericAmount.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
           })}
@@ -230,8 +230,8 @@ const PaymentsPage = () => {
     <div className="relative mx-auto space-y-6 overflow-hidden">
       {/* Summary Cards */}
       {isPaymentSummaryLoading ? (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
             <Card key={i} className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
               <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
               <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
@@ -244,41 +244,35 @@ const PaymentsPage = () => {
           <p className="text-sm text-muted-foreground">{paymentSummaryError.message}</p>
         </div>
       ) : isPaymentSummaryFetched && paymentSummary ? (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-5">
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Total Cases</h4>
+            <h4 className="font-bold">Cases</h4>
             <p className="text-sm font-semibold text-blue-500 lg:text-base">
-              {paymentSummary.totalCases || 0}
+              {paymentSummary.totalCases || '0'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Total Records</h4>
-            <p className="text-sm font-semibold text-purple-500 lg:text-base">
-              {paymentSummary.totalRecords || 0}
-            </p>
-          </Card>
-          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Total Net Premium</h4>
+            <h4 className="font-bold">Sales</h4>
             <p className="text-sm font-semibold text-green-500 lg:text-base">
-              PHP {paymentSummary.totalNetPremium || '0.00'}
+              ₱{paymentSummary.totalNetPremium || '0.00'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Total Net Commission</h4>
+            <h4 className="font-bold">My Commissions</h4>
             <p className="text-sm font-semibold lg:text-base">
-              PHP {paymentSummary.totalNetCommission || '0.00'}
+              ₱{paymentSummary.totalNetCommission || '0.00'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Total Gross Commission</h4>
-            <p className="text-sm font-semibold text-red-500 lg:text-base">
-              PHP {paymentSummary.totalGrossCommission || '0.00'}
+            <h4 className="font-bold">VAT</h4>
+            <p className="text-sm font-semibold text-orange-500 lg:text-base">
+              ₱{paymentSummary.totalVatAmount || '0.00'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Total Withholding Tax</h4>
+            <h4 className="font-bold">WHT</h4>
             <p className="text-muted-foreground text-sm font-semibold lg:text-base">
-              PHP {paymentSummary.totalWithholdingTax || '0.00'}
+              ₱{paymentSummary.totalWithholdingTax || '0.00'}
             </p>
           </Card>
         </div>

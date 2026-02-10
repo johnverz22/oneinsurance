@@ -67,8 +67,8 @@ export const usePaymentSummary = ({
     select: mapSnakeToCamel,
     queryFn: async () => {
       const params = new URLSearchParams()
-      params.append('period_start', start)
-      params.append('period_end', end)
+      params.append('date_from', start)
+      params.append('date_to', end)
 
       const url = `/api/agent/commission-logs/summary?${params.toString()}`
 
