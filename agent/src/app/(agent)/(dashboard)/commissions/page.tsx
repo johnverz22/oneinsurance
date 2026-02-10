@@ -248,31 +248,31 @@ const PaymentsPage = () => {
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">Cases</h4>
             <p className="text-sm font-semibold text-blue-500 lg:text-base">
-              {paymentSummary.totalCases || '0'}
+              {paymentSummary.total_cases || '0'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">Sales</h4>
             <p className="text-sm font-semibold text-green-500 lg:text-base">
-              ₱{paymentSummary.totalNetPremium || '0.00'}
+              ₱{paymentSummary.total_net_premium || '0.00'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">My Commissions</h4>
             <p className="text-sm font-semibold lg:text-base">
-              ₱{paymentSummary.totalNetCommission || '0.00'}
+              ₱{paymentSummary.total_net_commission || '0.00'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">VAT</h4>
             <p className="text-sm font-semibold text-orange-500 lg:text-base">
-              ₱{paymentSummary.totalVatAmount || '0.00'}
+              ₱{paymentSummary.total_vat_amount || '0.00'}
             </p>
           </Card>
           <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
             <h4 className="font-bold">WHT</h4>
             <p className="text-muted-foreground text-sm font-semibold lg:text-base">
-              ₱{paymentSummary.totalWithholdingTax || '0.00'}
+              ₱{paymentSummary.total_withholding_tax || '0.00'}
             </p>
           </Card>
         </div>
