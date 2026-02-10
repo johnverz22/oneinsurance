@@ -92,8 +92,10 @@ export function getDatePlaceholderFormat(
 export const getCurrentMonthRange = () => {
   const now = new Date()
 
-  const firstDate = new Date(now.getFullYear(), now.getMonth(), 1)
-  const lastDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  // First day of current year (January 1st)
+  const firstDate = new Date(now.getFullYear(), 0, 1)
+  // Current date
+  const lastDate = now
 
   const format = (date: Date) => date.toISOString().split('T')[0]
 
