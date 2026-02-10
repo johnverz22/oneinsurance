@@ -64,13 +64,12 @@ export const usePaymentSummary = ({
   return useQuery({
     enabled: !!user?.id && !!accessToken,
     queryKey: ['payments-summary', user?.id, start, end],
-    select: mapSnakeToCamel,
     queryFn: async () => {
       const params = new URLSearchParams()
       params.append('date_from', start)
       params.append('date_to', end)
 
-      const url = `/api/agent/commission-logs/summary?${params.toString()}`
+      const url = `${process.env.NEXT_PUBLIC_BASE_URL}/agents/commission-logs/summary?${params.toString()}`
 
       const response = await axios.get<{ data: PaymentsSummary }>(url, {
         headers: {
