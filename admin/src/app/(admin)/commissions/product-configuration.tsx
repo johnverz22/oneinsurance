@@ -26,37 +26,39 @@ const commisionConfigurationSchema = z.object({
   base_commission: z
     .number()
     .min(0, 'Base commission must be at least 0%')
-    .max(30, 'Base commission cannot exceed 30%'),
+    .max(100, 'Base commission cannot exceed 100%'),
   agent_commission: z
     .number()
     .min(0, 'Agent commission must be at least 0%')
-    .max(15, 'Agent commission cannot exceed 15%'),
+    .max(100, 'Agent commission cannot exceed 100%'),
   agent_overrider_commission: z
     .number()
     .min(0, 'Agent overrider commission must be at least 0%')
-    .max(10, 'Agent overrider commission cannot exceed 10%'),
+    .max(100, 'Agent overrider commission cannot exceed 100%'),
   agent_admin_commission: z
     .number()
-    .min(0, 'Agent Admin commission must be at least 0%'),
+    .min(0, 'Agent Admin commission must be at least 0%')
+    .max(100, 'Agent Admin commission cannot exceed 100%'),
   agent_admin_overrider_commission: z
     .number()
     .min(0, 'Agent Admin overrider commission must be at least 0%')
-    .max(10, 'Agent Admin overrider commission cannot exceed 10%'),
+    .max(100, 'Agent Admin overrider commission cannot exceed 100%'),
   referral_commission: z
     .number()
     .min(0, 'Referral commission must be at least 0%')
-    .max(25, 'Referral commission cannot exceed 25%'),
+    .max(100, 'Referral commission cannot exceed 100%'),
   referral_overrider_commission: z
     .number()
     .min(0, 'Referral overrider commission must be at least 0%')
-    .max(10, 'Referral overrider commission cannot exceed 10%'),
+    .max(100, 'Referral overrider commission cannot exceed 100%'),
   referral_admin_commission: z
     .number()
-    .min(0, 'Referral Admin commission must be at least 0%'),
+    .min(0, 'Referral Admin commission must be at least 0%')
+    .max(100, 'Referral Admin commission cannot exceed 100%'),
   referral_admin_overrider_commission: z
     .number()
     .min(0, 'Referral Admin overrider commission must be at least 0%')
-    .max(10, 'Referral Admin overrider commission cannot exceed 10%'),
+    .max(100, 'Referral Admin overrider commission cannot exceed 100%'),
   vat: z
     .number()
     .min(0, 'VAT must be at least 0%')
@@ -67,14 +69,6 @@ const commisionConfigurationSchema = z.object({
     .max(100, 'Withholding tax cannot exceed 100%'),
   isWithVAT: z.boolean(),
   effectivity_date: z.string().min(1, 'Effectivity date is required'),
-})
-.refine((data) => data.agent_commission + data.agent_admin_commission === data.base_commission, {
-  message: 'Agent + Admin commissions must equal Base commission',
-  path: ['agent_commission'],
-})
-.refine((data) => data.referral_commission + data.referral_admin_commission === data.base_commission, {
-  message: 'Referral + Admin commissions must equal Base commission',
-  path: ['referral_commission'],
 })
 type CommisionConfigurationFormData = z.infer<
   typeof commisionConfigurationSchema
@@ -155,6 +149,47 @@ export default function ProductCommisionConfiguration({
     },
   })
 
+  // Automatic calculation functions
+  const handleAgentCommissionChange = (value: number) => {
+    const baseCommission = form.getFieldValue('base_commission')
+    const newAdminCommission = Math.max(0, baseCommission - value)
+    form.setFieldValue('agent_commission', value)
+    form.setFieldValue('agent_admin_commission', newAdminCommission)
+  }
+
+  const handleAgentAdminCommissionChange = (value: number) => {
+    const baseCommission = form.getFieldValue('base_commission')
+    const newAgentCommission = Math.max(0, baseCommission - value)
+    form.setFieldValue('agent_admin_commission', value)
+    form.setFieldValue('agent_commission', newAgentCommission)
+  }
+
+  const handleReferralCommissionChange = (value: number) => {
+    const baseCommission = form.getFieldValue('base_commission')
+    const newReferralAdminCommission = Math.max(0, baseCommission - value)
+    form.setFieldValue('referral_commission', value)
+    form.setFieldValue('referral_admin_commission', newReferralAdminCommission)
+  }
+
+  const handleReferralAdminCommissionChange = (value: number) => {
+    const baseCommission = form.getFieldValue('base_commission')
+    const newReferralCommission = Math.max(0, baseCommission - value)
+    form.setFieldValue('referral_admin_commission', value)
+    form.setFieldValue('referral_commission', newReferralCommission)
+  }
+
+  const handleBaseCommissionChange = (value: number) => {
+    const currentAgentCommission = form.getFieldValue('agent_commission')
+    const currentReferralCommission = form.getFieldValue('referral_commission')
+    
+    // Update base commission
+    form.setFieldValue('base_commission', value)
+    
+    // Auto-adjust admin commissions to maintain the split
+    form.setFieldValue('agent_admin_commission', Math.max(0, value - currentAgentCommission))
+    form.setFieldValue('referral_admin_commission', Math.max(0, value - currentReferralCommission))
+  }
+
   // Reset form when selectedCommissionConfig changes
   React.useEffect(() => {
     if (selectedCommissionConfig) {
@@ -220,7 +255,7 @@ export default function ProductCommisionConfiguration({
                               id={field.name}
                               onChange={(e) => {
                                 const commissionRate = Number(e.target.value)
-                                field.handleChange(commissionRate)
+                                handleBaseCommissionChange(commissionRate)
                               }}
                               onBlur={field.handleBlur}
                               value={field.state.value.toString()}
@@ -408,7 +443,7 @@ export default function ProductCommisionConfiguration({
                                     name={field.name}
                                     id={field.name}
                                     onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
+                                      handleAgentCommissionChange(Number(e.target.value))
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
@@ -472,7 +507,7 @@ export default function ProductCommisionConfiguration({
                                     name={field.name}
                                     id={field.name}
                                     onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
+                                      handleAgentAdminCommissionChange(Number(e.target.value))
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
@@ -561,7 +596,7 @@ export default function ProductCommisionConfiguration({
                                     name={field.name}
                                     id={field.name}
                                     onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
+                                      handleReferralCommissionChange(Number(e.target.value))
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
@@ -625,7 +660,7 @@ export default function ProductCommisionConfiguration({
                                     name={field.name}
                                     id={field.name}
                                     onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
+                                      handleReferralAdminCommissionChange(Number(e.target.value))
                                     }
                                     onBlur={field.handleBlur}
                                     value={field.state.value.toString()}
@@ -724,10 +759,10 @@ export default function ProductCommisionConfiguration({
             <div className="space-y-3">
               <p className="text-xl font-bold">Commission Simulator</p>
               <p className="text-base font-light">
-                Preview how commissions will be distributed based on net premium.
+                Preview how commissions will be distributed based on gross premium.
               </p>
               <div className="flex items-center gap-4">
-                <Label className="font-semibold">Net Premium:</Label>
+                <Label className="font-semibold">Gross Premium:</Label>
                 <div className="flex items-center">
                   <Input
                     type="number"
