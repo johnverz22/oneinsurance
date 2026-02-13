@@ -111,6 +111,78 @@ export function CoverageOptionsForm() {
   const [isLoading, setIsLoading] = useState(false) // Tracks loading state
   const [isError, setIsError] = useState(false) // Tracks error state
 
+  // Configuration constants
+  const CONCURRENCY_LIMIT = 5
+  const REQUEST_TIMEOUT = 10000 // 10 seconds
+
+  // Helper function: Fetch plan with timeout
+  const fetchPlanWithTimeout = async (
+    cacheKey: string,
+    timeout: number
+  ): Promise<TravelCompareQuoteResponse['data'] | null> => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+    try {
+      const startTime = performance.now()
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/quote/compare/${cacheKey}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+          },
+          signal: controller.signal,
+        }
+      )
+
+      const endTime = performance.now()
+      console.log(
+        `✅ Cache key ${cacheKey} fetched in ${(endTime - startTime).toFixed(2)}ms`
+      )
+
+      clearTimeout(timeoutId)
+
+      const data = response.data as TravelCompareQuoteResponse
+      if (!data.success || data.data.Plans.length === 0) {
+        console.log(`⚠️ Cache key ${cacheKey} returned no valid plans`)
+        return null
+      }
+
+      return removeNullBenefitCodeItems(data).data
+    } catch (error: any) {
+      clearTimeout(timeoutId)
+      if (error.name === 'AbortError' || error.code === 'ECONNABORTED') {
+        console.warn(`⏱️ Request timeout for cache key: ${cacheKey}`)
+      } else {
+        console.error(`❌ Error fetching cache key ${cacheKey}:`, error.message)
+      }
+      return null
+    }
+  }
+
+  // Helper function: Update plans state
+  const updatePlansState = (
+    newPlans: TravelCompareQuoteResponse['data'][]
+  ): void => {
+    const currentPlans = useTravelInsuranceStore.getState().insurancePlans
+
+    if (!currentPlans) {
+      // First batch of plans
+      setInsurancePlans({
+        success: true,
+        message: 'Plans loaded',
+        data: newPlans,
+      })
+    } else {
+      // Append to existing plans
+      setInsurancePlans({
+        ...currentPlans,
+        data: [...currentPlans.data, ...newPlans],
+      })
+    }
+  }
+
   useEffect(() => {
     if (clientRequest.id !== undefined) {
       const echo = getEcho()
@@ -120,71 +192,78 @@ export function CoverageOptionsForm() {
       }
 
       const processQueue = async () => {
-        if (isProcessing.current) return // Prevent multiple processors
+        if (isProcessing.current) {
+          console.log('⏸️ Queue processor already running, skipping duplicate call')
+          return
+        }
+        
         isProcessing.current = true
-        setIsLoading(true) // Set loading state to true
+        setIsLoading(true)
+
+        const startTime = performance.now()
+        const totalItems = queue.current.length
+        console.log(`🚀 Starting queue processing with ${totalItems} items`)
 
         while (queue.current.length > 0) {
-          const cacheKey = queue.current.shift() // Get the first item in the queue
+          // Take up to CONCURRENCY_LIMIT items from queue
+          const batch = queue.current.splice(0, CONCURRENCY_LIMIT)
+          console.log(
+            `📦 Processing batch of ${batch.length} items, ${queue.current.length} remaining in queue`
+          )
 
-          try {
-            const response = await axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/quote/compare/${cacheKey}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
-                },
-              }
+          // Process batch in parallel using Promise.allSettled
+          const results = await Promise.allSettled(
+            batch.map((cacheKey) =>
+              fetchPlanWithTimeout(cacheKey, REQUEST_TIMEOUT)
             )
+          )
 
-            const data = response.data as TravelCompareQuoteResponse
-            if (data.success === false) {
-              continue
-            }
+          // Collect successful results
+          const successfulPlans = results
+            .filter(
+              (r): r is PromiseFulfilledResult<TravelCompareQuoteResponse['data']> =>
+                r.status === 'fulfilled' && r.value !== null
+            )
+            .map((r) => r.value)
 
-            const cleanData = removeNullBenefitCodeItems(data)
+          const failedCount = batch.length - successfulPlans.length
+          console.log(
+            `✅ Batch complete: ${successfulPlans.length} successful, ${failedCount} failed`
+          )
 
-            if (cleanData.data.Plans.length === 0) {
-              isProcessing.current = false
-              setIsLoading(false)
-              continue
-            }
+          // Batch update state
+          if (successfulPlans.length > 0) {
+            updatePlansState(successfulPlans)
+          }
 
-            // Retrieve the latest insurancePlans state
-            const currentPlans =
-              useTravelInsuranceStore.getState().insurancePlans
-
-            if (currentPlans === null || currentPlans === undefined) {
-              const newCompareQuote = {
-                success: cleanData.success,
-                message: cleanData.message,
-                data: [{ ...cleanData.data }],
-              }
-              setInsurancePlans(newCompareQuote)
-              continue
-            }
-
-            // Create a new object and array to ensure immutability
-            const newCompareQuotes = {
-              ...currentPlans,
-              data: [...currentPlans.data, { ...cleanData.data }],
-            }
-            setInsurancePlans(newCompareQuotes)
-          } catch (error) {
-            setIsError(true) // Set error state to true
+          // If all requests in batch failed, set error state
+          if (successfulPlans.length === 0 && batch.length > 0) {
+            setIsError(true)
           }
         }
 
-        isProcessing.current = false // Reset the processing flag
-        setIsLoading(false) // Set loading state to false
+        const endTime = performance.now()
+        const duration = (endTime - startTime).toFixed(2)
+        console.log(`✨ Queue processing complete in ${duration}ms (processed ${totalItems} items)`)
+
+        isProcessing.current = false
+        setIsLoading(false)
       }
 
       const channel = echo
         .channel(clientRequest.id)
         .listen('.insurance.plan.received', (e: any) => {
           const cacheKey = e['cache_key']
-          queue.current.push(cacheKey) // Add the cacheKey to the queue
-          processQueue() // Start processing the queue
+          const timestamp = new Date().toISOString()
+          
+          queue.current.push(cacheKey)
+          
+          console.log(`📨 WebSocket event received at ${timestamp}`)
+          console.log(`   Cache key: ${cacheKey}`)
+          console.log(`   Queue size: ${queue.current.length}`)
+          console.log(`   Processing: ${isProcessing.current ? 'Yes' : 'No'}`)
+          
+          processQueue()
         })
       setClientRequest({ ...clientRequest, status: 'success' })
       echoRef.current = echo
