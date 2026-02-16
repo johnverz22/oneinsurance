@@ -47,7 +47,7 @@ export default function LoginLayout({
         <div className="relative z-10 flex w-full overflow-hidden py-12 lg:w-1/2 lg:py-0">
           <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 text-center text-white sm:px-12 lg:items-start lg:text-left xl:px-20">
             <h1 className="mb-6 text-3xl leading-tight font-bold sm:text-4xl xl:text-5xl">
-              Insurance Commission Management Platform
+              Insurance Management Platform
             </h1>
             <p className="mb-8 text-base leading-relaxed text-gray-300 sm:text-lg xl:text-xl">
               Streamline product assignments, commission tracking, and team
