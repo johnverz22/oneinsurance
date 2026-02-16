@@ -27,6 +27,15 @@ export function useGetAccounts() {
     },
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    enabled: !!accessToken,
+    enabled: !!accessToken && !!user,
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication errors
+      if (error?.response?.status === 401) {
+        return false
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2
+    },
+    retryDelay: 1000,
   })
 }
