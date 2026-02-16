@@ -28,6 +28,19 @@ api.interceptors.response.use(
   },
 
   (error: AxiosError) => {
+    // Handle 401 Unauthorized errors
+    if (error.response?.status === 401) {
+      const { logout } = useAgentAuthStore.getState()
+      logout()
+      
+      // Redirect to login page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
+      
+      throw new Error('Session expired. Please login again.')
+    }
+
     if (error.response?.data) {
       const parsed = createAPIResponseSchema(z.any()).safeParse(
         error.response.data
