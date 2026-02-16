@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,17 @@ import {
   Printer,
   Loader2,
   Plane,
-  Globe
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  DollarSign,
+  FileText,
+  MapPin,
+  Phone,
+  Mail,
+  Users
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useGetAgentById } from '@/app/data/queries/agents'
@@ -34,26 +44,28 @@ interface AgentPolicyDetailsPageProps {
 
 export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPageProps) {
   const router = useRouter()
-  const searchParams = useParams()
   const [agentId, setAgentId] = React.useState<number | null>(null)
   const [policyId, setPolicyId] = React.useState<string | null>(null)
-  const [merchantTxId, setMerchantTxId] = React.useState<string | null>(null)
   const user = useAuthStore((state) => state.user)
+  
+  // State for collapsible sections
+  const [expandedSections, setExpandedSections] = useState({
+    policyHolder: true,
+    travel: true,
+    coverage: true,
+    beneficiaries: false,
+    technical: false
+  })
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
 
   React.useEffect(() => {
     params.then(({ agentId: agentIdStr, policyId: policyIdStr }) => {
       setAgentId(parseInt(agentIdStr))
       setPolicyId(policyIdStr)
     })
-    
-    // Get merchant_transaction_id from URL query params
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      const merchantTxIdParam = urlParams.get('merchant_transaction_id')
-      if (merchantTxIdParam) {
-        setMerchantTxId(merchantTxIdParam)
-      }
-    }
   }, [params])
 
   const {
@@ -70,18 +82,12 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   const agent = agentData?.data
   const policy = policyResponse?.data
 
-  const handleBackClick = () => {
-    if (agentId) {
-      router.push(`/agents/${agentId}/policies`)
-    }
-  }
-
   if (isLoadingAgent || isLoadingPolicy) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading policy details...</span>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">Loading policy details...</span>
         </div>
       </div>
     )
@@ -90,11 +96,12 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   if (policyError || !policy) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+          <p className="text-destructive font-medium">
             {policyError instanceof Error ? policyError.message : policyError || 'Policy not found'}
           </p>
-          <Button onClick={handleBackClick}>
+          <Button onClick={() => router.back()} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Policies
           </Button>
@@ -104,24 +111,22 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   }
 
   const policyData = policy
-  const policyDetails = policyData.policy_details
   
-  // Debug logging to see what data we're receiving
-  console.log('Admin Policy Details - Full policy data:', policyData)
-  console.log('Admin Policy Details - Policy details:', policyDetails)
-  console.log('Admin Policy Details - PolicyCustomerList:', policyDetails?.PolicyCustomerList)
+  // Parse policy_details if it's a JSON string
+  let policyDetails = policyData.policy_details
+  if (typeof policyDetails === 'string') {
+    try {
+      policyDetails = JSON.parse(policyDetails)
+    } catch (e) {
+      policyDetails = null
+    }
+  }
   
-  // Extract customer information from multiple sources
-  // 1. First try to find the policy holder (IsPolicyHolder: 'Y') from PolicyCustomerList
-  // 2. Then fallback to first customer in PolicyCustomerList
-  // 3. Finally use transaction customer_name
+  // Extract customer information
   const policyHolder = policyDetails?.PolicyCustomerList?.find((customer: any) => customer.IsPolicyHolder === 'Y') 
     || policyDetails?.PolicyCustomerList?.[0];
   const transactionCustomerName = policyData.customer_name
   const customer = policyHolder
-  
-  console.log('Admin Policy Details - Extracted policy holder:', policyHolder)
-  console.log('Admin Policy Details - Transaction customer name:', transactionCustomerName)
   const insuredPerson = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]
   const coverages = insuredPerson?.PolicyCoverageList || []
   const travelDetails = policyDetails?.TravelDetailList?.[0]
@@ -131,22 +136,42 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
     switch (status?.toLowerCase()) {
       case 'completed':
       case 'active':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-100 text-green-800 border-green-200'
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'failed':
       case 'cancelled':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-100 text-red-800 border-red-200'
       default:
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-100 text-blue-800 border-blue-200'
     }
   }
 
+  const getStatusIcon = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+      case 'active':
+        return <CheckCircle2 className="h-4 w-4" />
+      case 'pending':
+        return <Clock className="h-4 w-4" />
+      default:
+        return <AlertCircle className="h-4 w-4" />
+    }
+  }
+
+  const toTitleCase = (str: string) => {
+    if (!str) return str
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+
+
   const handleDownloadCertificate = async () => {
     try {
-      // Import jsPDF
       const jsPDF = (await import('jspdf')).default
-
       const pdf = new jsPDF('p', 'mm', 'a4')
       let yPosition = 20
 
@@ -171,14 +196,19 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
       pdf.setFont('helvetica', 'normal')
       
       const policyInfo = [
-        `IMO Policy No.: ${policyDetails?.PolicyNo || policyData.policy_id || 'N/A'}`,
-        `Carrier Policy No.: ${policyDetails?.CarrierPolicyNo || 'N/A'}`,
-        `Certificate Number: ${policyData.certificate_number || 'N/A'}`,
-        `Status: ${policyData.status || 'N/A'}`,
+        `Policy No.: ${policyDetails?.CarrierPolicyNo || 'N/A'}`,
+        `Status: ${policyData.status}`,
+        `Agent: ${agent?.name || 'N/A'}`,
+        `Agent Code: ${policyData.agent_code_used}`,
         ...(policyDetails?.EffectiveDate ? [`Effective Date: ${new Date(policyDetails.EffectiveDate).toLocaleDateString()}`] : []),
         ...(policyDetails?.ExpiryDate ? [`Expiry Date: ${new Date(policyDetails.ExpiryDate).toLocaleDateString()}`] : []),
-        `Premium Amount: PHP ${policyDetails?.GrossPremium ? Number(policyDetails.GrossPremium).toFixed(2) : 'N/A'}`,
-        `Product: ${policyDetails?.ProductName || policyData.plan_name || 'N/A'}`,
+        `Premium Amount: PHP ${policyDetails?.GrossPremium?.toLocaleString() || (policyData.amount ? Number(policyData.amount).toLocaleString() : 'N/A')}`,
+        ...(policyDetails?.DuePremium != null && Number(policyDetails.DuePremium) !== 0 ? [`Due Premium: PHP ${policyDetails.DuePremium.toLocaleString()}`] : []),
+        ...(policyDetails?.SumInsured != null && Number(policyDetails.SumInsured) !== 0 ? [`Sum Insured: PHP ${policyDetails.SumInsured.toLocaleString()}`] : []),
+        `Product: ${policyDetails?.ProductName || 'Travel Insurance'}`,
+        ...(policyDetails?.PlanCode ? [`Plan Code: ${policyDetails.PlanCode}`] : []),
+        ...(policyDetails?.TravelType ? [`Travel Type: ${policyDetails.TravelType}`] : []),
+        ...(policyDetails?.TripType ? [`Trip Type: ${policyDetails.TripType}`] : [])
       ]
 
       policyInfo.forEach(info => {
@@ -189,17 +219,17 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
       yPosition += 10
 
       // Customer Information
-      pdf.setFontSize(14)
-      pdf.setFont('helvetica', 'bold')
-      pdf.text('CUSTOMER INFORMATION', 20, yPosition)
-      yPosition += 10
-
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'normal')
-      
       if (customer) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('CUSTOMER INFORMATION', 20, yPosition)
+        yPosition += 10
+
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
         const customerInfo = [
-          `Full Name: ${`${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || 'N/A'}`,
+          `Full Name: ${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || transactionCustomerName || 'N/A',
           `Email: ${customer.Email || 'N/A'}`,
           `Phone: ${customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}`,
           `Date of Birth: ${customer.DateOfBirth ? new Date(customer.DateOfBirth).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : 'N/A'}`,
@@ -212,34 +242,65 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           pdf.text(info, 20, yPosition)
           yPosition += 5
         })
-      } else {
-        const defaultCustomerInfo = [
-          `Full Name: ${policyData.customer_name || policyData.policy_holder || 'N/A'}`,
-          `Email: ${policyData.customer_email || 'N/A'}`,
-          `Phone: ${policyData.customer_phone || 'N/A'}`,
-          'Date of Birth: N/A',
-          'Address: N/A',
-          'ID Type: N/A',
-          'ID Number: N/A'
+
+        yPosition += 10
+      }
+
+      // Travel Information
+      if (travelDetails) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('TRAVEL INFORMATION', 20, yPosition)
+        yPosition += 10
+
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+        
+        const travelInfo = [
+          `Origin: ${travelDetails.PlaceOfOrgin}`,
+          `Destination: ${travelDetails.TravelCountry}`,
+          `Coverage Area: ${travelDetails.TravelCoverageArea}`,
+          ...(policyDetails?.NoOfTravellers ? [`Number of Travellers: ${String(policyDetails.NoOfTravellers)}`] : []),
+          ...(policyDetails?.NoOfAdults ? [`Adults: ${String(policyDetails.NoOfAdults)}`] : []),
+          ...(policyDetails?.NoOfChildren ? [`Children: ${String(policyDetails.NoOfChildren)}`] : [])
         ]
 
-        defaultCustomerInfo.forEach(info => {
+        travelInfo.forEach(info => {
           pdf.text(info, 20, yPosition)
           yPosition += 5
         })
+
+        yPosition += 10
       }
 
-      yPosition += 10
+      // Coverage Details
+      if (coverages.length > 0) {
+        pdf.setFontSize(14)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('COVERAGE DETAILS', 20, yPosition)
+        yPosition += 10
 
-      // Footer
+        pdf.setFontSize(10)
+        pdf.setFont('helvetica', 'normal')
+
+        coverages.forEach((coverage: any, index: number) => {
+          pdf.text(`${index + 1}. ${coverage.CoverageName}`, 20, yPosition)
+          yPosition += 5
+          
+          if (yPosition > 270) {
+            pdf.addPage()
+            yPosition = 20
+          }
+        })
+      }
+
       const pageHeight = pdf.internal.pageSize.getHeight()
       pdf.setFontSize(8)
       pdf.setFont('helvetica', 'italic')
       pdf.text('This is an official policy certificate issued by One Insurance Company.', 20, pageHeight - 20)
       pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, pageHeight - 15)
       
-      // Save the PDF
-      const fileName = `Policy_Certificate_${policyData.certificate_number || policyData.policy_id}.pdf`
+      const fileName = `Policy_Certificate_${policyDetails?.CarrierPolicyNo || 'N/A'}.pdf`
       pdf.save(fileName)
       
       toast.success('Policy certificate downloaded successfully!')
@@ -250,746 +311,679 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   }
 
   const handlePrintPolicy = () => {
-    // Add print styles dynamically for single column layout
-    const printStyles = `
-      @media print {
-        /* Hide everything first */
-        body * {
-          visibility: hidden;
-        }
-        
-        /* Show only the main content */
-        .policy-details-content, .policy-details-content * {
-          visibility: visible;
-        }
-        
-        /* Position the print content */
-        .policy-details-content {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          background: white !important;
-          color: black !important;
-          font-family: Arial, sans-serif !important;
-          font-size: 14px !important;
-          line-height: 1.5 !important;
-          padding: 20px !important;
-        }
-        
-        /* Hide UI elements */
-        .no-print, button, .btn, nav, header, footer, .sidebar {
-          display: none !important;
-        }
-        
-        /* Single column layout */
-        .print-single-column {
-          display: block !important;
-          width: 100% !important;
-          max-width: none !important;
-        }
-        
-        /* Override grid layouts to single column */
-        .grid {
-          display: block !important;
-        }
-        
-        .grid > div {
-          margin-bottom: 15px !important;
-        }
-        
-        /* Larger text for better readability */
-        .print-title {
-          font-size: 24px !important;
-          font-weight: bold !important;
-          margin-bottom: 20px !important;
-          text-align: center !important;
-        }
-        
-        .print-section-title {
-          font-size: 18px !important;
-          font-weight: bold !important;
-          margin: 25px 0 15px 0 !important;
-          border-bottom: 2px solid #333 !important;
-          padding-bottom: 5px !important;
-        }
-        
-        .print-field-label {
-          font-size: 14px !important;
-          font-weight: bold !important;
-          color: #555 !important;
-          margin-bottom: 5px !important;
-        }
-        
-        .print-field-value {
-          font-size: 16px !important;
-          margin-bottom: 15px !important;
-          padding-left: 10px !important;
-        }
-        
-        /* Card styling for print */
-        .print-card {
-          margin-bottom: 30px !important;
-          page-break-inside: avoid !important;
-        }
-        
-        /* Coverage items styling */
-        .print-coverage-item {
-          font-size: 14px !important;
-          margin-bottom: 8px !important;
-          padding: 5px 0 !important;
-          border-bottom: 1px solid #eee !important;
-        }
-      }
-    `;
-    
-    // Add styles to head
-    const styleElement = document.createElement('style');
-    styleElement.textContent = printStyles;
-    document.head.appendChild(styleElement);
-    
-    // Trigger print
-    window.print();
-    
-    // Remove styles after printing
-    setTimeout(() => {
-      document.head.removeChild(styleElement);
-    }, 1000);
+    window.print()
   }
 
-  return (
-    <div className="space-y-6 policy-details-content">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBackClick}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Policies
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">
-              {(() => {
-                const policyNo = policyDetails?.CarrierPolicyNo || 'N/A'
-                const carrierCode = policyDetails?.CarrierCode || 'MALAYAN'
-                const productCode = policyDetails?.ProductCode || policyData.carrier_product_code || 'TRAVEL'
-                return `Policy ${policyNo} > ${carrierCode} ${productCode}`
-              })()}
-            </h1>
-            <p className="text-muted-foreground">
-              {(() => {
-                // Get agent name from fetched agent data
-                const agentName = agent?.name || 'N/A'
-                
-                // Get agent code value and make it uppercase
-                const agentCode = (policyData.agent_code_used || agent?.agent_code || 'N/A').toUpperCase();
-                
-                return `${agentName} • ${agentCode}`;
-              })()}
-            </p>
-          </div>
+  // Calculate coverage duration
+  const getCoverageDuration = () => {
+    if (!policyDetails?.EffectiveDate || !policyDetails?.ExpiryDate) return null
+    const startDate = new Date(policyDetails.EffectiveDate)
+    const endDate = new Date(policyDetails.ExpiryDate)
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+    return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
+  }
+
+
+  const CollapsibleSection = ({ 
+    section, 
+    title, 
+    icon: Icon, 
+    badge,
+    children 
+  }: { 
+    section: keyof typeof expandedSections
+    title: string
+    icon: any
+    badge?: React.ReactNode
+    children: React.ReactNode 
+  }) => (
+    <Card className="border shadow-sm hover:shadow-md transition-shadow">
+      <CardHeader 
+        className="pb-3 cursor-pointer" 
+        onClick={() => toggleSection(section)}
+      >
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-3 text-base font-semibold">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Icon className="h-5 w-5 text-primary" />
+            </div>
+            <span>{title}</span>
+            {badge}
+          </CardTitle>
+          {expandedSections[section] ? 
+            <ChevronUp className="h-5 w-5 text-muted-foreground" /> : 
+            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+          }
         </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleDownloadCertificate}>
-            <Download className="h-4 w-4 mr-2" />
-            Download Certificate
-          </Button>
-          <Button onClick={handlePrintPolicy}>
-            <Printer className="h-4 w-4 mr-2" />
-            Print Policy
-          </Button>
+      </CardHeader>
+      {expandedSections[section] && (
+        <CardContent className="pt-0">
+          {children}
+        </CardContent>
+      )}
+    </Card>
+  )
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg rounded-t-3xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.back()}
+                className="shrink-0 text-white hover:bg-white/20 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div>
+                <div className="flex items-center gap-3 flex-wrap mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold">
+                    {policyDetails?.CarrierPolicyNo || 'N/A'}
+                  </h1>
+                  <Badge className={`${getStatusColor(policyData.status)} shadow-sm`}>
+                    {getStatusIcon(policyData.status)}
+                    <span className="ml-1">{policyData.status}</span>
+                  </Badge>
+                </div>
+                <p className="text-blue-100 text-sm sm:text-base">
+                  {policyDetails?.ProductName || 'Travel Insurance'}
+                </p>
+                <p className="text-blue-200/80 text-xs sm:text-sm mt-1">
+                  Agent: {agent?.name ? toTitleCase(agent.name) : 'N/A'} • {policyData.agent_code_used?.toUpperCase()}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                onClick={handleDownloadCertificate}
+                className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Download</span>
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={handlePrintPolicy}
+                className="bg-white text-blue-700 hover:bg-blue-50"
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Print</span>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Policy Information */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Policy Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Policy Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Policy No.</p>
-                  <p className="font-semibold text-blue-600">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
-                  <p className="text-xs text-muted-foreground">Carrier side reference</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Key Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <DollarSign className="h-5 w-5 text-blue-600" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">IMO Policy No.</p>
-                  <p className="font-semibold">{policyDetails?.PolicyNo || policyData.policy_id || ''}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Proposal No.</p>
-                  <p className="font-semibold">{policyDetails?.ProposalNo || policyData.proposal_number || 'PTRAVEL0000000919'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Status</p>
-                  <Badge variant="secondary" className={getStatusColor(policyData.status || '')}>
-                    {policyData.status || ''}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Renewable</p>
-                  <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'destructive'}>
-                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : ''}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Plan Code</p>
-                  <p className="font-semibold">{policyDetails?.PlanCode || 'TMPHPC2'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Carrier Code</p>
-                  <p className="font-semibold">{policyDetails?.CarrierCode || 'MALAYAN'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Product Code</p>
-                  <p className="font-semibold">{policyData.product?.carrier_product_code || policyDetails?.ProductCode || policyData.carrier_product_code || 'N/A'}</p>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="grid grid-cols-2 gap-4">
-                {(policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) ? (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Coverage Date</p>
-                    <p className="font-semibold">
-                      {new Date(policyDetails.EffectiveDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })} - {new Date(policyDetails.ExpiryDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {(() => {
-                        const startDate = new Date(policyDetails.EffectiveDate)
-                        const endDate = new Date(policyDetails.ExpiryDate)
-                        const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-                        return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`
-                      })()}
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Coverage Date</p>
-                    <p className="font-semibold">N/A</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Premium Amount</p>
-                  <p className="font-semibold text-lg">
-                    ₱{policyDetails?.DuePremium ? Number(policyDetails.DuePremium).toFixed(2) : '0.00'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Sum Insured</p>
-                  <p className="font-semibold text-lg text-green-600">
-                    {policyDetails?.SumInsured 
-                      ? `₱${Number(policyDetails.SumInsured).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-muted-foreground mb-1">Premium</p>
+                  <p className="text-lg font-bold truncate">
+                    {policyDetails?.DuePremium 
+                      ? `₱${Number(policyDetails.DuePremium).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
                       : 'N/A'
                     }
                   </p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Product</p>
-                  <p className="font-semibold">{policyData.product?.name || policyDetails?.ProductName || 'N/A'}</p>
-                </div>
-                {/* Premium Tax and LGT fields hidden - calculations not yet fixed */}
-                {/* {policyDetails?.PremiumTaxAmt != null && Number(policyDetails.PremiumTaxAmt) !== 0 && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Premium Tax</p>
-                    <p className="font-semibold">₱{Number(policyDetails.PremiumTaxAmt).toFixed(2)}</p>
-                  </div>
-                )}
-                {policyDetails?.LGT != null && Number(policyDetails.LGT) !== 0 && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">LGT</p>
-                    <p className="font-semibold">₱{Number(policyDetails.LGT).toFixed(2)}</p>
-                  </div>
-                )} */}
               </div>
-
-              <Separator />
-
-              {/* Important Dates */}
-              <div className="grid grid-cols-2 gap-4">
-                {policyDetails?.ProposalDate && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Proposal Date</p>
-                    <p className="font-semibold">{new Date(policyDetails.ProposalDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {policyDetails?.QuotationDate && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Quotation Date</p>
-                    <p className="font-semibold">{new Date(policyDetails.QuotationDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {policyData.created_at && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Created At</p>
-                    <p className="font-semibold">{new Date(policyData.created_at).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {policyData.updated_at && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Updated At</p>
-                    <p className="font-semibold">{new Date(policyData.updated_at).toLocaleDateString()}</p>
-                  </div>
-                )}
-              </div>
-
-
             </CardContent>
           </Card>
 
-          {/* Policy Holder */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Policy Holder
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {customer ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
-                    <p className="font-semibold text-lg">
-                      {[customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
-                        .filter(Boolean)
-                        .join(' ') || 'N/A'}
-                    </p>
+          {(policyDetails?.SumInsured != null && Number(policyDetails.SumInsured) !== 0) && (
+            <Card className="border shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <Shield className="h-5 w-5 text-emerald-600" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Gender</p>
-                    <p className="font-semibold">
-                      {customer.Gender === 'M' ? 'Male' : customer.Gender === 'F' ? 'Female' : customer.Gender || 'N/A'}
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Coverage</p>
+                    <p className="text-lg font-bold truncate">₱{policyDetails.SumInsured.toLocaleString()}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
-                    <p className="font-semibold">{customer.Email || 'N/A'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-muted-foreground mb-1">Duration</p>
+                  <p className="text-lg font-bold truncate">{getCoverageDuration() || 'N/A'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Users className="h-5 w-5 text-orange-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-muted-foreground mb-1">Travellers</p>
+                  <p className="text-lg font-bold truncate">
+                    {policyDetails?.NoOfTravellers ? String(policyDetails.NoOfTravellers) : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-5">
+          
+            {/* Coverage Period */}
+            {(policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) && (
+              <Card className="border shadow-sm">
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <Calendar className="h-4 w-4" />
+                        Effective Date
+                      </div>
+                      <p className="text-2xl font-bold text-primary">
+                          {new Date(policyDetails.EffectiveDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <Calendar className="h-4 w-4" />
+                        Expiry Date
+                      </div>
+                      <p className="text-2xl font-bold text-primary">
+                          {new Date(policyDetails.ExpiryDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+          {/* Policy Holder - Collapsible */}
+          <CollapsibleSection section="policyHolder" title="Policy Holder" icon={User}>
+            {customer ? (
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <p className="text-2xl font-bold">
+                    {([customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
+                      .filter(Boolean)
+                      .join(' ') || 'N/A').toUpperCase()}
+                  </p>
+                </div>
+
+                <Separator />
+
+                {/* Contact Grid */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="font-medium break-all">{customer.Email || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
-                    <p className="font-semibold">
-                      {customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="font-medium">{customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
-                    <p className="font-semibold">
-                      {customer.DateOfBirth ? 
-                        new Date(customer.DateOfBirth).toLocaleDateString('en-US', { 
-                          month: '2-digit', 
-                          day: '2-digit', 
-                          year: 'numeric' 
-                        }) : 'N/A'
-                      }
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Date of Birth</p>
+                      <p className="font-medium">
+                        {customer.DateOfBirth ? 
+                          new Date(customer.DateOfBirth).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          }) : 'N/A'
+                        }
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Age</p>
-                    <p className="font-semibold">
-                      {customer.DateOfBirth ? 
-                        Math.floor((new Date().getTime() - new Date(customer.DateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25)) + ' years'
-                        : 'N/A'
-                      }
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">Age & Gender</p>
+                      <p className="font-medium">
+                        {customer.DateOfBirth ? 
+                          Math.floor((new Date().getTime() - new Date(customer.DateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25)) + ' yrs'
+                          : 'N/A'
+                        }
+                        {' • '}
+                        {customer.Gender === 'M' ? 'Male' : customer.Gender === 'F' ? 'Female' : customer.Gender || 'N/A'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Complete Address</p>
-                    <p className="font-semibold">
+                </div>
+
+                <Separator />
+
+                {/* Address */}
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Address</p>
+                    <p className="font-medium leading-relaxed">
                       {[
                         customer.AddressLine1,
                         customer.AddressLine2,
                         getCityNameByCityCode(customer.City) || customer.City,
                         getProvinceNameByProvCode(customer.AddrProvince) || customer.AddrProvince,
                         customer.PostCode
-                      ].filter(Boolean).join(', ') || ''}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
-                    <p className="font-semibold">
-                      {customer.IdTypeCode === 'PAS' ? "Passport" : 
-                       customer.IdTypeCode === 'DL' ? "Driver's License" :
-                       customer.IdTypeCode === 'NID' ? "National ID" :
-                       customer.IdTypeCode === 'SSS' ? "SSS ID" :
-                       customer.IdTypeCode === 'TIN' ? "TIN ID" :
-                       customer.IdTypeCode || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
-                    <p className="font-semibold">
-                      {customer.TempData?.['MaskAfter-IdNo'] || customer.IdNo || 'N/A'}
+                      ].filter(Boolean).join(', ') || 'N/A'}
                     </p>
                   </div>
                 </div>
-              ) : policyData.customer_name || policyData.policy_holder ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
-                    <p className="font-semibold text-lg">{policyData.customer_name || policyData.policy_holder}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Gender</p>
-                    <p className="font-semibold">N/A</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
-                    <p className="font-semibold">{policyData.customer_email || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
-                    <p className="font-semibold">{policyData.customer_phone || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Date of Birth</p>
-                    <p className="font-semibold">{policyData.customer_dob || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Age</p>
-                    <p className="font-semibold">N/A</p>
-                  </div>
-                  <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Complete Address</p>
-                    <p className="font-semibold">{policyData.customer_address || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Type</p>
-                    <p className="font-semibold">{policyData.customer_id_type || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">ID Number</p>
-                    <p className="font-semibold">{policyData.customer_id_number || 'N/A'}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No policy holder information available</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Policy holder details are not available in the current policy data.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
+                <Separator />
 
-
-          {/* Travel Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plane className="h-5 w-5" />
-                Travel Insurance Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {travelDetails ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Origin</p>
-                      <p className="font-semibold">{travelDetails.PlaceOfOrgin || 'N/A'}</p>
+                {/* ID */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">ID Type</p>
+                      <p className="font-medium">
+                        {customer.IdTypeCode === 'PAS' ? "Passport" : 
+                         customer.IdTypeCode === 'DL' ? "Driver's License" :
+                         customer.IdTypeCode === 'NID' ? "National ID" :
+                         customer.IdTypeCode || 'N/A'}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Destination</p>
-                      <p className="font-semibold">{travelDetails.TravelCountry || 'N/A'}</p>
+                  <div className="flex items-start gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-muted-foreground">ID Number</p>
+                      <p className="font-medium font-mono">
+                        {customer.TempData?.['MaskAfter-IdNo'] || customer.IdNo || 'N/A'}
+                      </p>
                     </div>
                   </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No policy holder information available</p>
+              </div>
+            )}
+          </CollapsibleSection>
+
+
+          {/* Travel Information - Collapsible */}
+          <CollapsibleSection section="travel" title="Travel Details" icon={Plane}>
+            {travelDetails ? (
+              <div className="space-y-4">
+                {/* Route */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">From</p>
+                      <p className="font-bold text-xl">{travelDetails.PlaceOfOrgin}</p>
+                    </div>
+                    <Plane className="h-6 w-6 text-muted-foreground rotate-90" />
+                    <div className="flex-1 text-right">
+                      <p className="text-xs text-muted-foreground mb-1">To</p>
+                      <p className="font-bold text-xl">{travelDetails.TravelCountry}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Coverage Area</p>
-                    <p className="font-semibold">{travelDetails.TravelCoverageArea || 'N/A'}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Coverage Area</p>
+                    <p className="font-semibold">{travelDetails.TravelCoverageArea}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
+                    <p className="text-xs text-muted-foreground mb-1">Travel Type</p>
                     <p className="font-semibold">{policyDetails?.TravelType || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
+                    <p className="text-xs text-muted-foreground mb-1">Trip Type</p>
                     <p className="font-semibold">{policyDetails?.TripType || 'N/A'}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Number of Travellers</p>
-                    <p className="font-semibold">
-                      {policyDetails?.NoOfTravellers || 'N/A'} 
-                      {(() => {
-                        const adults = policyDetails?.NoOfAdults
-                        const children = policyDetails?.NoOfChildren
-                        const parts = []
-                        
-                        if (adults != null && Number(adults) !== 0) {
-                          parts.push(`${adults} Adult${Number(adults) !== 1 ? 's' : ''}`)
-                        }
-                        if (children != null && Number(children) !== 0) {
-                          parts.push(`${children} Child${Number(children) !== 1 ? 'ren' : ''}`)
-                        }
-                        
-                        return parts.length > 0 ? ` (${parts.join(', ')})` : ''
-                      })()}
-                    </p>
-                  </div>
+                  {(policyDetails?.NoOfAdults != null && policyDetails?.NoOfChildren != null) && (
+                    <div className="col-span-2 sm:col-span-3">
+                      <p className="text-xs text-muted-foreground mb-1">Traveller Breakdown</p>
+                      <p className="font-semibold">
+                        {policyDetails.NoOfAdults} Adult{policyDetails.NoOfAdults !== 1 ? 's' : ''}
+                        {Number(policyDetails.NoOfChildren) > 0 && `, ${policyDetails.NoOfChildren} Child${policyDetails.NoOfChildren !== 1 ? 'ren' : ''}`}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Product Type</p>
-                    <p className="font-semibold">{policyData.plan_type || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Provider</p>
-                    <p className="font-semibold">{policyData.provider || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Coverage Area</p>
-                    <p className="font-semibold">N/A</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Travel Type</p>
-                    <p className="font-semibold">N/A</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Trip Type</p>
-                    <p className="font-semibold">N/A</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Policy Status</p>
-                    <Badge variant="secondary" className={getStatusColor(policyData.status || 'N/A')}>
-                      {policyData.status || 'N/A'}
-                    </Badge>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            ) : (
+              <div className="bg-muted/30 border rounded-lg p-6">
+                <p className="text-sm leading-relaxed">
+                  This policy provides comprehensive travel insurance coverage including medical emergencies, 
+                  trip disruptions, baggage protection, and 24/7 emergency assistance.
+                </p>
+              </div>
+            )}
+          </CollapsibleSection>
 
-
-
-          {/* Policy Risk List */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                Policy Risk List
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 ? (
-                <div className="space-y-6">
-                  {policyDetails.PolicyLobList[0].PolicyRiskList.map((insuredPerson: any, index: number) => (
-                    <div key={`insured-${index}-${insuredPerson.PolicyElementId || index}`} className="border rounded-lg p-4 bg-muted/20">
-                      {/* Insured Person Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h4 className="font-semibold text-lg">
-                            {insuredPerson.InsuredName || 
-                             [insuredPerson.FirstName, insuredPerson.MiddleName, insuredPerson.LastName]
-                               .filter(Boolean).join(' ') || 'N/A'}
-                          </h4>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>{insuredPerson.IsAdultTraveller === 'Y' ? 'Adult' : 'Child'}</span>
-                            <span>•</span>
-                            <span>Age: {insuredPerson.Age || 'N/A'}</span>
-                          </div>
-                        </div>
-                        {insuredPerson.IsMainInsured === 'Y' && (
-                          <Badge variant="default">
-                            Main Insured
-                          </Badge>
-                        )}
+          {/* Coverage - Collapsible */}
+          <CollapsibleSection 
+            section="coverage" 
+            title="Coverage & Benefits" 
+            icon={Shield}
+            badge={
+              policyDetails && policyDetails.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {policyDetails.PolicyLobList[0].PolicyRiskList.reduce((total: number, person: any) => 
+                    total + (person.PolicyCoverageList?.length || 0), 0
+                  )}
+                </Badge>
+              )
+            }
+          >
+            {policyDetails && policyDetails.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 ? (
+              <div className="space-y-6">
+                {policyDetails.PolicyLobList[0].PolicyRiskList.map((insuredPerson: any, index: number) => (
+                  <div key={`insured-${index}`} className="space-y-3">
+                    {/* Person Header */}
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div>
+                        <p className="font-semibold">
+                          {insuredPerson.InsuredName || 
+                           [insuredPerson.FirstName, insuredPerson.MiddleName, insuredPerson.LastName]
+                             .filter(Boolean).join(' ') || 'N/A'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {insuredPerson.IsAdultTraveller === 'Y' ? 'Adult' : 'Child'} • {insuredPerson.Age || 'N/A'} years
+                        </p>
                       </div>
-
-                      {/* Insured Person Details */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Email</p>
-                          <p className="text-sm font-medium">{insuredPerson.Email || 'N/A'}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Phone</p>
-                          <p className="text-sm font-medium">
-                            {insuredPerson.TempData?.['MaskAfter-Mobile'] || insuredPerson.Mobile || 'N/A'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Gender</p>
-                          <p className="text-sm font-medium">
-                            {insuredPerson.Gender === 'M' ? 'Male' : insuredPerson.Gender === 'F' ? 'Female' : insuredPerson.Gender || 'N/A'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground">Date of Birth</p>
-                          <p className="text-sm font-medium">
-                            {insuredPerson.DateOfBirth ? 
-                              new Date(insuredPerson.DateOfBirth).toLocaleDateString('en-US', { 
-                                month: '2-digit', 
-                                day: '2-digit', 
-                                year: 'numeric' 
-                              }) : 'N/A'
-                            }
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Coverage List */}
-                      {insuredPerson.PolicyCoverageList && insuredPerson.PolicyCoverageList.length > 0 && (
-                        <div>
-                          <h5 className="font-medium text-sm mb-3 text-muted-foreground">
-                            Coverage ({insuredPerson.PolicyCoverageList.length} items)
-                          </h5>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
-                              <div key={`coverage-${index}-${coverageIndex}-${coverage.PolicyElementId || coverageIndex}`} className="bg-muted/30 px-3 py-2 rounded text-sm border">
-                                <span className="text-foreground font-medium">{coverage.CoverageName}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                      {insuredPerson.IsMainInsured === 'Y' && (
+                        <Badge>Main</Badge>
                       )}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No detailed coverage information available
-                </div>
-              )}
-            </CardContent>
-          </Card>
+
+                    {/* Coverage List */}
+                    {insuredPerson.PolicyCoverageList && insuredPerson.PolicyCoverageList.length > 0 && (
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
+                          <div 
+                            key={`coverage-${index}-${coverageIndex}`} 
+                            className="flex items-start gap-2 p-3 border rounded-lg bg-card hover:shadow-sm transition-shadow"
+                          >
+                            <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                            <span className="text-sm font-medium leading-tight">{coverage.CoverageName}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {['Medical Coverage', 'Trip Protection', 'Baggage Protection', '24/7 Assistance'].map(benefit => (
+                  <div key={benefit} className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <span className="font-medium">{benefit}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CollapsibleSection>
+
+          {/* Beneficiaries - Collapsible */}
+          {policyDetails?.NomineeList && policyDetails.NomineeList.length > 0 && (
+            <CollapsibleSection 
+              section="beneficiaries" 
+              title="Beneficiaries" 
+              icon={Users}
+              badge={<Badge variant="secondary" className="ml-2">{policyDetails.NomineeList.length}</Badge>}
+            >
+              <div className="space-y-3">
+                {policyDetails.NomineeList.map((beneficiary: any, index: number) => (
+                  <div key={`beneficiary-${index}`} className="p-4 border rounded-lg">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Name</p>
+                        <p className="font-semibold">
+                          {([beneficiary.FirstName, beneficiary.MiddleName, beneficiary.LastName]
+                            .filter(Boolean)
+                            .join(' ') || 'N/A').toUpperCase()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Relationship</p>
+                        <p className="font-semibold">{beneficiary.Relationship || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Share</p>
+                        <Badge variant="outline" className="text-green-600 border-green-600">
+                          {beneficiary.SharePercent}%
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleSection>
+          )}
+
+          {/* Technical Details - Collapsible */}
+          <CollapsibleSection section="technical" title="Policy Details" icon={Building}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Policy Number</p>
+                <p className="font-mono font-semibold">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Plan Code</p>
+                <p className="font-mono font-semibold">{policyDetails?.PlanCode || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Carrier</p>
+                <p className="font-semibold">{policyDetails?.CarrierCode || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Product Code</p>
+                <p className="font-mono font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Renewable</p>
+                <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'secondary'}>
+                  {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : 'N/A'}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Created</p>
+                <p className="font-medium">{new Date(policyData.created_at).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </CollapsibleSection>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Payment Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Payment Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Reference ID</p>
-                <p className="font-semibold">{merchantTxId || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Date</p>
-                <p className="font-semibold">
-                  {policyData.transaction_date 
-                    ? new Date(policyData.transaction_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : 'N/A'
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Amount</p>
-                <p className="font-semibold text-lg text-green-600">
-                  ₱{policyData.amount ? Number(policyData.amount).toFixed(2) : '0.00'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Brand</p>
-                <p className="font-semibold">
-                  {policyData.payment_brand || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Payor's Name</p>
-                <p className="font-semibold">
-                  {customer 
-                    ? [customer.FirstName, customer.MiddleName, customer.LastName, customer.Suffix]
-                        .filter(Boolean)
-                        .join(' ') || 'N/A'
-                    : policyData.customer_name || policyData.policy_holder || 'N/A'
-                  }
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Payor's Email</p>
-                <p className="font-semibold">
-                  {customer?.Email || policyData.customer_email || 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Payor's Phone</p>
-                <p className="font-semibold">
-                  {customer?.TempData?.['MaskAfter-Mobile'] || customer?.Mobile || policyData.customer_phone || 'N/A'}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Commission Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Commission Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Gross Commission field hidden */}
-              {/* <div>
-                <p className="text-sm font-medium text-muted-foreground">Gross Commission</p>
-                <p className="font-semibold">₱{Number(policyData.commission_log?.gross_commission || 0).toFixed(2)}</p>
-              </div> */}
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Net Commission</p>
-                <p className="font-semibold text-green-600">₱{Number(policyData.commission_log?.agent_commission || 0).toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                <p className="font-semibold">{agent?.name || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Commission Product</p>
-                <p className="font-semibold">{policyData.product?.name || policyData.plan_name || 'N/A'}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Discount Information */}
-          {promoCode && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Discount Applied
+          {/* Sidebar */}
+          <div className="space-y-4">
+            {/* Payment Card */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  Payment Summary
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Promo Code</p>
-                  <p className="font-semibold text-green-600">{promoCode.PromoCode}</p>
+                <div className="text-center py-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <p className="text-sm text-emerald-700 mb-1">Total Amount Paid</p>
+                  <p className="text-3xl font-bold text-emerald-900">
+                    {policyData.amount 
+                      ? `₱${Number(policyData.amount).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}`
+                      : '₱0.00'
+                    }
+                  </p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Discount Percentage</p>
-                  <p className="font-semibold text-green-600">{promoCode.DiscountPercent}%</p>
+              
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Transaction Reference</p>
+                    <p className="font-mono text-xs font-medium bg-slate-100 p-2 rounded break-all">
+                      {policyData.merchant_transaction_id || 'N/A'}
+                    </p>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Date
+                    </span>
+                    <span className="font-semibold">
+                      {policyData.transaction_date 
+                        ? new Date(policyData.transaction_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })
+                        : 'N/A'
+                      }
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Method
+                    </span>
+                    <span className="font-semibold">{policyData.payment_brand || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payor Details</p>
+                  <p className="font-semibold">
+                    {customer 
+                      ? ([customer.FirstName, customer.MiddleName, customer.LastName]
+                          .filter(Boolean)
+                          .join(' ') || 'N/A').toUpperCase()
+                      : transactionCustomerName 
+                      ? transactionCustomerName.toUpperCase()
+                      : 'N/A'
+                    }
+                  </p>
+                  {customer?.Email && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="h-3.5 w-3.5" />
+                      <span className="truncate">{customer.Email}</span>
+                    </div>
+                  )}
+                  {customer?.Mobile && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5" />
+                      <span>{customer.TempData?.['MaskAfter-Mobile'] || customer.Mobile}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          )}
+
+            {/* Commission Card */}
+            <Card className="border shadow-sm overflow-hidden">
+              <div className="bg-blue-50 border-b p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold text-blue-900">Commission</h3>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-blue-700 mb-1">Net Commission</p>
+                  <p className="text-3xl font-bold text-blue-900">
+                    {policyData.commission_log?.agent_commission 
+                      ? `₱${Number(policyData.commission_log.agent_commission).toLocaleString()}`
+                      : '₱0.00'
+                    }
+                  </p>
+                </div>
+              </div>
+              
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Agent</span>
+                  <span className="font-semibold">{agent?.name || 'N/A'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Code</span>
+                  <span className="font-mono font-semibold">{policyData.agent_code_used?.toUpperCase() || 'N/A'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Product</span>
+                  <span className="font-semibold text-right">{policyDetails?.ProductName || 'N/A'}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Promo Card */}
+            {promoCode && (
+              <Card className="border shadow-sm overflow-hidden">
+                <div className="bg-purple-50 border-b p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle2 className="h-5 w-5 text-purple-600" />
+                    <h3 className="font-semibold text-purple-900">Discount Applied</h3>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-purple-700 mb-2">Promo Code</p>
+                    <p className="text-2xl font-bold text-purple-900 font-mono mb-3">{promoCode.PromoCode}</p>
+                    <Badge className="bg-purple-600 text-white text-lg px-4 py-1.5">
+                      {promoCode.DiscountPercent}% OFF
+                    </Badge>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>
