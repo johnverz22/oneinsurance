@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { ProfileOverview } from '@/components/agent/profile-overview'
 import { Tab, TabNavigation } from '@/components/ui/tab-navigation'
 import { PageLoader } from '@/components/page-loader'
@@ -12,8 +14,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user } = useAgentAuthStore()
-  const { data } = useGetAccounts()
+  const router = useRouter()
+  const { user, logout } = useAgentAuthStore()
+  const { data, isLoading, isError, error } = useGetAccounts()
 
   const TABS = [
     // { value: '/', label: 'Overview' },
@@ -26,7 +29,32 @@ export default function DashboardLayout({
     { value: '/policies', label: 'Policy' },
   ] satisfies Tab[]
 
-  if (!user || !data) {
+  // Handle authentication errors
+  useEffect(() => {
+    if (isError && error) {
+      // Check if it's an authentication error (401)
+      const axiosError = error as any
+      if (
+        axiosError?.response?.status === 401 ||
+        axiosError?.message?.includes('Unauthorized')
+      ) {
+        // Token is invalid or expired, logout and redirect
+        logout()
+        router.push('/login')
+      }
+    }
+  }, [isError, error, logout, router])
+
+  if (!user || isLoading) {
+    return <PageLoader />
+  }
+
+  // If there's an error and it's not a 401, show error state
+  if (isError) {
+    return <PageLoader />
+  }
+
+  if (!data) {
     return <PageLoader />
   }
 
