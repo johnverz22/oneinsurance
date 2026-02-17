@@ -745,7 +745,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           {/* Coverage - Collapsible */}
           <CollapsibleSection 
             section="coverage" 
-            title="Coverage & Benefits" 
+            title="Policy Risk List" 
             icon={Shield}
             badge={
               policyDetails && policyDetails.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 && (
@@ -780,8 +780,12 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
 
                     {/* Coverage List */}
                     {insuredPerson.PolicyCoverageList && insuredPerson.PolicyCoverageList.length > 0 && (
-                      <div className="grid sm:grid-cols-2 gap-2">
-                        {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Coverage & Benefits
+                        </p>
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {insuredPerson.PolicyCoverageList.map((coverage: any, coverageIndex: number) => (
                           <div 
                             key={`coverage-${index}-${coverageIndex}`} 
                             className="flex items-start gap-2 p-3 border rounded-lg bg-card hover:shadow-sm transition-shadow"
@@ -790,6 +794,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                             <span className="text-sm font-medium leading-tight">{coverage.CoverageName}</span>
                           </div>
                         ))}
+                      </div>
                       </div>
                     )}
                   </div>
