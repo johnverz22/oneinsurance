@@ -499,6 +499,42 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-5">
           
+            {/* Technical Details - Collapsible */}
+            <CollapsibleSection section="technical" title="Policy Details" icon={Building}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Policy Number</p>
+                  <p className="font-mono font-semibold">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">IMO Policy Number</p>
+                  <p className="font-mono font-semibold">{policyDetails?.PolicyNo || policyData.policy_number_imo || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Plan Code</p>
+                  <p className="font-mono font-semibold">{policyDetails?.PlanCode || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Carrier</p>
+                  <p className="font-semibold">{policyDetails?.CarrierCode || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Product Code</p>
+                  <p className="font-mono font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Renewable</p>
+                  <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'secondary'}>
+                    {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : 'N/A'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Created</p>
+                  <p className="font-medium">{new Date(policyData.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </CollapsibleSection>
+
             {/* Coverage Period */}
             {(policyDetails?.EffectiveDate && policyDetails?.ExpiryDate) && (
               <Card className="border shadow-sm">
@@ -809,38 +845,6 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               </div>
             </CollapsibleSection>
           )}
-
-          {/* Technical Details - Collapsible */}
-          <CollapsibleSection section="technical" title="Policy Details" icon={Building}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Policy Number</p>
-                <p className="font-mono font-semibold">{policyDetails?.CarrierPolicyNo || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Plan Code</p>
-                <p className="font-mono font-semibold">{policyDetails?.PlanCode || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Carrier</p>
-                <p className="font-semibold">{policyDetails?.CarrierCode || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Product Code</p>
-                <p className="font-mono font-semibold">{policyDetails?.ProductCode || policyData.carrier_product_code}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Renewable</p>
-                <Badge variant={policyDetails?.IsRenewable === 'Y' ? 'default' : 'secondary'}>
-                  {policyDetails?.IsRenewable === 'Y' ? 'Yes' : policyDetails?.IsRenewable === 'N' ? 'No' : 'N/A'}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Created</p>
-                <p className="font-medium">{new Date(policyData.created_at).toLocaleDateString()}</p>
-              </div>
-            </div>
-          </CollapsibleSection>
         </div>
 
 
