@@ -8,6 +8,7 @@ import { PageLoader } from '@/components/page-loader'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { LockedProfilePrompt } from '@/components/accounts/locked-profile-prompt'
 import { useGetAccounts } from '@/app/data/queries/accounts'
+import ServerOffline from '@/components/server-offline'
 
 export default function DashboardLayout({
   children,
@@ -16,7 +17,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter()
   const { user, logout } = useAgentAuthStore()
-  const { data, isLoading, isError, error } = useGetAccounts()
+  const { data, isLoading, isError, error, refetch } = useGetAccounts()
 
   const TABS = [
     // { value: '/', label: 'Overview' },
@@ -49,8 +50,14 @@ export default function DashboardLayout({
     return <PageLoader />
   }
 
-  // If there's an error and it's not a 401, show error state
+  // If there's an error and it's not a 401, show server offline error
   if (isError) {
+    const axiosError = error as any
+    // Only show server offline for non-auth errors
+    if (axiosError?.response?.status !== 401 && !axiosError?.message?.includes('Unauthorized')) {
+      return <ServerOffline onRefresh={() => refetch()} />
+    }
+    // For auth errors, show loader while redirecting
     return <PageLoader />
   }
 
