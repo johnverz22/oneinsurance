@@ -210,13 +210,21 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
 
       // Refresh data
       await refetchAgentLobs()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling LOB:', error)
-      toast.error(
-        isChecked
-          ? 'Failed to assign line of business'
-          : 'Failed to remove line of business'
-      )
+      
+      // Handle specific error cases
+      if (error.response?.status === 409) {
+        toast.error('This agent is already assigned to this line of business')
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message)
+      } else {
+        toast.error(
+          isChecked
+            ? 'Failed to assign line of business'
+            : 'Failed to remove line of business'
+        )
+      }
     }
   }
 
