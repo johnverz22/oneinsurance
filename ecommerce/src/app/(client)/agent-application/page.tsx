@@ -103,9 +103,7 @@ const AgentApplicationPage = () => {
             <div className="grid w-full grid-cols-1 place-items-center items-center gap-8 lg:grid-cols-2">
               <div className="space-y-4 text-white">
                 <h1 className="text-3xl font-extrabold md:text-4xl lg:text-5xl">
-                  Insurance Commission
-                  <br />
-                  Management Platform
+                  Insurance Management Platform
                 </h1>
                 <p className="max-w-xl text-sm text-white/90 md:text-base lg:text-lg">
                   Streamline product assignments, commission tracking, and team
