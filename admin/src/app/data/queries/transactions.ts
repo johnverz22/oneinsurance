@@ -67,3 +67,33 @@ export function useGetAgentTransactions(agentId: number, page = 1) {
     retryDelay: 1000,
   })
 }
+
+export function useGetAllTransactions(page = 1) {
+  const { getAuthToken } = useAuthStore()
+  
+  return useQuery({
+    queryKey: ['all-transactions', page],
+    queryFn: async () => {
+      try {
+        const response = await axios.get<TransactionsResponse>(
+          `/api/admin/transactions?page=${page}`,
+          {
+            headers: {
+              Authorization: getAuthToken(),
+              Accept: 'application/json',
+            },
+          }
+        )
+
+        return response.data
+      } catch (error) {
+        handleApiError(error)
+        throw error
+      }
+    },
+    refetchOnWindowFocus: false,
+    enabled: !!getAuthToken(),
+    retry: 3,
+    retryDelay: 1000,
+  })
+}

@@ -80,15 +80,27 @@ export async function GET(req: NextRequest) {
       }, { status: 200, headers })
       
     } else {
-      // For general admin transactions (no specific agent)
-      url = `${config.BASE_URL}/admin/transactions?${searchParams.toString()}`
-      console.log('Admin Transactions API - Fetching general transactions:', url)
+      // For all transactions (no specific agent) - use the general transactions endpoint
+      const page = searchParams.get('page') || '1'
+      const perPage = searchParams.get('per_page') || '15'
+      
+      url = `${config.BASE_URL}/transactions?page=${page}&per_page=${perPage}`
+      console.log('Admin Transactions API - Fetching all transactions:', url)
       
       const response = await axios.get(url, {
         headers: {
           Authorization: token,
           Accept: 'application/json',
         },
+      })
+      
+      console.log('Admin Transactions API - All transactions response:', {
+        status: response.status,
+        dataExists: !!response.data?.data,
+        dataLength: response.data?.data?.data?.length || 0,
+        totalRecords: response.data?.data?.total || 0,
+        currentPage: response.data?.data?.current_page || 0,
+        lastPage: response.data?.data?.last_page || 0
       })
       
       return NextResponse.json(response.data, { status: 200, headers })

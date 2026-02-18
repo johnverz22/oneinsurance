@@ -27,9 +27,20 @@ export async function GET(
   try {
     console.log('Admin Policy Details: Fetching policy details for transaction ID:', policyId)
     
+    // Check if merchant_transaction_id is provided in query params
+    const searchParams = req.nextUrl.searchParams
+    const merchantTxId = searchParams.get('merchant_transaction_id')
+    
     // The policyId is the transaction ID - fetch directly from the transaction endpoint
     const transactionId = policyId
-    const url = `${config.BASE_URL}/transactions/${transactionId}`
+    let url = `${config.BASE_URL}/transactions/${transactionId}`
+    
+    // If merchant_transaction_id is provided, add it as query parameter
+    if (merchantTxId) {
+      url += `?merchant_transaction_id=${merchantTxId}`
+      console.log('Admin Policy Details: Fetching transaction with merchant_transaction_id:', merchantTxId)
+    }
+    
     console.log('Admin Policy Details: Fetching transaction from:', url)
     
     const response = await axios.get(url, {
