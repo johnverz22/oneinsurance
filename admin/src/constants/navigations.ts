@@ -96,6 +96,7 @@ export const ADMIN_NAVIGATIONS = [
   { type: 'single', label: 'Agents', link: '/agents' },
   //{ type: 'single', label: 'Applicants', link: '/applicants' },
   { type: 'single', label: 'Payments', link: '/payments' },
+  { type: 'single', label: 'Transactions', link: '/transactions' },
   { type: 'single', label: 'Generate Report', link: '/generate-report' },
   //{ type: 'single', label: 'Line of Business', link: '/lobs' },
 ] satisfies NavigationItem[]
