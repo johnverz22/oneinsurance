@@ -208,8 +208,16 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
         }
       }
 
-      // Refresh data
-      await refetchAgentLobs()
+      // Refresh data and update selected agent LOBs
+      const refreshedData = await refetchAgentLobs()
+      
+      // Update the selected agent's LOBs immediately after refetch
+      if (refreshedData.data?.data?.data) {
+        const updatedAgentLobs = refreshedData.data.data.data.filter(
+          (lob: AgentLineOfBusiness) => lob.agent_id === selectedAgent.agent.id
+        )
+        setSelectedAgentLobs(updatedAgentLobs)
+      }
     } catch (error: any) {
       console.error('Error toggling LOB:', error)
       
