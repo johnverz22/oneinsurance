@@ -26,9 +26,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DateTimePicker } from '@/components/ui/date-time-picker'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { useGetAgents } from '@/app/data/queries/agents'
+import { useGetCommissionLogs } from '@/app/data/queries/commission-logs'
+import { useCreatePayout } from '@/app/data/mutations/payouts'
 import type { Agent } from '@/types/agents'
+import { format } from 'date-fns'
+import { CalendarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface ProcessPaymentDialogProps {
   open: boolean
@@ -44,8 +55,12 @@ export function ProcessPaymentDialog({
   const [selectedAgent, setSelectedAgent] = React.useState<Agent | null>(null)
   const [isAgentDropdownOpen, setIsAgentDropdownOpen] = React.useState(false)
   const [payoutMonth, setPayoutMonth] = React.useState<Date | undefined>()
+  const [payoutType, setPayoutType] = React.useState<string>('')
+  const [paymentMethod, setPaymentMethod] = React.useState<string>('')
 
-  // Debounce agent search input so we don't spam the API
+  const createPayoutMutation = useCreatePayout()
+
+  // Debounce agent search input
   React.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(agentSearch.trim())
@@ -63,17 +78,91 @@ export function ProcessPaymentDialog({
           search: debouncedSearch,
           per_page: 10,
         }
-      : {
-          per_page: 10,
+      : undefined
+  )
+
+  // Fetch commission logs for selected agent (unpaid commissions only)
+  const {
+    data: commissionLogsResponse,
+    isLoading: isLoadingCommissions,
+  } = useGetCommissionLogs(
+    selectedAgent
+      ? {
+          agent_id: selectedAgent.id,
+          is_included_in_payout: false,
+          per_page: 100,
         }
+      : undefined
   )
 
   const agents = agentsResponse?.data?.data ?? []
+  const commissionLogs = commissionLogsResponse?.data?.data ?? []
 
   const handleSelectAgent = (agent: Agent) => {
     setSelectedAgent(agent)
-    setAgentSearch(`${agent.first_name} ${agent.last_name}`)
+    const fullName = `${agent.first_name || ''} ${agent.last_name || ''}`.trim()
+    setAgentSearch(fullName || agent.email)
     setIsAgentDropdownOpen(false)
+  }
+
+  // Calculate total payout from commission logs
+  const totalPayout = commissionLogs.reduce(
+    (sum, log) => sum + (parseFloat(log.net_commission) || 0),
+    0
+  )
+
+  const handleSubmit = async () => {
+    // Validation
+    if (!selectedAgent) {
+      toast.error('Please select an agent')
+      return
+    }
+
+    if (!payoutMonth) {
+      toast.error('Please select a payout month')
+      return
+    }
+
+    if (!payoutType) {
+      toast.error('Please select a payout type')
+      return
+    }
+
+    if (!paymentMethod) {
+      toast.error('Please select a payment method')
+      return
+    }
+
+    if (commissionLogs.length === 0) {
+      toast.error('No unpaid commissions found for this agent')
+      return
+    }
+
+    try {
+      // Create payout with commission logs
+      await createPayoutMutation.mutateAsync({
+        agent_id: selectedAgent.id,
+        payout_amount: totalPayout,
+        payout_type: payoutType,
+        payment_method: paymentMethod,
+        payout_date: format(payoutMonth, 'yyyy-MM-dd'),
+        commission_log_ids: commissionLogs.map(log => log.id),
+        notes: `Payout for ${commissionLogs.length} commission(s)`,
+      })
+
+      toast.success('Payout approved and released successfully!')
+      onOpenChange(false)
+      
+      // Reset form
+      setSelectedAgent(null)
+      setAgentSearch('')
+      setPayoutMonth(undefined)
+      setPayoutType('')
+      setPaymentMethod('')
+    } catch (error) {
+      console.error('Error creating payout:', error)
+      toast.error('Failed to create payout. Please try again.')
+    }
   }
 
   return (
@@ -107,15 +196,17 @@ export function ProcessPaymentDialog({
                     value={agentSearch}
                     onChange={(e) => {
                       setAgentSearch(e.target.value)
+                      setSelectedAgent(null)
                       setIsAgentDropdownOpen(true)
                     }}
                     onFocus={() => {
-                      if (agents.length > 0) {
-                        setIsAgentDropdownOpen(true)
-                      }
+                      setIsAgentDropdownOpen(true)
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setIsAgentDropdownOpen(false), 200)
                     }}
                   />
-                  {isAgentDropdownOpen && agentSearch && (
+                  {isAgentDropdownOpen && (
                     <div className="bg-popover absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border shadow-md">
                       {isAgentsLoading ? (
                         <div className="px-3 py-2 text-sm text-muted-foreground">
@@ -123,7 +214,7 @@ export function ProcessPaymentDialog({
                         </div>
                       ) : agents.length === 0 ? (
                         <div className="px-3 py-2 text-sm text-muted-foreground">
-                          No agents found.
+                          {agentSearch ? 'No agents found.' : 'Start typing to search agents...'}
                         </div>
                       ) : (
                         agents.map((agent) => (
@@ -150,16 +241,36 @@ export function ProcessPaymentDialog({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payout-month">Payout Month</Label>
-                <DateTimePicker
-                  variant="date"
-                  mode="single"
-                  value={payoutMonth}
-                  onChange={(date) => setPayoutMonth(date as Date)}
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'w-full justify-start text-left font-normal rounded-full',
+                        !payoutMonth && 'text-muted-foreground'
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {payoutMonth ? (
+                        format(payoutMonth, 'PPP')
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={payoutMonth}
+                      onSelect={setPayoutMonth}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payout-type">Payout Type</Label>
-                <Select>
+                <Select value={payoutType} onValueChange={setPayoutType}>
                   <SelectTrigger
                     id="payout-type"
                     className="rounded-full"
@@ -175,7 +286,7 @@ export function ProcessPaymentDialog({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="payment-method">Payment Method</Label>
-                <Select>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger
                     id="payment-method"
                     className="rounded-full"
@@ -197,45 +308,73 @@ export function ProcessPaymentDialog({
             <h3 className="mb-4 text-base font-semibold">
               Commission Breakdown
             </h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Policy No./Certificate No.</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Premium Amount</TableHead>
-                  <TableHead>Commission %</TableHead>
-                  <TableHead>Commission Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell>LI-10239</TableCell>
-                  <TableCell>Life Insurance</TableCell>
-                  <TableCell>₱ 25,000</TableCell>
-                  <TableCell>10%</TableCell>
-                  <TableCell>₱ 2,500</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>TI-10229</TableCell>
-                  <TableCell>Travel Insurance</TableCell>
-                  <TableCell>₱ 18,000</TableCell>
-                  <TableCell>8%</TableCell>
-                  <TableCell>₱ 1,480</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            {isLoadingCommissions ? (
+              <div className="py-8 text-center text-muted-foreground">
+                Loading commission logs...
+              </div>
+            ) : commissionLogs.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground">
+                {selectedAgent
+                  ? 'No unpaid commissions found for this agent.'
+                  : 'Select an agent to view commission logs.'}
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Premium Amount</TableHead>
+                    <TableHead>Commission %</TableHead>
+                    <TableHead>Commission Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {commissionLogs.map((log) => (
+                    <TableRow key={log.id}>
+                      <TableCell>
+                        {log.transaction?.merchant_transaction_id || 'N/A'}
+                      </TableCell>
+                      <TableCell>{log.product?.name || 'N/A'}</TableCell>
+                      <TableCell>
+                        ₱ {(parseFloat(log.product_price) || 0).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                      <TableCell>{parseFloat(log.commission_rate) || 0}%</TableCell>
+                      <TableCell>
+                        ₱ {(parseFloat(log.net_commission) || 0).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
 
           {/* Total Payout */}
           <div className="flex items-center justify-between border-t pt-4">
             <div className="text-lg font-semibold">Total Payout</div>
-            <div className="text-2xl font-bold text-blue-600">₱ 3,980.00</div>
+            <div className="text-2xl font-bold text-blue-600">
+              ₱ {totalPayout.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
           </div>
 
           {/* Action Button */}
           <div className="flex justify-end">
-            <Button className="w-full rounded-full bg-green-600 text-white hover:bg-green-700 sm:w-auto">
-              Approve and Release Payout
+            <Button
+              onClick={handleSubmit}
+              disabled={createPayoutMutation.isPending}
+              className="w-full rounded-full bg-green-600 text-white hover:bg-green-700 sm:w-auto"
+            >
+              {createPayoutMutation.isPending ? 'Processing...' : 'Approve and Release Payout'}
             </Button>
           </div>
         </div>

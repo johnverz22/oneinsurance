@@ -5,7 +5,7 @@ import {
   LineOfBusinessResponse,
 } from '@/types/line-of-business'
 import { handleApiError } from '@/utils/handle-api-error'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
 export function useCreateLineOfBusiness() {
@@ -83,6 +83,7 @@ export function useDeleteLineOfBusiness() {
 
 export function useAssignLobToAgent() {
   const { accessToken } = useAuthStore()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationKey: ['assign-lob-to-agent'],
@@ -95,6 +96,11 @@ export function useAssignLobToAgent() {
         },
       })
       return response.data
+    },
+    onSuccess: () => {
+      // Invalidate the correct query keys
+      queryClient.invalidateQueries({ queryKey: ['all-agent-lobs'] })
+      queryClient.invalidateQueries({ queryKey: ['agent-lobs'] })
     },
   })
 }
@@ -129,6 +135,7 @@ export function useUpdateAgentLob() {
 
 export function useDeleteAgentLob() {
   const { accessToken } = useAuthStore()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationKey: ['delete-agent-lob'],
@@ -141,6 +148,11 @@ export function useDeleteAgentLob() {
         },
       })
       return response.data
+    },
+    onSuccess: () => {
+      // Invalidate the correct query keys
+      queryClient.invalidateQueries({ queryKey: ['all-agent-lobs'] })
+      queryClient.invalidateQueries({ queryKey: ['agent-lobs'] })
     },
   })
 }
