@@ -57,10 +57,7 @@ export default function GenerateReportPage() {
     useGetCommissionLogs({
       page: currentPage,
       per_page: 15,
-      agent_id: selectedAgent !== 'all' ? selectedAgent : undefined,
-      product_id: selectedProduct !== 'all' ? selectedProduct : undefined,
-      period_start: dateFrom || undefined,
-      period_end: dateTo || undefined,
+      agent_id: selectedAgent !== 'all' ? Number(selectedAgent) : undefined,
     })
 
   const reportData = commissionLogsData?.data?.data || []
@@ -154,9 +151,9 @@ export default function GenerateReportPage() {
 
     // Format data for CSV export
     const formattedData = reportData.map((row) => ({
-      'Agent Name': `${row.agent.first_name} ${row.agent.last_name}`,
-      Product: row.product.name,
-      Provider: row.provider.name,
+      'Agent ID': row.agent_id || 'N/A',
+      Product: row.product?.name || 'N/A',
+      Provider: row.provider?.name || 'N/A',
       Cases: row.case_count,
       'Total Premium': parseFloat(row.total_net_premium).toFixed(2),
       'Product Price': parseFloat(row.product_price).toFixed(2),

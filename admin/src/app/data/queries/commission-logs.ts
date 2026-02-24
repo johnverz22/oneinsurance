@@ -1,57 +1,99 @@
 import { useAuthStore } from '@/store/auth-store'
-import { CommissionLogsPaginatedResponse } from '@/types/commission-logs'
-import { handleApiError } from '@/utils/handle-api-error'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
+import { handleApiError } from '@/utils/handle-api-error'
 
-interface CommissionLogsParams {
-  page?: number
-  per_page?: number
-  sort_by?: 'created_at' | 'net_commission' | 'period_start'
-  sort_order?: 'asc' | 'desc'
-  agent_id?: string
-  product_id?: string
-  provider_id?: string
-  period_start?: string
-  period_end?: string
-  min_commission?: number
-  max_commission?: number
+export interface CommissionLog {
+  id: number
+  agent_id: number
+  product_id: number
+  provider_id: number
+  transaction_id: number
+  case_count: number
+  total_net_premium: string
+  product_price: string
+  commission_rate: string
+  gross_commission: string
+  vat_percentage: string
+  vat_amount: string
+  withholding_tax_percentage: string
+  withholding_tax_amount: string
+  net_commission: string
+  base_commission: string
+  agent_commission: string
+  agent_overrider_commission: string
+  agent_admin_commission: string
+  agent_admin_overrider_commission: string
+  referral_commission: string
+  referral_overrider_commission: string
+  referral_admin_commission: string
+  referral_admin_overrider_commission: string
+  is_included_in_payout: boolean
+  payout_id: number | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+  product?: {
+    id: number
+    name: string
+    description?: string
+  }
+  provider?: {
+    id: number
+    name: string
+  }
+  transaction?: {
+    id: number
+    merchant_transaction_id: string
+  }
 }
 
-export function useGetCommissionLogs(params: CommissionLogsParams = {}) {
+export interface CommissionLogsResponse {
+  success: boolean
+  message: string
+  data: {
+    data: CommissionLog[]
+    total: number
+    current_page: number
+    last_page: number
+    per_page: number
+  }
+}
+
+interface GetCommissionLogsParams {
+  agent_id?: number
+  page?: number
+  per_page?: number
+  is_included_in_payout?: boolean
+}
+
+export function useGetCommissionLogs(params?: GetCommissionLogsParams) {
   const { accessToken } = useAuthStore()
+  
+  if (!params) {
+    return useQuery({
+      queryKey: ['commission-logs'],
+      queryFn: async () => null,
+      enabled: false,
+    })
+  }
+
+  const { agent_id, page = 1, per_page = 50, is_included_in_payout } = params
 
   return useQuery({
-    queryKey: ['commission-logs', params],
+    queryKey: ['commission-logs', agent_id, page, per_page, is_included_in_payout],
     queryFn: async () => {
       const searchParams = new URLSearchParams()
-
-      if (params.page) searchParams.append('page', params.page.toString())
-      else searchParams.append('page', '1')
-      if (params.per_page)
-        searchParams.append('per_page', params.per_page.toString())
-      else searchParams.append('per_page', '15')
-      if (params.sort_by) searchParams.append('sort_by', params.sort_by)
-      else searchParams.append('sort_by', 'created_at')
-      if (params.sort_order)
-        searchParams.append('sort_order', params.sort_order)
-      else searchParams.append('sort_order', 'desc')
-      if (params.agent_id) searchParams.append('agent_id', params.agent_id)
-      if (params.product_id)
-        searchParams.append('product_id', params.product_id)
-      if (params.provider_id)
-        searchParams.append('provider_id', params.provider_id)
-      if (params.period_start)
-        searchParams.append('period_start', params.period_start)
-      if (params.period_end)
-        searchParams.append('period_end', params.period_end)
-      if (params.min_commission)
-        searchParams.append('min_commission', params.min_commission.toString())
-      if (params.max_commission)
-        searchParams.append('max_commission', params.max_commission.toString())
+      if (agent_id) searchParams.append('agent_id', agent_id.toString())
+      searchParams.append('page', page.toString())
+      searchParams.append('per_page', per_page.toString())
+      if (is_included_in_payout !== undefined) {
+        searchParams.append('is_included_in_payout', is_included_in_payout.toString())
+      }
 
       try {
-        const response = await axios.get<CommissionLogsPaginatedResponse>(
+        const response = await axios.get<CommissionLogsResponse>(
           `/api/admin/commission-logs?${searchParams.toString()}`,
           {
             headers: {
@@ -60,16 +102,14 @@ export function useGetCommissionLogs(params: CommissionLogsParams = {}) {
           }
         )
 
-        if (!response.status.toString().startsWith('2')) {
-          throw new Error('Failed to fetch commission logs')
-        }
-
         return response.data
       } catch (error) {
         handleApiError(error)
+        throw error
       }
     },
-    enabled: !!accessToken,
     refetchOnWindowFocus: false,
+    enabled: !!accessToken && !!agent_id,
+    staleTime: 5 * 60 * 1000,
   })
 }
