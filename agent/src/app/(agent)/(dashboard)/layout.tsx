@@ -22,8 +22,8 @@ export default function DashboardLayout({
   const TABS = [
     // { value: '/', label: 'Overview' },
     { value: '/my-sales', label: 'My Sales' },
-    // { value: '/team-sales', label: 'Team Sales' },
-    // { value: '/overriders', label: 'Overriders' },
+    { value: '/team-sales', label: 'Team Sales' },
+    { value: '/overriders', label: 'Overriders' },
     { value: '/products', label: 'My Products' },
     { value: '/referrals', label: 'Referral Links' },
     { value: '/commissions', label: 'Commissions' },

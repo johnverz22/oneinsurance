@@ -75,6 +75,14 @@ export const AGENT_NAVIGATIONS = [
     label: 'Finance',
     items: [
       {
+        title: 'My Sales',
+        link: '/my-sales',
+      },
+      {
+        title: 'Overriders',
+        link: '/overriders',
+      },
+      {
         title: 'Commissions',
         link: '/commissions',
       },

@@ -1,7 +1,7 @@
 export type Overrider = {
   name: string
   code: string
-  status: 'Active' | 'Inactive'
+  status: 'Active' | 'Inactive' | 'Training'
   rank: string
   recruited: string
   lastSale: string
