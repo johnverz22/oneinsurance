@@ -102,7 +102,17 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
   const isDataLoading = isSearchMode ? isSearching : isFetching || agentsLoading
   
 
-  const { data: agentLobs, refetch: refetchAgentLobs } = useGetAllAgentLineOfBusiness()
+  const { data: agentLobs, refetch: refetchAgentLobs } = useGetAllAgentLineOfBusiness({
+    per_page: 1000, // Fetch all agent LOB assignments
+  })
+  
+  // Log the raw agentLobs data
+  useEffect(() => {
+    if (agentLobs) {
+      console.log('Raw agentLobs data:', agentLobs)
+      console.log('agentLobs.data?.data:', agentLobs.data?.data)
+    }
+  }, [agentLobs])
   const { data: allLobs } = useGetLineOfBusinessList({
     page: 1,
     per_page: 100,
@@ -156,9 +166,15 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
   // Update selected agent LOBs when agentLobs data changes
   useEffect(() => {
     if (selectedAgent && agentLobs?.data?.data) {
+      console.log('useEffect triggered - updating selectedAgentLobs')
+      console.log('agentLobs.data.data:', agentLobs.data.data)
+      console.log('selectedAgent.agent.id:', selectedAgent.agent.id)
+      
       const agentLobAssignments = agentLobs.data.data.filter(
         (lob) => lob.agent_id === selectedAgent.agent.id
       )
+      
+      console.log('Filtered agentLobAssignments:', agentLobAssignments)
       setSelectedAgentLobs(agentLobAssignments)
     }
   }, [agentLobs, selectedAgent])
@@ -175,7 +191,21 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
   }
 
   const isLobAssigned = (lobId: number) => {
-    return selectedAgentLobs.some((aLob) => aLob.lob_id === lobId)
+    console.log('isLobAssigned check:', { 
+      lobId, 
+      lobIdType: typeof lobId,
+      selectedAgentLobs: selectedAgentLobs.map(aLob => ({
+        id: aLob.id,
+        lob_id: aLob.lob_id,
+        lob_id_type: typeof aLob.lob_id,
+        matches: aLob.lob_id === lobId,
+        strictMatch: aLob.lob_id === lobId,
+        looseMatch: aLob.lob_id == lobId,
+      }))
+    })
+    const assigned = selectedAgentLobs.some((aLob) => aLob.lob_id === lobId)
+    console.log('Result:', assigned)
+    return assigned
   }
 
   const getAgentLobId = (lobId: number) => {
@@ -188,36 +218,37 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
       return
     }
 
+    console.log('Toggle LOB:', { lobId, isChecked, agentId: selectedAgent.agent.id })
+
     try {
       if (isChecked) {
         // Assign LOB
-        await assignLobMutation.mutateAsync({
+        console.log('Assigning LOB:', { agent_id: selectedAgent.agent.id, lob_id: lobId, status: 'active' })
+        const result = await assignLobMutation.mutateAsync({
           agent_id: selectedAgent.agent.id,
           lob_id: lobId,
           status: 'active',
         })
+        console.log('Assignment result:', result)
         toast.success('Line of business assigned successfully')
       } else {
         // Remove LOB
         const agentLobId = getAgentLobId(lobId)
+        console.log('Removing LOB:', { agentLobId, lobId })
         if (agentLobId) {
-          await deleteLobMutation.mutateAsync(agentLobId)
+          const result = await deleteLobMutation.mutateAsync(agentLobId)
+          console.log('Removal result:', result)
           toast.success('Line of business removed successfully')
         } else {
           console.error('Agent LOB ID not found')
         }
       }
 
-      // Refresh data and update selected agent LOBs
-      const refreshedData = await refetchAgentLobs()
-      
-      // Update the selected agent's LOBs immediately after refetch
-      if (refreshedData.data?.data?.data) {
-        const updatedAgentLobs = refreshedData.data.data.data.filter(
-          (lob: AgentLineOfBusiness) => lob.agent_id === selectedAgent.agent.id
-        )
-        setSelectedAgentLobs(updatedAgentLobs)
-      }
+      // The query will be automatically invalidated by the mutation's onSuccess
+      // Just refetch to get the latest data
+      console.log('Refetching agent LOBs...')
+      const refetchResult = await refetchAgentLobs()
+      console.log('Refetch result:', refetchResult)
     } catch (error: any) {
       console.error('Error toggling LOB:', error)
       
@@ -442,6 +473,8 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                         const isLoading =
                           assignLobMutation.isPending ||
                           deleteLobMutation.isPending
+                        
+                        console.log('LOB:', { id: lob.id, name: lob.name, isAssigned })
                         
                         return (
                           <div

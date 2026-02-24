@@ -68,6 +68,10 @@ const commisionConfigurationSchema = z.object({
     .min(0, 'Withholding tax must be at least 0%')
     .max(100, 'Withholding tax cannot exceed 100%'),
   isWithVAT: z.boolean(),
+  returnVAT: z.boolean(),
+  voidVAT: z.boolean(),
+  applyGrossVAT: z.boolean(),
+  grossVATRate: z.number().min(0).max(100),
   effectivity_date: z.string().min(1, 'Effectivity date is required'),
 })
 type CommisionConfigurationFormData = z.infer<
@@ -120,6 +124,10 @@ export default function ProductCommisionConfiguration({
       vat: Number(selectedCommissionConfig?.vat) ?? 0,
       witholding_tax: Number(selectedCommissionConfig?.witholding_tax) ?? 0,
       isWithVAT: selectedCommissionConfig?.isWithVAT ?? false,
+      returnVAT: false,
+      voidVAT: false,
+      applyGrossVAT: false,
+      grossVATRate: 0,
       effectivity_date: selectedCommissionConfig?.effectivity_date 
         ? selectedCommissionConfig.effectivity_date.split('T')[0] 
         : new Date().toISOString().split('T')[0],
@@ -206,6 +214,10 @@ export default function ProductCommisionConfiguration({
         vat: Number(selectedCommissionConfig.vat) ?? 0,
         witholding_tax: Number(selectedCommissionConfig.witholding_tax) ?? 0,
         isWithVAT: selectedCommissionConfig.isWithVAT ?? false,
+        returnVAT: false,
+        voidVAT: false,
+        applyGrossVAT: false,
+        grossVATRate: 0,
         effectivity_date: selectedCommissionConfig.effectivity_date.split('T')[0],
       })
     }
@@ -337,31 +349,6 @@ export default function ProductCommisionConfiguration({
                         )
                       }}
                     />
-                    
-                    {/* Enable VAT Checkbox */}
-                    <form.Field
-                      name="isWithVAT"
-                      children={(field) => {
-                        return (
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id={field.name}
-                              checked={field.state.value}
-                              onCheckedChange={(checked) => {
-                                field.handleChange(checked === true)
-                              }}
-                            />
-                            <label
-                              htmlFor={field.name}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              Enable VAT
-                            </label>
-                            <FieldInfo field={field} />
-                          </div>
-                        )
-                      }}
-                    />
                   </div>
 
                   {/* Withholding Tax */}
@@ -390,6 +377,150 @@ export default function ProductCommisionConfiguration({
                               <span className="text-sm text-gray-600">%</span>
                             </div>
                             <FieldInfo field={field} />
+                          </div>
+                        )
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* VAT Options */}
+                <div className="mt-6 space-y-3">
+                  <form.Field
+                    name="isWithVAT"
+                    children={(field) => {
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="deduct-vat"
+                            checked={field.state.value}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                field.handleChange(true)
+                                form.setFieldValue('returnVAT', false)
+                                form.setFieldValue('voidVAT', false)
+                                form.setFieldValue('applyGrossVAT', false)
+                              } else {
+                                field.handleChange(false)
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor="deduct-vat"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Deduct VAT
+                          </label>
+                        </div>
+                      )
+                    }}
+                  />
+
+                  <form.Field
+                    name="returnVAT"
+                    children={(field) => {
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="return-vat"
+                            checked={field.state.value}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                field.handleChange(true)
+                                form.setFieldValue('isWithVAT', false)
+                                form.setFieldValue('voidVAT', false)
+                                form.setFieldValue('applyGrossVAT', false)
+                              } else {
+                                field.handleChange(false)
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor="return-vat"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Return VAT
+                          </label>
+                        </div>
+                      )
+                    }}
+                  />
+
+                  <form.Field
+                    name="voidVAT"
+                    children={(field) => {
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="void"
+                            checked={field.state.value}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                field.handleChange(true)
+                                form.setFieldValue('isWithVAT', false)
+                                form.setFieldValue('returnVAT', false)
+                                form.setFieldValue('applyGrossVAT', false)
+                              } else {
+                                field.handleChange(false)
+                              }
+                            }}
+                          />
+                          <label
+                            htmlFor="void"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Void
+                          </label>
+                        </div>
+                      )
+                    }}
+                  />
+
+                  <div className="space-y-2">
+                    <form.Field
+                      name="applyGrossVAT"
+                      children={(field) => {
+                        return (
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="apply-gross-vat"
+                              checked={field.state.value}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  field.handleChange(true)
+                                  form.setFieldValue('isWithVAT', false)
+                                  form.setFieldValue('returnVAT', false)
+                                  form.setFieldValue('voidVAT', false)
+                                } else {
+                                  field.handleChange(false)
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor="apply-gross-vat"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              Apply gross VAT
+                            </label>
+                          </div>
+                        )
+                      }}
+                    />
+                    <form.Field
+                      name="grossVATRate"
+                      children={(field) => {
+                        return (
+                          <div className="ml-6">
+                            <Label className="text-sm text-gray-600">VAT factor (%)</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="mt-1 h-10 w-48"
+                              step="0.01"
+                              value={field.state.value}
+                              onChange={(e) => field.handleChange(Number(e.target.value))}
+                              disabled={!form.getFieldValue('applyGrossVAT')}
+                            />
                           </div>
                         )
                       }}
@@ -780,36 +911,47 @@ export default function ProductCommisionConfiguration({
                 const baseCommissionTotal =
                   (field.values.base_commission / 100) * saleAmount
                 
-                // VAT and Withholding Tax calculations
-                const vatAmount = baseCommissionTotal * (field.values.vat / 100)
-                const withholdingTaxAmount = baseCommissionTotal * (field.values.witholding_tax / 100)
-                
-                // Net commission calculation based on isWithVAT
-                let netCommission
-                if (field.values.isWithVAT) {
-                  netCommission = baseCommissionTotal - vatAmount - withholdingTaxAmount
-                } else {
-                  netCommission = baseCommissionTotal + vatAmount - withholdingTaxAmount
-                }
-                
                 // Agent-based calculations
                 // Step 1: Calculate gross commission for Agent only
                 const agentGrossCommission = saleAmount * (field.values.agent_commission / 100)
                 
-                // Step 2: Calculate VAT amount for Agent (based on gross)
-                const agentVatAmount = agentGrossCommission * (field.values.vat / 100)
+                // Step 2: Apply VAT logic based on selected option
+                let agentVatAmount = 0
+                let agentWhtAmount = 0
+                let agentNetCommission = 0
+                let agentGrossAfterVatFactor = agentGrossCommission
                 
-                // Step 3: Calculate WHT amount for Agent (based on gross, not after VAT!)
-                const agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
-                
-                // Step 4: Calculate net commission based on isWithVAT flag
-                let agentNetCommission
                 if (field.values.isWithVAT) {
-                  // VAT enabled: deduct both VAT and WHT
-                  agentNetCommission = agentGrossCommission - agentVatAmount - agentWhtAmount
+                  // DEDUCT VAT: net = (gross - VAT) - WHT
+                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
+                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
+                  agentNetCommission = (agentGrossCommission - agentVatAmount) - agentWhtAmount
+                } else if (field.values.voidVAT) {
+                  // VOID: net = gross - WHT (VAT is ignored)
+                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
+                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
+                  agentNetCommission = agentGrossCommission - agentWhtAmount
+                } else if (field.values.returnVAT) {
+                  // RETURN VAT: net = (gross + VAT) - WHT
+                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
+                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
+                  agentNetCommission = (agentGrossCommission + agentVatAmount) - agentWhtAmount
+                } else if (field.values.applyGrossVAT && field.values.grossVATRate > 0) {
+                  // APPLY GROSS VAT: 
+                  // 1. grossAfterVatFactor = gross / vatFactor
+                  // 2. VAT = grossAfterVatFactor * vat%
+                  // 3. WHT = grossAfterVatFactor * wht%
+                  // 4. net = gross - WHT
+                  const vatFactor = 1 + (field.values.grossVATRate / 100)
+                  agentGrossAfterVatFactor = agentGrossCommission / vatFactor
+                  agentVatAmount = agentGrossAfterVatFactor * (field.values.vat / 100)
+                  agentWhtAmount = agentGrossAfterVatFactor * (field.values.witholding_tax / 100)
+                  agentNetCommission = agentGrossCommission - agentWhtAmount
                 } else {
-                  // VAT disabled: add VAT, deduct WHT
-                  agentNetCommission = agentGrossCommission + agentVatAmount - agentWhtAmount
+                  // No VAT option selected: net = gross - WHT
+                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
+                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
+                  agentNetCommission = agentGrossCommission - agentWhtAmount
                 }
                 
                 // Calculate overrider (simple percentage, no VAT/WHT)
@@ -829,20 +971,43 @@ export default function ProductCommisionConfiguration({
                 // Step 1: Calculate gross commission for Referral only
                 const referralGrossCommission = saleAmount * (field.values.referral_commission / 100)
                 
-                // Step 2: Calculate VAT amount for Referral (based on gross)
-                const referralVatAmount = referralGrossCommission * (field.values.vat / 100)
+                // Step 2: Apply VAT logic based on selected option
+                let referralVatAmount = 0
+                let referralWhtAmount = 0
+                let referralNetCommission = 0
+                let referralGrossAfterVatFactor = referralGrossCommission
                 
-                // Step 3: Calculate WHT amount for Referral (based on gross, not after VAT!)
-                const referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
-                
-                // Step 4: Calculate net commission based on isWithVAT flag
-                let referralNetCommission
                 if (field.values.isWithVAT) {
-                  // VAT enabled: deduct both VAT and WHT
-                  referralNetCommission = referralGrossCommission - referralVatAmount - referralWhtAmount
+                  // DEDUCT VAT: net = (gross - VAT) - WHT
+                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
+                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
+                  referralNetCommission = (referralGrossCommission - referralVatAmount) - referralWhtAmount
+                } else if (field.values.voidVAT) {
+                  // VOID: net = gross - WHT (VAT is ignored)
+                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
+                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
+                  referralNetCommission = referralGrossCommission - referralWhtAmount
+                } else if (field.values.returnVAT) {
+                  // RETURN VAT: net = (gross + VAT) - WHT
+                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
+                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
+                  referralNetCommission = (referralGrossCommission + referralVatAmount) - referralWhtAmount
+                } else if (field.values.applyGrossVAT && field.values.grossVATRate > 0) {
+                  // APPLY GROSS VAT: 
+                  // 1. grossAfterVatFactor = gross / vatFactor
+                  // 2. VAT = grossAfterVatFactor * vat%
+                  // 3. WHT = grossAfterVatFactor * wht%
+                  // 4. net = gross - WHT
+                  const vatFactor = 1 + (field.values.grossVATRate / 100)
+                  referralGrossAfterVatFactor = referralGrossCommission / vatFactor
+                  referralVatAmount = referralGrossAfterVatFactor * (field.values.vat / 100)
+                  referralWhtAmount = referralGrossAfterVatFactor * (field.values.witholding_tax / 100)
+                  referralNetCommission = referralGrossCommission - referralWhtAmount
                 } else {
-                  // VAT disabled: add VAT, deduct WHT
-                  referralNetCommission = referralGrossCommission + referralVatAmount - referralWhtAmount
+                  // No VAT option selected: net = gross - WHT
+                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
+                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
+                  referralNetCommission = referralGrossCommission - referralWhtAmount
                 }
                 
                 // Calculate overrider (simple percentage, no VAT/WHT)
@@ -922,9 +1087,24 @@ export default function ProductCommisionConfiguration({
                             <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2">
                                 <span>Value-Added Tax ({field.values.vat}%)</span>
-                                {field.values.isWithVAT && (
+                                {field.values.vat > 0 && field.values.isWithVAT && (
                                   <Badge variant="default" className="bg-green-600 text-white text-xs">
-                                    Enabled
+                                    Deduct VAT
+                                  </Badge>
+                                )}
+                                {field.values.vat > 0 && field.values.returnVAT && (
+                                  <Badge variant="default" className="bg-blue-600 text-white text-xs">
+                                    Return VAT
+                                  </Badge>
+                                )}
+                                {field.values.vat > 0 && field.values.voidVAT && (
+                                  <Badge variant="default" className="bg-gray-600 text-white text-xs">
+                                    Void
+                                  </Badge>
+                                )}
+                                {field.values.applyGrossVAT && field.values.grossVATRate > 0 && (
+                                  <Badge variant="default" className="bg-purple-600 text-white text-xs">
+                                    Gross VAT ({field.values.grossVATRate}%)
                                   </Badge>
                                 )}
                               </div>
@@ -1005,9 +1185,24 @@ export default function ProductCommisionConfiguration({
                             <div className="flex items-center justify-between text-sm">
                               <div className="flex items-center gap-2">
                                 <span>Value-Added Tax ({field.values.vat}%)</span>
-                                {field.values.isWithVAT && (
+                                {field.values.vat > 0 && field.values.isWithVAT && (
                                   <Badge variant="default" className="bg-green-600 text-white text-xs">
-                                    Enabled
+                                    Deduct VAT
+                                  </Badge>
+                                )}
+                                {field.values.vat > 0 && field.values.returnVAT && (
+                                  <Badge variant="default" className="bg-blue-600 text-white text-xs">
+                                    Return VAT
+                                  </Badge>
+                                )}
+                                {field.values.vat > 0 && field.values.voidVAT && (
+                                  <Badge variant="default" className="bg-gray-600 text-white text-xs">
+                                    Void
+                                  </Badge>
+                                )}
+                                {field.values.applyGrossVAT && field.values.grossVATRate > 0 && (
+                                  <Badge variant="default" className="bg-purple-600 text-white text-xs">
+                                    Gross VAT ({field.values.grossVATRate}%)
                                   </Badge>
                                 )}
                               </div>
