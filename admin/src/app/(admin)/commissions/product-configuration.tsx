@@ -16,6 +16,7 @@ import React, { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import z from 'zod'
 import { Calendar } from 'lucide-react'
+import { getVatOptionFromCheckboxes } from '@/utils/vat-options-mapper'
 
 interface ProductCommisionConfigurationProps {
   selectedCommissionConfig: CommissionConfig | null
@@ -81,6 +82,14 @@ type CommisionConfigurationFormData = z.infer<
 function mapFormDataToCommissionConfigUpdateRequest(
   formData: CommisionConfigurationFormData
 ): CommissionConfigUpdateRequest {
+  // Determine vatOptions based on checkbox states
+  const vatOptions = getVatOptionFromCheckboxes({
+    isWithVAT: formData.isWithVAT,
+    returnVAT: formData.returnVAT,
+    voidVAT: formData.voidVAT,
+    applyGrossVAT: formData.applyGrossVAT,
+  })
+
   return {
     base_commission: formData.base_commission,
     agent_commission: formData.agent_commission,
@@ -93,7 +102,9 @@ function mapFormDataToCommissionConfigUpdateRequest(
     referral_admin_overrider_commission: formData.referral_admin_overrider_commission,
     vat: formData.vat,
     witholding_tax: formData.witholding_tax,
+    gross_vat: formData.grossVATRate,
     isWithVAT: formData.isWithVAT,
+    vatOptions: vatOptions,
     effectivity_date: formData.effectivity_date,
     status: 'active',
   } satisfies CommissionConfigUpdateRequest
@@ -927,7 +938,7 @@ export default function ProductCommisionConfiguration({
                   agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
                   agentNetCommission = (agentGrossCommission - agentVatAmount) - agentWhtAmount
                 } else if (field.values.voidVAT) {
-                  // VOID: net = gross - WHT (VAT is ignored)
+                  // VOID: net = gross - WHT (VAT is voided/ignored)
                   agentVatAmount = agentGrossCommission * (field.values.vat / 100)
                   agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
                   agentNetCommission = agentGrossCommission - agentWhtAmount
@@ -983,7 +994,7 @@ export default function ProductCommisionConfiguration({
                   referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
                   referralNetCommission = (referralGrossCommission - referralVatAmount) - referralWhtAmount
                 } else if (field.values.voidVAT) {
-                  // VOID: net = gross - WHT (VAT is ignored)
+                  // VOID: net = gross - WHT (VAT is voided/ignored)
                   referralVatAmount = referralGrossCommission * (field.values.vat / 100)
                   referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
                   referralNetCommission = referralGrossCommission - referralWhtAmount
@@ -1108,7 +1119,9 @@ export default function ProductCommisionConfiguration({
                                   </Badge>
                                 )}
                               </div>
-                              <span>{field.values.isWithVAT ? '-' : '+'} {agentVatAmount.toFixed(2)}</span>
+                              <span className={field.values.voidVAT ? 'line-through' : ''}>
+                                {field.values.isWithVAT ? '-' : '+'} {Math.abs(agentVatAmount).toFixed(2)}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <span>Withholding Tax ({field.values.witholding_tax}%)</span>
@@ -1206,7 +1219,9 @@ export default function ProductCommisionConfiguration({
                                   </Badge>
                                 )}
                               </div>
-                              <span>{field.values.isWithVAT ? '-' : '+'} {referralVatAmount.toFixed(2)}</span>
+                              <span className={field.values.voidVAT ? 'line-through' : ''}>
+                                {field.values.isWithVAT ? '-' : '+'} {Math.abs(referralVatAmount).toFixed(2)}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <span>Withholding Tax ({field.values.witholding_tax}%)</span>
