@@ -3,6 +3,10 @@ import { ProductSchema } from './products'
 import { createPaginatedResponseType } from '@/utils/create-paginated-response-type'
 import { createResponseSchema } from './base-api-response'
 
+// VAT Options Enum
+export const VatOptionsEnum = z.enum(['DEDUCT', 'RETURN', 'VOID', 'WITH_GROSS_VAT'])
+export type VatOptions = z.infer<typeof VatOptionsEnum>
+
 export const CommissionConfigSchema = z.object({
   id: z.number(),
   product_id: z.number(),
@@ -24,7 +28,9 @@ export const CommissionConfigSchema = z.object({
   referral_admin_overrider_commission: z.string().optional(),
   vat: z.string().optional(),
   witholding_tax: z.string().optional(),
+  gross_vat: z.string().optional(),
   isWithVAT: z.boolean().optional(),
+  vatOptions: VatOptionsEnum.optional(),
   effectivity_date: z.string(),
   status: z.string(),
   created_at: z.string(),
@@ -53,7 +59,9 @@ export const CommissionConfigUpdateRequestSchema = z.object({
   referral_admin_overrider_commission: z.number(),
   vat: z.number(),
   witholding_tax: z.number(),
-  isWithVAT: z.boolean(),
+  gross_vat: z.number().optional(),
+  isWithVAT: z.boolean().optional(),
+  vatOptions: VatOptionsEnum,
   effectivity_date: z.string(),
   status: z.string(),
 })
@@ -72,12 +80,17 @@ export const CreateCommitionConfigRequestSchema = z.object({
   product_id: z.number(),
   base_commission: z.number(),
   agent_commission: z.number(),
-  agent_overriders_commission: z.number(),
-  ifrc_admin: z.number(),
-  ifrc_overrider_commission: z.number(),
-  ifrc_digitech: z.number(),
-  digitech_referral: z.number(),
-  digitech_overriders: z.number(),
+  agent_overrider_commission: z.number(),
+  agent_admin_commission: z.number(),
+  agent_admin_overrider_commission: z.number(),
+  referral_commission: z.number(),
+  referral_overrider_commission: z.number(),
+  referral_admin_commission: z.number(),
+  referral_admin_overrider_commission: z.number(),
+  vat: z.number(),
+  witholding_tax: z.number(),
+  gross_vat: z.number().optional(),
+  vatOptions: VatOptionsEnum,
   effectivity_date: z.string(),
   status: z.string(),
 })
