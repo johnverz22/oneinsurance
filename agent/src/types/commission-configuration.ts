@@ -1,5 +1,9 @@
 import { z } from 'zod'
 
+// VAT Options Enum
+export const VatOptionsEnum = z.enum(['DEDUCT', 'RETURN', 'VOID', 'WITH_GROSS_VAT'])
+export type VatOptions = z.infer<typeof VatOptionsEnum>
+
 // Commission Configuration Schema
 export const CommissionConfigurationSchema = z.object({
   id: z.number(),
@@ -15,7 +19,9 @@ export const CommissionConfigurationSchema = z.object({
   referral_admin_overrider_commission: z.number(),
   vat: z.number(),
   witholding_tax: z.number(),
-  isWithVAT: z.boolean(),
+  gross_vat: z.number().optional(),
+  isWithVAT: z.boolean().optional(),
+  vatOptions: VatOptionsEnum.optional(),
   effectivity_date: z.string(),
   status: z.enum(['active', 'inactive']),
   created_at: z.string(),
