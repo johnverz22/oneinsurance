@@ -181,6 +181,7 @@ export function PersonalInfoForm() {
             line1: '',
             line2: '',
           },
+          isCovidVaccinated: false,
           hasBeneficiary: false,
           beneficiary: {
             firstName: '',
@@ -362,51 +363,60 @@ export function PersonalInfoForm() {
                       }}
                       className="w-full"
                     >
-                      <TabsList
-                        className="h-auto w-full justify-start gap-6 rounded-none border-b border-gray-200 bg-transparent p-0"
-                        style={{
-                          display: 'flex',
-                        }}
-                      >
-                        {field.state.value?.map((_, index) => {
-                          const isAdult =
-                            index < (travelDetails.noOfAdults || 0)
-                          const travelerType = isAdult ? 'Adult' : 'Child'
-                          const hasError =
-                            indexesWithErrors.indexes.includes(index)
+                      <div className="relative">
+                        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                          <TabsList
+                            className="h-auto w-max min-w-full justify-start gap-2 rounded-none border-b border-gray-200 bg-transparent p-0"
+                            style={{
+                              display: 'inline-flex',
+                            }}
+                          >
+                            {field.state.value?.map((_, index) => {
+                              const isAdult =
+                                index < (travelDetails.noOfAdults || 0)
+                              const travelerType = isAdult ? 'Adult' : 'Child'
+                              const hasError =
+                                indexesWithErrors.indexes.includes(index)
 
-                          return (
-                            <TabsTrigger
-                              key={index}
-                              value={`traveler-${index}`}
-                              className={cn(
-                                'data-[state=active]:border-b-primary data-[state=active]:text-primary rounded-none border-b-2 border-transparent bg-transparent px-0 pt-0 pb-3 text-lg font-semibold text-gray-400 shadow-none transition-colors hover:text-gray-600 data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none',
-                                {
-                                  'data-[state=active]:text-destructive data-[state=active]:border-b-destructive':
-                                    hasError,
-                                }
-                              )}
-                            >
-                              {hasError ? (
-                                <OctagonAlert
-                                  className="text-destructive"
-                                  size={24}
-                                />
-                              ) : (
-                                hasValidated && (
-                                  <CircleCheck className="text-primary" />
-                                )
-                              )}
-                              <span className="flex items-center gap-2">
-                                Traveler {index + 1}
-                                <span className="text-xs font-normal opacity-70">
-                                  ({travelerType})
-                                </span>
-                              </span>
-                            </TabsTrigger>
-                          )
-                        })}
-                      </TabsList>
+                              return (
+                                <TabsTrigger
+                                  key={index}
+                                  value={`traveler-${index}`}
+                                  className={cn(
+                                    'data-[state=active]:border-b-primary data-[state=active]:text-primary flex-shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-3 pt-0 pb-3 text-sm font-semibold text-gray-400 shadow-none transition-colors hover:text-gray-600 data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none',
+                                    {
+                                      'data-[state=active]:text-destructive data-[state=active]:border-b-destructive':
+                                        hasError,
+                                    }
+                                  )}
+                                >
+                                  <span className="flex items-center gap-1.5">
+                                    {hasError ? (
+                                      <OctagonAlert
+                                        className="text-destructive flex-shrink-0"
+                                        size={16}
+                                      />
+                                    ) : (
+                                      hasValidated && (
+                                        <CircleCheck className="text-primary flex-shrink-0" size={16} />
+                                      )
+                                    )}
+                                    <span className="whitespace-nowrap">
+                                      Traveler {index + 1}
+                                    </span>
+                                    <span className="text-xs font-normal opacity-70 whitespace-nowrap">
+                                      ({travelerType})
+                                    </span>
+                                  </span>
+                                </TabsTrigger>
+                              )
+                            })}
+                          </TabsList>
+                        </div>
+                        {/* Scroll indicator shadows */}
+                        <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent" />
+                        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent" />
+                      </div>
 
                       {field.state.value?.map((_, index) => {
                         const isAdult = index < (travelDetails.noOfAdults || 0)
@@ -961,6 +971,38 @@ export function PersonalInfoForm() {
                                       </div>
                                     )
                                   }}
+                                />
+                              </div>
+
+                              {/* COVID Vaccination Status */}
+                              <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <form.Field
+                                  name={`travelers[${index}].isCovidVaccinated`}
+                                  children={(field) => (
+                                    <div className="space-y-2">
+                                      <div className="flex items-center space-x-3">
+                                        <Checkbox
+                                          id={`covid-vaccinated-${index}`}
+                                          checked={field.state.value || false}
+                                          onCheckedChange={(checked) => {
+                                            field.handleChange(checked as boolean)
+                                          }}
+                                          className={cn(
+                                            field.state.meta.errors.length > 0 &&
+                                              'border-red-500'
+                                          )}
+                                        />
+                                        <label
+                                          htmlFor={`covid-vaccinated-${index}`}
+                                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                        >
+                                          I am fully vaccinated against COVID-19
+                                          <span className="text-red-500 ml-1">*</span>
+                                        </label>
+                                      </div>
+                                      <FieldInfo field={field} />
+                                    </div>
+                                  )}
                                 />
                               </div>
 
