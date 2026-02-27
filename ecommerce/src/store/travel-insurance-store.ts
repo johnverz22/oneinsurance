@@ -120,6 +120,7 @@ const initialState = {
         line1: '',
         line2: '',
       },
+      isCovidVaccinated: false,
       hasBeneficiary: false,
       beneficiary: {
         firstName: '',

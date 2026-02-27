@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { COMPANIES } from '@/constants/companies'
 import { Info } from 'lucide-react'
