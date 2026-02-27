@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import {
   PaymentBrand,
   PaymentConfirmationResponse,
@@ -75,6 +75,7 @@ export default function PaymentSelection() {
   const { mutateAsync: issueQuote } = useIssueQuoteRequest()
   const { mutateAsync: submitPayment } = usePaymentSubmit()
   const { mutateAsync: getPaymentAuth } = usePaymentAuth()
+  const router = useRouter()
   const {
     setPolicyNo,
     nextStep,
@@ -180,11 +181,17 @@ export default function PaymentSelection() {
         variant: 'success',
       })
     } catch (error: any) {
+      console.error('Issue quote error:', error)
       toast.error(
         error.message || 'Payment confirmation failed. Please contact support.'
       )
       setIsIssuingQuote(false)
-      isProcessingQuoteRef.current = false // Reset on error so user can retry
+      isProcessingQuoteRef.current = false
+      
+      // Redirect to error page if payment was successful but quote issuance failed
+      if (apiResponse?.data?.ProposalNo) {
+        router.push(`/${agentCode}/payment-error`)
+      }
     } finally {
       setIsProcessing(false)
     }
@@ -195,18 +202,29 @@ export default function PaymentSelection() {
     clearProposalNumber()
     setShowCardPaymentProcessing(false)
     setIsProcessing(false)
-    toast.error(error.message || 'Payment failed. Please contact support.')
+    
+    // If we have a proposal number, payment was accepted but something went wrong
+    if (apiResponse?.data?.ProposalNo) {
+      router.push(`/${agentCode}/payment-error`)
+    } else {
+      toast.error(error.message || 'Payment failed. Please contact support.')
+    }
   }
 
   // Payment timeout handler
   function handlePaymentTimeout() {
-    clearProposalNumber()
     setShowCardPaymentProcessing(false)
     setIsProcessing(false)
-    toast.error(
-      'Payment verification timed out. Please contact support with your proposal number: ' +
-        apiResponse?.data?.ProposalNo
-    )
+    
+    // If we have a proposal number, redirect to error page
+    if (apiResponse?.data?.ProposalNo) {
+      router.push(`/${agentCode}/payment-error`)
+    } else {
+      clearProposalNumber()
+      toast.error(
+        'Payment verification timed out. Please contact support.'
+      )
+    }
   }
 
   // Handle transaction completion when returning from redirect
