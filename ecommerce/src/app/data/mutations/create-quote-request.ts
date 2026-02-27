@@ -23,8 +23,12 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
       headers: { 
         'Content-Type': 'application/json'
       },
-      timeout: 30000, // 30 second timeout
+      timeout: 60000, // Increased to 60 seconds
     })
+    
+    console.log('API Response received:', result.data)
+    
+    // Backend returned data successfully, even if no plans available
     return result.data
   } catch (error: any) {
     console.error('API Error Details:', {
@@ -33,8 +37,14 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
       statusText: error.response?.statusText,
       data: error.response?.data,
       url: error.config?.url,
-      method: error.config?.method
+      method: error.config?.method,
+      code: error.code
     })
+    
+    // Handle timeout specifically
+    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      throw new Error('Request timed out. Please try again.')
+    }
     
     if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
       throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
@@ -50,6 +60,11 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
     
     if (error.response?.status >= 500) {
       throw new Error('Server error. Please try again later.')
+    }
+    
+    // If backend returned an error response with data, use it
+    if (error.response?.data) {
+      throw new Error(error.response.data.error || error.response.data.message || 'An error occurred')
     }
     
     throw error
