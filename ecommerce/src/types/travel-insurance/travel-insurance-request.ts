@@ -293,12 +293,7 @@ export const personalInfoSchema = z
         .min(1, 'Address Line 2 is required')
         .max(40, 'Address Line 2 must not exceed 40 characters'),
     }),
-    isCovidVaccinated: z.boolean({
-      required_error: 'COVID-19 vaccination confirmation is required',
-      invalid_type_error: 'COVID-19 vaccination confirmation is required',
-    }).refine((val) => val === true, {
-      message: 'You must confirm COVID-19 vaccination to proceed',
-    }),
+    isCovidVaccinated: z.boolean().optional(),
     hasBeneficiary: z.boolean(),
     beneficiary: beneficiarySchema,
   })
