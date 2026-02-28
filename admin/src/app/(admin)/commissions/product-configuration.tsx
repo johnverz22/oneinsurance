@@ -16,7 +16,7 @@ import React, { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import z from 'zod'
 import { Calendar } from 'lucide-react'
-import { getVatOptionFromCheckboxes } from '@/utils/vat-options-mapper'
+import { getVatOptionFromCheckboxes, getCheckboxesFromVatOption } from '@/utils/vat-options-mapper'
 
 interface ProductCommisionConfigurationProps {
   selectedCommissionConfig: CommissionConfig | null
@@ -134,11 +134,8 @@ export default function ProductCommisionConfiguration({
       referral_admin_overrider_commission: Number(selectedCommissionConfig?.referral_admin_overrider_commission || selectedCommissionConfig?.ifrc_admin) ?? 25,
       vat: Number(selectedCommissionConfig?.vat) ?? 0,
       witholding_tax: Number(selectedCommissionConfig?.witholding_tax) ?? 0,
-      isWithVAT: selectedCommissionConfig?.isWithVAT ?? false,
-      returnVAT: false,
-      voidVAT: false,
-      applyGrossVAT: false,
-      grossVATRate: 0,
+      ...getCheckboxesFromVatOption(selectedCommissionConfig?.vatOptions),
+      grossVATRate: Number(selectedCommissionConfig?.gross_vat) ?? 0,
       effectivity_date: selectedCommissionConfig?.effectivity_date 
         ? selectedCommissionConfig.effectivity_date.split('T')[0] 
         : new Date().toISOString().split('T')[0],
@@ -224,11 +221,8 @@ export default function ProductCommisionConfiguration({
         referral_admin_overrider_commission: Number(selectedCommissionConfig.referral_admin_overrider_commission || selectedCommissionConfig.ifrc_admin),
         vat: Number(selectedCommissionConfig.vat) ?? 0,
         witholding_tax: Number(selectedCommissionConfig.witholding_tax) ?? 0,
-        isWithVAT: selectedCommissionConfig.isWithVAT ?? false,
-        returnVAT: false,
-        voidVAT: false,
-        applyGrossVAT: false,
-        grossVATRate: 0,
+        ...getCheckboxesFromVatOption(selectedCommissionConfig.vatOptions),
+        grossVATRate: Number(selectedCommissionConfig.gross_vat) ?? 0,
         effectivity_date: selectedCommissionConfig.effectivity_date.split('T')[0],
       })
     }
@@ -518,23 +512,28 @@ export default function ProductCommisionConfiguration({
                       }}
                     />
                     <form.Field
-                      name="grossVATRate"
-                      children={(field) => {
-                        return (
-                          <div className="ml-6">
-                            <Label className="text-sm text-gray-600">VAT factor (%)</Label>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              className="mt-1 h-10 w-48"
-                              step="0.01"
-                              value={field.state.value}
-                              onChange={(e) => field.handleChange(Number(e.target.value))}
-                              disabled={!form.getFieldValue('applyGrossVAT')}
-                            />
-                          </div>
-                        )
-                      }}
+                      name="applyGrossVAT"
+                      children={(applyGrossVATField) => (
+                        <form.Field
+                          name="grossVATRate"
+                          children={(field) => {
+                            return (
+                              <div className="ml-6">
+                                <Label className="text-sm text-gray-600">VAT factor (%)</Label>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  className="mt-1 h-10 w-48"
+                                  step="0.01"
+                                  value={field.state.value.toString()}
+                                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                                  disabled={!applyGrossVATField.state.value}
+                                />
+                              </div>
+                            )
+                          }}
+                        />
+                      )}
                     />
                   </div>
                 </div>
