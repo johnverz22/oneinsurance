@@ -987,17 +987,12 @@ export function PersonalInfoForm() {
                                           onCheckedChange={(checked) => {
                                             field.handleChange(checked as boolean)
                                           }}
-                                          className={cn(
-                                            field.state.meta.errors.length > 0 &&
-                                              'border-red-500'
-                                          )}
                                         />
                                         <label
                                           htmlFor={`covid-vaccinated-${index}`}
                                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                         >
                                           I am fully vaccinated against COVID-19
-                                          <span className="text-red-500 ml-1">*</span>
                                         </label>
                                       </div>
                                       <FieldInfo field={field} />
