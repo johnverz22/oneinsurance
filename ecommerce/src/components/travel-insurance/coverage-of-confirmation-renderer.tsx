@@ -172,8 +172,8 @@ export const GenerateAndDownloadCoverNote = ({ cocData }: COCRendererProps) => {
       {({ loading }) => (
         <Button className="w-full font-bold" variant="outline" size="lg">
           {loading
-            ? 'Generating Certificate of Coverage...'
-            : 'Generate And Download Certificate of Coverage'}
+            ? 'Generating Cover Note...'
+            : 'Generate And Download Cover Note'}
         </Button>
       )}
     </PDFDownloadLink>

@@ -92,7 +92,7 @@ This specification defines the requirements for replacing the websocket-based pa
 
 ### Requirement 7: Success Response Handling and Quote Issuance
 
-**User Story:** As a user, I want to see my payment confirmation, invoice, and certificate of coverage immediately after successful payment, so that I have proof of my insurance purchase.
+**User Story:** As a user, I want to see my payment confirmation, invoice, and cover note immediately after successful payment, so that I have proof of my insurance purchase.
 
 #### Acceptance Criteria
 
@@ -100,7 +100,7 @@ This specification defines the requirements for replacing the websocket-based pa
 2. WHEN payment is verified successfully, THE Payment_System SHALL call the issue quote endpoint at `/quote/travel/issue-quote`
 3. THE Payment_System SHALL send a POST request with payload `{ProposalNo: "PROP123456"}` to issue the quote
 4. WHEN the issue quote response is received, THE Payment_System SHALL store the policy data including PolicyNo
-5. THE Payment_System SHALL display the PaymentSuccessInline component with invoice and Certificate of Coverage (COC)
+5. THE Payment_System SHALL display the PaymentSuccessInline component with invoice and Cover Note (COC)
 6. THE Payment_System SHALL allow users to toggle between viewing the invoice and the COC
 7. THE Payment_System SHALL provide a download button for the invoice PDF
 

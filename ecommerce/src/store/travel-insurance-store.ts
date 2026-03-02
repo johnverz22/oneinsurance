@@ -121,6 +121,7 @@ const initialState = {
         line2: '',
       },
       isCovidVaccinated: false,
+      is_data_sharing_consent: false,
       hasBeneficiary: false,
       beneficiary: {
         firstName: '',
