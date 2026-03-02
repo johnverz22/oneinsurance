@@ -27,8 +27,8 @@ export const travelInsuranceSchema = z
     departureDate: z.date({ message: 'Departure date is required' }),
     returnDate: z.date({ message: 'Return date is required' }),
     dateOfBirth: z.date().optional(),
-    noOfAdults: z.number().min(1, 'At least one adult is required'),
-    noOfChildren: z.number().min(0),
+    noOfAdults: z.number().min(1, 'At least one adult is required').max(10, 'Maximum 10 adults'),
+    noOfChildren: z.number().min(0).max(10, 'Maximum 10 children'),
     isAnnualMultiTrip: z.boolean(),
     agreedToTerms: z.boolean().refine((val) => val === true, {
       message: 'You must agree to the terms and conditions',
@@ -45,6 +45,16 @@ export const travelInsuranceSchema = z
     {
       message: 'Return date must be on or after departure date',
       path: ['returnDate'],
+    }
+  )
+  .refine(
+    (data) => {
+      const totalTravelers = data.noOfAdults + data.noOfChildren
+      return totalTravelers <= 10
+    },
+    {
+      message: 'Total number of travelers cannot exceed 10',
+      path: ['noOfAdults'],
     }
   )
   .superRefine((data, ctx) => {
@@ -294,6 +304,7 @@ export const personalInfoSchema = z
         .max(40, 'Address Line 2 must not exceed 40 characters'),
     }),
     isCovidVaccinated: z.boolean().optional(),
+    agreedToTerms: z.boolean().optional(),
     hasBeneficiary: z.boolean(),
     beneficiary: beneficiarySchema,
   })

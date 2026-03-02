@@ -182,6 +182,7 @@ export function PersonalInfoForm() {
             line2: '',
           },
           isCovidVaccinated: false,
+          agreedToTerms: false,
           hasBeneficiary: false,
           beneficiary: {
             firstName: '',
@@ -993,6 +994,43 @@ export function PersonalInfoForm() {
                                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                         >
                                           I am fully vaccinated against COVID-19
+                                        </label>
+                                      </div>
+                                      <FieldInfo field={field} />
+                                    </div>
+                                  )}
+                                />
+                              </div>
+
+                              {/* Terms and Conditions */}
+                              <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <form.Field
+                                  name={`travelers[${index}].agreedToTerms`}
+                                  children={(field) => (
+                                    <div className="space-y-2">
+                                      <div className="flex items-start space-x-3">
+                                        <Checkbox
+                                          id={`agreed-terms-${index}`}
+                                          checked={field.state.value || false}
+                                          onCheckedChange={(checked) => {
+                                            field.handleChange(checked as boolean)
+                                          }}
+                                          className="mt-1"
+                                        />
+                                        <label
+                                          htmlFor={`agreed-terms-${index}`}
+                                          className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                        >
+                                          I agree to the{' '}
+                                          <a
+                                            href="/travel-insurance-terms"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-primary hover:underline font-medium"
+                                            onClick={(e) => e.stopPropagation()}
+                                          >
+                                            Terms & Conditions
+                                          </a>
                                         </label>
                                       </div>
                                       <FieldInfo field={field} />
