@@ -283,7 +283,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       ? 'ANNUAL'
       : 'SINGLE',
     CustomField: {
-      travellerlists: travellerlists,
+      TravellerLists: travellerlists,
     },
   } satisfies FullQuoteRequest
 }

@@ -81,7 +81,7 @@ export interface TravellerListItem {
 }
 
 export interface CustomField {
-  travellerlists: TravellerListItem[]
+  TravellerLists: TravellerListItem[]
 }
 
 export interface FullQuoteRequest {
