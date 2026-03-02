@@ -10,7 +10,7 @@ import { COMPANIES } from '@/constants/companies'
 import { toast } from 'sonner'
 
 export function TravelDetailsSummary() {
-  const { travelDetails, coverageOption } = useTravelInsuranceStore()
+  const { travelDetails, coverageOption, travelersInfo } = useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
   
   const proposalNumber = apiResponse?.data?.ProposalNo
@@ -39,12 +39,25 @@ export function TravelDetailsSummary() {
         return addon?.BenefitDesc || addonCode
       })
 
+      // Get main benefits
+      const mainBenefits = coverageOption.selectedPlan?.MainBenefits || []
+
+      // Get selected addon benefits (full objects)
+      const selectedAddonBenefits = coverageOption.selectedAddonBenefits?.map((addonCode) => {
+        return coverageOption.selectedPlan?.AddonBenefits?.find(
+          (benefit) => benefit.BenefitCode === addonCode
+        )
+      }).filter(Boolean) || []
+
       generateQuotePDF({
         travelDetails,
+        travelersInfo,
         apiResponse,
         planName,
         providerName: provider?.companyName,
         addons,
+        mainBenefits,
+        addonBenefits: selectedAddonBenefits as any,
       })
 
       toast.success('PDF downloaded successfully')
