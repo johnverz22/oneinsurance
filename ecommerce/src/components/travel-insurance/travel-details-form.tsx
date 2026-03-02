@@ -511,7 +511,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                       Who's travelling?
                     </h4>
                     <p className="text-muted-foreground text-sm">
-                      Set the number of travellers.
+                      Set the number of travellers (maximum 10 travelers).
                     </p>
                   </div>
                   <div className="grid gap-3 lg:grid-cols-2">
@@ -529,11 +529,21 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                             id={field.name}
                             type="number"
                             min={1}
+                            max={10}
                             className="h-8 w-16"
                             value={field.state.value ?? ''}
                             onChange={(e) => {
                               const value = Number(e.target.value)
-                              field.handleChange(value)
+                              const currentChildren = form.getFieldValue('noOfChildren') || 0
+                              const total = value + currentChildren
+                              
+                              // Limit total travelers to 10
+                              if (total <= 10 && value >= 1) {
+                                field.handleChange(value)
+                              } else if (value >= 1) {
+                                // If exceeds 10, set adults to max possible
+                                field.handleChange(10 - currentChildren)
+                              }
                             }}
                             onBlur={field.handleBlur}
                             name={field.name}
@@ -555,11 +565,21 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                             id={field.name}
                             type="number"
                             min={0}
+                            max={10}
                             className="h-8 w-16"
                             value={field.state.value ?? ''}
                             onChange={(e) => {
                               const value = Number(e.target.value)
-                              field.handleChange(value)
+                              const currentAdults = form.getFieldValue('noOfAdults') || 1
+                              const total = currentAdults + value
+                              
+                              // Limit total travelers to 10
+                              if (total <= 10 && value >= 0) {
+                                field.handleChange(value)
+                              } else if (value >= 0) {
+                                // If exceeds 10, set children to max possible
+                                field.handleChange(10 - currentAdults)
+                              }
                             }}
                             onBlur={field.handleBlur}
                             name={field.name}
