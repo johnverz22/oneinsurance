@@ -70,6 +70,20 @@ export interface TravelDetail {
   TravelCoverageArea: string
 }
 
+export interface TravellerListItem {
+  first_name: string
+  middle_name: string
+  last_name: string
+  date_of_birth: string // MM-DD-YYYY format
+  contact_number: string
+  is_covid_vaccinated: boolean
+  is_data_sharing_consent: boolean
+}
+
+export interface CustomField {
+  travellerlists: TravellerListItem[]
+}
+
 export interface FullQuoteRequest {
   AgentCode: string
   Age: number
@@ -93,4 +107,5 @@ export interface FullQuoteRequest {
   TravelDetailList: TravelDetail[]
   TravelType: string
   TripType: string
+  CustomField?: CustomField // Optional custom field with traveler details
 }

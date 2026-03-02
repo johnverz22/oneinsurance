@@ -182,7 +182,7 @@ export function PersonalInfoForm() {
             line2: '',
           },
           isCovidVaccinated: false,
-          agreedToTerms: false,
+          is_data_sharing_consent: false,
           hasBeneficiary: false,
           beneficiary: {
             firstName: '',
@@ -1002,40 +1002,44 @@ export function PersonalInfoForm() {
                                 />
                               </div>
 
-                              {/* Terms and Conditions */}
+                              {/* Data Sharing Consent Agreement */}
                               <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
                                 <form.Field
-                                  name={`travelers[${index}].agreedToTerms`}
-                                  children={(field) => (
-                                    <div className="space-y-2">
-                                      <div className="flex items-start space-x-3">
-                                        <Checkbox
-                                          id={`agreed-terms-${index}`}
-                                          checked={field.state.value || false}
-                                          onCheckedChange={(checked) => {
-                                            field.handleChange(checked as boolean)
-                                          }}
-                                          className="mt-1"
-                                        />
-                                        <label
-                                          htmlFor={`agreed-terms-${index}`}
-                                          className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                        >
-                                          I agree to the{' '}
-                                          <a
-                                            href="/travel-insurance-terms"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-primary hover:underline font-medium"
-                                            onClick={(e) => e.stopPropagation()}
+                                  name={`travelers[${index}].is_data_sharing_consent`}
+                                  children={(field) => {
+                                    const haveError = fieldHasError(field)
+                                    return (
+                                      <div className="space-y-2">
+                                        <div className="flex items-start space-x-3">
+                                          <Checkbox
+                                            id={`data-sharing-consent-${index}`}
+                                            checked={field.state.value || false}
+                                            onCheckedChange={(checked) => {
+                                              field.handleChange(checked as boolean)
+                                            }}
+                                            className={`mt-1 ${haveError ? 'border-destructive' : ''}`}
+                                          />
+                                          <label
+                                            htmlFor={`data-sharing-consent-${index}`}
+                                            className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                           >
-                                            Terms & Conditions
-                                          </a>
-                                        </label>
+                                            I agree to the{' '}
+                                            <a
+                                              href="/travel-insurance-terms"
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-primary hover:underline font-medium"
+                                              onClick={(e) => e.stopPropagation()}
+                                            >
+                                              Data Sharing Consent Agreement
+                                            </a>
+                                            {' '}<span className="text-red-500">*</span>
+                                          </label>
+                                        </div>
+                                        <FieldInfo field={field} />
                                       </div>
-                                      <FieldInfo field={field} />
-                                    </div>
-                                  )}
+                                    )
+                                  }}
                                 />
                               </div>
 

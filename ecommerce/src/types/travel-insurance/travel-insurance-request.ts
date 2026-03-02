@@ -304,7 +304,9 @@ export const personalInfoSchema = z
         .max(40, 'Address Line 2 must not exceed 40 characters'),
     }),
     isCovidVaccinated: z.boolean().optional(),
-    agreedToTerms: z.boolean().optional(),
+    is_data_sharing_consent: z.boolean().refine((val) => val === true, {
+      message: 'Required *',
+    }),
     hasBeneficiary: z.boolean(),
     beneficiary: beneficiarySchema,
   })

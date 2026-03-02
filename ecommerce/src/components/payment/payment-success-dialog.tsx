@@ -272,7 +272,7 @@ Thank you for choosing our travel insurance service!
             className="flex items-center gap-2 py-3 text-sm sm:text-base"
           >
             <FileText className="h-4 w-4" />
-            Certificate of Coverage
+            Cover Note
           </Button>
           <Button
             variant={!showCertificate ? 'default' : 'outline'}
@@ -285,11 +285,11 @@ Thank you for choosing our travel insurance service!
         </div>
 
         {showCertificate ? (
-          /* Certificate of Coverage Display */
+          /* Cover Note Display */
           <div className="space-y-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h3 className="text-base font-semibold sm:text-lg">
-                Certificate of Coverage
+                Cover Note
               </h3>
               <Badge className="self-start border-green-200 bg-green-100 text-green-700 sm:self-auto">
                 Active Policy
@@ -306,7 +306,7 @@ Thank you for choosing our travel insurance service!
                 variant="outline"
                 onClick={() => {
                   const certificateContent = `
-CERTIFICATE OF COVERAGE
+COVER NOTE
 =======================
 
 Policy Number: ${policyData.CarrierPolicyNo || 'N/A'}

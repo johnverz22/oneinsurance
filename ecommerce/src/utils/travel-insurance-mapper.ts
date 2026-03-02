@@ -230,6 +230,26 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
 
   console.log('Travel Insurance Mapper: Using AgentCode:', agentCode)
 
+  // Build travellerlists for CustomField
+  const travellerlists = travelInsurance.travelersInfo.map((traveler) => {
+    const dobDate =
+      traveler.dateOfBirth instanceof Date
+        ? traveler.dateOfBirth
+        : new Date(traveler.dateOfBirth)
+    
+    const formattedDob = `${String(dobDate.getMonth() + 1).padStart(2, '0')}-${String(dobDate.getDate()).padStart(2, '0')}-${dobDate.getFullYear()}`
+
+    return {
+      first_name: traveler.firstName,
+      middle_name: traveler.middleName || '',
+      last_name: traveler.lastName,
+      date_of_birth: formattedDob,
+      contact_number: traveler.mobileNumber, // Just the mobile number without +63 prefix
+      is_covid_vaccinated: traveler.isCovidVaccinated || false,
+      is_data_sharing_consent: traveler.is_data_sharing_consent || false,
+    }
+  })
+
   return {
     AgentCode: agentCode,
     Age: age,
@@ -262,5 +282,8 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     TripType: travelInsurance.travelDetails.isAnnualMultiTrip
       ? 'ANNUAL'
       : 'SINGLE',
+    CustomField: {
+      travellerlists: travellerlists,
+    },
   } satisfies FullQuoteRequest
 }

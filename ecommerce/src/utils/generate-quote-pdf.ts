@@ -1,21 +1,26 @@
 import { jsPDF } from 'jspdf'
 import { format } from 'date-fns'
-import { TravelInsuranceFormData } from '@/types/travel-insurance/travel-insurance-request'
+import { TravelInsuranceFormData, PersonalInfoFormData } from '@/types/travel-insurance/travel-insurance-request'
 import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
+import { InsuranceBenefit } from '@/types/plan'
 
 interface QuotePDFData {
   travelDetails: TravelInsuranceFormData
+  travelersInfo?: PersonalInfoFormData[]
   apiResponse: FullQuoteResponse
   planName?: string
   providerName?: string
   addons?: string[]
+  mainBenefits?: InsuranceBenefit[]
+  addonBenefits?: InsuranceBenefit[]
 }
 
 export function generateQuotePDF(data: QuotePDFData) {
-  const { travelDetails, apiResponse, planName, providerName, addons } = data
+  const { travelDetails, travelersInfo, apiResponse, planName, providerName, addons, mainBenefits, addonBenefits } = data
   const doc = new jsPDF()
   
   const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
   const margin = 20
   let yPosition = 20
 
@@ -28,6 +33,16 @@ export function generateQuotePDF(data: QuotePDFData) {
   const addLine = (y: number) => {
     doc.setDrawColor(200, 200, 200)
     doc.line(margin, y, pageWidth - margin, y)
+  }
+
+  // Helper function to check if we need a new page
+  const checkNewPage = (requiredSpace: number = 20) => {
+    if (yPosition + requiredSpace > pageHeight - margin) {
+      doc.addPage()
+      yPosition = margin
+      return true
+    }
+    return false
   }
 
   // Header - Logo and Title
@@ -156,7 +171,246 @@ export function generateQuotePDF(data: QuotePDFData) {
   addLine(yPosition)
   yPosition += 10
 
+  // Travelers Information Section
+  if (travelersInfo && travelersInfo.length > 0) {
+    checkNewPage(40)
+    
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(0, 0, 0)
+    addText('Travelers Information', margin, yPosition)
+    yPosition += 10
+
+    travelersInfo.forEach((traveler, index) => {
+      checkNewPage(60)
+      
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(0, 112, 243)
+      addText(`Traveler ${index + 1}`, margin, yPosition)
+      yPosition += 7
+
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(0, 0, 0)
+
+      // Name
+      const fullName = [
+        traveler.firstName,
+        traveler.middleName,
+        traveler.lastName,
+        traveler.suffix !== 'No Suffix' ? traveler.suffix : ''
+      ].filter(Boolean).join(' ')
+      
+      addText('Name:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      addText(fullName, margin + 50, yPosition)
+      yPosition += 5
+
+      // Gender & Date of Birth
+      doc.setFont('helvetica', 'normal')
+      addText('Gender:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      addText(traveler.gender === 'M' ? 'Male' : 'Female', margin + 50, yPosition)
+      yPosition += 5
+
+      doc.setFont('helvetica', 'normal')
+      addText('Date of Birth:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      const dob = traveler.dateOfBirth instanceof Date ? traveler.dateOfBirth : new Date(traveler.dateOfBirth)
+      addText(format(dob, 'PP'), margin + 50, yPosition)
+      yPosition += 5
+
+      // Contact Information
+      doc.setFont('helvetica', 'normal')
+      addText('Email:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      addText(traveler.email, margin + 50, yPosition)
+      yPosition += 5
+
+      doc.setFont('helvetica', 'normal')
+      addText('Mobile:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      addText(`+63${traveler.mobileNumber}`, margin + 50, yPosition)
+      yPosition += 5
+
+      // ID Information
+      doc.setFont('helvetica', 'normal')
+      addText('ID Type:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      addText(traveler.idType, margin + 50, yPosition)
+      yPosition += 5
+
+      doc.setFont('helvetica', 'normal')
+      addText('ID Number:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      addText(traveler.idNumber, margin + 50, yPosition)
+      yPosition += 5
+
+      // Address
+      doc.setFont('helvetica', 'normal')
+      addText('Address:', margin + 5, yPosition)
+      doc.setFont('helvetica', 'bold')
+      const addressParts = [
+        traveler.address.line1,
+        traveler.address.line2,
+        traveler.address.city,
+        traveler.address.province,
+        traveler.address.zipCode
+      ].filter(Boolean)
+      
+      // Split address into multiple lines if too long
+      const addressText = addressParts.join(', ')
+      const splitAddress = doc.splitTextToSize(addressText, pageWidth - margin - 55)
+      let addressY = yPosition
+      splitAddress.forEach((line: string) => {
+        if (addressY > yPosition) {
+          checkNewPage(5)
+          addText(line, margin + 50, addressY)
+        } else {
+          addText(line, margin + 50, addressY)
+        }
+        addressY += 5
+      })
+      yPosition = addressY
+
+      // COVID Vaccination Status
+      if (traveler.isCovidVaccinated !== undefined) {
+        doc.setFont('helvetica', 'normal')
+        addText('COVID-19 Vaccinated:', margin + 5, yPosition)
+        doc.setFont('helvetica', 'bold')
+        addText(traveler.isCovidVaccinated ? 'Yes' : 'No', margin + 50, yPosition)
+        yPosition += 5
+      }
+
+      // Beneficiary Information
+      if (traveler.hasBeneficiary && traveler.beneficiary?.firstName) {
+        yPosition += 3
+        doc.setFont('helvetica', 'italic')
+        doc.setTextColor(100, 100, 100)
+        addText('Beneficiary:', margin + 5, yPosition)
+        yPosition += 5
+
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(0, 0, 0)
+        const beneficiaryName = [
+          traveler.beneficiary.firstName,
+          traveler.beneficiary.middleName,
+          traveler.beneficiary.lastName
+        ].filter(Boolean).join(' ')
+        
+        addText(beneficiaryName, margin + 10, yPosition)
+        yPosition += 5
+
+        if (traveler.beneficiary.relationship) {
+          doc.setFont('helvetica', 'normal')
+          addText(`Relationship: ${traveler.beneficiary.relationship}`, margin + 10, yPosition)
+          yPosition += 5
+        }
+
+        if (traveler.beneficiary.dateOfBirth) {
+          const beneficiaryDob = traveler.beneficiary.dateOfBirth instanceof Date 
+            ? traveler.beneficiary.dateOfBirth 
+            : new Date(traveler.beneficiary.dateOfBirth)
+          addText(`Date of Birth: ${format(beneficiaryDob, 'PP')}`, margin + 10, yPosition)
+          yPosition += 5
+        }
+      }
+
+      yPosition += 5
+    })
+
+    yPosition += 5
+    addLine(yPosition)
+    yPosition += 10
+  }
+
+  // Benefits Section
+  if (mainBenefits && mainBenefits.length > 0) {
+    checkNewPage(40)
+    
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(0, 0, 0)
+    addText('Coverage Benefits', margin, yPosition)
+    yPosition += 10
+
+    // Main Benefits
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(0, 112, 243)
+    addText('Main Benefits', margin, yPosition)
+    yPosition += 7
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(0, 0, 0)
+
+    mainBenefits.forEach((benefit) => {
+      checkNewPage(10)
+      
+      const benefitText = `• ${benefit.CoverageName || benefit.BenefitDesc}`
+      const limitText = benefit.DefaultLimitDesc || benefit.Silimit || ''
+      
+      // Benefit name
+      addText(benefitText, margin + 5, yPosition)
+      
+      // Coverage limit (right-aligned)
+      if (limitText) {
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(0, 112, 243)
+        addText(limitText, pageWidth - margin, yPosition, { align: 'right' })
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(0, 0, 0)
+      }
+      
+      yPosition += 6
+    })
+
+    // Addon Benefits
+    if (addonBenefits && addonBenefits.length > 0) {
+      yPosition += 5
+      checkNewPage(20)
+      
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(0, 112, 243)
+      addText('Additional Benefits', margin, yPosition)
+      yPosition += 7
+
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(0, 0, 0)
+
+      addonBenefits.forEach((benefit) => {
+        checkNewPage(10)
+        
+        const benefitText = `• ${benefit.CoverageName || benefit.BenefitDesc}`
+        const limitText = benefit.DefaultLimitDesc || benefit.Silimit || ''
+        
+        // Benefit name
+        addText(benefitText, margin + 5, yPosition)
+        
+        // Coverage limit (right-aligned)
+        if (limitText) {
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(0, 112, 243)
+          addText(limitText, pageWidth - margin, yPosition, { align: 'right' })
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(0, 0, 0)
+        }
+        
+        yPosition += 6
+      })
+    }
+
+    yPosition += 5
+    addLine(yPosition)
+    yPosition += 10
+  }
+
   // Premium Section
+  checkNewPage(40)
   doc.setFontSize(14)
   doc.setFont('helvetica', 'bold')
   addText('Total Premium', margin, yPosition)
