@@ -176,7 +176,7 @@ export default function PaymentSelection() {
         title: 'Payment Successful!',
         description:
           'Your policy details have been confirmed and recorded in our system.',
-        note: 'Please note that this serves as a certificate of coverage only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
+        note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
         confirmText: 'Done',
         variant: 'success',
       })
@@ -299,7 +299,7 @@ export default function PaymentSelection() {
       title: 'Payment Successful!',
       description:
         'Your policy details have been confirmed and recorded in our system.',
-      note: 'Please note that this serves as a certificate of coverage only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
+      note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
       confirmText: 'Done',
       variant: 'success',
     })

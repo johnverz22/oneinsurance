@@ -104,7 +104,7 @@ export function CoverageOfConfirmation({
           <div className="flex items-start justify-between border-b p-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">
-                Certificate of Coverage
+                Cover Note
               </h1>
               <p className="text-sm text-gray-600">
                 #{localStorage.getItem('payment_transaction_id') || policyData.CarrierPolicyNo || 'N/A'}
