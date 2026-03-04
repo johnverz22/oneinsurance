@@ -476,9 +476,9 @@ export function CoverageOptionsForm() {
           </div>
         ) : (
           <div className="relative grid h-full min-h-[60vh] w-full gap-3 pb-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            {allTravelPlans.map((item: any) => (
+            {allTravelPlans.map((item: any, index: number) => (
               <TravelInsurancePlan
-                key={item.Plan.CarrierPlanCode}
+                key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode}-${index}`}
                 plan={item.Plan}
                 carrierCode={item.CarrierCode}
                 selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}

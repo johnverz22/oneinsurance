@@ -6,6 +6,7 @@ import { FAQsSection } from '@/components/faqs-section'
 import { TestimonialSection } from '@/components/testimonial-section'
 import { PlanHighlightsSection } from '@/components/plan-highlights-section'
 import { TravelDetailsForm } from '@/components/travel-insurance/travel-details-form'
+import { ProposalSearch } from '@/components/travel-insurance/proposal-search'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { TRAVEL_FAQS } from '@/constants/faqs/travel-insurance-faqs'
 import { removeStorage } from '@/utils/remove-session-storage'
@@ -146,8 +147,9 @@ function TravelInsurancePageSSR() {
         </div>
       </div>
 
-      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
+      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col gap-6 px-1.5 lg:-mt-40">
         <TravelDetailsForm />
+        <ProposalSearch />
       </div>
 
       <div id="coverage-options" className="relative w-full pt-16 pb-12">

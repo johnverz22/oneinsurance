@@ -113,7 +113,6 @@ const cardPaymentSchema = z.object({
 interface CardPaymentFormProps {
   selectedBrand: PaymentBrand
   onSubmit: (paymentRequest: ReturnType<typeof mapCardPaymentToRequest>) => void
-  onBack: () => void
   isLoading?: boolean
   className?: string
   paymentConfig: PaymentRequestConfig
@@ -123,7 +122,6 @@ interface CardPaymentFormProps {
 export function CardPaymentForm({
   selectedBrand,
   onSubmit,
-  onBack,
   isLoading = false,
   className,
   paymentConfig,
@@ -682,19 +680,9 @@ export function CardPaymentForm({
         {/* Action Buttons */}
         <div className="flex flex-col gap-4 sm:flex-row">
           <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="h-12 flex-1 rounded-full"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            Back
-          </Button>
-          <Button
             type="submit"
             size="lg"
-            className="from-primary to-lilac h-12 flex-1 rounded-full bg-gradient-to-r text-white"
+            className="from-primary to-lilac h-12 w-full rounded-full bg-gradient-to-r text-white"
             disabled={isLoading}
           >
             {isLoading ? (

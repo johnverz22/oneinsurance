@@ -276,6 +276,12 @@ export const personalInfoSchema = z
   .object({
     idType: PhilippineIdType,
     idNumber: z.string().min(1, 'ID number is required'),
+    idFrontUploaded: z.boolean().refine((val) => val === true, {
+      message: 'Front ID upload is required',
+    }),
+    idBackUploaded: z.boolean().refine((val) => val === true, {
+      message: 'Back ID upload is required',
+    }),
     firstName: z.string().min(1, 'First name is required'),
     middleName: z.string().nullable().optional(),
     lastName: z.string().min(1, 'Last name is required'),
