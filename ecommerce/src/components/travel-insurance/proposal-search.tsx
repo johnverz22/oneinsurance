@@ -276,9 +276,12 @@ export function ProposalSearch() {
         sessionStorage.setItem('loading-from-proposal', 'true')
         sessionStorage.setItem('proposal-target-step', '3') // Step 4 in UI (0-indexed)
         
-        // Navigate immediately - the state is set synchronously
-        router.push(`/${agentCode}/products/travel-insurance/avail`)
-        toast.success('Proposal loaded! Please review and proceed to payment.')
+        // Wait a bit for Zustand persist middleware to write to sessionStorage
+        // before navigating to ensure state is available on the next page
+        setTimeout(() => {
+          router.push(`/${agentCode}/products/travel-insurance/avail`)
+          toast.success('Proposal loaded! Please review and proceed to payment.')
+        }, 100)
       }
       
       console.log('✅ All steps completed successfully!')
