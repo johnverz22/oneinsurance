@@ -174,6 +174,8 @@ export function PersonalInfoForm() {
           mobileNumber: '',
           idType: 'PAS' as const,
           idNumber: '',
+          idFrontUploaded: false,
+          idBackUploaded: false,
           address: {
             province: '',
             city: '',
@@ -444,6 +446,29 @@ export function PersonalInfoForm() {
                                 <IdUploadComponent
                                   onDataExtracted={handleDataExtracted(index)}
                                   onProcessingStart={() => {}}
+                                  onIdUploaded={(frontFile, backFile) => {
+                                    form.setFieldValue(
+                                      `travelers[${index}].idFrontUploaded`,
+                                      !!frontFile
+                                    )
+                                    form.setFieldValue(
+                                      `travelers[${index}].idBackUploaded`,
+                                      !!backFile
+                                    )
+                                  }}
+                                />
+                                {/* Show validation errors for ID uploads */}
+                                <form.Field
+                                  name={`travelers[${index}].idFrontUploaded`}
+                                  children={(field) => (
+                                    <FieldInfo field={field} />
+                                  )}
+                                />
+                                <form.Field
+                                  name={`travelers[${index}].idBackUploaded`}
+                                  children={(field) => (
+                                    <FieldInfo field={field} />
+                                  )}
                                 />
                               </div>
 

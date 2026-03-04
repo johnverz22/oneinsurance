@@ -13,6 +13,7 @@ import {
   CreditCard,
   Shield,
   Plane,
+  Download,
 } from 'lucide-react'
 import {
   useTravelInsuranceStore,
@@ -39,11 +40,70 @@ import { COMPANIES } from '@/constants/companies'
 import Image from 'next/image'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useSignInStateStore } from '@/store/signin-store'
+import { generateQuotePDF } from '@/utils/generate-quote-pdf'
+import { toast } from 'sonner'
 
 export function TravelInsuranceReviewPage() {
-  const { travelersInfo, coverageOption, nextStep, prevStep } =
+  const { travelersInfo, coverageOption, nextStep, prevStep, travelDetails } =
     useTravelInsuranceStore()
+  const { apiResponse } = useFullQuoteResponseStore()
   const [proceedingToPayment, setProceedingToPayment] = useState(false)
+
+  const handleDownloadPDF = () => {
+    try {
+      if (!apiResponse?.data) {
+        toast.error('No quote data available')
+        return
+      }
+
+      const destinations = apiResponse.data.TravelDetailList?.map((detail: any) => ({
+        country: detail.TravelCountry,
+        coverageArea: detail.TravelCoverageArea,
+      })).filter(Boolean) || []
+
+      // Get provider name
+      const provider = COMPANIES.find(
+        (c) => c.carrierCode === coverageOption.carrierCode
+      )
+
+      // Get plan name
+      const planName = coverageOption.selectedPlan?.CarrierPlanDesc
+
+      // Get addon names
+      const addons = coverageOption.selectedAddonBenefits?.map((addonCode) => {
+        const addon = coverageOption.selectedPlan?.AddonBenefits?.find(
+          (benefit) => benefit.BenefitCode === addonCode
+        )
+        return addon?.BenefitDesc || addonCode
+      })
+
+      // Get main benefits
+      const mainBenefits = coverageOption.selectedPlan?.MainBenefits || []
+
+      // Get selected addon benefits (full objects)
+      const selectedAddonBenefits = coverageOption.selectedAddonBenefits?.map((addonCode) => {
+        return coverageOption.selectedPlan?.AddonBenefits?.find(
+          (benefit) => benefit.BenefitCode === addonCode
+        )
+      }).filter(Boolean) || []
+
+      generateQuotePDF({
+        travelDetails,
+        travelersInfo,
+        apiResponse,
+        planName,
+        providerName: provider?.companyName,
+        addons,
+        mainBenefits,
+        addonBenefits: selectedAddonBenefits as any,
+      })
+
+      toast.success('PDF downloaded successfully')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast.error('Failed to generate PDF')
+    }
+  }
 
   const handleProceedToPayment = async () => {
     nextStep()
@@ -71,9 +131,17 @@ export function TravelInsuranceReviewPage() {
         <TravelDetailsSummary />
 
         <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-          <CardHeader className="flex items-center justify-between -space-y-2 pt-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
             <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
-            <CheckCircle className="dark:text-accent text-primary" />
+            <Button
+              onClick={handleDownloadPDF}
+              variant="default"
+              size="lg"
+              className="from-primary to-accent bg-gradient-to-r font-semibold dark:text-white"
+            >
+              <Download className="mr-2 h-5 w-5" />
+              Download Quote PDF
+            </Button>
           </CardHeader>
           <CardContent className="h-full w-full space-y-3">
             {/* Provider Information */}
@@ -319,27 +387,39 @@ export function TravelInsuranceReviewPage() {
         </Card>
       </div>
 
-      <div className="flex w-full items-center justify-center gap-3 px-1.5 lg:justify-start lg:px-0">
+      <div className="flex w-full flex-col items-center gap-3 px-1.5 lg:px-0">
         <Button
-          type="button"
-          size="lg"
+          onClick={handleDownloadPDF}
           variant="outline"
-          className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
-          onClick={prevStep}
-        >
-          Back
-        </Button>
-        <Button
           size="lg"
-          className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
-          onClick={async () => {
-            setProceedingToPayment(true)
-            await handleProceedToPayment()
-          }}
+          className="w-full rounded-full border-2 font-semibold lg:w-max lg:px-12"
         >
-          <CreditCard className="mr-2 h-4 w-4" />
-          {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}
+          <Download className="mr-2 h-5 w-5" />
+          Download Quote PDF
         </Button>
+        
+        <div className="flex w-full items-center justify-center gap-3 lg:justify-start">
+          <Button
+            type="button"
+            size="lg"
+            variant="outline"
+            className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
+            onClick={prevStep}
+          >
+            Back
+          </Button>
+          <Button
+            size="lg"
+            className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
+            onClick={async () => {
+              setProceedingToPayment(true)
+              await handleProceedToPayment()
+            }}
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}
+          </Button>
+        </div>
       </div>
     </div>
   )
