@@ -14,10 +14,10 @@ const eslintConfig = [
     extends: [
       'next/core-web-vitals',
       'next/typescript',
-      'react/no-children-prop',
     ],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
+      'react/no-children-prop': 'off',
     },
   }),
 ]
