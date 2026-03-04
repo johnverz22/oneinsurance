@@ -8,6 +8,9 @@ import { useSignUpStepStateStore } from '@/store/signup-store'
 import TermsPoliciesForm from '@/components/signup/terms-policies-from'
 import Link from 'next/link'
 
+// Prevent static generation for this page
+export const dynamic = 'force-dynamic'
+
 export default function SignUpPage() {
   const step = useSignUpStepStateStore((state) => state.step)
 
