@@ -16,6 +16,7 @@ import { CardPaymentForm } from './card-payment-form'
 import { DigitalPaymentForm } from './digital-payment-form'
 import { PaymentSuccessInline } from './payment-success-inline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   CreditCard,
@@ -24,6 +25,7 @@ import {
   ArrowRight,
   Shield,
   CheckCircle,
+  ArrowLeft,
 } from 'lucide-react'
 import {
   IssueQuoteRequest,
@@ -597,7 +599,6 @@ export default function PaymentSelection() {
                     <CardPaymentForm
                       selectedBrand={selectedPaymentBrand}
                       onSubmit={handleCardPaymentSubmit}
-                      onBack={() => prevStep()}
                       isLoading={isProcessing}
                       className="max-w-none"
                       paymentConfig={paymentConfig}
@@ -607,7 +608,6 @@ export default function PaymentSelection() {
                     <DigitalPaymentForm
                       selectedBrand={selectedPaymentBrand}
                       onSubmit={handleDigitalPaymentSubmit}
-                      onBack={() => prevStep()}
                       isLoading={isProcessing}
                       className="max-w-none"
                       paymentConfig={paymentConfig}

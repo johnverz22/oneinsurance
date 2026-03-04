@@ -23,7 +23,20 @@ export function useFullQuoteRequest() {
         )
 
         if (FullQuoteResponseSchema.safeParse(response.data).success) {
-          return FullQuoteResponseSchema.safeParse(response.data).data
+          const validatedData = FullQuoteResponseSchema.safeParse(response.data).data
+          
+          // Save proposal to localStorage for offline access
+          if (validatedData && validatedData.success && validatedData.data?.ProposalNo) {
+            try {
+              const proposalKey = `proposal_${validatedData.data.ProposalNo}`
+              localStorage.setItem(proposalKey, JSON.stringify(validatedData.data))
+              console.log('Saved proposal to localStorage:', validatedData.data.ProposalNo)
+            } catch (storageError) {
+              console.warn('Failed to save proposal to localStorage:', storageError)
+            }
+          }
+          
+          return validatedData
         }
 
         return response.data
