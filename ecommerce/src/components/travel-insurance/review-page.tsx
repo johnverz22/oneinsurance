@@ -111,8 +111,18 @@ export function TravelInsuranceReviewPage() {
 
   const provider = COMPANIES.find(
     (c) => c.carrierCode === coverageOption.carrierCode
-  )!
+  )
   const plan = coverageOption.selectedPlan!
+  
+  // If provider or plan is not found, show error state
+  if (!provider || !plan) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Unable to load plan details. Please try again.</p>
+      </div>
+    )
+  }
+  
   const group = groupBenefits(plan)
   // Show all benefits without limiting
   const allBenefits = group.flatMap((g) => g.benefits)
@@ -158,7 +168,7 @@ export function TravelInsuranceReviewPage() {
 
               <div className="space-y-2 px-1.5">
                 <Badge variant="outline" className="h-max w-max">
-                  {provider?.companyName}
+                  {provider.companyName}
                 </Badge>
                 <h3 className="text-foreground text-left text-xl font-bold tracking-wide text-wrap uppercase">
                   {plan.CarrierPlanDesc}
