@@ -36,6 +36,12 @@ export async function POST(req: NextRequest) {
     console.error('Error fetching travel insurance full quote:', error)
     
     if (axios.isAxiosError(error)) {
+      // Log detailed validation errors
+      console.error('Backend Error Response:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
       return handleServerSideAxiosError(error)
     }
     

@@ -10,10 +10,13 @@ import { COMPANIES } from '@/constants/companies'
 import { toast } from 'sonner'
 
 export function TravelDetailsSummary() {
-  const { travelDetails, coverageOption, travelersInfo } = useTravelInsuranceStore()
+  const { travelDetails, coverageOption, travelersInfo, step } = useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
   
   const proposalNumber = apiResponse?.data?.ProposalNo
+  
+  // Hide proposal number and PDF download ONLY on step 2 (Your Plan Details)
+  const showProposalInfo = step !== 1
 
   const handleDownloadPDF = () => {
     try {
@@ -133,30 +136,21 @@ export function TravelDetailsSummary() {
                 Children
               </p>
             </div>
-            {proposalNumber && (
+            {proposalNumber && showProposalInfo && (
               <div className="space-y-2 py-1">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Proposal Number
                 </p>
-                <p className="text-primary dark:text-accent text-base font-bold whitespace-nowrap">
-                  {proposalNumber}
-                </p>
+                <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 dark:bg-accent/10 px-3 py-1.5">
+                  <p className="text-primary dark:text-accent text-base font-bold tracking-wider">
+                    {proposalNumber}
+                  </p>
+                </div>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
-      
-      {proposalNumber && (
-        <Button
-          onClick={handleDownloadPDF}
-          variant="outline"
-          className="w-full"
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Download Quote PDF
-        </Button>
-      )}
     </div>
   )
 }

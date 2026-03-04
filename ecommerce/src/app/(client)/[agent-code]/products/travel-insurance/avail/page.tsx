@@ -42,15 +42,36 @@ export default function AvailTravelInsurance() {
   // Redirect if no valid travel insurance session exists
   useEffect(() => {
     if (hydrated) {
+      // Check if we're loading from proposal search
+      const loadingFromProposal = sessionStorage.getItem('loading-from-proposal')
+      const targetStep = sessionStorage.getItem('proposal-target-step')
+      
+      if (loadingFromProposal === 'true') {
+        // Clear the flags
+        sessionStorage.removeItem('loading-from-proposal')
+        
+        // Set the target step if specified
+        if (targetStep) {
+          const stepNumber = parseInt(targetStep, 10)
+          setStep(stepNumber)
+          sessionStorage.removeItem('proposal-target-step')
+          console.log(`✅ Loading from proposal search - set step to ${stepNumber} (step ${stepNumber + 1} in UI)`)
+        } else {
+          console.log('✅ Loading from proposal search - skipping redirect check')
+        }
+        return
+      }
+      
       // Check if user has completed initial steps (has clientRequest.id and selectedPlan)
       const hasValidSession = clientRequest?.id && coverageOption?.selectedPlan
 
       if (!hasValidSession) {
+        console.log('❌ No valid session - redirecting to main page')
         router.push(`/${agentCode}/products/travel-insurance`)
         return
       }
     }
-  }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router])
+  }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router, agentCode, setStep])
 
   const steps = [
     {

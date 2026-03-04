@@ -8,7 +8,31 @@ export async function POST(req: NextRequest) {
 
     if (!body) {
       return NextResponse.json(
-        { error: 'Request body is required' },
+        { 
+          success: false,
+          error: 'Request body is required',
+          message: 'Request body is required'
+        },
+        { status: 400 }
+      )
+    }
+
+    // Support proposal search format
+    let requestPayload: any
+
+    if (body.ProposalNo) {
+      // Proposal search format
+      requestPayload = {
+        Type: 'proposal',
+        ProposalNo: body.ProposalNo
+      }
+    } else {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'ProposalNo is required',
+          message: 'ProposalNo is required'
+        },
         { status: 400 }
       )
     }
@@ -16,14 +40,17 @@ export async function POST(req: NextRequest) {
     const url = `${process.env.BASE_URL}/quote/travel/load-quote`
 
     console.log('Travel Insurance Load Quote URL:', url)
-    console.log('Request body:', body)
+    console.log('Request payload:', JSON.stringify(requestPayload, null, 2))
 
-    const response = await axios.post(url, body, {
+    const response = await axios.post(url, requestPayload, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
       },
     })
+
+    console.log('Backend Response Status:', response.status)
+    console.log('Backend Response Data:', JSON.stringify(response.data, null, 2))
 
     const headers = {
       'Access-Control-Allow-Origin': '*',
@@ -31,16 +58,40 @@ export async function POST(req: NextRequest) {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }
 
-    return NextResponse.json(response.data, { status: 200, headers })
+    // Ensure response has success flag
+    const responseData = {
+      success: true,
+      ...response.data
+    }
+
+    return NextResponse.json(responseData, { status: 200, headers })
   } catch (error: any) {
     console.error('Error loading travel insurance quote:', error)
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
     
     if (axios.isAxiosError(error)) {
-      return handleServerSideAxiosError(error)
+      const errorResponse = error.response?.data
+      return NextResponse.json(
+        {
+          success: false,
+          error: errorResponse?.message || error.message,
+          message: errorResponse?.message || 'Failed to load proposal',
+          details: errorResponse
+        },
+        { status: error.response?.status || 500 }
+      )
     }
     
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        success: false,
+        error: 'Internal server error',
+        message: 'Internal server error'
+      },
       { status: 500 }
     )
   }

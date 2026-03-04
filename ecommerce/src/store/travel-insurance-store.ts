@@ -106,6 +106,8 @@ const initialState = {
     {
       idType: 'PAS' as const,
       idNumber: '',
+      idFrontUploaded: false,
+      idBackUploaded: false,
       firstName: '',
       lastName: '',
       dateOfBirth: new Date('1990-01-01'),
