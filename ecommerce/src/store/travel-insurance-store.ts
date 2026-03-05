@@ -86,7 +86,7 @@ const initialState = {
       },
     ],
     departureDate: new Date(),
-    returnDate: addDays(new Date(), 2),
+    returnDate: addDays(new Date(), 7),
     dateOfBirth: new Date('1990-01-01'),
     noOfAdults: 1,
     noOfChildren: 0,

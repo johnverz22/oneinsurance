@@ -620,6 +620,21 @@ export default function PaymentSelection() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Back Button */}
+      <div className="mt-6 flex justify-center lg:justify-start">
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="rounded-full px-12 font-semibold"
+          onClick={prevStep}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Review
+        </Button>
+      </div>
+
       <CardPaymentProcessingDialog
         isOpen={showCardPaymentProcessing}
         message={paymentProviderMessage}
