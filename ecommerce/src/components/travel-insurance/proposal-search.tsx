@@ -361,7 +361,7 @@ export function ProposalSearch() {
           </div>
           
           <p className="text-sm text-muted-foreground">
-            Enter your proposal number to retrieve your saved quote and continue to payment. If payment is already completed, you'll be redirected to view your policy details.
+            Enter your proposal number to retrieve your saved quote and continue to payment. If payment is already completed, you'll see your policy details and confirmation.
           </p>
 
           <div className="flex gap-2">
