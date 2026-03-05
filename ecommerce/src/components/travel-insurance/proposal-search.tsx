@@ -42,7 +42,7 @@ export function ProposalSearch() {
     setIsLoading(true)
 
     try {
-      // First, try to load from backend
+      // Load proposal from backend API using ProposalNo
       const response = await fetch('/api/travel-insurance/load-quote', {
         method: 'POST',
         headers: {
@@ -56,48 +56,43 @@ export function ProposalSearch() {
       const data = await response.json()
 
       console.log('Load Quote API Response Status:', response.status)
-      console.log('Load Quote API Response Data:', data)
+      console.log('Load Quote API Response Data:', JSON.stringify(data, null, 2))
 
       // Check if backend has the proposal
-      const backendHasProposal = response.ok && data.data && !data.data.ValidateResult
-
-      let proposalData = null
-
-      console.log('Backend has proposal?', backendHasProposal)
-      console.log('Checking ValidateResult:', data.data?.ValidateResult)
-
-      if (backendHasProposal) {
-        // Backend has the proposal
-        proposalData = data.data
-        console.log('✅ Loaded from backend:', proposalData)
-      } else {
-        // Backend doesn't have it, try localStorage
-        console.log('❌ Backend does not have proposal, checking localStorage...')
-        const proposalKey = `proposal_${proposalNumber.trim()}`
-        console.log('Looking for key:', proposalKey)
-        
-        const savedProposal = localStorage.getItem(proposalKey)
-        console.log('localStorage result:', savedProposal ? 'FOUND' : 'NOT FOUND')
-        
-        if (savedProposal) {
-          const parsedProposal = JSON.parse(savedProposal)
-          proposalData = parsedProposal
-          console.log('✅ Loaded from localStorage:', proposalData)
-          toast.info('Loaded from your saved data')
-        } else {
-          // Not in backend or localStorage
-          console.error('❌ Proposal not found in backend or localStorage')
-          toast.error('Proposal not found. Please check the proposal number.')
-          return
-        }
-      }
-
-      if (!proposalData) {
-        toast.error('No proposal data found')
+      // The backend response structure should be: { success: true, message: "...", data: {...proposal data...} }
+      const actualData = data.data
+      
+      if (!response.ok || !data.success || !actualData) {
+        console.error('❌ Proposal not found - no data returned')
+        toast.error('Proposal not found. Please check the proposal number.')
         return
       }
 
-      console.log('Proposal Data to be mapped:', proposalData)
+      // Check if we only got ValidateResult (meaning proposal not found)
+      const dataKeys = Object.keys(actualData)
+      console.log('Response data keys:', dataKeys)
+      
+      if (dataKeys.length === 1 && dataKeys[0] === 'ValidateResult') {
+        console.error('❌ Proposal not found - only ValidateResult returned')
+        const validateResult = actualData.ValidateResult
+        
+        // Check if ValidateResult has error messages
+        if (validateResult && validateResult.ErrorMessage && Array.isArray(validateResult.ErrorMessage) && validateResult.ErrorMessage.length > 0) {
+          const firstError = validateResult.ErrorMessage[0]
+          console.error('Validation error:', firstError)
+          toast.error(firstError?.message || 'Invalid proposal. Please check the proposal number.')
+        } else {
+          toast.error('Proposal not found. Please check the proposal number.')
+        }
+        return
+      }
+
+      const proposalData = actualData
+      console.log('✅ Loaded proposal from backend')
+      console.log('Proposal data keys:', dataKeys)
+      console.log('CarrierCode:', proposalData.CarrierCode)
+      console.log('CarrierPlanCode:', proposalData.CarrierPlanCode)
+      console.log('ProposalNo:', proposalData.ProposalNo)
 
       // Populate travel details
       console.log('Step 1: Populating travel details...')
@@ -164,34 +159,21 @@ export function ProposalSearch() {
       })
       console.log('✅ Coverage option populated')
 
-      // Store the API response (wrap localStorage data in same format as API)
+      // Store the API response
       console.log('Step 4: Storing API response...')
-      if (backendHasProposal) {
-        setApiResponse(data)
-      } else {
-        // Wrap localStorage data in API response format
-        setApiResponse({
-          success: true,
-          message: 'Loaded from localStorage',
-          data: proposalData
-        })
-      }
+      setApiResponse(data)
       console.log('✅ API response stored')
 
       // Check if proposal has CarrierPolicyNo (payment completed)
       // CarrierPolicyNo is the actual policy number from the carrier (e.g., "P0093780")
-      // PolicyId exists before payment, so we ignore it
-      // policy_number is what we save to localStorage after payment
-      const hasPolicy = !!(proposalData.CarrierPolicyNo || proposalData.policy_number)
+      // If CarrierPolicyNo exists, payment is complete and policy is issued
+      const hasPolicy = !!proposalData.CarrierPolicyNo
       
       console.log('Step 5: Checking payment status...')
       console.log('Has Policy?', hasPolicy)
       console.log('CarrierPolicyNo (carrier policy):', proposalData.CarrierPolicyNo)
-      console.log('policy_number (localStorage):', proposalData.policy_number)
       console.log('PolicyNo (IMO policy):', proposalData.PolicyNo)
-      console.log('PolicyId (exists before payment - IGNORED):', proposalData.PolicyId)
       console.log('ProposalNo:', proposalData.ProposalNo)
-      console.log('Full proposal data keys:', Object.keys(proposalData))
       
       if (hasPolicy) {
         console.log('✅ Payment completed - showing success screen')
@@ -225,17 +207,31 @@ export function ProposalSearch() {
       } else {
         console.log('✅ Payment not completed - navigating to Review & Confirmation step')
         
-        // Try to get the plan name from custom fields storage
-        const customFieldsKey = `travel-insurance-custom-fields`
-        let planName = 'Travel Insurance Plan'
-        try {
-          const storedCustomFields = localStorage.getItem(customFieldsKey)
-          if (storedCustomFields) {
-            const customFields = JSON.parse(storedCustomFields)
-            planName = customFields.PlanName || customFields.CarrierPlanDesc || planName
-          }
-        } catch (e) {
-          console.warn('Could not load custom fields:', e)
+        // Get plan name from proposal data
+        const planName = proposalData.ProductName || 'Travel Insurance'
+        
+        // Extract benefits from PolicyCoverageList if available
+        const mainBenefits: any[] = []
+        const addonBenefits: any[] = []
+        
+        // Try to extract benefits from the first risk's coverage list
+        const firstRisk = proposalData.PolicyLobList?.[0]?.PolicyRiskList?.[0]
+        if (firstRisk?.PolicyCoverageList) {
+          firstRisk.PolicyCoverageList.forEach((coverage: any) => {
+            const benefit = {
+              BenefitCode: coverage.ProductElementCode || '',
+              BenefitDesc: coverage.CoverageName || '',
+              BenefitType: 'MAIN',
+              CoverageName: coverage.CoverageName || '',
+              DefaultLimitDesc: '',
+              DisplaySeqNo: coverage.SequenceNumber?.toString() || '0',
+              LimitModeDesc: '',
+              ParentBenefit: null,
+              Silimit: '0',
+              SubCoverageName: '',
+            }
+            mainBenefits.push(benefit)
+          })
         }
         
         // Create a plan object from the proposal data
@@ -244,15 +240,40 @@ export function ProposalSearch() {
           CarrierCode: proposalData.CarrierCode,
           CarrierPlanCode: proposalData.CarrierPlanCode || proposalData.PlanCode,
           CarrierPlanDesc: planName,
-          DuePremium: proposalData.DuePremium,
-          GrossPremium: proposalData.GrossPremium,
-          BeforeVatPremium: proposalData.BeforeVatPremium,
-          AnnualPremium: proposalData.AnnualPremium,
+          CarrierProductCode: proposalData.CarrierProductCode || '',
+          CarrierProductName: proposalData.ProductName || 'Travel Insurance',
+          DuePremium: Number(proposalData.DuePremium) || 0,
+          GrossPremium: Number(proposalData.GrossPremium) || 0,
+          BeforeVatPremium: Number(proposalData.BeforeVatPremium) || 0,
+          AnnualPremium: Number(proposalData.AnnualPremium) || 0,
           ProductCode: proposalData.ProductCode,
           ProductVersion: proposalData.ProductVersion,
+          MainBenefits: mainBenefits,
+          AddonBenefits: addonBenefits,
+          LGTAmount: Number(proposalData.LGT) || 0,
+          DiscountAmount: null,
+          PremiumTaxAmt: 0,
+          StampDuty: 0,
+          SumInsured: proposalData.SumInsured?.toString() || null,
+          TaxAmount: 0,
+          VatAmount: null,
         }
         
         console.log('Real plan from proposal:', realPlan)
+        console.log('Extracted benefits:', { mainBenefits: mainBenefits.length, addonBenefits: addonBenefits.length })
+        console.log('Plan validation:', {
+          hasCarrierCode: !!realPlan.CarrierCode,
+          hasCarrierPlanCode: !!realPlan.CarrierPlanCode,
+          hasDuePremium: !!realPlan.DuePremium,
+          hasMainBenefits: mainBenefits.length > 0
+        })
+        
+        // Store the full API response for step 4
+        setApiResponse({
+          success: true,
+          message: 'Proposal loaded',
+          data: proposalData
+        })
         
         // Update all state - these are the REAL values the customer already entered
         setClientRequest({
@@ -266,22 +287,23 @@ export function ProposalSearch() {
           selectedAddonBenefits: [],
         })
         
-        setStep(3) // Step 4 in UI (0-indexed)
-        
         console.log('✅ All state updated with real customer data')
-        console.log('✅ Navigating to step 4 (Review & Confirmation)...')
         
         // Set a flag to indicate we're loading from proposal search
         // This prevents the avail page from redirecting before state is persisted
         sessionStorage.setItem('loading-from-proposal', 'true')
         sessionStorage.setItem('proposal-target-step', '3') // Step 4 in UI (0-indexed)
         
-        // Wait a bit for Zustand persist middleware to write to sessionStorage
-        // before navigating to ensure state is available on the next page
-        setTimeout(() => {
-          router.push(`/${agentCode}/products/travel-insurance/avail`)
-          toast.success('Proposal loaded! Please review and proceed to payment.')
-        }, 100)
+        // Wait for Zustand persist middleware to write to sessionStorage
+        // Use a longer delay to ensure all state is persisted
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
+        setStep(3) // Step 4 in UI (0-indexed)
+        
+        console.log('✅ Navigating to step 4 (Review & Confirmation)...')
+        
+        router.push(`/${agentCode}/products/travel-insurance/avail`)
+        toast.success('Proposal loaded! Please review and proceed to payment.')
       }
       
       console.log('✅ All steps completed successfully!')
@@ -357,7 +379,7 @@ export function ProposalSearch() {
             <Button
               onClick={handleSearch}
               disabled={isLoading || !proposalNumber.trim()}
-              className="h-12 px-6"
+              className="from-primary to-accent h-12 rounded-full bg-gradient-to-r px-6 font-semibold dark:text-white"
             >
               {isLoading ? (
                 <>

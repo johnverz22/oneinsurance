@@ -111,7 +111,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
   const getReturnDateForSingleTrip = (departureDate: Date) => {
     const returnDate = new Date(departureDate)
-    returnDate.setDate(returnDate.getDate() + 3)
+    returnDate.setDate(returnDate.getDate() + 7)
     return returnDate
   }
 
@@ -139,6 +139,10 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       updateTravelDetails(value)
       setInsurancePlans(null)
       resetQuoteRefetchCount()
+      
+      // Clear any previous error state before making new request
+      // Don't set status to undefined - just let the new request set it
+      
       const clientRequestId = await mutateAsync(value)
       setFormModified(false)
       setClientRequest({
@@ -198,7 +202,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   return (
     <Card
       className={cn(
-        'w-full space-y-6 rounded-md border shadow-none backdrop-blur-sm lg:rounded-xl lg:shadow-2xl',
+        'w-full space-y-6 rounded-md border shadow-lg backdrop-blur-sm lg:rounded-xl',
         className
       )}
       data-testid="travel-details-form"

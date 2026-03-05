@@ -1050,7 +1050,7 @@ export function PersonalInfoForm() {
                                           >
                                             I agree to the{' '}
                                             <a
-                                              href="/travel-insurance-terms"
+                                              href="/data-sharing-consent"
                                               target="_blank"
                                               rel="noopener noreferrer"
                                               className="text-primary hover:underline font-medium"

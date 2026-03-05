@@ -23,9 +23,19 @@ export const PlanPaymentReview = ({
 
   const provider = COMPANIES.find(
     (c) => c.carrierCode === coverageOption.carrierCode
-  )!
+  )
 
   const plan = coverageOption.selectedPlan
+  
+  // If provider or plan not found, show error state
+  if (!provider || !plan) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Unable to load plan details. Please try again.</p>
+      </div>
+    )
+  }
+  
   const { groupedAddonBenefits } = groupPlanBenefits(plan)
 
   const addedAddonBenefits = Object.entries(groupedAddonBenefits)
