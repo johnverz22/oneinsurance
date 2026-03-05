@@ -52,6 +52,12 @@ function TravelInsurancePageSSR() {
 
     async function fetchCoverageOption() {
       try {
+        // Check if we have valid travel details before making API call
+        if (!travelDetails.departureDate || !travelDetails.returnDate || !travelDetails.dateOfBirth) {
+          console.log('⚠️ Incomplete travel details - skipping API call')
+          return
+        }
+
         // Ensure dates are properly converted to Date objects
         const sanitizedTravelDetails = {
           ...travelDetails,
@@ -147,7 +153,7 @@ function TravelInsurancePageSSR() {
         </div>
       </div>
 
-      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col gap-6 px-1.5 lg:-mt-40">
+      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col gap-8 px-1.5 lg:-mt-40 lg:gap-12">
         <TravelDetailsForm />
         <ProposalSearch />
       </div>

@@ -285,7 +285,7 @@ export function IdUploadComponent({
               processImage()
             }}
             disabled={isProcessing}
-            className="from-primary to-lilac hover:from-primary/90 hover:to-lilac/90 focus:from-primary/90 focus:to-lilac/90 relative flex w-full items-center justify-center gap-2 bg-gradient-to-r text-white"
+            className="from-primary to-accent relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r font-semibold text-white hover:from-primary/90 hover:to-accent/90 dark:text-white"
             type="button"
             size="lg"
           >

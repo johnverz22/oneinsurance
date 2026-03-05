@@ -182,6 +182,9 @@ export function CoverageOptionsForm() {
 
   useEffect(() => {
     if (clientRequest.id !== undefined) {
+      // Reset error state when starting a new search
+      setIsError(false)
+      
       const echo = getEcho()
 
       if (echo.connector.pusher.connection.state !== 'connected') {
