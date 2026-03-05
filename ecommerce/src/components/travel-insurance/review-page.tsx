@@ -147,7 +147,7 @@ export function TravelInsuranceReviewPage() {
               onClick={handleDownloadPDF}
               variant="default"
               size="lg"
-              className="from-primary to-accent bg-gradient-to-r font-semibold dark:text-white"
+              className="from-primary to-accent rounded-full bg-gradient-to-r font-semibold dark:text-white"
             >
               <Download className="mr-2 h-5 w-5" />
               Download Quote PDF
