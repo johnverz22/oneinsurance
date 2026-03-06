@@ -66,7 +66,7 @@ export default function TransactionDetailsPage() {
 
   const handleDownloadPDF = () => {
     if (activeTab === 'coverage') {
-      toast.success('Downloading Certificate of Coverage PDF...')
+      toast.success('Downloading Cover Note PDF...')
     } else {
       toast.success('Downloading Invoice PDF...')
     }
@@ -178,12 +178,12 @@ export default function TransactionDetailsPage() {
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-sm border min-h-[800px]">
           {activeTab === 'coverage' ? (
-            // Certificate of Coverage Document
+            // Cover Note Document
             <div className="p-8">
               {/* Header */}
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Certificate of Coverage</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Cover Note</h1>
                   <div className="space-y-1 text-gray-600">
                     <p>Policy Number: #{policyNumber}</p>
                     <p>Proposal Number: #{policyDetails?.ProposalNo || 'N/A'}</p>
@@ -322,7 +322,7 @@ export default function TransactionDetailsPage() {
               {/* Download Button */}
               <div className="text-center pt-4">
                 <Button onClick={handleDownloadPDF} className="bg-gray-900 hover:bg-gray-800">
-                  Generate And Download Certificate of Coverage
+                  Generate And Download Cover Note
                 </Button>
               </div>
             </div>
