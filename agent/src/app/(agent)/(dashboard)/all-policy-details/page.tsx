@@ -87,7 +87,7 @@ export default function AllPolicyDetailsPage() {
       // Header
       pdf.setFontSize(20)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('All Policies - Certificate of Coverage', 20, yPosition)
+      pdf.text('All Policies - Cover Note', 20, yPosition)
       
       yPosition += 10
       pdf.setFontSize(12)
@@ -257,7 +257,7 @@ export default function AllPolicyDetailsPage() {
               {/* Header */}
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">All Policies - Certificate of Coverage</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">All Policies - Cover Note</h1>
                   <p className="text-gray-600">{transactions.length} Active Policies</p>
                 </div>
                 <div className="text-right">
