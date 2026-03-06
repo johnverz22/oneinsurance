@@ -29,7 +29,7 @@ import {
   FullQuoteResponse,
   FullQuoteResponseSchema,
 } from '@/types/travel-insurance/policy-types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TravelDetailsSummary } from './travel-details-summary'
 import {
   getHighlightedBenefits,
@@ -48,6 +48,15 @@ export function TravelInsuranceReviewPage() {
     useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
   const [proceedingToPayment, setProceedingToPayment] = useState(false)
+  const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
+
+  // Check if we're in read-only mode (loaded from proposal search)
+  useEffect(() => {
+    const readOnlyMode = sessionStorage.getItem('proposal-readonly-mode')
+    if (readOnlyMode === 'true') {
+      setIsReadOnlyMode(true)
+    }
+  }, [])
 
   const handleDownloadPDF = () => {
     try {
@@ -112,13 +121,13 @@ export function TravelInsuranceReviewPage() {
   const provider = COMPANIES.find(
     (c) => c.carrierCode === coverageOption.carrierCode
   )
-  const plan = coverageOption.selectedPlan!
+  const plan = coverageOption.selectedPlan
   
-  // If provider or plan is not found, show error state
+  // If provider or plan is not found, show error message
   if (!provider || !plan) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-muted-foreground">Unable to load plan details. Please try again.</p>
+        <p className="text-muted-foreground">Something went wrong. Please try again.</p>
       </div>
     )
   }
@@ -409,18 +418,20 @@ export function TravelInsuranceReviewPage() {
         </Button>
         
         <div className="flex w-full items-center justify-center gap-3 lg:justify-start">
+          {!isReadOnlyMode && (
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
+              onClick={prevStep}
+            >
+              Back
+            </Button>
+          )}
           <Button
-            type="button"
             size="lg"
-            variant="outline"
-            className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
-            onClick={prevStep}
-          >
-            Back
-          </Button>
-          <Button
-            size="lg"
-            className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
+            className={`from-primary to-accent rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white ${isReadOnlyMode ? 'w-full' : 'w-1/2'}`}
             onClick={async () => {
               setProceedingToPayment(true)
               await handleProceedToPayment()

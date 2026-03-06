@@ -662,7 +662,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                   form.handleSubmit()
                   setInsurancePlans(null)
                 }}
-                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
+                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-100 sm:w-auto sm:px-8 dark:text-white"
                 size="lg"
               >
                 {isDetailsFormState.title}
