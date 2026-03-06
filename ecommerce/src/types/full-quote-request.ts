@@ -81,6 +81,7 @@ export interface TravellerListItem {
 }
 
 export interface CustomField {
+  PlanName?: string
   TravellerLists: TravellerListItem[]
 }
 

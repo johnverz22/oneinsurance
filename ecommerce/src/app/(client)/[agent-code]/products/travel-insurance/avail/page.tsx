@@ -25,6 +25,7 @@ export default function AvailTravelInsurance() {
   const { agentCode } = useAgentCodeStore()
   const [hydrated, setHydrated] = useState(false)
   const { apiResponse } = useFullQuoteResponseStore()
+  const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
 
   const router = useRouter()
 
@@ -37,6 +38,16 @@ export default function AvailTravelInsurance() {
 
   useEffect(() => {
     setHydrated(true)
+    
+    // Cleanup read-only mode flag when component unmounts
+    return () => {
+      // Only clear if user is not on step 3 (Review & Confirmation) or step 4 (Payment)
+      // This prevents clearing the flag when navigating between these steps
+      const currentStep = useTravelInsuranceStore.getState().step
+      if (currentStep < 3) {
+        sessionStorage.removeItem('proposal-readonly-mode')
+      }
+    }
   }, [])
 
   // Redirect if no valid travel insurance session exists
@@ -45,10 +56,16 @@ export default function AvailTravelInsurance() {
       // Check if we're loading from proposal search
       const loadingFromProposal = sessionStorage.getItem('loading-from-proposal')
       const targetStep = sessionStorage.getItem('proposal-target-step')
+      const readOnlyMode = sessionStorage.getItem('proposal-readonly-mode')
       
       if (loadingFromProposal === 'true') {
-        // Clear the flags
+        // Clear the loading flag
         sessionStorage.removeItem('loading-from-proposal')
+        
+        // Set read-only mode if specified
+        if (readOnlyMode === 'true') {
+          setIsReadOnlyMode(true)
+        }
         
         // Set the target step if specified
         if (targetStep) {
@@ -56,8 +73,6 @@ export default function AvailTravelInsurance() {
           setStep(stepNumber)
           sessionStorage.removeItem('proposal-target-step')
           console.log(`✅ Loading from proposal search - set step to ${stepNumber} (step ${stepNumber + 1} in UI)`)
-        } else {
-          console.log('✅ Loading from proposal search - skipping redirect check')
         }
         return
       }
@@ -126,9 +141,9 @@ export default function AvailTravelInsurance() {
         <Stepper
           steps={steps}
           currentStep={step}
-          highestVisitedStep={highestVisitedStep}
+          highestVisitedStep={isReadOnlyMode ? step : highestVisitedStep}
           contentContainerClass="flex items-start md:justify-start"
-          onStepChange={(step) => setStep(step)}
+          onStepChange={isReadOnlyMode ? undefined : (step) => setStep(step)}
         />
       </div>
 
