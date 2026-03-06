@@ -305,9 +305,20 @@ export function ProposalSearch() {
         sessionStorage.setItem('proposal-target-step', '3') // Step 4 in UI (0-indexed)
         sessionStorage.setItem('proposal-readonly-mode', 'true') // Disable editing and back navigation
         
-        // Wait longer for Zustand persist middleware to write to sessionStorage
-        // This ensures all state is fully persisted before navigation
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        console.log('⏳ Waiting for state to persist to sessionStorage...')
+        
+        // Wait for Zustand persist middleware to write to sessionStorage
+        // Increased delay to ensure state is fully persisted before navigation
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        // Verify state was persisted
+        const persistedState = sessionStorage.getItem('travel-insurance-storage')
+        console.log('📦 Persisted state exists:', !!persistedState)
+        if (persistedState) {
+          const parsed = JSON.parse(persistedState)
+          console.log('📦 Persisted coverageOption:', !!parsed?.state?.coverageOption?.selectedPlan)
+          console.log('📦 Persisted clientRequest:', !!parsed?.state?.clientRequest?.id)
+        }
         
         console.log('✅ Navigating to step 4 (Review & Confirmation)...')
         
