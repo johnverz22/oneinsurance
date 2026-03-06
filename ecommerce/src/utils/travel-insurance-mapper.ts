@@ -283,6 +283,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       ? 'ANNUAL'
       : 'SINGLE',
     CustomField: {
+      PlanName: plan.CarrierPlanDesc,
       TravellerLists: travellerlists,
     },
   } satisfies FullQuoteRequest

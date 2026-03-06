@@ -207,8 +207,18 @@ export function ProposalSearch() {
       } else {
         console.log('✅ Payment not completed - navigating to Review & Confirmation step')
         
+        // Log the full proposal data to see what fields are available
+        console.log('📋 Full proposal data:', JSON.stringify(proposalData, null, 2))
+        console.log('📋 CustomField:', proposalData.CustomField)
+        console.log('📋 CustomField.PlanName:', proposalData.CustomField?.PlanName)
+        console.log('📋 PlanName:', proposalData.PlanName)
+        console.log('📋 ProductName:', proposalData.ProductName)
+        
         // Get plan name from proposal data
-        const planName = proposalData.ProductName || 'Travel Insurance'
+        // Backend now stores PlanName in CustomField for new proposals
+        const planName = proposalData.CustomField?.PlanName || proposalData.PlanName || proposalData.ProductName || 'Travel Insurance'
+        
+        console.log('📋 Final planName used:', planName)
         
         // Extract benefits from PolicyCoverageList if available
         const mainBenefits: any[] = []
@@ -293,10 +303,11 @@ export function ProposalSearch() {
         // This prevents the avail page from redirecting before state is persisted
         sessionStorage.setItem('loading-from-proposal', 'true')
         sessionStorage.setItem('proposal-target-step', '3') // Step 4 in UI (0-indexed)
+        sessionStorage.setItem('proposal-readonly-mode', 'true') // Disable editing and back navigation
         
-        // Wait for Zustand persist middleware to write to sessionStorage
-        // Use a longer delay to ensure all state is persisted
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Wait longer for Zustand persist middleware to write to sessionStorage
+        // This ensures all state is fully persisted before navigation
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
         console.log('✅ Navigating to step 4 (Review & Confirmation)...')
         
@@ -378,7 +389,8 @@ export function ProposalSearch() {
             <Button
               onClick={handleSearch}
               disabled={isLoading || !proposalNumber.trim()}
-              className="from-primary to-accent h-12 rounded-full bg-gradient-to-r px-6 font-semibold dark:text-white"
+              className="from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-100 dark:text-white"
+              size="lg"
             >
               {isLoading ? (
                 <>
