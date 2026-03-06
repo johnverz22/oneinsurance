@@ -264,7 +264,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     LGT: parseInt(plan.LGTAmount.toString()),
     NoOfAdults: travelInsurance.travelDetails.noOfAdults,
     NoOfChildren: travelInsurance.travelDetails.noOfChildren,
-    NomineeList: nomineeList.length > 0 ? nomineeList : undefined,
+    NomineeList: nomineeList,
     PlanCode: travelInsurance.coverageOption.selectedPlan!.CarrierPlanCode,
     PolicyCustomerList: policyCustomerList,
     PolicyLobList: [
