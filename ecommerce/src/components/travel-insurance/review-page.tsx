@@ -49,6 +49,7 @@ export function TravelInsuranceReviewPage() {
   const { apiResponse } = useFullQuoteResponseStore()
   const [proceedingToPayment, setProceedingToPayment] = useState(false)
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Check if we're in read-only mode (loaded from proposal search)
   useEffect(() => {
@@ -56,6 +57,14 @@ export function TravelInsuranceReviewPage() {
     if (readOnlyMode === 'true') {
       setIsReadOnlyMode(true)
     }
+    
+    // Give more time for Zustand to hydrate from sessionStorage
+    // This is especially important on first load from proposal search
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 300)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   const handleDownloadPDF = () => {
@@ -123,7 +132,19 @@ export function TravelInsuranceReviewPage() {
   )
   const plan = coverageOption.selectedPlan
   
-  // If provider or plan is not found, show error message
+  // Show loading state while data is being hydrated
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-muted-foreground">Loading your quote details...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // If provider or plan is not found after loading, show error message
   if (!provider || !plan) {
     return (
       <div className="flex items-center justify-center p-8">
