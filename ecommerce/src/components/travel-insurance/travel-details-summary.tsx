@@ -12,11 +12,6 @@ import { toast } from 'sonner'
 export function TravelDetailsSummary() {
   const { travelDetails, coverageOption, travelersInfo, step } = useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
-  
-  const proposalNumber = apiResponse?.data?.ProposalNo
-  
-  // Hide proposal number and PDF download ONLY on step 2 (Your Plan Details)
-  const showProposalInfo = step !== 1
 
   const handleDownloadPDF = () => {
     try {
@@ -136,18 +131,6 @@ export function TravelDetailsSummary() {
                 Children
               </p>
             </div>
-            {proposalNumber && showProposalInfo && (
-              <div className="space-y-2 py-1">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Proposal Number
-                </p>
-                <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 dark:bg-accent/10 px-3 py-1.5">
-                  <p className="text-primary dark:text-accent text-base font-bold tracking-wider">
-                    {proposalNumber}
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

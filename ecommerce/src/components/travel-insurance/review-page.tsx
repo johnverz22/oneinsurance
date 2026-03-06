@@ -144,9 +144,53 @@ export function TravelInsuranceReviewPage() {
     )
     .map(([_, benefitGroup]) => benefitGroup)
 
+  const proposalNumber = apiResponse?.data?.ProposalNo
+
   return (
     <div className="relative space-y-6">
       <div className="space-y-6">
+        {/* Proposal Number Card */}
+        {proposalNumber && (
+          <Card className="bg-background overflow-hidden p-0 shadow-none">
+            <CardContent className="flex items-center justify-between px-6 py-4">
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                Proposal Number
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 dark:bg-accent/10 px-4 py-2">
+                  <p className="text-primary dark:text-accent text-lg font-bold tracking-wider">
+                    {proposalNumber}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(proposalNumber)
+                    toast.success('Proposal number copied to clipboard')
+                  }}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                  </svg>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <TravelDetailsSummary />
 
         <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
