@@ -407,39 +407,42 @@ export function TravelInsuranceReviewPage() {
       </div>
 
       <div className="flex w-full flex-col items-center gap-3 px-1.5 lg:px-0">
-        <Button
-          onClick={handleDownloadPDF}
-          variant="outline"
-          size="lg"
-          className="w-full rounded-full border-2 font-semibold lg:w-max lg:px-12"
-        >
-          <Download className="mr-2 h-5 w-5" />
-          Download Quote PDF
-        </Button>
-        
-        <div className="flex w-full items-center justify-center gap-3 lg:justify-start">
-          {!isReadOnlyMode && (
-            <Button
-              type="button"
-              size="lg"
-              variant="outline"
-              className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
-              onClick={prevStep}
-            >
-              Back
-            </Button>
-          )}
+        <div className="flex w-full flex-col items-center gap-3 lg:flex-row lg:justify-between">
           <Button
+            onClick={handleDownloadPDF}
+            variant="outline"
             size="lg"
-            className={`from-primary to-accent rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white ${isReadOnlyMode ? 'w-full' : 'w-1/2'}`}
-            onClick={async () => {
-              setProceedingToPayment(true)
-              await handleProceedToPayment()
-            }}
+            className="w-full rounded-full border-2 font-semibold lg:w-max lg:px-12"
           >
-            <CreditCard className="mr-2 h-4 w-4" />
-            {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}
+            <Download className="mr-2 h-5 w-5" />
+            Download Quote PDF
           </Button>
+          
+          <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
+            {!isReadOnlyMode && (
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="w-full rounded-full bg-transparent px-12 font-semibold lg:w-max"
+                onClick={prevStep}
+              >
+                Back
+              </Button>
+            )}
+            
+            <Button
+              size="lg"
+              className="from-primary to-accent w-full rounded-full bg-gradient-to-r via-90% px-14 font-semibold lg:w-max dark:text-white"
+              onClick={async () => {
+                setProceedingToPayment(true)
+                await handleProceedToPayment()
+              }}
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
