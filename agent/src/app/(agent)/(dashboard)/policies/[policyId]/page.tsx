@@ -143,27 +143,74 @@ export default function PolicyDetailsPage() {
     try {
       const jsPDF = (await import('jspdf')).default
       const pdf = new jsPDF('p', 'mm', 'a4')
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 15
       let yPosition = 20
 
-      // Header
-      pdf.setFontSize(20)
+      // Colors matching One Insurance branding
+      const primaryGreen = [76, 132, 62] // #4C843E
+      const accentGold = [189, 183, 107] // #BDB76B
+      const lightGreen = [230, 242, 227] // #E6F2E3
+      const darkGray = [51, 51, 51]
+      const borderGray = [200, 200, 200]
+
+      // ===== HEADER =====
+      // Logo and branding
+      pdf.setFontSize(24)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('POLICY CERTIFICATE', 20, yPosition)
+      pdf.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      pdf.text('One', margin, yPosition)
       
+      const oneWidth = pdf.getTextWidth('One')
+      pdf.setTextColor(accentGold[0], accentGold[1], accentGold[2])
+      pdf.text('Insurance', margin + oneWidth + 1, yPosition)
+
+      // Tagline
+      pdf.setFontSize(8)
+      pdf.setFont('helvetica', 'italic')
+      pdf.setTextColor(100, 100, 100)
+      pdf.text('Insurance Made Simple. Coverage Made Easy.', margin, yPosition + 5)
+
+      // POLICY CERTIFICATE badge (right side)
+      const badgeWidth = 55
+      const badgeHeight = 11
+      const badgeX = pageWidth - margin - badgeWidth
+      const badgeY = yPosition - 6
+      
+      pdf.setFillColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      pdf.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 2, 2, 'F')
       pdf.setFontSize(12)
-      pdf.setFont('helvetica', 'normal')
-      pdf.text('One Insurance Company', 20, yPosition + 10)
-      
-      yPosition += 25
-
-      // Policy Information
-      pdf.setFontSize(14)
       pdf.setFont('helvetica', 'bold')
-      pdf.text('POLICY INFORMATION', 20, yPosition)
-      yPosition += 10
+      pdf.setTextColor(255, 255, 255)
+      pdf.text('POLICY CERTIFICATE', badgeX + badgeWidth / 2, badgeY + 7.5, { align: 'center' })
 
-      pdf.setFontSize(10)
+      // Policy number and date (right side, below badge)
+      pdf.setFontSize(8)
       pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(80, 80, 80)
+      pdf.text(`Policy No: ${policyDetails?.CarrierPolicyNo || 'N/A'}`, pageWidth - margin, badgeY + badgeHeight + 5, { align: 'right' })
+      pdf.text(`Issued: ${new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}`, pageWidth - margin, badgeY + badgeHeight + 9, { align: 'right' })
+
+      yPosition += 18
+
+      // Separator line
+      pdf.setDrawColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      pdf.setLineWidth(1)
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+      
+      yPosition += 12
+
+      // ===== POLICY INFORMATION =====
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      pdf.text('Policy Information', margin, yPosition)
+      yPosition += 7
+
+      pdf.setFontSize(9)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(darkGray[0], darkGray[1], darkGray[2])
       
       const policyInfo = [
         `Policy No.: ${policyDetails?.CarrierPolicyNo || 'N/A'}`,
@@ -181,21 +228,23 @@ export default function PolicyDetailsPage() {
       ]
 
       policyInfo.forEach(info => {
-        pdf.text(info, 20, yPosition)
+        pdf.text(info, margin, yPosition)
         yPosition += 5
       })
 
-      yPosition += 10
+      yPosition += 8
 
-      // Customer Information
+      // ===== CUSTOMER INFORMATION =====
       if (customer) {
-        pdf.setFontSize(14)
+        pdf.setFontSize(12)
         pdf.setFont('helvetica', 'bold')
-        pdf.text('CUSTOMER INFORMATION', 20, yPosition)
-        yPosition += 10
+        pdf.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+        pdf.text('Customer Information', margin, yPosition)
+        yPosition += 7
 
-        pdf.setFontSize(10)
+        pdf.setFontSize(9)
         pdf.setFont('helvetica', 'normal')
+        pdf.setTextColor(darkGray[0], darkGray[1], darkGray[2])
         
         const customerInfo = [
           `Full Name: ${customer.FirstName || ''} ${customer.MiddleName || ''} ${customer.LastName || ''}`.trim() || transactionCustomerName || 'N/A',
@@ -208,22 +257,24 @@ export default function PolicyDetailsPage() {
         ]
 
         customerInfo.forEach(info => {
-          pdf.text(info, 20, yPosition)
+          pdf.text(info, margin, yPosition)
           yPosition += 5
         })
 
-        yPosition += 10
+        yPosition += 8
       }
 
-      // Travel Information
+      // ===== TRAVEL INFORMATION =====
       if (travelDetails) {
-        pdf.setFontSize(14)
+        pdf.setFontSize(12)
         pdf.setFont('helvetica', 'bold')
-        pdf.text('TRAVEL INFORMATION', 20, yPosition)
-        yPosition += 10
+        pdf.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+        pdf.text('Travel Information', margin, yPosition)
+        yPosition += 7
 
-        pdf.setFontSize(10)
+        pdf.setFontSize(9)
         pdf.setFont('helvetica', 'normal')
+        pdf.setTextColor(darkGray[0], darkGray[1], darkGray[2])
         
         const travelInfo = [
           `Origin: ${travelDetails.PlaceOfOrgin}`,
@@ -235,39 +286,51 @@ export default function PolicyDetailsPage() {
         ]
 
         travelInfo.forEach(info => {
-          pdf.text(info, 20, yPosition)
+          pdf.text(info, margin, yPosition)
           yPosition += 5
         })
 
-        yPosition += 10
+        yPosition += 8
       }
 
-      // Coverage Details
+      // ===== COVERAGE DETAILS =====
       if (coverages.length > 0) {
-        pdf.setFontSize(14)
+        pdf.setFontSize(12)
         pdf.setFont('helvetica', 'bold')
-        pdf.text('COVERAGE DETAILS', 20, yPosition)
-        yPosition += 10
+        pdf.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+        pdf.text('Coverage Details', margin, yPosition)
+        yPosition += 7
 
-        pdf.setFontSize(10)
+        pdf.setFontSize(9)
         pdf.setFont('helvetica', 'normal')
+        pdf.setTextColor(darkGray[0], darkGray[1], darkGray[2])
 
         coverages.forEach((coverage, index) => {
-          pdf.text(`${index + 1}. ${coverage.CoverageName}`, 20, yPosition)
+          pdf.text(`${index + 1}. ${coverage.CoverageName}`, margin, yPosition)
           yPosition += 5
           
-          if (yPosition > 270) {
+          if (yPosition > pageHeight - 40) {
             pdf.addPage()
-            yPosition = 20
+            yPosition = margin
           }
         })
       }
 
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      pdf.setFontSize(8)
-      pdf.setFont('helvetica', 'italic')
-      pdf.text('This is an official policy certificate issued by One Insurance Company.', 20, pageHeight - 20)
-      pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, pageHeight - 15)
+      // ===== FOOTER =====
+      yPosition = pageHeight - 25
+      pdf.setDrawColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      pdf.setLineWidth(1)
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition)
+      
+      yPosition += 6
+      pdf.setFontSize(7)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(80, 80, 80)
+      pdf.text('support@oneinsurance.ph  |  +63 (2) 8123-4567  |  www.oneinsurance.ph', pageWidth / 2, yPosition, { align: 'center' })
+      yPosition += 4
+      pdf.text('This is an official policy certificate issued by One Insurance Company.', pageWidth / 2, yPosition, { align: 'center' })
+      yPosition += 4
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, pageWidth / 2, yPosition, { align: 'center' })
       
       const fileName = `Policy_Certificate_${policyDetails?.CarrierPolicyNo || 'N/A'}.pdf`
       pdf.save(fileName)
