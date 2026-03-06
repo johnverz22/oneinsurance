@@ -296,12 +296,11 @@ export function ProposalSearch() {
         
         // Wait for Zustand persist middleware to write to sessionStorage
         // Use a longer delay to ensure all state is persisted
-        await new Promise(resolve => setTimeout(resolve, 200))
-        
-        setStep(3) // Step 4 in UI (0-indexed)
+        await new Promise(resolve => setTimeout(resolve, 500))
         
         console.log('✅ Navigating to step 4 (Review & Confirmation)...')
         
+        // Navigate first, then set step on the avail page
         router.push(`/${agentCode}/products/travel-insurance/avail`)
         toast.success('Proposal loaded! Please review and proceed to payment.')
       }
