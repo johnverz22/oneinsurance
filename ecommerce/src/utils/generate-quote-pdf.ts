@@ -154,6 +154,114 @@ export function generateQuotePDF(data: QuotePDFData) {
 
   yPosition = tableY + rowHeight + 10
 
+  // ===== POLICY HOLDER =====
+  checkNewPage(50)
+  doc.setFontSize(12)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+  doc.text('Policy Holder', margin, yPosition)
+  yPosition += 7
+
+  // Policy holder details (first traveler)
+  if (travelersInfo && travelersInfo.length > 0) {
+    const policyHolder = travelersInfo[0]
+    
+    // Policy holder table
+    const holderTableWidth = pageWidth - 2 * margin
+    const labelWidth = holderTableWidth * 0.35
+    const valueWidth = holderTableWidth * 0.65
+    
+    const holderFields = [
+      { label: 'Name', value: `${policyHolder.firstName} ${policyHolder.middleName || ''} ${policyHolder.lastName}`.trim() },
+      { label: 'Gender', value: policyHolder.gender === 'M' ? 'Male' : 'Female' },
+      { label: 'Date of Birth', value: format(policyHolder.dateOfBirth, 'MMM dd, yyyy') },
+      { label: 'Email Address', value: policyHolder.email },
+      { label: 'Mobile Number', value: `+63${policyHolder.mobileNumber}` },
+      { label: 'ID Type', value: policyHolder.idType },
+      { label: 'ID Number', value: policyHolder.idNumber },
+      { label: 'Address', value: `${policyHolder.address.line1}${policyHolder.address.line2 ? ', ' + policyHolder.address.line2 : ''}, ${policyHolder.address.city}, ${policyHolder.address.province} ${policyHolder.address.zipCode}` }
+    ]
+    
+    holderFields.forEach((field, index) => {
+      checkNewPage(10)
+      
+      const bgColor = index % 2 === 0 ? lightGray : [255, 255, 255]
+      doc.setFillColor(bgColor[0], bgColor[1], bgColor[2])
+      doc.rect(margin, yPosition, holderTableWidth, rowHeight, 'F')
+      doc.rect(margin, yPosition, holderTableWidth, rowHeight, 'S')
+      
+      // Label
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      doc.text(field.label, margin + 2, yPosition + 6.5)
+      
+      // Value
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
+      const valueText = doc.splitTextToSize(field.value, valueWidth - 4)
+      doc.text(valueText, margin + labelWidth + 2, yPosition + 6.5)
+      
+      // Vertical line
+      doc.line(margin + labelWidth, yPosition, margin + labelWidth, yPosition + rowHeight)
+      
+      yPosition += rowHeight
+    })
+    
+    // Add beneficiary information if available
+    if (policyHolder.hasBeneficiary && policyHolder.beneficiary && policyHolder.beneficiary.firstName) {
+      yPosition += 5
+      
+      // Beneficiary header
+      checkNewPage(10)
+      doc.setFillColor(lightGreen[0], lightGreen[1], lightGreen[2])
+      doc.rect(margin, yPosition, holderTableWidth, rowHeight, 'F')
+      doc.rect(margin, yPosition, holderTableWidth, rowHeight, 'S')
+      
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      doc.text('Beneficiary', margin + holderTableWidth / 2, yPosition + 6.5, { align: 'center' })
+      
+      yPosition += rowHeight
+      
+      // Beneficiary fields
+      const beneficiaryFields = [
+        { label: 'Name', value: `${policyHolder.beneficiary.firstName} ${policyHolder.beneficiary.middleName || ''} ${policyHolder.beneficiary.lastName}`.trim() },
+        { label: 'Date of Birth', value: policyHolder.beneficiary.dateOfBirth ? format(new Date(policyHolder.beneficiary.dateOfBirth), 'MMM dd, yyyy') : 'N/A' },
+        { label: 'Relationship', value: policyHolder.beneficiary.relationship || 'N/A' }
+      ]
+      
+      beneficiaryFields.forEach((field, index) => {
+        checkNewPage(10)
+        
+        const bgColor = index % 2 === 0 ? [255, 255, 255] : lightGray
+        doc.setFillColor(bgColor[0], bgColor[1], bgColor[2])
+        doc.rect(margin, yPosition, holderTableWidth, rowHeight, 'F')
+        doc.rect(margin, yPosition, holderTableWidth, rowHeight, 'S')
+        
+        // Label
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(8)
+        doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+        doc.text(field.label, margin + 2, yPosition + 6.5)
+        
+        // Value
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
+        const valueText = doc.splitTextToSize(field.value, valueWidth - 4)
+        doc.text(valueText, margin + labelWidth + 2, yPosition + 6.5)
+        
+        // Vertical line
+        doc.line(margin + labelWidth, yPosition, margin + labelWidth, yPosition + rowHeight)
+        
+        yPosition += rowHeight
+      })
+    }
+    
+    yPosition += 10
+  }
+
   // ===== PLAN DETAILS =====
   checkNewPage(40)
   doc.setFontSize(12)

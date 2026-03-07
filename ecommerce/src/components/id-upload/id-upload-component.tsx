@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Upload, X, FileImage, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 
 interface IdUploadComponentProps {
   onDataExtracted: (data: any) => void
@@ -176,23 +175,24 @@ export function IdUploadComponent({
               )}
             </div>
           ) : (
-            <div className="relative z-10 space-y-3">
-              <div className="relative">
-                <div className="relative h-40 w-full max-w-full overflow-hidden rounded-lg border bg-gray-50" style={{ maxHeight: '160px', minHeight: '160px' }}>
-                  <Image
-                    src={frontPreviewUrl!}
-                    alt="Front ID Preview"
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    priority={false}
-                    style={{ maxWidth: '100%', maxHeight: '100%' }}
-                  />
-                </div>
+            <div className="space-y-3">
+              <div className="relative w-full overflow-hidden rounded-lg border bg-gray-50" style={{ height: '160px', maxHeight: '160px' }}>
+                <img
+                  src={frontPreviewUrl!}
+                  alt="Front ID Preview"
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'contain',
+                    display: 'block',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
+                />
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2 z-20"
+                  className="absolute top-2 right-2 z-10"
                   onClick={removeFrontFile}
                   disabled={isProcessing}
                 >
@@ -247,23 +247,24 @@ export function IdUploadComponent({
               )}
             </div>
           ) : (
-            <div className="relative z-10 space-y-3">
-              <div className="relative">
-                <div className="relative h-40 w-full max-w-full overflow-hidden rounded-lg border bg-gray-50" style={{ maxHeight: '160px', minHeight: '160px' }}>
-                  <Image
-                    src={backPreviewUrl!}
-                    alt="Back ID Preview"
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    priority={false}
-                    style={{ maxWidth: '100%', maxHeight: '100%' }}
-                  />
-                </div>
+            <div className="space-y-3">
+              <div className="relative w-full overflow-hidden rounded-lg border bg-gray-50" style={{ height: '160px', maxHeight: '160px' }}>
+                <img
+                  src={backPreviewUrl!}
+                  alt="Back ID Preview"
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'contain',
+                    display: 'block',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
+                />
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2 z-20"
+                  className="absolute top-2 right-2 z-10"
                   onClick={removeBackFile}
                   disabled={isProcessing}
                 >
