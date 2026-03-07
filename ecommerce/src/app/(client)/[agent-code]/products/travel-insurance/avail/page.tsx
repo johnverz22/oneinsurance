@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { useIdleService } from '@/utils/use-idle-service'
@@ -28,6 +28,8 @@ export default function AvailTravelInsurance() {
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const proposalNumber = searchParams?.get('proposal')
 
   const handleIdle = useCallback(() => {
     alert('You have been inactive for a while.')
@@ -50,30 +52,173 @@ export default function AvailTravelInsurance() {
     }
   }, [])
 
+  // Load proposal from API if proposal number is in URL
+  useEffect(() => {
+    if (hydrated && proposalNumber) {
+      console.log('📋 Proposal number detected in URL:', proposalNumber)
+      console.log('🔄 Fetching fresh data from backend API...')
+      
+      const loadProposal = async () => {
+        // Set loading flag
+        useTravelInsuranceStore.setState({ isLoadingProposal: true })
+        
+        try {
+          const response = await fetch('/api/travel-insurance/load-quote', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ProposalNo: proposalNumber,
+            }),
+          })
+
+          const data = await response.json()
+          
+          if (!response.ok || !data.success || !data.data) {
+            console.error('Failed to load proposal from API')
+            router.push(`/${agentCode}/products/travel-insurance`)
+            return
+          }
+
+          const proposalData = data.data
+          console.log('✅ Loaded proposal from API')
+          
+          // Extract plan name
+          const planName = proposalData.CustomField?.PlanName || proposalData.PlanName || proposalData.ProductName || 'Travel Insurance'
+          
+          // Extract benefits
+          const mainBenefits: any[] = []
+          const firstRisk = proposalData.PolicyLobList?.[0]?.PolicyRiskList?.[0]
+          if (firstRisk?.PolicyCoverageList) {
+            firstRisk.PolicyCoverageList.forEach((coverage: any) => {
+              mainBenefits.push({
+                BenefitCode: coverage.ProductElementCode || '',
+                BenefitDesc: coverage.CoverageName || '',
+                BenefitType: 'MAIN',
+                CoverageName: coverage.CoverageName || '',
+                DefaultLimitDesc: '',
+                DisplaySeqNo: coverage.SequenceNumber?.toString() || '0',
+                LimitModeDesc: '',
+                ParentBenefit: null,
+                Silimit: '0',
+                SubCoverageName: '',
+              })
+            })
+          }
+          
+          // Create plan object
+          const realPlan = {
+            CarrierCode: proposalData.CarrierCode,
+            CarrierPlanCode: proposalData.CarrierPlanCode || proposalData.PlanCode,
+            CarrierPlanDesc: planName,
+            CarrierProductCode: proposalData.CarrierProductCode || '',
+            CarrierProductName: proposalData.ProductName || 'Travel Insurance',
+            DuePremium: Number(proposalData.DuePremium) || 0,
+            GrossPremium: Number(proposalData.GrossPremium) || 0,
+            BeforeVatPremium: Number(proposalData.BeforeVatPremium) || 0,
+            AnnualPremium: Number(proposalData.AnnualPremium) || 0,
+            ProductCode: proposalData.ProductCode,
+            ProductVersion: proposalData.ProductVersion,
+            MainBenefits: mainBenefits,
+            AddonBenefits: [],
+            LGTAmount: Number(proposalData.LGT) || 0,
+            DiscountAmount: null,
+            PremiumTaxAmt: 0,
+            StampDuty: 0,
+            SumInsured: proposalData.SumInsured?.toString() || null,
+            TaxAmount: 0,
+            VatAmount: null,
+          }
+          
+          // Set all state from API data
+          useTravelInsuranceStore.setState({
+            clientRequest: {
+              id: proposalData.ProposalNo,
+              status: 'success'
+            },
+            coverageOption: {
+              carrierCode: proposalData.CarrierCode || '',
+              selectedPlan: realPlan as any,
+              selectedAddonBenefits: [],
+            },
+            travelDetails: {
+              ...useTravelInsuranceStore.getState().travelDetails,
+              travelDetailList: proposalData.TravelDetailList || [],
+              departureDate: proposalData.EffectiveDate ? new Date(proposalData.EffectiveDate) : new Date(),
+              returnDate: proposalData.ExpiryDate ? new Date(proposalData.ExpiryDate) : new Date(),
+              dateOfBirth: proposalData.PolicyCustomerList?.[0]?.DateOfBirth 
+                ? new Date(proposalData.PolicyCustomerList[0].DateOfBirth) 
+                : new Date(),
+              noOfAdults: proposalData.NoOfAdults || 1,
+              noOfChildren: proposalData.NoOfChildren || 0,
+              isAnnualMultiTrip: proposalData.TripType === 'ANNUAL',
+              agreedToTerms: true,
+            },
+            travelersInfo: proposalData.PolicyLobList?.[0]?.PolicyRiskList?.map((risk: any) => ({
+              firstName: risk.FirstName || '',
+              middleName: risk.MiddleName || '',
+              lastName: risk.LastName || '',
+              suffix: risk.Suffix || 'No Suffix',
+              gender: risk.Gender || 'M',
+              email: risk.Email || '',
+              mobileNumber: risk.Mobile?.replace('+63', '') || '',
+              idType: risk.IdTypeCode || 'PAS',
+              idNumber: risk.IdNo || '',
+              address: {
+                province: risk.AddrProvince || '',
+                city: risk.City || '',
+                zipCode: risk.PostCode || '',
+                line1: risk.AddressLine1 || '',
+                line2: risk.AddressLine2 || '',
+              },
+              dateOfBirth: risk.DateOfBirth ? new Date(risk.DateOfBirth) : new Date(),
+              isCovidVaccinated: false,
+              is_data_sharing_consent: false,
+              hasBeneficiary: false,
+              beneficiary: {
+                firstName: '',
+                middleName: '',
+                lastName: '',
+                dateOfBirth: null,
+                relationship: '',
+              },
+            })) || [],
+            isLoadingProposal: false, // Clear loading flag
+          })
+          
+          // Set API response
+          useFullQuoteResponseStore.setState({
+            apiResponse: {
+              success: true,
+              message: 'Proposal loaded',
+              data: proposalData
+            }
+          })
+          
+          // Set read-only mode and step
+          setIsReadOnlyMode(true)
+          setStep(3) // Review & Confirmation
+          
+          console.log('✅ All state set from API data')
+          
+        } catch (error) {
+          console.error('Error loading proposal:', error)
+          useTravelInsuranceStore.setState({ isLoadingProposal: false })
+          router.push(`/${agentCode}/products/travel-insurance`)
+        }
+      }
+      
+      loadProposal()
+    }
+  }, [hydrated, proposalNumber, router, agentCode, setStep])
+
   // Redirect if no valid travel insurance session exists
   useEffect(() => {
     if (hydrated) {
-      // Check if we're loading from proposal search
-      const loadingFromProposal = sessionStorage.getItem('loading-from-proposal')
-      const targetStep = sessionStorage.getItem('proposal-target-step')
-      const readOnlyMode = sessionStorage.getItem('proposal-readonly-mode')
-      
-      if (loadingFromProposal === 'true') {
-        // Clear the loading flag
-        sessionStorage.removeItem('loading-from-proposal')
-        
-        // Set read-only mode if specified
-        if (readOnlyMode === 'true') {
-          setIsReadOnlyMode(true)
-        }
-        
-        // Set the target step if specified
-        if (targetStep) {
-          const stepNumber = parseInt(targetStep, 10)
-          setStep(stepNumber)
-          sessionStorage.removeItem('proposal-target-step')
-          console.log(`✅ Loading from proposal search - set step to ${stepNumber} (step ${stepNumber + 1} in UI)`)
-        }
+      // Skip validation if loading from proposal via URL parameter
+      if (proposalNumber) {
+        console.log('✅ Skipping session validation - loading from proposal via URL')
         return
       }
       
@@ -86,7 +231,7 @@ export default function AvailTravelInsurance() {
         return
       }
     }
-  }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router, agentCode, setStep])
+  }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router, agentCode, proposalNumber])
 
   const steps = [
     {
@@ -95,11 +240,11 @@ export default function AvailTravelInsurance() {
     },
     {
       title: 'Your Plan Details',
-      component: <ReviewCoverage key={'review-coverage'} />,
+      component: isReadOnlyMode ? <div key={'review-coverage-skip'} /> : <ReviewCoverage key={'review-coverage'} />,
     },
     {
       title: 'Personal Information',
-      component: <PersonalInfoForm key={'personal-info-form'} />,
+      component: isReadOnlyMode ? <div key={'personal-info-skip'} /> : <PersonalInfoForm key={'personal-info-form'} />,
     },
     {
       title: 'Review & Confirmation',
