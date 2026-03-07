@@ -172,7 +172,7 @@ export function generateQuotePDF(data: QuotePDFData) {
     const valueWidth = holderTableWidth * 0.65
     
     const holderFields = [
-      { label: 'Name', value: `${policyHolder.firstName} ${policyHolder.middleName || ''} ${policyHolder.lastName}`.trim() },
+      { label: 'Name', value: `${policyHolder.firstName} ${policyHolder.middleName || ''} ${policyHolder.lastName}`.trim().toUpperCase() },
       { label: 'Gender', value: policyHolder.gender === 'M' ? 'Male' : 'Female' },
       { label: 'Date of Birth', value: format(policyHolder.dateOfBirth, 'MMM dd, yyyy') },
       { label: 'Email Address', value: policyHolder.email },
@@ -227,7 +227,7 @@ export function generateQuotePDF(data: QuotePDFData) {
       
       // Beneficiary fields
       const beneficiaryFields = [
-        { label: 'Name', value: `${policyHolder.beneficiary.firstName} ${policyHolder.beneficiary.middleName || ''} ${policyHolder.beneficiary.lastName}`.trim() },
+        { label: 'Name', value: `${policyHolder.beneficiary.firstName} ${policyHolder.beneficiary.middleName || ''} ${policyHolder.beneficiary.lastName}`.trim().toUpperCase() },
         { label: 'Date of Birth', value: policyHolder.beneficiary.dateOfBirth ? format(new Date(policyHolder.beneficiary.dateOfBirth), 'MMM dd, yyyy') : 'N/A' },
         { label: 'Relationship', value: policyHolder.beneficiary.relationship || 'N/A' }
       ]
@@ -258,6 +258,81 @@ export function generateQuotePDF(data: QuotePDFData) {
         yPosition += rowHeight
       })
     }
+    
+    yPosition += 10
+  }
+
+  // ===== POLICY RISK LIST (TRAVELERS) =====
+  const policyRiskList = apiResponse?.data?.PolicyLobList?.[0]?.PolicyRiskList
+  if (policyRiskList && policyRiskList.length > 0) {
+    checkNewPage(50)
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+    doc.text('Policy Risk List', margin, yPosition)
+    yPosition += 7
+
+    const riskTableWidth = pageWidth - 2 * margin
+    const riskLabelWidth = riskTableWidth * 0.35
+    const riskValueWidth = riskTableWidth * 0.65
+
+    policyRiskList.forEach((risk, riskIndex) => {
+      checkNewPage(40)
+      
+      // Traveler header
+      doc.setFillColor(lightGreen[0], lightGreen[1], lightGreen[2])
+      doc.rect(margin, yPosition, riskTableWidth, rowHeight, 'F')
+      doc.rect(margin, yPosition, riskTableWidth, rowHeight, 'S')
+      
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+      const travelerLabel = `Traveler ${riskIndex + 1}`
+      doc.text(travelerLabel, margin + riskTableWidth / 2, yPosition + 6.5, { align: 'center' })
+      
+      yPosition += rowHeight
+      
+      // Traveler basic info fields
+      const riskFields = [
+        { label: 'Name', value: (risk.InsuredName || `${risk.FirstName || ''} ${risk.MiddleName || ''} ${risk.LastName || ''}`.trim()).toUpperCase() },
+        { label: 'Gender', value: risk.Gender === 'M' ? 'Male' : 'Female' },
+        { label: 'Date of Birth', value: risk.DateOfBirth ? format(new Date(risk.DateOfBirth), 'MMM dd, yyyy') : 'N/A' },
+        { label: 'Age', value: risk.Age ? `${risk.Age} years` : 'N/A' },
+        { label: 'Email Address', value: risk.Email || 'N/A' },
+        { label: 'Mobile Number', value: risk.Mobile || 'N/A' }
+      ]
+      
+      riskFields.forEach((field, index) => {
+        checkNewPage(10)
+        
+        const bgColor = index % 2 === 0 ? lightGray : [255, 255, 255]
+        doc.setFillColor(bgColor[0], bgColor[1], bgColor[2])
+        doc.rect(margin, yPosition, riskTableWidth, rowHeight, 'F')
+        doc.rect(margin, yPosition, riskTableWidth, rowHeight, 'S')
+        
+        // Label
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(8)
+        doc.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
+        doc.text(field.label, margin + 2, yPosition + 6.5)
+        
+        // Value
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(darkGray[0], darkGray[1], darkGray[2])
+        const valueText = doc.splitTextToSize(field.value, riskValueWidth - 4)
+        doc.text(valueText, margin + riskLabelWidth + 2, yPosition + 6.5)
+        
+        // Vertical line
+        doc.line(margin + riskLabelWidth, yPosition, margin + riskLabelWidth, yPosition + rowHeight)
+        
+        yPosition += rowHeight
+      })
+      
+      // Add spacing between travelers
+      if (riskIndex < policyRiskList.length - 1) {
+        yPosition += 5
+      }
+    })
     
     yPosition += 10
   }
