@@ -28,6 +28,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     | 'issueQuoteResponse'
     | 'selectedPaymentBrand'
     | 'paymentBillingDetails'
+    | 'isLoadingProposal'
   >,
   agentCode: string,
   kycProfile?: {

@@ -151,6 +151,9 @@ export function CoverageOptionsForm() {
       clearTimeout(timeoutId)
       if (error.name === 'AbortError' || error.code === 'ECONNABORTED') {
         console.warn(`⏱️ Request timeout for cache key: ${cacheKey}`)
+      } else if (error.message === 'canceled' || error.message?.includes('cancel')) {
+        // Silently ignore canceled requests (happens when navigating away)
+        console.log(`ℹ️ Request canceled for cache key: ${cacheKey}`)
       } else {
         console.error(`❌ Error fetching cache key ${cacheKey}:`, error.message)
       }

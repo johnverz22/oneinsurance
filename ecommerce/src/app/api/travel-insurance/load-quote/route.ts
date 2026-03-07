@@ -2,6 +2,10 @@ import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-hand
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Disable caching for this route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -56,6 +60,9 @@ export async function POST(req: NextRequest) {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
     }
 
     // Ensure response has success flag
