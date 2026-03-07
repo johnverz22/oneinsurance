@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Search, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,7 @@ export function ProposalSearch() {
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [loadedProposalData, setLoadedProposalData] = useState<any>(null)
+  const isProcessingRef = useRef(false) // Use ref to prevent duplicate calls across re-renders
   const router = useRouter()
   const params = useParams()
   const agentCode = params['agent-code'] as string
@@ -39,10 +40,21 @@ export function ProposalSearch() {
       return
     }
 
+    // Prevent duplicate calls using ref (persists across re-renders)
+    if (isProcessingRef.current || isLoading) {
+      console.log('⚠️ Already processing a request, ignoring duplicate call')
+      return
+    }
+
+    console.log('🔍 Starting proposal search for:', proposalNumber.trim())
     setIsLoading(true)
+    isProcessingRef.current = true
 
     try {
       // Load proposal from backend API using ProposalNo
+      // IMPORTANT: This should ONLY fetch from load-quote API
+      // Do NOT fetch from compare-quote as that's for new quotes only
+      console.log('📡 Calling load-quote API (NOT compare-quote)...')
       const response = await fetch('/api/travel-insurance/load-quote', {
         method: 'POST',
         headers: {
@@ -51,6 +63,7 @@ export function ProposalSearch() {
         body: JSON.stringify({
           ProposalNo: proposalNumber.trim(),
         }),
+        cache: 'no-store', // Disable caching
       })
 
       const data = await response.json()
@@ -271,68 +284,30 @@ export function ProposalSearch() {
         
         console.log('Real plan from proposal:', realPlan)
         console.log('Extracted benefits:', { mainBenefits: mainBenefits.length, addonBenefits: addonBenefits.length })
-        console.log('Plan validation:', {
-          hasCarrierCode: !!realPlan.CarrierCode,
-          hasCarrierPlanCode: !!realPlan.CarrierPlanCode,
-          hasDuePremium: !!realPlan.DuePremium,
-          hasMainBenefits: mainBenefits.length > 0
-        })
         
-        // Store the full API response for step 4
-        setApiResponse({
-          success: true,
-          message: 'Proposal loaded',
-          data: proposalData
-        })
+        // Instead of trying to persist state, pass the proposal number via URL
+        // The avail page will fetch fresh data from the backend API
+        console.log('✅ Navigating to avail page with proposal number...')
         
-        // Update all state - these are the REAL values the customer already entered
-        setClientRequest({
-          id: proposalData.ProposalNo,
-          status: 'success'
-        })
+        // Clear all session storage to prevent interference
+        sessionStorage.clear()
         
-        updateCoverageOption({
-          carrierCode: proposalData.CarrierCode || '',
-          selectedPlan: realPlan as any,
-          selectedAddonBenefits: [],
-        })
+        // Navigate with proposal number in URL
+        router.push(`/${agentCode}/products/travel-insurance/avail?proposal=${proposalData.ProposalNo}`)
+        toast.success('Loading proposal...')
         
-        console.log('✅ All state updated with real customer data')
-        
-        // Set a flag to indicate we're loading from proposal search
-        // This prevents the avail page from redirecting before state is persisted
-        sessionStorage.setItem('loading-from-proposal', 'true')
-        sessionStorage.setItem('proposal-target-step', '3') // Step 4 in UI (0-indexed)
-        sessionStorage.setItem('proposal-readonly-mode', 'true') // Disable editing and back navigation
-        
-        console.log('⏳ Waiting for state to persist to sessionStorage...')
-        
-        // Wait for Zustand persist middleware to write to sessionStorage
-        // Increased delay to ensure state is fully persisted before navigation
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        // Verify state was persisted
-        const persistedState = sessionStorage.getItem('travel-insurance-storage')
-        console.log('📦 Persisted state exists:', !!persistedState)
-        if (persistedState) {
-          const parsed = JSON.parse(persistedState)
-          console.log('📦 Persisted coverageOption:', !!parsed?.state?.coverageOption?.selectedPlan)
-          console.log('📦 Persisted clientRequest:', !!parsed?.state?.clientRequest?.id)
-        }
-        
-        console.log('✅ Navigating to step 4 (Review & Confirmation)...')
-        
-        // Navigate first, then set step on the avail page
-        router.push(`/${agentCode}/products/travel-insurance/avail`)
-        toast.success('Proposal loaded! Please review and proceed to payment.')
+        console.log('✅ All steps completed successfully!')
       }
-      
-      console.log('✅ All steps completed successfully!')
     } catch (error) {
-      console.error('Error loading proposal:', error)
+      console.error('❌ Error loading proposal:', error)
       toast.error('Failed to load proposal. Please check the proposal number and try again.')
     } finally {
       setIsLoading(false)
+      // Reset processing flag after a delay to prevent rapid re-clicks
+      setTimeout(() => {
+        isProcessingRef.current = false
+        console.log('✅ Processing flag reset - ready for next search')
+      }, 2000)
     }
   }
 
