@@ -52,6 +52,16 @@ function TravelInsurancePageSSR() {
 
     async function fetchCoverageOption() {
       try {
+        // CRITICAL: Check if we're loading from a proposal search
+        // If so, DO NOT call compare-quote API - all data comes from load-quote
+        const loadingFromProposal = sessionStorage.getItem('loading-from-proposal')
+        const proposalReadOnly = sessionStorage.getItem('proposal-readonly-mode')
+        
+        if (loadingFromProposal === 'true' || proposalReadOnly === 'true') {
+          console.log('🚫 Skipping compare-quote - loading from proposal search (using load-quote data only)')
+          return
+        }
+        
         // Check if we have valid travel details before making API call
         if (!travelDetails.departureDate || !travelDetails.returnDate || !travelDetails.dateOfBirth) {
           console.log('⚠️ Incomplete travel details - skipping API call')
@@ -72,6 +82,7 @@ function TravelInsurancePageSSR() {
             : travelDetails.returnDate,
         }
 
+        console.log('📡 Calling compare-quote for NEW quote (not from proposal)')
         const clientRequestId = await mutateAsync(sanitizedTravelDetails)
 
         setClientRequest({

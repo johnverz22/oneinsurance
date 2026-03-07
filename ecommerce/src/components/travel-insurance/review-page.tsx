@@ -44,27 +44,20 @@ import { generateQuotePDF } from '@/utils/generate-quote-pdf'
 import { toast } from 'sonner'
 
 export function TravelInsuranceReviewPage() {
-  const { travelersInfo, coverageOption, nextStep, prevStep, travelDetails } =
+  const { travelersInfo, coverageOption, nextStep, prevStep, travelDetails, isLoadingProposal } =
     useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
   const [proceedingToPayment, setProceedingToPayment] = useState(false)
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   // Check if we're in read-only mode (loaded from proposal search)
   useEffect(() => {
     const readOnlyMode = sessionStorage.getItem('proposal-readonly-mode')
     if (readOnlyMode === 'true') {
       setIsReadOnlyMode(true)
+      console.log('📋 Review page loaded in read-only mode (from proposal search)')
+      console.log('📋 Using data from load-quote API only')
     }
-    
-    // Give more time for Zustand to hydrate from sessionStorage
-    // This is especially important on first load from proposal search
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 300)
-    
-    return () => clearTimeout(timer)
   }, [])
 
   const handleDownloadPDF = () => {
@@ -132,23 +125,46 @@ export function TravelInsuranceReviewPage() {
   )
   const plan = coverageOption.selectedPlan
   
-  // Show loading state while data is being hydrated
-  if (isLoading) {
+  // Show loading state while proposal is being loaded from API
+  if (isLoadingProposal || !plan) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p className="text-muted-foreground">Loading your quote details...</p>
+          <p className="text-muted-foreground">Loading your quote details from backend...</p>
         </div>
       </div>
     )
   }
   
-  // If provider or plan is not found after loading, show error message
-  if (!provider || !plan) {
+  // If provider is not found after loading, show error message with details
+  if (!provider) {
+    console.error('❌ Review page error:', {
+      hasProvider: !!provider,
+      hasPlan: !!plan,
+      carrierCode: coverageOption.carrierCode,
+      planData: plan,
+      isReadOnlyMode,
+      apiResponseExists: !!apiResponse?.data
+    })
+    
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-muted-foreground">Something went wrong. Please try again.</p>
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-muted-foreground">
+            Provider not found. Please try searching for your proposal again.
+          </p>
+          <Button
+            onClick={() => {
+              // Clear all session storage and redirect to main page
+              sessionStorage.clear()
+              window.location.href = window.location.origin + window.location.pathname.split('/avail')[0]
+            }}
+            variant="outline"
+          >
+            Back to Search
+          </Button>
+        </div>
       </div>
     )
   }
@@ -184,9 +200,31 @@ export function TravelInsuranceReviewPage() {
                   </p>
                 </div>
                 <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(proposalNumber)
-                    toast.success('Proposal number copied to clipboard')
+                  onClick={async () => {
+                    try {
+                      if (navigator?.clipboard?.writeText) {
+                        await navigator.clipboard.writeText(proposalNumber)
+                        toast.success('Proposal number copied to clipboard')
+                      } else {
+                        // Fallback for browsers that don't support clipboard API
+                        const textArea = document.createElement('textarea')
+                        textArea.value = proposalNumber
+                        textArea.style.position = 'fixed'
+                        textArea.style.left = '-999999px'
+                        document.body.appendChild(textArea)
+                        textArea.select()
+                        try {
+                          document.execCommand('copy')
+                          toast.success('Proposal number copied to clipboard')
+                        } catch (err) {
+                          toast.error('Failed to copy proposal number')
+                        }
+                        document.body.removeChild(textArea)
+                      }
+                    } catch (error) {
+                      console.error('Failed to copy:', error)
+                      toast.error('Failed to copy proposal number')
+                    }
                   }}
                   variant="ghost"
                   size="icon"

@@ -41,6 +41,7 @@ export type TravelInsuranceStoreState = {
   paymentBillingDetails?: PaymentSubmitRequest | null
   quoteRefetchCount: number
   customFields: CustomFields // Store custom fields for persistence
+  isLoadingProposal: boolean // Track if proposal is being loaded from API
 }
 
 export type TravelInsuranceStoreActions = {
@@ -67,6 +68,7 @@ export type TravelInsuranceStoreActions = {
   updateCustomFields: (fields: Partial<CustomFields>) => void
   setCustomFields: (fields: CustomFields) => void
   resetCustomFields: () => void
+  setIsLoadingProposal: (loading: boolean) => void
 }
 
 export type TravelInsuranceStore = TravelInsuranceStoreState &
@@ -143,6 +145,7 @@ const initialState = {
   quoteRefetchCount: 0,
   refCode: null,
   customFields: {}, // Initialize empty custom fields
+  isLoadingProposal: false, // Initialize loading state
 } satisfies TravelInsuranceStoreState
 
 export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
@@ -222,6 +225,7 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
         })),
       setCustomFields: (fields) => set({ customFields: fields }),
       resetCustomFields: () => set({ customFields: {} }),
+      setIsLoadingProposal: (loading) => set({ isLoadingProposal: loading }),
     }),
     {
       name: 'travel-insurance-form',

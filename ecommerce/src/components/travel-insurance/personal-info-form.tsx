@@ -981,7 +981,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Address Line 2
+                                          Address Line 2 *
                                         </Label>
                                         <Input
                                           value={l2Field.state.value ?? ''}
