@@ -198,6 +198,7 @@ export default function AvailTravelInsurance() {
           
           // Set read-only mode and step
           setIsReadOnlyMode(true)
+          sessionStorage.setItem('proposal-readonly-mode', 'true') // Set flag for review page
           setStep(3) // Review & Confirmation
           
           console.log('✅ All state set from API data')
