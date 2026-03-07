@@ -178,12 +178,15 @@ export function IdUploadComponent({
           ) : (
             <div className="relative z-10 space-y-3">
               <div className="relative">
-                <div className="relative h-40 w-full overflow-hidden rounded-lg border">
+                <div className="relative h-40 w-full max-w-full overflow-hidden rounded-lg border bg-gray-50" style={{ maxHeight: '160px', minHeight: '160px' }}>
                   <Image
                     src={frontPreviewUrl!}
                     alt="Front ID Preview"
                     fill
                     className="object-contain"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={false}
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
                   />
                 </div>
                 <Button
@@ -246,12 +249,15 @@ export function IdUploadComponent({
           ) : (
             <div className="relative z-10 space-y-3">
               <div className="relative">
-                <div className="relative h-40 w-full overflow-hidden rounded-lg border">
+                <div className="relative h-40 w-full max-w-full overflow-hidden rounded-lg border bg-gray-50" style={{ maxHeight: '160px', minHeight: '160px' }}>
                   <Image
                     src={backPreviewUrl!}
                     alt="Back ID Preview"
                     fill
                     className="object-contain"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={false}
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
                   />
                 </div>
                 <Button
