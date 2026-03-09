@@ -110,6 +110,8 @@ export function CoverageOptionsForm() {
 
   const [isLoading, setIsLoading] = useState(false) // Tracks loading state
   const [isError, setIsError] = useState(false) // Tracks error state
+  const [expectedProviders, setExpectedProviders] = useState(0) // Track expected number of providers
+  const [receivedProviders, setReceivedProviders] = useState(0) // Track received providers
 
   // Configuration constants
   const CONCURRENCY_LIMIT = 5
@@ -185,8 +187,10 @@ export function CoverageOptionsForm() {
 
   useEffect(() => {
     if (clientRequest.id !== undefined) {
-      // Reset error state when starting a new search
+      // Reset error state and counters when starting a new search
       setIsError(false)
+      setExpectedProviders(2) // Typically Malayan and Oona
+      setReceivedProviders(0)
       
       const echo = getEcho()
 
@@ -246,16 +250,35 @@ export function CoverageOptionsForm() {
         const duration = (endTime - startTime).toFixed(2)
         console.log(`✨ Queue processing complete in ${duration}ms (processed ${totalItems} items)`)
 
-        // Only set error if we have NO plans at all after processing everything
-        const currentPlans = useTravelInsuranceStore.getState().insurancePlans
-        const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
+        // Increment received providers count
+        setReceivedProviders(prev => {
+          const newCount = prev + 1
+          console.log(`📊 Received ${newCount}/${expectedProviders} providers`)
+          return newCount
+        })
+
+        // Check if we've received all expected providers
+        const currentReceivedCount = receivedProviders + 1
         
-        if (!hasAnyPlans && totalItems > 0) {
-          console.log('❌ No plans available from any provider - showing error')
-          setIsError(true)
-        } else if (hasAnyPlans) {
-          console.log('✅ Plans available - clearing any error state')
-          setIsError(false)
+        // Only check for errors after ALL providers have responded
+        if (currentReceivedCount >= expectedProviders) {
+          console.log('🔍 All providers received - checking for plans...')
+          
+          // Small delay to ensure state is updated
+          await new Promise(resolve => setTimeout(resolve, 100))
+          
+          const currentPlans = useTravelInsuranceStore.getState().insurancePlans
+          const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
+          
+          if (!hasAnyPlans && totalItems > 0) {
+            console.log('❌ No plans available from any provider - showing error')
+            setIsError(true)
+          } else if (hasAnyPlans) {
+            console.log('✅ Plans available - clearing any error state')
+            setIsError(false)
+          }
+        } else {
+          console.log(`⏳ Waiting for more providers (${currentReceivedCount}/${expectedProviders})...`)
         }
 
         isProcessing.current = false
