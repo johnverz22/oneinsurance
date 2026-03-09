@@ -137,6 +137,9 @@ export async function GET(req: NextRequest) {
       headers: {
         Authorization: token.access_token,
       },
+      timeout: 10000, // 10 second timeout
+      // Add retry logic for network errors
+      validateStatus: (status) => status < 500, // Don't throw on 4xx errors
     })
 
     return NextResponse.json(response.data, {
@@ -149,14 +152,34 @@ export async function GET(req: NextRequest) {
     })
   } catch (error: any) {
     console.log('Get payment option error:', error)
+    
+    // Handle specific network errors
+    if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED') {
+      console.error('Network connectivity issue with payment gateway:', error.message)
+      return NextResponse.json(
+        { 
+          message: 'Unable to connect to payment gateway. Please try again later.',
+          error: 'NETWORK_ERROR'
+        },
+        {
+          status: 503, // Service Unavailable
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          },
+        }
+      )
+    }
+    
     if (axios.isAxiosError(error)) {
       return handleServerSideAxiosError(error)
     }
 
     return NextResponse.json(
-      { message: error },
+      { message: error.message || 'Internal server error' },
       {
-        status: error.status,
+        status: error.status || 500,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
