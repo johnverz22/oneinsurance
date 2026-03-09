@@ -75,9 +75,20 @@ export default function AvailTravelInsurance() {
 
           const data = await response.json()
           
+          // Handle 422 error - proposal already issued
+          if (response.status === 422) {
+            console.error('❌ Proposal already issued:', data.message)
+            alert(data.message || 'This travel insurance quote has already been issued and can no longer resume the process.')
+            router.push(`/${agentCode}/products/travel-insurance`)
+            useTravelInsuranceStore.setState({ isLoadingProposal: false })
+            return
+          }
+          
           if (!response.ok || !data.success || !data.data) {
             console.error('Failed to load proposal from API')
+            alert('Failed to load proposal. Please try again.')
             router.push(`/${agentCode}/products/travel-insurance`)
+            useTravelInsuranceStore.setState({ isLoadingProposal: false })
             return
           }
 

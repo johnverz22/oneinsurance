@@ -239,15 +239,24 @@ export function CoverageOptionsForm() {
             updatePlansState(successfulPlans)
           }
 
-          // If all requests in batch failed, set error state
-          if (successfulPlans.length === 0 && batch.length > 0) {
-            setIsError(true)
-          }
+          // Don't set error here - wait until all batches are processed
         }
 
         const endTime = performance.now()
         const duration = (endTime - startTime).toFixed(2)
         console.log(`✨ Queue processing complete in ${duration}ms (processed ${totalItems} items)`)
+
+        // Only set error if we have NO plans at all after processing everything
+        const currentPlans = useTravelInsuranceStore.getState().insurancePlans
+        const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
+        
+        if (!hasAnyPlans && totalItems > 0) {
+          console.log('❌ No plans available from any provider - showing error')
+          setIsError(true)
+        } else if (hasAnyPlans) {
+          console.log('✅ Plans available - clearing any error state')
+          setIsError(false)
+        }
 
         isProcessing.current = false
         setIsLoading(false)
