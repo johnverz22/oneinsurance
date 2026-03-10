@@ -129,7 +129,8 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   const customer = policyHolder
   const insuredPerson = policyDetails?.PolicyLobList?.[0]?.PolicyRiskList?.[0]
   const coverages = insuredPerson?.PolicyCoverageList || []
-  const travelDetails = policyDetails?.TravelDetailList?.[0]
+  const travelDetailsList = policyDetails?.TravelDetailList || []
+  const travelDetails = travelDetailsList[0] // Keep for backward compatibility
   const promoCode = policyDetails?.PromoCodeList?.[0]
 
   const getStatusColor = (status: string) => {
@@ -296,7 +297,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
       }
 
       // ===== TRAVEL INFORMATION =====
-      if (travelDetails) {
+      if (travelDetailsList.length > 0) {
         pdf.setFontSize(12)
         pdf.setFont('helvetica', 'bold')
         pdf.setTextColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
@@ -308,9 +309,9 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
         pdf.setTextColor(darkGray[0], darkGray[1], darkGray[2])
         
         const travelInfo = [
-          `Origin: ${travelDetails.PlaceOfOrgin}`,
-          `Destination: ${travelDetails.TravelCountry}`,
-          `Coverage Area: ${travelDetails.TravelCoverageArea}`,
+          `Origin: ${travelDetails?.PlaceOfOrgin || 'N/A'}`,
+          `Destination: ${travelDetailsList.map((detail: any) => detail.TravelCountry).join(', ') || 'N/A'}`,
+          `Coverage Area: ${travelDetails?.TravelCoverageArea || 'N/A'}`,
           ...(policyDetails?.NoOfTravellers ? [`Number of Travellers: ${String(policyDetails.NoOfTravellers)}`] : []),
           ...(policyDetails?.NoOfAdults ? [`Adults: ${String(policyDetails.NoOfAdults)}`] : []),
           ...(policyDetails?.NoOfChildren ? [`Children: ${String(policyDetails.NoOfChildren)}`] : [])
@@ -753,19 +754,21 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
 
           {/* Travel Information - Collapsible */}
           <CollapsibleSection section="travel" title="Travel Details" icon={Plane}>
-            {travelDetails ? (
+            {travelDetailsList.length > 0 ? (
               <div className="space-y-4">
                 {/* Route */}
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground mb-1">From</p>
-                      <p className="font-bold text-xl">{travelDetails.PlaceOfOrgin}</p>
+                      <p className="font-bold text-xl">{travelDetails?.PlaceOfOrgin || 'N/A'}</p>
                     </div>
                     <Plane className="h-6 w-6 text-muted-foreground rotate-90" />
                     <div className="flex-1 text-right">
                       <p className="text-xs text-muted-foreground mb-1">To</p>
-                      <p className="font-bold text-xl">{travelDetails.TravelCountry}</p>
+                      <p className="font-bold text-xl">
+                        {travelDetailsList.map((detail: any) => detail.TravelCountry).join(', ') || 'N/A'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -774,7 +777,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Coverage Area</p>
-                    <p className="font-semibold">{travelDetails.TravelCoverageArea}</p>
+                    <p className="font-semibold">{travelDetails?.TravelCoverageArea || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Travel Type</p>
@@ -813,9 +816,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
             badge={
               policyDetails && policyDetails.PolicyLobList?.[0]?.PolicyRiskList?.length > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {policyDetails.PolicyLobList[0].PolicyRiskList.reduce((total: number, person: any) => 
-                    total + (person.PolicyCoverageList?.length || 0), 0
-                  )}
+                  {policyDetails.PolicyLobList[0].PolicyRiskList.length}
                 </Badge>
               )
             }
