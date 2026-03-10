@@ -65,10 +65,27 @@ export async function POST(req: NextRequest) {
       'Expires': '0',
     }
 
-    // Ensure response has success flag
+    // Check if the backend response indicates an error
+    const backendData = response.data
+    
+    // If backend returns success: false, it's an error response
+    if (backendData && backendData.success === false) {
+      console.log('Backend returned error response:', backendData)
+      return NextResponse.json(
+        {
+          success: false,
+          error: backendData.error || backendData.message || 'Failed to load proposal',
+          message: backendData.message || backendData.error || 'Failed to load proposal',
+          details: backendData
+        },
+        { status: 422, headers } // Return 422 for business logic errors
+      )
+    }
+
+    // Ensure response has success flag for successful responses
     const responseData = {
       success: true,
-      ...response.data
+      ...backendData
     }
 
     return NextResponse.json(responseData, { status: 200, headers })
