@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Search, Loader2 } from 'lucide-react'
+import { Search, Loader2, AlertCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
 import { useRouter, useParams } from 'next/navigation'
@@ -17,6 +18,8 @@ export function ProposalSearch() {
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [loadedProposalData, setLoadedProposalData] = useState<any>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorType, setErrorType] = useState<'business' | 'general' | null>(null)
   const isProcessingRef = useRef(false) // Use ref to prevent duplicate calls across re-renders
   const router = useRouter()
   const params = useParams()
@@ -39,6 +42,10 @@ export function ProposalSearch() {
       toast.error('Please enter a proposal number')
       return
     }
+
+    // Clear previous errors
+    setErrorMessage(null)
+    setErrorType(null)
 
     // Prevent duplicate calls using ref (persists across re-renders)
     if (isProcessingRef.current || isLoading) {
@@ -75,9 +82,21 @@ export function ProposalSearch() {
       // The backend response structure should be: { success: true, message: "...", data: {...proposal data...} }
       const actualData = data.data
       
+      // Handle 422 errors (business logic errors) with specific backend messages
+      if (response.status === 422) {
+        console.error('❌ Business logic error (422):', data)
+        const errorMsg = data.error || data.message || 'This proposal cannot be processed.'
+        setErrorMessage(errorMsg)
+        setErrorType('business')
+        return
+      }
+      
       if (!response.ok || !data.success || !actualData) {
         console.error('❌ Proposal not found - no data returned')
-        toast.error('Proposal not found. Please check the proposal number.')
+        // For other errors, check if there's a specific error message from backend
+        const errorMsg = data.error || data.message || 'Proposal not found. Please check the proposal number.'
+        setErrorMessage(errorMsg)
+        setErrorType('general')
         return
       }
 
@@ -93,9 +112,12 @@ export function ProposalSearch() {
         if (validateResult && validateResult.ErrorMessage && Array.isArray(validateResult.ErrorMessage) && validateResult.ErrorMessage.length > 0) {
           const firstError = validateResult.ErrorMessage[0]
           console.error('Validation error:', firstError)
-          toast.error(firstError?.message || 'Invalid proposal. Please check the proposal number.')
+          const errorMsg = firstError?.message || firstError?.Message || 'Invalid proposal. Please check the proposal number.'
+          setErrorMessage(errorMsg)
+          setErrorType('general')
         } else {
-          toast.error('Proposal not found. Please check the proposal number.')
+          setErrorMessage('Proposal not found. Please check the proposal number.')
+          setErrorType('general')
         }
         return
       }
@@ -300,7 +322,14 @@ export function ProposalSearch() {
       }
     } catch (error) {
       console.error('❌ Error loading proposal:', error)
-      toast.error('Failed to load proposal. Please check the proposal number and try again.')
+      
+      // If it's a fetch error, try to extract error message
+      if (error instanceof Error) {
+        setErrorMessage(`Failed to load proposal: ${error.message}`)
+      } else {
+        setErrorMessage('Failed to load proposal. Please check the proposal number and try again.')
+      }
+      setErrorType('general')
     } finally {
       setIsLoading(false)
       // Reset processing flag after a delay to prevent rapid re-clicks
@@ -315,6 +344,11 @@ export function ProposalSearch() {
     if (e.key === 'Enter') {
       handleSearch()
     }
+  }
+
+  const clearError = () => {
+    setErrorMessage(null)
+    setErrorType(null)
   }
 
   const handleSuccessContinue = () => {
@@ -360,13 +394,39 @@ export function ProposalSearch() {
             Enter your proposal number to retrieve your saved quote and continue to payment. If payment is already completed, you'll see your policy details and confirmation.
           </p>
 
+          {/* Error Card */}
+          {errorMessage && (
+            <Alert className={`${errorType === 'business' ? 'border-orange-200 bg-orange-50' : 'border-red-200 bg-red-50'}`}>
+              <AlertCircle className={`h-4 w-4 ${errorType === 'business' ? 'text-orange-600' : 'text-red-600'}`} />
+              <AlertDescription className="flex items-center justify-between">
+                <span className={`${errorType === 'business' ? 'text-orange-800' : 'text-red-800'}`}>
+                  {errorMessage}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearError}
+                  className={`ml-2 h-6 w-6 p-0 ${errorType === 'business' ? 'text-orange-600 hover:text-orange-800' : 'text-red-600 hover:text-red-800'}`}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
                 id="proposal-search"
                 placeholder="Enter proposal number (e.g., PTRAVEL0000000803)"
                 value={proposalNumber}
-                onChange={(e) => setProposalNumber(e.target.value)}
+                onChange={(e) => {
+                  setProposalNumber(e.target.value)
+                  // Clear error when user starts typing
+                  if (errorMessage) {
+                    clearError()
+                  }
+                }}
                 onKeyDown={handleKeyPress}
                 disabled={isLoading}
                 className="h-12"
