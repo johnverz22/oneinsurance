@@ -13,10 +13,11 @@ interface QuotePDFData {
   addons?: string[]
   mainBenefits?: InsuranceBenefit[]
   addonBenefits?: InsuranceBenefit[]
+  agentCode?: string
 }
 
 export function generateQuotePDF(data: QuotePDFData) {
-  const { travelDetails, travelersInfo, apiResponse, planName, providerName, mainBenefits, addonBenefits } = data
+  const { travelDetails, travelersInfo, apiResponse, planName, providerName, mainBenefits, addonBenefits, agentCode } = data
   
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -77,10 +78,22 @@ export function generateQuotePDF(data: QuotePDFData) {
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(80, 80, 80)
   const proposalNo = apiResponse?.data?.ProposalNo || 'N/A'
-  doc.text(`Proposal No: ${proposalNo}`, pageWidth - margin, badgeY + badgeHeight + 5, { align: 'right' })
-  doc.text(`Issued: ${format(new Date(), 'MMM dd, yyyy h:mm a')}`, pageWidth - margin, badgeY + badgeHeight + 9, { align: 'right' })
-
-  yPosition += 18
+  
+  let rightTextY = badgeY + badgeHeight + 5
+  doc.text(`Proposal No: ${proposalNo}`, pageWidth - margin, rightTextY, { align: 'right' })
+  
+  // Add agent code if available
+  if (agentCode) {
+    rightTextY += 4
+    doc.text(`Agent Code: ${agentCode}`, pageWidth - margin, rightTextY, { align: 'right' })
+  }
+  
+  // Add issued date
+  rightTextY += 4
+  doc.text(`Issued: ${format(new Date(), 'MMM dd, yyyy h:mm a')}`, pageWidth - margin, rightTextY, { align: 'right' })
+  
+  // Adjust yPosition based on how many lines we added
+  yPosition += agentCode ? 22 : 18
 
   // Separator line
   doc.setDrawColor(primaryGreen[0], primaryGreen[1], primaryGreen[2])
