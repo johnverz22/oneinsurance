@@ -34,6 +34,7 @@ function TravelInsurancePageSSR() {
     setFormModified,
     resetAvailForm,
     setInsurancePlans,
+    updateTravelDetails,
   } = useTravelInsuranceStore()
   const router = useRouter()
   const { mutateAsync } = useCreateQuoteRequest()
@@ -41,6 +42,28 @@ function TravelInsurancePageSSR() {
 
   useEffect(() => {
     setHydrated(true)
+    
+    // Clear any old default destinations (JAPAN) from persisted state
+    if (travelDetails.travelDetailList && travelDetails.travelDetailList.length > 0) {
+      const firstDestination = travelDetails.travelDetailList[0]
+      if (firstDestination.TravelCountry === 'JAPAN') {
+        // Reset to empty destination
+        updateTravelDetails({
+          travelDetailList: [{
+            ...firstDestination,
+            TravelCountry: '',
+          }]
+        })
+      }
+    }
+    
+    // Clear clientRequest on initial page load to prevent auto-fetching
+    // Plans should only load when user clicks Search button
+    if (clientRequest.id) {
+      console.log('🧹 Clearing persisted clientRequest to prevent auto-fetch')
+      setClientRequest({ id: undefined, status: 'fetching' })
+      setInsurancePlans(null)
+    }
   }, [])
 
   useEffect(() => {
@@ -50,6 +73,10 @@ function TravelInsurancePageSSR() {
       return
     }
 
+    // Don't automatically fetch plans on page load
+    // Plans should only be fetched when user clicks Search button
+    // or when loading from a proposal search
+    
     async function fetchCoverageOption() {
       try {
         // CRITICAL: Check if we're loading from a proposal search
@@ -62,41 +89,9 @@ function TravelInsurancePageSSR() {
           return
         }
         
-        // Check if we have valid travel details before making API call
-        if (!travelDetails.departureDate || !travelDetails.returnDate || !travelDetails.dateOfBirth) {
-          console.log('⚠️ Incomplete travel details - skipping API call')
-          return
-        }
-
-        // Ensure dates are properly converted to Date objects
-        const sanitizedTravelDetails = {
-          ...travelDetails,
-          dateOfBirth: travelDetails.dateOfBirth
-            ? new Date(travelDetails.dateOfBirth)
-            : travelDetails.dateOfBirth,
-          departureDate: travelDetails.departureDate
-            ? new Date(travelDetails.departureDate)
-            : travelDetails.departureDate,
-          returnDate: travelDetails.returnDate
-            ? new Date(travelDetails.returnDate)
-            : travelDetails.returnDate,
-        }
-
-        console.log('📡 Calling compare-quote for NEW quote (not from proposal)')
-        const clientRequestId = await mutateAsync(sanitizedTravelDetails)
-
-        setClientRequest({
-          id: clientRequestId,
-          status: 'fetching',
-        })
-
-        setFormModified(false) // Clear form modified state on initial load
-
-        const coverageOptions = document.getElementById('coverage-options')
-        coverageOptions?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
+        // Don't auto-fetch on initial page load - user must click Search
+        console.log('⚠️ Skipping auto-fetch - user must click Search button')
+        return
       } catch (error) {
         console.error('Failed to fetch coverage options:', error)
         setClientRequest({ status: 'error' })

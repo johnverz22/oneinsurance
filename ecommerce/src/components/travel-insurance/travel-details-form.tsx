@@ -164,6 +164,33 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   const options = getNormalizedTravelCoverages(TravelCoverageMap)
   const currentValues = useStore(form.store, (state) => state.values)
 
+  // Determine valid "From" options based on selected destinations
+  const fromOptions = useMemo(() => {
+    const selectedDestinations = currentValues.travelDetailList
+      ?.map((d: any) => d?.TravelCountry)
+      .filter((code: string) => code && code.trim() !== '') || []
+
+    // If no destinations selected, show all options
+    if (selectedDestinations.length === 0) {
+      return options
+    }
+
+    // Check if all selected destinations are domestic (Philippine provinces/cities)
+    const allDomestic = selectedDestinations.every((code: string) => {
+      return TravelCoverageMap.DOMESTIC.some((country) => country.code === code)
+    })
+
+    // If all destinations are domestic, allow all domestic options for "From"
+    if (allDomestic) {
+      return options.filter((opt) => 
+        TravelCoverageMap.DOMESTIC.some((country) => country.code === opt.value)
+      )
+    }
+
+    // If any destination is international, only allow Philippines as "From"
+    return options.filter((opt) => opt.value === 'PHILIPPINES')
+  }, [currentValues.travelDetailList, options])
+
   const isDetailsFormState = useMemo(() => {
     // If form is submitting or we're already fetching, disable
     if (
@@ -277,7 +304,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                 </p>
                 <ComboBox
                   title="place"
-                  options={options}
+                  options={fromOptions}
                   value={placeOfOriginField.state.value}
                   onValueChange={(value) => {
                     placeOfOriginField.handleChange(value)
@@ -350,14 +377,22 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                           currentValues.travelDetailList[0].PlaceOfOrgin) ||
                         ''
 
+                      // Check if any selected destination is international (not DOMESTIC)
+                      const hasInternationalDestination = filtered.some((code) => {
+                        return !TravelCoverageMap.DOMESTIC.some((country) => country.code === code)
+                      })
+
+                      // If international destination selected, force origin to PHILIPPINES
+                      const finalOrigin = hasInternationalDestination ? 'PHILIPPINES' : selectedOrigin
+
                       // If destinations are cleared, preserve the origin with an empty destination
                       const newTravelDetailList = filtered.length > 0
                         ? filtered.map((code, idx, arr) => ({
                             TravelCoverageArea: findCoverageArea(code),
                             PlaceOfOrgin:
                               idx === 0
-                                ? selectedOrigin
-                                : (arr[idx - 1] ?? selectedOrigin),
+                                ? finalOrigin
+                                : (arr[idx - 1] ?? finalOrigin),
                             TravelCountry: code,
                             DisplaySequence: idx + 1,
                           }))
