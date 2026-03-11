@@ -47,6 +47,7 @@ export function TravelInsuranceReviewPage() {
   const { travelersInfo, coverageOption, nextStep, prevStep, travelDetails, isLoadingProposal } =
     useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
+  const { agentCode } = useAgentCodeStore()
   const [proceedingToPayment, setProceedingToPayment] = useState(false)
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
 
@@ -107,6 +108,7 @@ export function TravelInsuranceReviewPage() {
         addons,
         mainBenefits,
         addonBenefits: selectedAddonBenefits as any,
+        agentCode: agentCode || undefined,
       })
 
       toast.success('PDF downloaded successfully')

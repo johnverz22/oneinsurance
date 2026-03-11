@@ -409,6 +409,7 @@ export function CoverageOptionsForm() {
     return <ServerConnectionIssue />
   }
 
+  // Don't show anything if no search has been performed yet
   if (!clientRequest.id) {
     return null
   }
@@ -417,7 +418,8 @@ export function CoverageOptionsForm() {
     return <ServerOffline onRefresh={handleRefetch} />
   }
 
-  const isPlansFetching = isLoading || !insurancePlans?.data?.[0].Plans
+  const isPlansFetching = isLoading || !insurancePlans?.data?.[0]?.Plans
+  const hasPlans = insurancePlans?.data && insurancePlans.data.length > 0
 
   return (
     <div className="relative w-full overflow-hidden border-0">
@@ -501,7 +503,7 @@ export function CoverageOptionsForm() {
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
-        {!insurancePlans || !insurancePlans ? (
+        {isLoading || !hasPlans ? (
           <div className="min-h-screen">
             <div className="mx-auto w-full max-w-7xl space-y-4">
               <Skeleton className="h-16 w-full p-4" />

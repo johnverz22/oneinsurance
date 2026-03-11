@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Download, Phone, Mail } from 'lucide-react'
 import { useFullQuoteResponseStore, useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 import { getProposalNumber } from '@/utils/payment-storage'
 import { generateQuotePDF } from '@/utils/generate-quote-pdf'
 import { COMPANIES } from '@/constants/companies'
@@ -15,6 +16,7 @@ export default function PaymentErrorPage() {
   const router = useRouter()
   const { apiResponse } = useFullQuoteResponseStore()
   const { travelDetails, coverageOption, travelersInfo } = useTravelInsuranceStore()
+  const { agentCode } = useAgentCodeStore()
   const [proposalNumber, setProposalNumber] = useState<string | null>(null)
 
   useEffect(() => {
@@ -67,6 +69,7 @@ export default function PaymentErrorPage() {
         addons,
         mainBenefits,
         addonBenefits: selectedAddonBenefits as any,
+        agentCode: agentCode || undefined,
       })
 
       toast.success('PDF downloaded successfully')
