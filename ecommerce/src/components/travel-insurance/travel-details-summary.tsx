@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns'
 import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, Download } from 'lucide-react'
@@ -12,6 +13,7 @@ import { toast } from 'sonner'
 export function TravelDetailsSummary() {
   const { travelDetails, coverageOption, travelersInfo, step } = useTravelInsuranceStore()
   const { apiResponse } = useFullQuoteResponseStore()
+  const { agentCode } = useAgentCodeStore()
 
   const handleDownloadPDF = () => {
     try {
@@ -56,6 +58,7 @@ export function TravelDetailsSummary() {
         addons,
         mainBenefits,
         addonBenefits: selectedAddonBenefits as any,
+        agentCode: agentCode || undefined,
       })
 
       toast.success('PDF downloaded successfully')

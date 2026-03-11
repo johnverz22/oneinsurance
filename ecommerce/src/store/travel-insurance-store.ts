@@ -82,7 +82,7 @@ const initialState = {
     travelDetailList: [
       {
         DisplaySequence: 1,
-        TravelCountry: 'JAPAN',
+        TravelCountry: '',
         PlaceOfOrgin: 'PHILIPPINES',
         TravelCoverageArea: 'APAC',
       },
@@ -229,6 +229,7 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
     }),
     {
       name: 'travel-insurance-form',
+      version: 1, // Add version to force migration when structure changes
       storage: createJSONStorage(() => sessionStorage, {
         reviver: (key, value) => {
           // Convert date strings back to Date objects
@@ -276,6 +277,19 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
               state.travelDetails.dateOfBirth
             )
           }
+          
+          // Clear default destination if it's still set to JAPAN from old data
+          if (state.travelDetails.travelDetailList && state.travelDetails.travelDetailList.length > 0) {
+            const firstDestination = state.travelDetails.travelDetailList[0]
+            if (firstDestination.TravelCountry === 'JAPAN') {
+              // Clear the destination to match new default behavior
+              state.travelDetails.travelDetailList[0] = {
+                ...firstDestination,
+                TravelCountry: '',
+              }
+            }
+          }
+          
           // Also handle travelers dates
           if (state.travelersInfo && Array.isArray(state.travelersInfo)) {
             state.travelersInfo.forEach((traveler) => {
