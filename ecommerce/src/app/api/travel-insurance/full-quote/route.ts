@@ -4,23 +4,61 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const formData = await req.formData()
 
-    if (!body) {
+    if (!formData) {
       return NextResponse.json(
         { error: 'Request body is required' },
         { status: 400 }
       )
     }
 
+    // Get the JSON payload from formData
+    const payloadString = formData.get('payload') as string
+    if (!payloadString) {
+      return NextResponse.json(
+        { error: 'Payload is required' },
+        { status: 400 }
+      )
+    }
+
+    const payload = JSON.parse(payloadString)
+
+    // Create FormData for backend request
+    const backendFormData = new FormData()
+    
+    // Add the main payload as JSON string
+    backendFormData.append('payload', JSON.stringify(payload))
+
+    // Process ID images if they exist
+    // Expected format: id_images[0][file_name], id_images[0][front_id], id_images[0][back_id]
+    const idImagesCount = parseInt(formData.get('id_images_count') as string || '0')
+    
+    for (let i = 0; i < idImagesCount; i++) {
+      const fileName = formData.get(`id_images[${i}][file_name]`) as string
+      const frontId = formData.get(`id_images[${i}][front_id]`) as File
+      const backId = formData.get(`id_images[${i}][back_id]`) as File
+
+      if (fileName) {
+        backendFormData.append(`id_images[${i}][file_name]`, fileName)
+      }
+      if (frontId) {
+        backendFormData.append(`id_images[${i}][front_id]`, frontId)
+      }
+      if (backId) {
+        backendFormData.append(`id_images[${i}][back_id]`, backId)
+      }
+    }
+
     const url = `${process.env.BASE_URL}/quote/travel/full-quote`
 
     console.log('Travel Insurance Full Quote URL:', url)
-    console.log('Request body:', body)
+    console.log('Request payload:', payload)
+    console.log('ID Images count:', idImagesCount)
 
-    const response = await axios.post(url, body, {
+    const response = await axios.post(url, backendFormData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
       },
     })
