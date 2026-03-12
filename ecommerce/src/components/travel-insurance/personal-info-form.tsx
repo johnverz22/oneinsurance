@@ -65,6 +65,9 @@ export function PersonalInfoForm() {
   const { setApiResponse } = useFullQuoteResponseStore()
   const signinState = useSignInStateStore()
 
+  // Store ID files for each traveler using useRef (doesn't trigger re-renders)
+  const idFilesRef = useRef<Map<number, { frontId: File | null; backId: File | null }>>(new Map())
+
   const [selectedProvinceCode, setSelectedProvinceCode] = useState<
     Record<number, string>
   >({})
@@ -116,6 +119,13 @@ export function PersonalInfoForm() {
 
       const fullQuoteResponse = await mutateAsync({
         fullQuoteRequest: fullQuoteRequestBody,
+        idImages: Array.from(idFilesRef.current.entries())
+          .filter(([_, files]) => files.frontId && files.backId)
+          .map(([index, files]) => ({
+            fileName: `${value.travelers[index].firstName.toLowerCase()}-${value.travelers[index].lastName.toLowerCase()}`,
+            frontId: files.frontId!,
+            backId: files.backId!,
+          })),
       })
 
       if (
@@ -447,6 +457,13 @@ export function PersonalInfoForm() {
                                   onDataExtracted={handleDataExtracted(index)}
                                   onProcessingStart={() => {}}
                                   onIdUploaded={(frontFile, backFile) => {
+                                    // Store the actual File objects in ref
+                                    idFilesRef.current.set(index, {
+                                      frontId: frontFile,
+                                      backId: backFile,
+                                    })
+                                    
+                                    // Update form validation flags
                                     form.setFieldValue(
                                       `travelers[${index}].idFrontUploaded`,
                                       !!frontFile
