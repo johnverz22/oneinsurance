@@ -24,14 +24,39 @@ export async function POST(req: NextRequest) {
 
     const payload = JSON.parse(payloadString)
 
-    // Create FormData for backend request
+    // Create FormData for backend request - flatten all fields
     const backendFormData = new FormData()
     
-    // Add the main payload as JSON string
-    backendFormData.append('payload', JSON.stringify(payload))
+    // Helper function to flatten nested objects into FormData with bracket notation
+    const flattenToFormData = (obj: any, prefix = '') => {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const value = obj[key]
+          const formKey = prefix ? `${prefix}[${key}]` : key
+
+          if (value === null || value === undefined) {
+            continue
+          } else if (Array.isArray(value)) {
+            value.forEach((item, index) => {
+              if (typeof item === 'object' && item !== null) {
+                flattenToFormData(item, `${formKey}[${index}]`)
+              } else {
+                backendFormData.append(`${formKey}[${index}]`, String(item))
+              }
+            })
+          } else if (typeof value === 'object' && !(value instanceof File)) {
+            flattenToFormData(value, formKey)
+          } else {
+            backendFormData.append(formKey, String(value))
+          }
+        }
+      }
+    }
+
+    // Flatten the entire payload
+    flattenToFormData(payload)
 
     // Process ID images if they exist
-    // Expected format: id_images[0][file_name], id_images[0][front_id], id_images[0][back_id]
     const idImagesCount = parseInt(formData.get('id_images_count') as string || '0')
     
     for (let i = 0; i < idImagesCount; i++) {
@@ -40,20 +65,19 @@ export async function POST(req: NextRequest) {
       const backId = formData.get(`id_images[${i}][back_id]`) as File
 
       if (fileName) {
-        backendFormData.append(`id_images[${i}][file_name]`, fileName)
+        backendFormData.append(`CustomField[IdImages][${i}][file_name]`, fileName)
       }
       if (frontId) {
-        backendFormData.append(`id_images[${i}][front_id]`, frontId)
+        backendFormData.append(`CustomField[IdImages][${i}][front_id]`, frontId)
       }
       if (backId) {
-        backendFormData.append(`id_images[${i}][back_id]`, backId)
+        backendFormData.append(`CustomField[IdImages][${i}][back_id]`, backId)
       }
     }
 
     const url = `${process.env.BASE_URL}/quote/travel/full-quote`
 
     console.log('Travel Insurance Full Quote URL:', url)
-    console.log('Request payload:', payload)
     console.log('ID Images count:', idImagesCount)
 
     const response = await axios.post(url, backendFormData, {
