@@ -80,12 +80,9 @@ export async function POST(req: NextRequest) {
     console.log('Travel Insurance Full Quote URL:', url)
     console.log('ID Images count:', idImagesCount)
 
-    const response = await axios.post(url, backendFormData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
-      },
-    })
+    // Don't manually set Content-Type - axios will set it with the correct boundary
+    // Don't send Authorization header - backend doesn't require it for this endpoint
+    const response = await axios.post(url, backendFormData)
 
     const headers = {
       'Access-Control-Allow-Origin': '*',
