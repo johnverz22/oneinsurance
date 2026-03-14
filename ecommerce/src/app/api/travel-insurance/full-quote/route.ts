@@ -4,17 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData()
-
-    if (!formData) {
-      return NextResponse.json(
-        { error: 'Request body is required' },
-        { status: 400 }
-      )
-    }
-
-    const url = `${process.env.BASE_URL}/quote/travel/full-quote`
-
     if (!process.env.BASE_URL) {
       console.error('BASE_URL environment variable is not set')
       return NextResponse.json(
@@ -23,20 +12,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const url = `${process.env.BASE_URL}/quote/travel/full-quote`
+
+    // Get the raw request body as a buffer and forward it with the original Content-Type
+    // This avoids any server-side FormData serialization issues with axios
+    const contentType = req.headers.get('content-type') || ''
+    const bodyBuffer = await req.arrayBuffer()
+
     console.log('=== FULL QUOTE REQUEST ===')
     console.log('URL:', url)
-    console.log('FormData entries:')
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`)
-      } else {
-        console.log(`  ${key}: ${value}`)
-      }
-    }
+    console.log('Content-Type:', contentType)
+    console.log('Body size:', bodyBuffer.byteLength, 'bytes')
 
-    // Forward the FormData directly to the backend
-    // axios will set Content-Type with the correct multipart boundary automatically
-    const response = await axios.post(url, formData)
+    const response = await axios.post(url, Buffer.from(bodyBuffer), {
+      headers: {
+        'Content-Type': contentType,
+      },
+    })
 
     return NextResponse.json(response.data, { status: 200 })
   } catch (error: any) {
