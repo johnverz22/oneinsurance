@@ -107,7 +107,7 @@ export function CoverageOfConfirmation({
                 Cover Note
               </h1>
               <p className="text-sm text-gray-600">
-                #{localStorage.getItem('payment_transaction_id') || policyData.CarrierPolicyNo || 'N/A'}
+                #{localStorage.getItem('payment_transaction_id') || policyData?.CarrierPolicyNo || 'N/A'}
               </p>
             </div>
 
@@ -125,7 +125,7 @@ export function CoverageOfConfirmation({
             <div>
               <p className="text-xs font-medium text-gray-500">Policy Number</p>
               <p className="mt-1 text-sm text-gray-800">
-                {policyData.CarrierPolicyNo || 'N/A'}
+                {policyData?.CarrierPolicyNo || 'N/A'}
               </p>
             </div>
 

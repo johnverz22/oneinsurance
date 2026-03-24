@@ -33,10 +33,10 @@ export const transformToInvoiceData = (
       : 'Not specified'
 
   return {
-    policyNumber: policyData.PolicyNo || '',
-    carrierPolicyNumber: policyData.CarrierPolicyNo || '',
+    policyNumber: policyData?.PolicyNo || '',
+    carrierPolicyNumber: policyData?.CarrierPolicyNo || '',
     planName: localStorage.getItem('planName') || '',
-    proposalNumber: policyData.ProposalNo || '',
+    proposalNumber: policyData?.ProposalNo || '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
     customer: {
       name: `${paymentBillingDetails?.first_name || ''} ${paymentBillingDetails?.last_name || ''}`.trim(),
