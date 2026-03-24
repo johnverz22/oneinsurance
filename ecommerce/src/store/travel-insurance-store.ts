@@ -1,5 +1,10 @@
 import { addDays } from 'date-fns'
 import { create } from 'zustand'
+
+// Module-level singleton — survives component unmount/remount within the same page session.
+// File objects cannot be serialized to sessionStorage, so we keep them in memory here.
+export const idFilesStore = new Map<number, { frontId: File | null; backId: File | null }>()
+
 import { devtools, createJSONStorage, persist } from 'zustand/middleware'
 import {
   CoverageOptionFormData,
@@ -187,7 +192,7 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
 
       setPolicyNo: (policyNo) => set({ policyNo }),
 
-      resetForm: () => set(initialState),
+      resetForm: () => { idFilesStore.clear(); return set(initialState) },
       resetAvailForm: () =>
         set({
           step: initialState.step,

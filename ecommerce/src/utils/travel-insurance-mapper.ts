@@ -145,7 +145,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     policyCustomerList.push({
       AddrProvince: traveler.address.province,
       AddressLine1: traveler.address.line1,
-      AddressLine2: traveler.address.line2 || 'null',
+      AddressLine2: traveler.address.line2 || null,
       City: traveler.address.city,
       DateOfBirth: dobDate.toISOString().split('T').at(0),
       Email: traveler.email,
@@ -187,7 +187,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       MiddleName: traveler.middleName || '',
       AddrProvince: traveler.address.province,
       AddressLine1: traveler.address.line1,
-      AddressLine2: traveler.address.line2 || 'null',
+      AddressLine2: traveler.address.line2 || null,
       Age: travelerAge,
       City: traveler.address.city,
       DateOfBirth: dobDate.toISOString().split('T').at(0),

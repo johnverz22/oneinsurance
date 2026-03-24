@@ -63,7 +63,7 @@ export function PaymentSuccessDialog({
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `travel-insurance-invoice-${policyData.CarrierPolicyNo || 'N/A'}.txt`
+    a.download = `travel-insurance-invoice-${policyData?.CarrierPolicyNo || 'N/A'}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -89,8 +89,8 @@ export function PaymentSuccessDialog({
 TRAVEL INSURANCE INVOICE
 ========================
 
-Policy Number: ${policyData.CarrierPolicyNo || 'N/A'}
-Proposal Number: ${policyData.ProposalNo}
+Policy Number: ${policyData?.CarrierPolicyNo || 'N/A'}
+Proposal Number: ${policyData?.ProposalNo}
 Invoice Date: ${format(new Date(), 'PPP')}
 
 CUSTOMER INFORMATION
@@ -162,7 +162,7 @@ Thank you for choosing our travel insurance service!
 <body>
     <div class="header">
         <h1>Travel Insurance Invoice</h1>
-        <p>Policy Number: ${policyData.CarrierPolicyNo || 'N/A'}</p>
+        <p>Policy Number: ${policyData?.CarrierPolicyNo || 'N/A'}</p>
         <p>Invoice Date: ${format(new Date(), 'PPP')}</p>
     </div>
     
@@ -309,8 +309,8 @@ Thank you for choosing our travel insurance service!
 COVER NOTE
 =======================
 
-Policy Number: ${policyData.CarrierPolicyNo || 'N/A'}
-Proposal Number: ${policyData.ProposalNo}
+Policy Number: ${policyData?.CarrierPolicyNo || 'N/A'}
+Proposal Number: ${policyData?.ProposalNo}
 Issue Date: ${format(new Date(), 'PPP')}
 
 POLICY INFORMATION
@@ -351,7 +351,7 @@ ID Number: ${quoteData.PolicyCustomerList?.[0]?.IdNo || '123-4567-8910'}
 POLICY REFERENCE NUMBERS
 -------------------------
 Business Object ID: ${quoteData.BusinessObjectId || '123456789A'}
-Carrier Proposal Number: ${policyData.ProposalNo || '123456789B'}
+Carrier Proposal Number: ${policyData?.ProposalNo || '123456789B'}
 
 COVERAGE DATES
 --------------
@@ -368,7 +368,7 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                   const url = URL.createObjectURL(blob)
                   const a = document.createElement('a')
                   a.href = url
-                  a.download = `certificate-of-coverage-${policyData.CarrierPolicyNo || 'N/A'}.txt`
+                  a.download = `certificate-of-coverage-${policyData?.CarrierPolicyNo || 'N/A'}.txt`
                   document.body.appendChild(a)
                   a.click()
                   document.body.removeChild(a)
@@ -398,14 +398,14 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                     Policy Number
                   </span>
                   <Badge variant="outline" className="font-mono text-sm">
-                    {policyData.CarrierPolicyNo || 'N/A'}
+                    {policyData?.CarrierPolicyNo || 'N/A'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">
                     Proposal Number
                   </span>
-                  <span className="font-medium">{policyData.ProposalNo}</span>
+                  <span className="font-medium">{policyData?.ProposalNo}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">
