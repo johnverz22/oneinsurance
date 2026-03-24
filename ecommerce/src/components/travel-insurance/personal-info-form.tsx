@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   useFullQuoteResponseStore,
   useTravelInsuranceStore,
+  idFilesStore,
 } from '@/store/travel-insurance-store'
 import {
   travelersInfoSchema,
@@ -65,8 +66,8 @@ export function PersonalInfoForm() {
   const { setApiResponse } = useFullQuoteResponseStore()
   const signinState = useSignInStateStore()
 
-  // Store ID files for each traveler using useRef (doesn't trigger re-renders)
-  const idFilesRef = useRef<Map<number, { frontId: File | null; backId: File | null }>>(new Map())
+  // Store ID files for each traveler using module-level singleton (survives unmount/remount)
+  // idFilesStore is defined in travel-insurance-store.ts
 
   const [selectedProvinceCode, setSelectedProvinceCode] = useState<
     Record<number, string>
@@ -119,7 +120,7 @@ export function PersonalInfoForm() {
 
       const fullQuoteResponse = await mutateAsync({
         fullQuoteRequest: fullQuoteRequestBody,
-        idImages: Array.from(idFilesRef.current.entries())
+        idImages: Array.from(idFilesStore.entries())
           .filter(([_, files]) => files.frontId && files.backId)
           .map(([index, files]) => ({
             fileName: `${value.travelers[index].firstName.toLowerCase()}-${value.travelers[index].lastName.toLowerCase()}`,
@@ -456,9 +457,11 @@ export function PersonalInfoForm() {
                                 <IdUploadComponent
                                   onDataExtracted={handleDataExtracted(index)}
                                   onProcessingStart={() => {}}
+                                  initialFrontFile={idFilesStore.get(index)?.frontId ?? null}
+                                  initialBackFile={idFilesStore.get(index)?.backId ?? null}
                                   onIdUploaded={(frontFile, backFile) => {
-                                    // Store the actual File objects in ref
-                                    idFilesRef.current.set(index, {
+                                    // Store the actual File objects in module-level singleton
+                                    idFilesStore.set(index, {
                                       frontId: frontFile,
                                       backId: backFile,
                                     })

@@ -215,9 +215,11 @@ export const FullQuoteResponseSchema = createResponseSchema(
 )
 export type FullQuoteResponse = z.infer<typeof FullQuoteResponseSchema>
 
-export const IssueQuoteResponseSchema = createResponseSchema(
-  TravelPolicyDataSchema
-)
+export const IssueQuoteResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: TravelPolicyDataSchema.nullable().optional(),
+})
 export type IssueQuoteResponse = z.infer<typeof IssueQuoteResponseSchema>
 
 // For requests
