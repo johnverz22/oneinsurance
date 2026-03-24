@@ -162,7 +162,7 @@ export default function PaymentSelection() {
 
       // Store the response and show success dialog
       setIssueQuoteResponse(response)
-      setPolicyNo(response!.data.PolicyNo ?? '')
+      setPolicyNo(response?.data?.PolicyNo ?? '')
 
       // Set a generic digital payment brand for the success dialog
       setSelectedPaymentBrand({
@@ -294,7 +294,7 @@ export default function PaymentSelection() {
 
     // Store the response and show success dialog
     setIssueQuoteResponse(response)
-    setPolicyNo(response.data.PolicyNo ?? '')
+    setPolicyNo(response.data?.PolicyNo ?? '')
     setShowSuccessDialog(true)
 
     popup.show({

@@ -5,7 +5,6 @@ import {
 } from '@/types/travel-insurance/policy-types'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
-import { error } from 'console'
 
 export function useIssueQuoteRequest() {
   return useMutation({
@@ -14,6 +13,7 @@ export function useIssueQuoteRequest() {
     }: {
       issueQuoteRequest: IssueQuoteRequest
     }) => {
+      let responseData: unknown
       try {
         const response = await axios.post(
           `/api/travel-insurance/issue-quote`,
@@ -24,38 +24,58 @@ export function useIssueQuoteRequest() {
             },
           }
         )
-
-        const parsed = IssueQuoteResponseSchema.safeParse(response.data)
-        if (parsed.success) {
-          const issueQuoteData = parsed.data as IssueQuoteResponse
-          
-          // Update localStorage proposal with policy_number after successful payment
-          if (issueQuoteData.success && issueQuoteData.data?.ProposalNo) {
-            try {
-              const proposalKey = `proposal_${issueQuoteData.data.ProposalNo}`
-              const existingProposal = localStorage.getItem(proposalKey)
-              
-              if (existingProposal) {
-                const proposalData = JSON.parse(existingProposal)
-                // Add policy_number to the saved proposal
-                proposalData.policy_number = issueQuoteData.data.CarrierPolicyNo || issueQuoteData.data.PolicyNo
-                proposalData.PolicyNo = issueQuoteData.data.PolicyNo
-                proposalData.CarrierPolicyNo = issueQuoteData.data.CarrierPolicyNo
-                localStorage.setItem(proposalKey, JSON.stringify(proposalData))
-                console.log('Updated proposal in localStorage with policy_number:', proposalData.policy_number)
-              }
-            } catch (storageError) {
-              console.warn('Failed to update proposal in localStorage:', storageError)
-            }
-          }
-          
-          return issueQuoteData
-        } else {
-          return null
-        }
-      } catch (error) {
-        return null
+        responseData = response.data
+      } catch (err: any) {
+        const backendMessage =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          'Issue quote request failed'
+        console.error('Issue quote HTTP error:', err?.response?.data || err)
+        throw new Error(backendMessage)
       }
+
+      const parsed = IssueQuoteResponseSchema.safeParse(responseData)
+      if (!parsed.success) {
+        console.error('Issue quote response parse error:', parsed.error, 'Raw response:', responseData)
+        // Surface any backend error/message from the raw response
+        const raw = responseData as any
+        const backendMessage = raw?.message || raw?.error || 'Unexpected response from issue quote'
+        throw new Error(backendMessage)
+      }
+
+      const issueQuoteData = parsed.data as IssueQuoteResponse
+
+      if (!issueQuoteData.success) {
+        const backendMessage = issueQuoteData.message || 'Issue quote returned unsuccessful'
+        console.error('Issue quote unsuccessful:', issueQuoteData)
+        throw new Error(backendMessage)
+      }
+
+      if (!issueQuoteData.data) {
+        console.error('Issue quote returned success but no data:', issueQuoteData)
+        throw new Error('Issue quote returned no policy data')
+      }
+
+      // Update localStorage proposal with policy_number after successful payment
+      if (issueQuoteData.data?.ProposalNo) {
+        try {
+          const proposalKey = `proposal_${issueQuoteData.data.ProposalNo}`
+          const existingProposal = localStorage.getItem(proposalKey)
+          if (existingProposal) {
+            const proposalData = JSON.parse(existingProposal)
+            proposalData.policy_number = issueQuoteData.data.CarrierPolicyNo || issueQuoteData.data.PolicyNo
+            proposalData.PolicyNo = issueQuoteData.data.PolicyNo
+            proposalData.CarrierPolicyNo = issueQuoteData.data.CarrierPolicyNo
+            localStorage.setItem(proposalKey, JSON.stringify(proposalData))
+            console.log('Updated proposal in localStorage with policy_number:', proposalData.policy_number)
+          }
+        } catch (storageError) {
+          console.warn('Failed to update proposal in localStorage:', storageError)
+        }
+      }
+
+      return issueQuoteData
     },
     retry: false,
   })

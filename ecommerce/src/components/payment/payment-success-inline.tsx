@@ -99,7 +99,7 @@ export function PaymentSuccessInline({
                 <div>
                   <h1 className="text-3xl font-bold text-gray-800">Invoice</h1>
                   <p className="text-sm text-gray-600">
-                    #{localStorage.getItem('payment_transaction_id') || policyData.CarrierPolicyNo || 'N/A'}
+                    #{localStorage.getItem('payment_transaction_id') || policyData?.CarrierPolicyNo || 'N/A'}
                   </p>
                 </div>
 
@@ -119,7 +119,7 @@ export function PaymentSuccessInline({
                     Policy Number
                   </p>
                   <p className="mt-1 text-sm text-gray-800">
-                    {policyData.CarrierPolicyNo || 'N/A'}
+                    {policyData?.CarrierPolicyNo || 'N/A'}
                   </p>
                 </div>
                 <div>

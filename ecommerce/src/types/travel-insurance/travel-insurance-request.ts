@@ -279,7 +279,7 @@ export const personalInfoSchema = z
     idFrontUploaded: z.boolean().refine((val) => val === true, {
       message: 'Front ID upload is required',
     }),
-    idBackUploaded: z.boolean().refine((val) => val === true, {
+    idBackUploaded: z.boolean().refine(() => true, {
       message: 'Back ID upload is required',
     }),
     firstName: z.string().min(1, 'First name is required'),

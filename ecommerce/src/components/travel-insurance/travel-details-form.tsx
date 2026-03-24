@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { subDays } from 'date-fns'
 import { Users } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
@@ -45,6 +45,15 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
     setInsurancePlans,
     resetQuoteRefetchCount,
   } = useTravelInsuranceStore()
+
+  // Track domestic mode explicitly — derived from store on init, then controlled by toggle
+  const [isDomesticMode, setIsDomesticMode] = useState(() => {
+    return travelDetails.travelDetailList?.length > 0 &&
+      travelDetails.travelDetailList.every((d) =>
+        d?.TravelCountry &&
+        TravelCoverageMap.DOMESTIC.some((c) => c.code === d.TravelCountry)
+      )
+  })
 
   // Ensure dates are Date objects (fallback in case store rehydration doesn't work perfectly)
   const normalizedTravelDetails = useMemo(() => {
@@ -314,6 +323,28 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
             children={(field) => {
               const options = getNormalizedTravelCoverages(TravelCoverageMap)
 
+              // Destination options filtered by mode
+              const destinationOptions = isDomesticMode
+                ? options.filter((opt) =>
+                    TravelCoverageMap.DOMESTIC.some((c) => c.code === opt.value)
+                  )
+                : options.filter((opt) =>
+                    !TravelCoverageMap.DOMESTIC.some((c) => c.code === opt.value)
+                  )
+
+              const handleDomesticToggle = (domestic: boolean) => {
+                setIsDomesticMode(domestic)
+                setFormModified(true)
+                const newList = [{
+                  TravelCoverageArea: domestic ? 'DOMESTIC' : 'APAC',
+                  PlaceOfOrgin: currentValues.travelDetailList?.[0]?.PlaceOfOrgin || '',
+                  TravelCountry: '',
+                  DisplaySequence: 1,
+                }]
+                field.handleChange(newList)
+                updateTravelDetails({ travelDetailList: newList })
+              }
+
               // Check if there are any destinations selected
               const hasDestinations = field.state.value?.some(
                 (d: any) => d?.TravelCountry && d.TravelCountry.trim() !== ''
@@ -321,12 +352,40 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
               return (
                 <div className="w-full space-y-2">
-                  <p className="text-primary text-sm font-medium sm:text-base">
-                    Destinations
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-primary text-sm font-medium sm:text-base">
+                      Destinations
+                    </p>
+                    {/* Domestic toggle */}
+                    <div className="border-muted-foreground/30 flex rounded-full border bg-gray-100 p-0.5 dark:bg-gray-950">
+                      <button
+                        type="button"
+                        onClick={() => handleDomesticToggle(false)}
+                        className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                          !isDomesticMode
+                            ? 'bg-lilac text-white shadow-sm'
+                            : 'text-foreground'
+                        }`}
+                      >
+                        International
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDomesticToggle(true)}
+                        className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                          isDomesticMode
+                            ? 'bg-lilac text-white shadow-sm'
+                            : 'text-foreground'
+                        }`}
+                      >
+                        Within Philippines
+                      </button>
+                    </div>
+                  </div>
 
                   <MultiSelect
-                    options={options}
+                    key={isDomesticMode ? 'domestic' : 'international'}
+                    options={destinationOptions}
                     className="dark:bg-input/30 border-muted-foreground/30 relative flex h-12 w-full items-center gap-1.5 overflow-hidden rounded-full border bg-white px-3 hover:bg-white"
                     hideSelectAll={true}
                     singleLine
@@ -338,6 +397,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
                       // Function to find coverage area for a country code
                       const findCoverageArea = (countryCode: string) => {
+                        if (isDomesticMode) return 'DOMESTIC'
                         for (const [area, countries] of Object.entries(
                           TravelCoverageMap
                         )) {
@@ -396,7 +456,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                             typeof v === 'string' && v.trim() !== ''
                         ) ?? []
                     }
-                    placeholder="Select your destinations"
+                    placeholder={isDomesticMode ? "Select Philippine province/region" : "Select your destinations"}
                     autoSize={false}
                   />
                   <FieldInfo field={field} />
