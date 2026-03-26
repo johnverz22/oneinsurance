@@ -9,7 +9,6 @@ import { TravelDetailsForm } from '@/components/travel-insurance/travel-details-
 import { ProposalSearch } from '@/components/travel-insurance/proposal-search'
 import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
 import { TRAVEL_FAQS } from '@/constants/faqs/travel-insurance-faqs'
-import { removeStorage } from '@/utils/remove-session-storage'
 import { CoverageOptionsForm } from '@/components/travel-insurance/coverage-options-form'
 import { useCreateQuoteRequest } from '@/app/data/mutations/create-quote-request'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -27,15 +26,12 @@ export default function TravelInsurancePage() {
 
 function TravelInsurancePageSSR() {
   const {
-    travelDetails,
-    clientRequest,
-    insurancePlans,
-    setClientRequest,
-    setFormModified,
-    resetAvailForm,
+    resetForm,
     setInsurancePlans,
-    updateTravelDetails,
+    resetAvailForm,
+    setFormModified,
   } = useTravelInsuranceStore()
+  const { resetApiResponse } = useFullQuoteResponseStore()
   const router = useRouter()
   const { mutateAsync } = useCreateQuoteRequest()
   const [hydrated, setHydrated] = useState(false)
@@ -43,65 +39,16 @@ function TravelInsurancePageSSR() {
   useEffect(() => {
     setHydrated(true)
     
-    // Clear any old default destinations (JAPAN) from persisted state
-    if (travelDetails.travelDetailList && travelDetails.travelDetailList.length > 0) {
-      const firstDestination = travelDetails.travelDetailList[0]
-      if (firstDestination.TravelCountry === 'JAPAN') {
-        // Reset to empty destination
-        updateTravelDetails({
-          travelDetailList: [{
-            ...firstDestination,
-            TravelCountry: '',
-          }]
-        })
-      }
-    }
-    
-    // Clear clientRequest on initial page load to prevent auto-fetching
-    // Plans should only load when user clicks Search button
-    if (clientRequest.id) {
-      console.log('🧹 Clearing persisted clientRequest to prevent auto-fetch')
-      setClientRequest({ id: undefined, status: 'fetching' })
-      setInsurancePlans(null)
-    }
+    // Always reset the full form when landing on this page.
+    // If the user was mid-flow they'd be on /avail, not here.
+    // This prevents stale plan/traveler data from a previous session showing up.
+    resetForm()
+    setInsurancePlans(null)
+    resetApiResponse()
   }, [])
 
-  useEffect(() => {
-    if (hydrated && insurancePlans) {
-      resetAvailForm()
-      setFormModified(false)
-      return
-    }
 
-    // Don't automatically fetch plans on page load
-    // Plans should only be fetched when user clicks Search button
-    // or when loading from a proposal search
-    
-    async function fetchCoverageOption() {
-      try {
-        // CRITICAL: Check if we're loading from a proposal search
-        // If so, DO NOT call compare-quote API - all data comes from load-quote
-        const loadingFromProposal = sessionStorage.getItem('loading-from-proposal')
-        const proposalReadOnly = sessionStorage.getItem('proposal-readonly-mode')
-        
-        if (loadingFromProposal === 'true' || proposalReadOnly === 'true') {
-          console.log('🚫 Skipping compare-quote - loading from proposal search (using load-quote data only)')
-          return
-        }
-        
-        // Don't auto-fetch on initial page load - user must click Search
-        console.log('⚠️ Skipping auto-fetch - user must click Search button')
-        return
-      } catch (error) {
-        console.error('Failed to fetch coverage options:', error)
-        setClientRequest({ status: 'error' })
-      }
-    }
 
-    if (!clientRequest.id && hydrated) {
-      fetchCoverageOption()
-    }
-  }, [hydrated, clientRequest.id])
 
   return (
     <div className="relative overflow-hidden">

@@ -8,8 +8,6 @@ import { Upload, X, FileImage, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface IdUploadComponentProps {
-  onDataExtracted: (data: any) => void
-  onProcessingStart?: () => void
   onIdUploaded?: (frontFile: File | null, backFile: File | null) => void
   initialFrontFile?: File | null
   initialBackFile?: File | null
@@ -26,24 +24,18 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 export function IdUploadComponent({
-  onDataExtracted,
-  onProcessingStart,
   onIdUploaded,
   initialFrontFile,
   initialBackFile,
 }: IdUploadComponentProps) {
   const [frontFile, setFrontFile] = useState<File | null>(() => initialFrontFile ?? null)
   const [backFile, setBackFile] = useState<File | null>(() => initialBackFile ?? null)
-  // Preview URLs — object URLs for newly dropped files, data URLs for initial files
   const [frontPreviewUrl, setFrontPreviewUrl] = useState<string | null>(null)
   const [backPreviewUrl, setBackPreviewUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
 
-  // Track object URLs created by new drops in this mount so we can revoke them on unmount
   const ownedUrlsRef = useRef<Set<string>>(new Set())
 
-  // On mount, convert initial files to data URLs (stable, never revoked)
   useEffect(() => {
     if (initialFrontFile) {
       fileToDataUrl(initialFrontFile).then(setFrontPreviewUrl)
@@ -53,7 +45,6 @@ export function IdUploadComponent({
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cleanup only the object URLs we created via drops in this mount
   useEffect(() => {
     const owned = ownedUrlsRef.current
     return () => {
@@ -64,7 +55,6 @@ export function IdUploadComponent({
   const onDropFront = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
     if (file) {
-      // Revoke previous owned front URL if any
       if (frontPreviewUrl && ownedUrlsRef.current.has(frontPreviewUrl)) {
         URL.revokeObjectURL(frontPreviewUrl)
         ownedUrlsRef.current.delete(frontPreviewUrl)
@@ -109,7 +99,6 @@ export function IdUploadComponent({
   })
 
   const removeFrontFile = () => {
-    if (isProcessing) return
     if (frontPreviewUrl && ownedUrlsRef.current.has(frontPreviewUrl)) {
       URL.revokeObjectURL(frontPreviewUrl)
       ownedUrlsRef.current.delete(frontPreviewUrl)
@@ -121,7 +110,6 @@ export function IdUploadComponent({
   }
 
   const removeBackFile = () => {
-    if (isProcessing) return
     if (backPreviewUrl && ownedUrlsRef.current.has(backPreviewUrl)) {
       URL.revokeObjectURL(backPreviewUrl)
       ownedUrlsRef.current.delete(backPreviewUrl)
@@ -130,33 +118,6 @@ export function IdUploadComponent({
     setBackPreviewUrl(null)
     setError(null)
     onIdUploaded?.(frontFile, null)
-  }
-
-  const processImage = async () => {
-    if (!frontFile) {
-      setError('Please upload front ID first')
-      return
-    }
-    const reader = new FileReader()
-    reader.onloadend = async () => {
-      const base64 = reader.result?.toString().split(',')[1]
-      if (!base64) return
-      setIsProcessing(true)
-      try {
-        const res = await fetch('/api/ocr', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64 }),
-        })
-        const data = await res.json()
-        onDataExtracted(data)
-      } catch {
-        setError('Failed to process image. Please try again.')
-      } finally {
-        setIsProcessing(false)
-      }
-    }
-    reader.readAsDataURL(frontFile)
   }
 
   return (
@@ -168,10 +129,6 @@ export function IdUploadComponent({
         </CardTitle>
         <p className="text-muted-foreground text-sm">
           Upload clear photos of both the front and back of your valid ID.
-          <br />
-          Please double-check the extracted information for accuracy.
-          <br />
-          Your ID will not be stored or shared and is used solely for data extraction.
         </p>
       </CardHeader>
       <CardContent className="relative space-y-6 overflow-visible">
@@ -213,7 +170,7 @@ export function IdUploadComponent({
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   </div>
                 )}
-                <Button variant="destructive" size="sm" className="absolute top-2 right-2 z-10" onClick={removeFrontFile} disabled={isProcessing}>
+                <Button variant="destructive" size="sm" className="absolute top-2 right-2 z-10" onClick={removeFrontFile}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -265,7 +222,7 @@ export function IdUploadComponent({
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   </div>
                 )}
-                <Button variant="destructive" size="sm" className="absolute top-2 right-2 z-10" onClick={removeBackFile} disabled={isProcessing}>
+                <Button variant="destructive" size="sm" className="absolute top-2 right-2 z-10" onClick={removeBackFile}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -279,30 +236,8 @@ export function IdUploadComponent({
           )}
         </div>
 
-        {/* Extract Button */}
-        {frontFile && (
-          <Button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); processImage() }}
-            disabled={isProcessing}
-            className="from-primary to-accent relative flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r font-semibold text-white hover:from-primary/90 hover:to-accent/90 dark:text-white"
-            type="button"
-            size="lg"
-          >
-            {isProcessing ? (<><Loader2 className="h-4 w-4 animate-spin" />Processing...</>) : 'Extract Information from Front ID'}
-          </Button>
-        )}
-
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">{error}</div>
-        )}
-
-        {isProcessing && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-600">
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <p className="font-medium">Processing your ID...</p>
-            </div>
-          </div>
         )}
       </CardContent>
     </Card>

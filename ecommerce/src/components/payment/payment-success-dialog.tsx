@@ -28,15 +28,14 @@ import {
   Shield,
 } from 'lucide-react'
 import { PaymentBrand, PaymentSubmitResponse } from '@/types/payment'
-import { IssueQuoteResponse } from '@/types/travel-insurance/policy-types'
-import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
+import { FullQuoteResponse, TravelPolicyData } from '@/types/travel-insurance/policy-types'
 import { CoverageOfConfirmation } from './coverage-of-confirmation'
 
 interface PaymentSuccessDialogProps {
   open: boolean
   onContinue: () => void
   paymentMethod: PaymentBrand
-  policyData: IssueQuoteResponse['data']
+  policyData: TravelPolicyData | null | undefined
   quoteData: FullQuoteResponse['data']
   paymentSubmit: PaymentSubmitResponse['data']
 }

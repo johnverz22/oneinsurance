@@ -2,6 +2,7 @@ import { format, differenceInDays } from 'date-fns'
 import {
   FullQuoteResponse,
   IssueQuoteResponse,
+  TravelPolicyData,
 } from '@/types/travel-insurance/policy-types'
 import { PaymentBrand, PaymentSubmitRequest } from '@/types/payment'
 import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
@@ -12,7 +13,7 @@ import {
 import { Coverage } from '@/components/payment/coverage-of-confirmation'
 
 export const transformToInvoiceData = (
-  policyData: IssueQuoteResponse['data'],
+  policyData: TravelPolicyData | null | undefined,
   quoteData: FullQuoteResponse['data'],
   paymentMethod: PaymentBrand,
   paymentBillingDetails: PaymentSubmitRequest
@@ -71,7 +72,7 @@ export const transformToInvoiceData = (
 }
 
 export const transformToCOCData = (
-  policyData: IssueQuoteResponse['data'],
+  policyData: TravelPolicyData | null | undefined,
   quoteData: FullQuoteResponse['data'],
   coverages: Coverage[],
   coverageOption: CoverageOptionFormData
