@@ -173,10 +173,11 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   const options = getNormalizedTravelCoverages(TravelCoverageMap)
   const currentValues = useStore(form.store, (state) => state.values)
 
-  // "From" field should ALWAYS only show Philippine locations (DOMESTIC)
+  // "From" field should ALWAYS only show Philippine locations (DOMESTIC) + Philippines itself
   // Destinations can be anywhere in the world
   const fromOptions = useMemo(() => {
     return options.filter((opt) => 
+      opt.value === 'PHILIPPINES' ||
       TravelCoverageMap.DOMESTIC.some((country) => country.code === opt.value)
     )
   }, [options])
