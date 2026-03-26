@@ -184,9 +184,11 @@ export default function PaymentSelection() {
       })
     } catch (error: any) {
       console.error('Issue quote error:', error)
-      toast.error(
-        error.message || 'Payment confirmation failed. Please contact support.'
-      )
+      const rawMessage = error.message || ''
+      const displayMessage = rawMessage.toLowerCase() === 'successful'
+        ? 'Your payment was received but policy issuance is pending. Please contact support with your proposal number.'
+        : rawMessage || 'Payment confirmation failed. Please contact support.'
+      toast.error(displayMessage)
       setIsIssuingQuote(false)
       isProcessingQuoteRef.current = false
       
@@ -209,7 +211,11 @@ export default function PaymentSelection() {
     if (apiResponse?.data?.ProposalNo) {
       router.push(`/${agentCode}/payment-error`)
     } else {
-      toast.error(error.message || 'Payment failed. Please contact support.')
+      const rawMsg = error.message || ''
+      const displayMsg = rawMsg.toLowerCase() === 'successful'
+        ? 'Your payment was received but policy issuance is pending. Please contact support with your proposal number.'
+        : rawMsg || 'Payment failed. Please contact support.'
+      toast.error(displayMsg)
     }
   }
 
