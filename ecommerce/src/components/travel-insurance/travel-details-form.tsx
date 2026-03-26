@@ -378,7 +378,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                             : 'text-foreground'
                         }`}
                       >
-                        Within Philippines
+                        Domestic
                       </button>
                     </div>
                   </div>
@@ -456,7 +456,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                             typeof v === 'string' && v.trim() !== ''
                         ) ?? []
                     }
-                    placeholder={isDomesticMode ? "Select Philippine province/region" : "Select your destinations"}
+                    placeholder={isDomesticMode ? "Select destination city" : "Select your destinations"}
                     autoSize={false}
                   />
                   <FieldInfo field={field} />
@@ -713,6 +713,9 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                     </Link>
                   </Label>
                 </div>
+                <p className="text-muted-foreground text-xs">
+                  This travel insurance is valid for air travel only.
+                </p>
                 <FieldInfo field={field} />
               </div>
             )}
