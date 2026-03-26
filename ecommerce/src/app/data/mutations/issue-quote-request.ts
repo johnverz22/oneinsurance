@@ -60,9 +60,13 @@ export function useIssueQuoteRequest() {
       // Validate that data is actually a full policy object
       const policyData = issueQuoteData.data
       if (!policyData?.PolicyId) {
-        const backendMessage = issueQuoteData.message || 'Issue quote returned no policy data'
+        const backendMessage = issueQuoteData.message
+        const isBackendMisleading = backendMessage?.toLowerCase() === 'successful'
+        const errorMessage = isBackendMisleading
+          ? 'Policy issuance is pending. Your payment was received — please contact support with your proposal number.'
+          : backendMessage || 'Issue quote returned no policy data'
         console.error('Issue quote returned no valid policy data:', issueQuoteData)
-        throw new Error(backendMessage)
+        throw new Error(errorMessage)
       }
 
       // Update localStorage proposal with policy_number after successful payment
