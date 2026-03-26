@@ -196,21 +196,18 @@ function TravelInsurancePageSSR() {
                 ))}
               </div>
               <p>
-                “Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.”
+                “Sobrang gaan ng loob ko nung nalaman kong covered pala kami ng travel insurance namin kahit na-delay ang flight namin sa Cebu. Ang bilis ng process at walang hassle. Highly recommended sa lahat ng magbabiyahe!”
               </p>
               <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage
-                    src="https://avatar.iran.liara.run/public"
+                    src="https://avatar.iran.liara.run/public/boy/1"
                     alt="avatar"
                     className="size-8"
                   />
-                  <AvatarFallback>Avatar</AvatarFallback>
+                  <AvatarFallback>MR</AvatarFallback>
                 </Avatar>
-                <p className="text-lg font-bold">John Doe</p>
+                <p className="text-lg font-bold">Miguel Reyes</p>
               </div>
             </div>
             <div className="border-muted-foreground/20 h-full w-full space-y-3 rounded-xl border px-8 py-6 shadow-2xs">
@@ -220,21 +217,18 @@ function TravelInsurancePageSSR() {
                 ))}
               </div>
               <p>
-                “Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.”
+                “I travel frequently for work across Southeast Asia and One Insurance has been my go-to for travel coverage. The online process is seamless, and their support team was incredibly helpful when I had a medical emergency in Bangkok. Worth every peso!”
               </p>
               <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage
-                    src="https://avatar.iran.liara.run/public"
+                    src="https://avatar.iran.liara.run/public/girl/2"
                     alt="avatar"
                     className="size-8"
                   />
-                  <AvatarFallback>Avatar</AvatarFallback>
+                  <AvatarFallback>AC</AvatarFallback>
                 </Avatar>
-                <p className="text-lg font-bold">John Doe</p>
+                <p className="text-lg font-bold">Andrea Cruz</p>
               </div>
             </div>
             <div className="border-muted-foreground/20 h-full w-full space-y-3 rounded-xl border px-8 py-6 shadow-2xs">
@@ -244,21 +238,18 @@ function TravelInsurancePageSSR() {
                 ))}
               </div>
               <p>
-                “Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.”
+                “Nagpunta kami ng pamilya sa Japan last December at talagang natuwa kami sa coverage ng One Insurance. Nag-file kami ng claim dahil may nawala kaming bagahe at napakabilis ng reimbursement. Definitely uulitin namin ito sa susunod na biyahe!”
               </p>
               <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage
-                    src="https://avatar.iran.liara.run/public"
+                    src="https://avatar.iran.liara.run/public/boy/3"
                     alt="avatar"
                     className="size-8"
                   />
-                  <AvatarFallback>Avatar</AvatarFallback>
+                  <AvatarFallback>JT</AvatarFallback>
                 </Avatar>
-                <p className="text-lg font-bold">John Doe</p>
+                <p className="text-lg font-bold">Jose Tan</p>
               </div>
             </div>
           </div>
