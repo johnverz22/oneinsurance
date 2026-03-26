@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from '@tanstack/react-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -23,12 +24,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { QuoteSuccessDialog } from './quote-success-dialog'
 
 type HealthDetailsFormProps = {
   className?: string
 }
 
+function generateQuoteId() {
+  return `OONA-${Date.now().toString().slice(-13)}`
+}
+
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [quoteId, setQuoteId] = useState('')
+
   const form = useForm({
     defaultValues: {
       fullName: '',
@@ -38,20 +47,36 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
       travelFrequency: '',
       agreedToTerms: false,
     } as HealthDetailsFormType,
-    onSubmit: async ({ value }) => {},
+    onSubmit: async ({ value }) => {
+      // TODO: replace with real API call when BE provides endpoint
+      const id = generateQuoteId()
+      setQuoteId(id)
+      setShowSuccess(true)
+    },
     validators: {
       onChange: HealthDetailsFormSchema,
     },
   })
 
+  const handleSubmitAnother = () => {
+    setShowSuccess(false)
+    form.reset()
+  }
+
   return (
-    <Card
-      data-testid="health-details-form"
-      className={cn(
-        'w-full space-y-6 rounded-md border shadow-none backdrop-blur-sm lg:rounded-xl lg:shadow-2xl',
-        className
-      )}
-    >
+    <>
+      <QuoteSuccessDialog
+        open={showSuccess}
+        quoteId={quoteId}
+        onSubmitAnother={handleSubmitAnother}
+      />
+      <Card
+        data-testid="health-details-form"
+        className={cn(
+          'w-full space-y-6 rounded-md border shadow-none backdrop-blur-sm lg:rounded-xl lg:shadow-2xl',
+          className
+        )}
+      >
       <CardContent className="space-y-6 px-4 pt-3 pb-6 sm:px-8">
         <div className="space-y-0.5">
           <h2 className="text-2xl font-bold">Get Personalized Advice</h2>
@@ -251,5 +276,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         </div>
       </CardContent>
     </Card>
+    </>
   )
 }
