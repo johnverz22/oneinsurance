@@ -37,9 +37,14 @@ export function useIssueQuoteRequest() {
 
       const parsed = IssueQuoteResponseSchema.safeParse(responseData)
       if (!parsed.success) {
-        console.error('Issue quote response parse error:', parsed.error, 'Raw response:', responseData)
-        // Surface any backend error/message from the raw response
+        // Could be backend returning { message: "Successful", data: {} } with empty data
         const raw = responseData as any
+        const hasEmptyData = raw?.data && typeof raw.data === 'object' && Object.keys(raw.data).length === 0
+        if (hasEmptyData) {
+          console.error('Issue quote returned empty data object:', responseData)
+          throw new Error(raw?.message || 'Issue quote returned no policy data')
+        }
+        console.error('Issue quote response parse error:', parsed.error, 'Raw response:', responseData)
         const backendMessage = raw?.message || raw?.error || 'Unexpected response from issue quote'
         throw new Error(backendMessage)
       }
@@ -52,9 +57,12 @@ export function useIssueQuoteRequest() {
         throw new Error(backendMessage)
       }
 
-      if (!issueQuoteData.data) {
-        console.error('Issue quote returned success but no data:', issueQuoteData)
-        throw new Error('Issue quote returned no policy data')
+      // Validate that data is actually a full policy object
+      const policyData = issueQuoteData.data
+      if (!policyData?.PolicyId) {
+        const backendMessage = issueQuoteData.message || 'Issue quote returned no policy data'
+        console.error('Issue quote returned no valid policy data:', issueQuoteData)
+        throw new Error(backendMessage)
       }
 
       // Update localStorage proposal with policy_number after successful payment

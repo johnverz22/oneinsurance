@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, FileText, Shield } from 'lucide-react'
 import { PaymentBrand, PaymentSubmitResponse } from '@/types/payment'
-import { IssueQuoteResponse } from '@/types/travel-insurance/policy-types'
-import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
+import { FullQuoteResponse, TravelPolicyData } from '@/types/travel-insurance/policy-types'
 import { CoverageOfConfirmation } from './coverage-of-confirmation'
 import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
@@ -22,7 +21,7 @@ import {
 interface PaymentSuccessInlineProps {
   onContinue: () => void
   paymentMethod: PaymentBrand
-  policyData: IssueQuoteResponse['data']
+  policyData: TravelPolicyData | null | undefined
   quoteData: FullQuoteResponse['data']
   paymentSubmit: PaymentSubmitResponse['data']
 }

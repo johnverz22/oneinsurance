@@ -216,9 +216,9 @@ export const FullQuoteResponseSchema = createResponseSchema(
 export type FullQuoteResponse = z.infer<typeof FullQuoteResponseSchema>
 
 export const IssueQuoteResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  data: TravelPolicyDataSchema.nullable().optional(),
+  success: z.boolean().optional(),
+  message: z.string().optional(),
+  data: z.union([TravelPolicyDataSchema, z.null(), z.undefined()]).optional(),
 })
 export type IssueQuoteResponse = z.infer<typeof IssueQuoteResponseSchema>
 
