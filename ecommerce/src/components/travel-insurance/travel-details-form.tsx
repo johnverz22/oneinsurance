@@ -330,7 +330,8 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                     TravelCoverageMap.DOMESTIC.some((c) => c.code === opt.value)
                   )
                 : options.filter((opt) =>
-                    !TravelCoverageMap.DOMESTIC.some((c) => c.code === opt.value)
+                    !TravelCoverageMap.DOMESTIC.some((c) => c.code === opt.value) &&
+                    opt.value !== 'PHILIPPINES'
                   )
 
               const handleDomesticToggle = (domestic: boolean) => {
