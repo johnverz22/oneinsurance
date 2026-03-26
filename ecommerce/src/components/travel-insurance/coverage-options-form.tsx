@@ -76,6 +76,7 @@ export function CoverageOptionsForm() {
     resetQuoteRefetchCount,
     setInsurancePlans,
     updateCustomFields,
+    resetCoverageOption,
   } = useTravelInsuranceStore()
   const { agentCode } = useAgentCodeStore()
 
@@ -170,7 +171,8 @@ export function CoverageOptionsForm() {
     const currentPlans = useTravelInsuranceStore.getState().insurancePlans
 
     if (!currentPlans) {
-      // First batch of plans
+      // First batch of plans — reset any previously selected plan
+      resetCoverageOption()
       setInsurancePlans({
         success: true,
         message: 'Plans loaded',

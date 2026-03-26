@@ -305,39 +305,6 @@ export function PersonalInfoForm() {
     form.validateSync('submit')
   }
 
-  const handleDataExtracted = (index: number) => (extractedData: any) => {
-    if (extractedData.raw.first_name) {
-      form.setFieldValue(
-        `travelers[${index}].firstName`,
-        extractedData.raw.first_name
-      )
-    }
-    if (extractedData.raw.middle_name) {
-      form.setFieldValue(
-        `travelers[${index}].middleName`,
-        extractedData.raw.middle_name
-      )
-    }
-    if (extractedData.raw.last_name) {
-      form.setFieldValue(
-        `travelers[${index}].lastName`,
-        extractedData.raw.last_name
-      )
-    }
-    if (extractedData.raw.id_number) {
-      form.setFieldValue(
-        `travelers[${index}].idNumber`,
-        extractedData.raw.id_number
-      )
-    }
-    if (extractedData.raw.id_type) {
-      form.setFieldValue(
-        `travelers[${index}].idType`,
-        extractedData.raw.id_type
-      )
-    }
-  }
-
   function fieldHasError(field: any) {
     const isValid = field.state.meta.isTouched && !field.state.meta.isValid
     const errorMessage = field.state.meta.errors[0]?.message
@@ -455,8 +422,6 @@ export function PersonalInfoForm() {
                               {/* ID Upload Component */}
                               <div className="w-full">
                                 <IdUploadComponent
-                                  onDataExtracted={handleDataExtracted(index)}
-                                  onProcessingStart={() => {}}
                                   initialFrontFile={idFilesStore.get(index)?.frontId ?? null}
                                   initialBackFile={idFilesStore.get(index)?.backId ?? null}
                                   onIdUploaded={(frontFile, backFile) => {

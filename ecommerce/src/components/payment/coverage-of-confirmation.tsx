@@ -7,6 +7,7 @@ import {
   IssueQuoteResponse,
   FullQuoteResponse,
   PolicyCoverage,
+  TravelPolicyData,
 } from '@/types/travel-insurance/policy-types'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { transformToCOCData } from '@/utils/travel-summary-helpers'
@@ -15,7 +16,7 @@ import { differenceInDays } from 'date-fns'
 import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
 
 interface coverNoteProps {
-  policyData: IssueQuoteResponse['data']
+  policyData: TravelPolicyData | null | undefined
   quoteData: FullQuoteResponse['data']
 }
 
