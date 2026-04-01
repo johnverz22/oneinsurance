@@ -1,36 +1,88 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import { Search, ShoppingCart, SlidersHorizontal } from 'lucide-react'
+import { Search, ShoppingCart, SlidersHorizontal, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { HEALTH_PLANS, type HealthPlan } from '@/constants/health-insurance-plans'
+import { useHealthCartStore } from '@/store/health-cart-store'
+import { toast } from 'sonner'
 
 export function HealthPlansGrid() {
   const [search, setSearch] = useState('')
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
+  const { compareQuotePlans, addItem } = useHealthCartStore()
 
   const filtered = useMemo(() => {
-    return HEALTH_PLANS.filter((plan) =>
-      plan.name.toLowerCase().includes(search.toLowerCase()) ||
-      plan.provider.toLowerCase().includes(search.toLowerCase()) ||
-      plan.description.toLowerCase().includes(search.toLowerCase())
+    if (!compareQuotePlans.length) return []
+    return compareQuotePlans.filter((plan) =>
+      plan.CarrierPlanDesc?.toLowerCase().includes(search.toLowerCase()) ||
+      plan.CarrierProductName?.toLowerCase().includes(search.toLowerCase())
     )
-  }, [search])
+  }, [compareQuotePlans, search])
+
+  const handleAddToCart = (plan: typeof compareQuotePlans[0]) => {
+    addItem({
+      id: plan.CarrierPlanCode,
+      planId: plan.CarrierPlanCode,
+      planName: plan.CarrierPlanDesc,
+      planSlug: plan.CarrierPlanCode,
+      tierName: plan.CarrierPlanDesc,
+      tierSubtitle: plan.CarrierProductName,
+      tierDescription: plan.MainBenefits?.slice(0, 3).map(b => b.BenefitDesc).join(', ') ?? '',
+      provider: plan.CarrierProductName,
+      providerSlug: plan.CarrierPlanCode,
+      providerLogo: '/images/providers/1 Oona.svg',
+      image: '/our-products-health.webp',
+      premium: parseFloat(plan.GrossPremium ?? plan.DuePremium ?? '0'),
+    }, 1)
+    toast.success(`${plan.CarrierPlanDesc} added to cart`)
+  }
+
+  const handleBuyNow = (plan: typeof compareQuotePlans[0]) => {
+    addItem({
+      id: plan.CarrierPlanCode,
+      planId: plan.CarrierPlanCode,
+      planName: plan.CarrierPlanDesc,
+      planSlug: plan.CarrierPlanCode,
+      tierName: plan.CarrierPlanDesc,
+      tierSubtitle: plan.CarrierProductName,
+      tierDescription: plan.MainBenefits?.slice(0, 3).map(b => b.BenefitDesc).join(', ') ?? '',
+      provider: plan.CarrierProductName,
+      providerSlug: plan.CarrierPlanCode,
+      providerLogo: '/images/providers/1 Oona.svg',
+      image: '/our-products-health.webp',
+      premium: parseFloat(plan.GrossPremium ?? plan.DuePremium ?? '0'),
+    }, 1)
+    router.push(`/${agentCode}/products/health-insurance/checkout`)
+  }
+
+  if (!compareQuotePlans.length) {
+    return (
+      <section className="w-full bg-[#eef2f7] py-16">
+        <div className="mx-auto max-w-7xl px-4 text-center">
+          <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-4">
+            Choose Your Health Plans
+          </h2>
+          <p className="text-muted-foreground text-base">
+            Fill in the form above and click Search to see available health insurance plans.
+          </p>
+        </div>
+      </section>
+    )
+  }
 
   return (
-    <section className="w-full bg-[#eef2f7] py-16">
+    <section id="health-plans-grid" className="w-full bg-[#eef2f7] py-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-10 text-center">
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl">
-            Choose Your Health Plans
+            Available Health Plans
           </h2>
           <p className="text-muted-foreground mt-3 text-base">
-            Discover a wide range of solutions from various providers to help safeguard you from life's unexpected challenges.
+            {filtered.length} plan{filtered.length !== 1 ? 's' : ''} found based on your details
           </p>
         </div>
 
@@ -56,16 +108,72 @@ export function HealthPlansGrid() {
               Filter
             </Button>
           </div>
-          <Button size="sm" className="from-primary to-accent rounded-full bg-gradient-to-r text-white gap-1.5" onClick={() => router.push(`/${agentCode}/products/health-insurance/cart`)}>
+          <Button
+            size="sm"
+            className="from-primary to-accent rounded-full bg-gradient-to-r text-white gap-1.5"
+            onClick={() => router.push(`/${agentCode}/products/health-insurance/cart`)}
+          >
             <ShoppingCart className="h-4 w-4" />
             View Cart
           </Button>
         </div>
 
-        {/* Grid */}
+        {/* Plans Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} agentCode={agentCode} />
+            <div key={plan.CarrierPlanCode} className="flex flex-col rounded-2xl border bg-white p-6 shadow-sm">
+              <h3 className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-center text-xl font-black text-transparent">
+                {plan.CarrierPlanDesc}
+              </h3>
+              <p className="text-muted-foreground mb-4 text-center text-xs">{plan.CarrierProductName}</p>
+
+              <div className="mb-2 flex items-center justify-between rounded-lg bg-yellow-400 px-4 py-2">
+                <span className="text-sm font-medium text-gray-800">Gross Premium</span>
+                <span className="font-bold text-gray-900">
+                  ₱ {parseFloat(plan.GrossPremium ?? '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+              {plan.SumInsured && (
+                <div className="mb-5 flex items-center justify-between rounded-lg bg-green-500 px-4 py-2">
+                  <span className="text-sm font-medium text-white">Sum Insured</span>
+                  <span className="font-bold text-white">
+                    ₱ {parseFloat(plan.SumInsured).toLocaleString('en-PH')}
+                  </span>
+                </div>
+              )}
+
+              {/* Benefits */}
+              <ul className="mb-6 flex-1 space-y-2">
+                {(plan.MainBenefits ?? []).slice(0, 5).map((b, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <Check className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{b.BenefitDesc}</span>
+                    {b.DefaultLimitDesc && (
+                      <span className="ml-auto shrink-0 text-xs text-gray-400">{b.DefaultLimitDesc}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => handleBuyNow(plan)}
+                >
+                  Buy Now
+                </Button>
+                <Button
+                  size="sm"
+                  className="from-primary to-accent rounded-full bg-gradient-to-r text-white"
+                  onClick={() => handleAddToCart(plan)}
+                >
+                  Add to Cart
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
 
@@ -74,43 +182,5 @@ export function HealthPlansGrid() {
         )}
       </div>
     </section>
-  )
-}
-
-function PlanCard({ plan, agentCode }: { plan: HealthPlan; agentCode: string }) {
-  const router = useRouter()
-
-  return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-md">
-      <div className="relative h-44 w-full overflow-hidden">
-        <img
-          src={plan.image}
-          alt={plan.name}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-      </div>
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-3 h-8">
-          <Image
-            src={plan.providerLogo}
-            alt={plan.provider}
-            width={90}
-            height={32}
-            className="h-8 w-auto object-contain object-left"
-          />
-        </div>
-        <p className="text-muted-foreground mb-4 flex-1 text-sm leading-relaxed line-clamp-2">
-          {plan.description}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-auto w-full rounded-full border-gray-300 text-sm font-medium"
-          onClick={() => router.push(`/${agentCode}/products/health-insurance/providers/${plan.providerSlug}`)}
-        >
-          Learn More
-        </Button>
-      </div>
-    </div>
   )
 }

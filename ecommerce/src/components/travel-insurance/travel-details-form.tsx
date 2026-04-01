@@ -458,7 +458,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                             typeof v === 'string' && v.trim() !== ''
                         ) ?? []
                     }
-                    placeholder={isDomesticMode ? "Select destination city" : "Select your destinations"}
+                    placeholder={isDomesticMode ? "Select destination city" : "Select Your Country"}
                     autoSize={false}
                   />
                   <FieldInfo field={field} />

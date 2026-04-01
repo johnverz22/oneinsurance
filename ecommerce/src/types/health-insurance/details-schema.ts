@@ -1,19 +1,16 @@
 import z from 'zod'
 
 export const HealthDetailsFormSchema = z.object({
-  fullName: z.string().min(1, { message: 'Please enter your full name.' }),
-  email: z.string().email(),
-  mobileNumber: z.string().regex(/^9\d{9}$/, {
+  insuredName: z.string().min(1, { message: 'Please enter your full name.' }),
+  mobile: z.string().regex(/^9\d{9}$/, {
     message: 'Mobile number must start with 9 and be 10 digits long.',
   }),
-  countryOfResidency: z
-    .string()
-    .min(1, { message: 'Please select country of residency.' }),
-  travelFrequency: z
-    .string()
-    .min(1, { message: 'Please select of travel frequency.' }),
+  dateOfBirth: z.string().min(1, { message: 'Please enter your date of birth.' }),
+  genderCode: z.enum(['M', 'F'], { message: 'Please select your gender.' }),
+  isSmoker: z.enum(['Y', 'N'], { message: 'Please select smoking status.' }),
+  effectiveDate: z.string().min(1, { message: 'Please select coverage start date.' }),
   agreedToTerms: z.boolean().refine((val) => val === true, {
-    message: 'You must agree to the terms and conditions',
+    message: 'You must agree to the terms and conditions.',
   }),
 })
 

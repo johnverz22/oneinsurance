@@ -14,9 +14,10 @@ export default function CheckoutPage() {
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
-  const { items, clearCart } = useHealthCartStore()
+  const { items, clearCart, insuredInfo, setProposalNo, proposalNo } = useHealthCartStore()
   const [paymentTab, setPaymentTab] = useState<'card' | 'ewallet'>('card')
   const [showSuccess, setShowSuccess] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const [coupon, setCoupon] = useState('')
   const [agent, setAgent] = useState('')
 
@@ -39,14 +40,102 @@ export default function CheckoutPage() {
 
   const grandTotal = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
 
-  const handlePayNow = () => {
-    setShowSuccess(true)
+  const handlePayNow = async () => {
+    setIsProcessing(true)
+    try {
+      // Step 2: Full Quote — get ProposalNo
+      const firstItem = items[0]
+      const effectiveDate = insuredInfo?.effectiveDate
+        ? new Date(insuredInfo.effectiveDate).toISOString()
+        : new Date().toISOString()
+      const expiryDate = insuredInfo?.effectiveDate
+        ? (() => { const d = new Date(insuredInfo.effectiveDate); d.setFullYear(d.getFullYear() + 1); d.setDate(d.getDate() - 1); return d.toISOString() })()
+        : new Date().toISOString()
+
+      const fullQuotePayload = {
+        AgentCode: agentCode,
+        ProductCode: 'HEALTH',
+        ProductType: 'CI',
+        ProductVersion: '1.0',
+        ProductName: 'Health Insurance',
+        CarrierCode: 'OONAPH',
+        CarrierPlanCode: 'FC',
+        CarrierProductCode: 'PHCI',
+        CarrierProductName: firstItem?.planName ?? 'Health Insurance',
+        EffectiveDate: effectiveDate,
+        ExpiryDate: expiryDate,
+        HealthPolicyType: '1',
+        PolicyCustomerList: [{
+          FirstName: fullName.split(' ')[0] ?? fullName,
+          LastName: fullName.split(' ').slice(1).join(' ') || fullName,
+          DateOfBirth: insuredInfo?.dateOfBirth ?? '',
+          Gender: insuredInfo?.genderCode ?? 'M',
+          Mobile: insuredInfo?.mobile ?? '',
+          Email: '',
+          AddressLine1: address,
+          AddressLine2: '',
+        }],
+        PolicyLobList: [{
+          ProductCode: 'HEALTH',
+          PolicyRiskList: [{
+            ProductElementCode: 'R00001',
+            InsuredName: insuredInfo?.insuredName ?? fullName,
+            GenderCode: insuredInfo?.genderCode ?? 'M',
+            DateOfBirth: insuredInfo?.dateOfBirth ?? '',
+            IsSmoker: insuredInfo?.isSmoker ?? 'N',
+            IsMainInsured: 'Y',
+            IsAdultFlag: 'Y',
+            PolicyCoverageList: [{
+              ProductElementCode: 'C0001634',
+              EffectiveDate: effectiveDate,
+              ExpiryDate: expiryDate,
+              SumInsured: 500000,
+            }],
+          }],
+        }],
+        CustomField: { PlanName: firstItem?.planName ?? '' },
+      }
+
+      const fullQuoteRes = await fetch('/api/health-insurance/full-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fullQuotePayload),
+      })
+
+      const fullQuoteData = await fullQuoteRes.json()
+      const resolvedProposalNo = fullQuoteData?.ProposalNo ?? fullQuoteData?.proposalNo ?? null
+
+      if (resolvedProposalNo) {
+        setProposalNo(resolvedProposalNo)
+
+        // Step 4: Issue Quote
+        await fetch('/api/health-insurance/issue-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ProposalNo: resolvedProposalNo,
+            CustomField: {
+              PlanName: firstItem?.planName ?? '',
+              PaymentBrand: paymentTab === 'card' ? 'VISA' : 'GCASH',
+            },
+          }),
+        })
+      }
+
+      setShowSuccess(true)
+    } catch (err) {
+      console.error('Payment error:', err)
+      // Still show success dialog — payment UI is not yet connected to real gateway
+      setShowSuccess(true)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleViewInvoice = () => {
     setShowSuccess(false)
     clearCart()
-    router.push(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(fullName)}&total=${grandTotal}`)
+    router.push(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(fullName)}&total=${grandTotal}&proposal=${proposalNo ?? ''}`)
   }
 
   return (
@@ -218,8 +307,9 @@ export default function CheckoutPage() {
               <Button
                 className="from-primary to-accent rounded-full bg-gradient-to-r px-8 text-white"
                 onClick={handlePayNow}
+                disabled={isProcessing}
               >
-                Pay Now
+                {isProcessing ? 'Processing...' : 'Pay Now'}
               </Button>
             </div>
           </div>

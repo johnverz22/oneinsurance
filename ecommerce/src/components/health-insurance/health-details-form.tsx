@@ -15,8 +15,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MultiSelect } from '@/components/ui/multi-select'
-import { TravelCoverageMap } from '@/constants/travel-coverage'
+import { QuoteSuccessDialog } from './quote-success-dialog'
+import { toast } from 'sonner'
+import { useHealthCartStore } from '@/store/health-cart-store'
+import { useParams } from 'next/navigation'
 import {
   Select,
   SelectContent,
@@ -24,258 +26,302 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { QuoteSuccessDialog } from './quote-success-dialog'
 
 type HealthDetailsFormProps = {
   className?: string
 }
 
-function generateQuoteId() {
-  return `OONA-${Date.now().toString().slice(-13)}`
+function buildPayload(value: HealthDetailsFormType) {
+  const effectiveDate = new Date(value.effectiveDate)
+  const expiryDate = new Date(effectiveDate)
+  expiryDate.setFullYear(expiryDate.getFullYear() + 1)
+  expiryDate.setDate(expiryDate.getDate() - 1)
+
+  const effectiveISO = effectiveDate.toISOString()
+  const expiryISO = expiryDate.toISOString()
+
+  return {
+    ProductCode: 'HEALTH',
+    ProductType: 'CI',
+    ProductVersion: '1.0',
+    EffectiveDate: effectiveISO,
+    ExpiryDate: expiryISO,
+    LGT: 50,
+    PolicyCustomerList: [{ Mobile: value.mobile }],
+    PolicyLobList: [
+      {
+        ProductCode: 'HEALTH',
+        PolicyRiskList: [
+          {
+            ProductElementCode: 'R00001',
+            InsuredName: value.insuredName,
+            GenderCode: value.genderCode,
+            DateOfBirth: value.dateOfBirth,
+            IsSmoker: value.isSmoker,
+            IsMainInsured: 'Y',
+            IsAdultFlag: 'Y',
+            PolicyCoverageList: [
+              {
+                ProductElementCode: 'C0001634',
+                EffectiveDate: effectiveISO,
+                ExpiryDate: expiryISO,
+                SumInsured: 500000,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  }
 }
 
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const [showSuccess, setShowSuccess] = useState(false)
   const [quoteId, setQuoteId] = useState('')
+  const { setInsuredInfo, setCompareQuotePlans } = useHealthCartStore()
+  const params = useParams()
+  const agentCode = params?.['agent-code'] as string | undefined
 
   const form = useForm({
     defaultValues: {
-      fullName: '',
-      email: '',
-      mobileNumber: '',
-      countryOfResidency: '',
-      travelFrequency: '',
+      insuredName: '',
+      mobile: '',
+      dateOfBirth: '',
+      genderCode: '' as 'M' | 'F',
+      isSmoker: '' as 'Y' | 'N',
+      effectiveDate: '',
       agreedToTerms: false,
     } as HealthDetailsFormType,
     onSubmit: async ({ value }) => {
-      // TODO: replace with real API call when BE provides endpoint
-      const id = generateQuoteId()
-      setQuoteId(id)
-      setShowSuccess(true)
-    },
-    validators: {
-      onChange: HealthDetailsFormSchema,
-    },
-  })
+      try {
+        const payload = buildPayload(value)
+        const res = await fetch('/api/health-insurance/compare-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
 
-  const handleSubmitAnother = () => {
-    setShowSuccess(false)
-    form.reset()
-  }
+        if (!res.ok) throw new Error('Failed to get quote')
+
+        const data = await res.json()
+        const id = data?.QuoteNumber ?? data?.ClientRequestId ?? `HLT-${Date.now().toString().slice(-8)}`
+
+        // Store real plans from backend
+        const plans = data?.data?.Plans ?? data?.Plans ?? []
+        setCompareQuotePlans(plans)
+
+        // Save insured info for use in full-quote / checkout
+        setInsuredInfo({
+          insuredName: value.insuredName,
+          mobile: value.mobile,
+          dateOfBirth: value.dateOfBirth,
+          genderCode: value.genderCode,
+          isSmoker: value.isSmoker,
+          effectiveDate: value.effectiveDate,
+        })
+
+        setQuoteId(id)
+        setShowSuccess(true)
+      } catch (err) {
+        toast.error('Something went wrong. Please try again.')
+      }
+    },
+    validators: { onChange: HealthDetailsFormSchema },
+  })
 
   return (
     <>
       <QuoteSuccessDialog
         open={showSuccess}
         quoteId={quoteId}
-        onSubmitAnother={handleSubmitAnother}
+        onSubmitAnother={() => { setShowSuccess(false); form.reset() }}
       />
-      <Card
-        data-testid="health-details-form"
-        className={cn(
-          'w-full space-y-6 rounded-md border shadow-none backdrop-blur-sm lg:rounded-xl lg:shadow-2xl',
-          className
-        )}
-      >
-      <CardContent className="space-y-6 px-4 pt-3 pb-6 sm:px-8">
-        <div className="space-y-0.5">
-          <h2 className="text-2xl font-bold">Get Personalized Advice</h2>
-          <p className="text-muted-foreground font-light">
-            Let our experts recommend the best plan for you
-          </p>
-        </div>
 
-        <div className="grid gap-2.5 lg:grid-cols-3">
-          <form.Field
-            name="fullName"
-            children={(field) => {
-              const hasError = fieldHasError(field)
+      <Card className={cn('w-full rounded-2xl border-0 shadow-2xl bg-white', className)}>
+        <CardContent className="px-6 pt-6 pb-7 sm:px-8">
+          {/* Header */}
+          <div className="mb-5">
+            <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
+            <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
+          </div>
 
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">First Name</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12', { 'border-destructive': hasError })}
-                    placeholder="Enter first name"
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
-
-          <form.Field
-            name="email"
-            children={(field) => {
-              const hasError = fieldHasError(field)
-
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">Email Address</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12', { 'border-destructive': hasError })}
-                    placeholder="Enter email address"
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
-
-          <form.Field
-            name="mobileNumber"
-            children={(field) => {
-              const hasError = fieldHasError(field)
-
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">Phone Number</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12', { 'border-destructive': hasError })}
-                    placeholder="Enter phone number"
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
-        </div>
-
-        <div className="grid gap-2.5 lg:grid-cols-2">
-          <form.Field
-            name="countryOfResidency"
-            children={(field) => {
-              const options = TravelCoverageMap.WORLD.map((country: any) => ({
-                ...country,
-                label: `${country.flag} ${country.name}`,
-                value: country.code,
-              }))
-
-              return (
-                <div className="w-full space-y-2">
-                  <Label className="block font-light">
-                    Country of Residency
+          {/* Row 1: Full Name | Email Address | Phone Number */}
+          <div className="mb-4 grid gap-4 sm:grid-cols-3">
+            <form.Field name="insuredName">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">
+                    Full Name <span className="text-red-500">*</span>
                   </Label>
-
-                  <MultiSelect
-                    options={options}
-                    className="dark:bg-input/30 border-muted-foreground/30 relative flex h-12 w-full items-center gap-1.5 overflow-hidden rounded-full border bg-white px-3 hover:bg-white"
-                    hideSelectAll={true}
-                    singleLine
-                    onValueChange={(values) => {
-                      const lastSelected = values[values.length - 1]
-                      field.handleChange(lastSelected)
-                    }}
-                    placeholder="Select your destinations"
-                    autoSize={false}
+                  <Input
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Enter Full Name"
+                    className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
                   />
                   <FieldInfo field={field} />
                 </div>
-              )
-            }}
-          />
+              )}
+            </form.Field>
 
-          <form.Field
-            name="travelFrequency"
-            children={(field) => {
-              const hasError = fieldHasError(field)
+            {/* Email — display only, not in API payload but shown per Figma */}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">
+                Email Address <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                placeholder="Enter Email Address"
+                className="h-11 rounded-full"
+              />
+            </div>
 
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">Travel Frequency</Label>
+            <form.Field name="mobile">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">
+                    Phone Number <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Enter Phone Number"
+                    className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  />
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+          </div>
 
+          {/* Row 2: Country of Residency | Travel Frequency (maps to DOB | Coverage Start) */}
+          <div className="mb-5 grid gap-4 sm:grid-cols-2">
+            <form.Field name="dateOfBirth">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">
+                    Date of Birth <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  />
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="effectiveDate">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">
+                    Coverage Start Date <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="date"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  />
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          {/* Row 3: Gender | Smoker */}
+          <div className="mb-5 grid gap-4 sm:grid-cols-2">
+            <form.Field name="genderCode">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">
+                    Gender <span className="text-red-500">*</span>
+                  </Label>
                   <Select
-                    onValueChange={(v) => field.handleChange(v)}
-                    defaultValue={field.state.value}
+                    onValueChange={(v) => field.handleChange(v as 'M' | 'F')}
+                    value={field.state.value}
                   >
-                    <SelectTrigger
-                      className={cn('h-12 w-full', {
-                        'border-destructive': hasError,
-                      })}
-                    >
-                      <SelectValue placeholder="Select travel frequency" />
+                    <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
+                      <SelectValue placeholder="Select Gender" />
                     </SelectTrigger>
-
                     <SelectContent>
-                      <SelectItem value="rarely">Rarely</SelectItem>
-                      <SelectItem value="occasionally">Occasionally</SelectItem>
-                      <SelectItem value="frequently">Frequently</SelectItem>
-                      <SelectItem value="very-frequently">
-                        Very Frequently
-                      </SelectItem>
+                      <SelectItem value="M">Male</SelectItem>
+                      <SelectItem value="F">Female</SelectItem>
                     </SelectContent>
                   </Select>
-
                   <FieldInfo field={field} />
                 </div>
-              )
-            }}
-          />
-        </div>
+              )}
+            </form.Field>
 
-        <div className="relative flex flex-col gap-4 sm:gap-6 md:flex-row md:items-start md:justify-between">
-          <form.Field name="agreedToTerms">
-            {(field) => (
-              <div className="w-full max-w-80 space-y-2 sm:flex-1">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="terms"
-                    checked={field.state.value}
-                    onCheckedChange={(value) => {
-                      field.handleChange(value as boolean)
-                    }}
-                    className="data-[state=checked]:border-lilac data-[state=checked]:bg-lilac h-5 w-5"
-                  />
-
-                  <Label
-                    htmlFor="terms"
-                    className="flex cursor-pointer flex-wrap text-sm leading-relaxed"
-                  >
-                    I agree to the{' '}
-                    <Link
-                      href="/terms-and-condition"
-                      target="_blank"
-                      className="text-lilac inline font-medium underline underline-offset-8"
-                    >
-                      Terms & Conditions
-                    </Link>
+            <form.Field name="isSmoker">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">
+                    Do you smoke? <span className="text-red-500">*</span>
                   </Label>
+                  <Select
+                    onValueChange={(v) => field.handleChange(v as 'Y' | 'N')}
+                    value={field.state.value}
+                  >
+                    <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
+                      <SelectValue placeholder="Select Smoking Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="N">No</SelectItem>
+                      <SelectItem value="Y">Yes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FieldInfo field={field} />
                 </div>
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
+              )}
+            </form.Field>
+          </div>
 
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-          >
-            {(field) => (
-              <Button
-                type="submit"
-                disabled={!form.state.canSubmit}
-                onClick={(e) => {
-                  e.preventDefault()
-                  form.handleSubmit()
-                }}
-                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
-                size="lg"
-              >
-                Get Advice
-              </Button>
-            )}
-          </form.Subscribe>
-        </div>
-      </CardContent>
-    </Card>
+          {/* Row 4: Terms + Get Advice button */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <form.Field name="agreedToTerms">
+              {(field) => (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="terms"
+                      checked={field.state.value}
+                      onCheckedChange={(v) => field.handleChange(v as boolean)}
+                      className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4"
+                    />
+                    <Label htmlFor="terms" className="cursor-pointer text-sm">
+                      I agree with the{' '}
+                      <Link href="/travel-insurance-terms" target="_blank" className="text-primary font-medium underline underline-offset-4">
+                        Terms & Conditions
+                      </Link>
+                    </Label>
+                  </div>
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+
+            <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
+              {([canSubmit, isSubmitting]) => (
+                <Button
+                  type="submit"
+                  disabled={!canSubmit || !!isSubmitting}
+                  onClick={(e) => { e.preventDefault(); form.handleSubmit() }}
+                  className="from-primary to-accent h-11 w-full rounded-full bg-gradient-to-r px-10 text-sm font-semibold text-white sm:w-auto"
+                >
+                  {isSubmitting ? 'Searching...' : 'Get Advice'}
+                </Button>
+              )}
+            </form.Subscribe>
+          </div>
+        </CardContent>
+      </Card>
     </>
   )
 }

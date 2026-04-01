@@ -17,18 +17,52 @@ export type CartItem = {
   quantity: number
 }
 
+export type HealthInsuredInfo = {
+  insuredName: string
+  mobile: string
+  dateOfBirth: string
+  genderCode: 'M' | 'F'
+  isSmoker: 'Y' | 'N'
+  effectiveDate: string
+}
+
+export type CompareQuotePlan = {
+  CarrierPlanCode: string
+  CarrierPlanDesc: string
+  CarrierProductCode: string
+  CarrierProductName: string
+  GrossPremium: string
+  DuePremium: string
+  SumInsured: string
+  MainBenefits: Array<{
+    BenefitCode: string
+    BenefitDesc: string
+    CoverageName: string
+    DefaultLimitDesc: string
+  }>
+}
+
 type HealthCartStore = {
   items: CartItem[]
+  proposalNo: string | null
+  insuredInfo: HealthInsuredInfo | null
+  compareQuotePlans: CompareQuotePlan[]
   addItem: (item: Omit<CartItem, 'quantity'>, qty?: number) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
+  setProposalNo: (proposalNo: string) => void
+  setInsuredInfo: (info: HealthInsuredInfo) => void
+  setCompareQuotePlans: (plans: CompareQuotePlan[]) => void
 }
 
 export const useHealthCartStore = create<HealthCartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      proposalNo: null,
+      insuredInfo: null,
+      compareQuotePlans: [],
       addItem: (item, qty = 1) => {
         const existing = get().items.find((i) => i.id === item.id)
         if (existing) {
@@ -52,7 +86,10 @@ export const useHealthCartStore = create<HealthCartStore>()(
           }))
         }
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], proposalNo: null }),
+      setProposalNo: (proposalNo) => set({ proposalNo }),
+      setInsuredInfo: (info) => set({ insuredInfo: info }),
+      setCompareQuotePlans: (plans) => set({ compareQuotePlans: plans }),
     }),
     {
       name: 'health-cart',
