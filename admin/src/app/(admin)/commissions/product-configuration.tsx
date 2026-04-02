@@ -223,7 +223,9 @@ export default function ProductCommisionConfiguration({
         witholding_tax: Number(selectedCommissionConfig.witholding_tax) ?? 0,
         ...getCheckboxesFromVatOption(selectedCommissionConfig.vatOptions),
         grossVATRate: Number(selectedCommissionConfig.gross_vat) ?? 0,
-        effectivity_date: selectedCommissionConfig.effectivity_date.split('T')[0],
+        effectivity_date: selectedCommissionConfig.effectivity_date
+          ? selectedCommissionConfig.effectivity_date.split('T')[0]
+          : new Date().toISOString().split('T')[0],
       })
     }
   }, [selectedCommissionConfig?.id])
