@@ -31,7 +31,7 @@ export const CommissionConfigSchema = z.object({
   gross_vat: z.string().optional(),
   isWithVAT: z.boolean().optional(),
   vatOptions: VatOptionsEnum.optional(),
-  effectivity_date: z.string(),
+  effectivity_date: z.string().nullable(),
   status: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
