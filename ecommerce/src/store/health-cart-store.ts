@@ -47,6 +47,7 @@ type HealthCartStore = {
   proposalNo: string | null
   insuredInfo: HealthInsuredInfo | null
   compareQuotePlans: CompareQuotePlan[]
+  isLoadingPlans: boolean
   addItem: (item: Omit<CartItem, 'quantity'>, qty?: number) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
@@ -54,6 +55,7 @@ type HealthCartStore = {
   setProposalNo: (proposalNo: string) => void
   setInsuredInfo: (info: HealthInsuredInfo) => void
   setCompareQuotePlans: (plans: CompareQuotePlan[]) => void
+  setIsLoadingPlans: (loading: boolean) => void
 }
 
 export const useHealthCartStore = create<HealthCartStore>()(
@@ -63,6 +65,7 @@ export const useHealthCartStore = create<HealthCartStore>()(
       proposalNo: null,
       insuredInfo: null,
       compareQuotePlans: [],
+      isLoadingPlans: false,
       addItem: (item, qty = 1) => {
         const existing = get().items.find((i) => i.id === item.id)
         if (existing) {
@@ -90,6 +93,7 @@ export const useHealthCartStore = create<HealthCartStore>()(
       setProposalNo: (proposalNo) => set({ proposalNo }),
       setInsuredInfo: (info) => set({ insuredInfo: info }),
       setCompareQuotePlans: (plans) => set({ compareQuotePlans: plans }),
+      setIsLoadingPlans: (loading) => set({ isLoadingPlans: loading }),
     }),
     {
       name: 'health-cart',
