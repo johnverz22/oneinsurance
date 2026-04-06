@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Search, ShoppingCart, SlidersHorizontal, Check } from 'lucide-react'
+import { Search, ShoppingCart, SlidersHorizontal, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
@@ -13,7 +13,7 @@ export function HealthPlansGrid() {
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
-  const { compareQuotePlans, addItem } = useHealthCartStore()
+  const { compareQuotePlans, addItem, isLoadingPlans } = useHealthCartStore()
 
   const filtered = useMemo(() => {
     if (!compareQuotePlans.length) return []
@@ -59,15 +59,33 @@ export function HealthPlansGrid() {
     router.push(`/${agentCode}/products/health-insurance/checkout`)
   }
 
+  if (isLoadingPlans) {
+    return (
+      <section id="health-plans-grid" className="w-full bg-[#eef2f7] py-16">
+        <div className="mx-auto max-w-7xl px-4 text-center">
+          <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-6">
+            Finding Your Health Plans
+          </h2>
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground text-base">
+              We're searching for the best plans for you. This may take a moment...
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   if (!compareQuotePlans.length) {
     return (
-      <section className="w-full bg-[#eef2f7] py-16">
+      <section id="health-plans-grid" className="w-full bg-[#eef2f7] py-16">
         <div className="mx-auto max-w-7xl px-4 text-center">
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-4">
             Choose Your Health Plans
           </h2>
           <p className="text-muted-foreground text-base">
-            Fill in the form above and click Search to see available health insurance plans.
+            Fill in the form above and click Get Advice to see available health insurance plans.
           </p>
         </div>
       </section>
