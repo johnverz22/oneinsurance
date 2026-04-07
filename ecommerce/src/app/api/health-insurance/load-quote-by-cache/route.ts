@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    const url = `${process.env.BASE_URL}/quote/health/compare/${cacheKey}`
+    const url = `${process.env.BASE_URL}/quote/compare/${cacheKey}`
 
     console.log('Health Insurance Load Quote by Cache URL:', url)
 
