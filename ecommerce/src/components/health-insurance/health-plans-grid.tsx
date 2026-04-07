@@ -24,6 +24,7 @@ export function HealthPlansGrid() {
   }, [compareQuotePlans, search])
 
   const handleAddToCart = (plan: typeof compareQuotePlans[0]) => {
+    console.log('Plan data:', JSON.stringify(plan, null, 2))
     addItem({
       id: plan.CarrierPlanCode,
       planId: plan.CarrierPlanCode,
@@ -36,7 +37,7 @@ export function HealthPlansGrid() {
       providerSlug: plan.CarrierPlanCode,
       providerLogo: '/images/providers/1 Oona.svg',
       image: '/our-products-health.webp',
-      premium: parseFloat(plan.GrossPremium ?? plan.DuePremium ?? '0'),
+      premium: parseFloat(plan.GrossPremium ?? plan.DuePremium ?? (plan as any).BeforeVatPremium ?? (plan as any).NetPremium ?? '0'),
     }, 1)
     toast.success(`${plan.CarrierPlanDesc} added to cart`)
   }
@@ -54,7 +55,7 @@ export function HealthPlansGrid() {
       providerSlug: plan.CarrierPlanCode,
       providerLogo: '/images/providers/1 Oona.svg',
       image: '/our-products-health.webp',
-      premium: parseFloat(plan.GrossPremium ?? plan.DuePremium ?? '0'),
+      premium: parseFloat(plan.GrossPremium ?? plan.DuePremium ?? (plan as any).BeforeVatPremium ?? (plan as any).NetPremium ?? '0'),
     }, 1)
     router.push(`/${agentCode}/products/health-insurance/checkout`)
   }
@@ -148,7 +149,7 @@ export function HealthPlansGrid() {
               <div className="mb-2 flex items-center justify-between rounded-lg bg-yellow-400 px-4 py-2">
                 <span className="text-sm font-medium text-gray-800">Gross Premium</span>
                 <span className="font-bold text-gray-900">
-                  ₱ {parseFloat(plan.GrossPremium ?? '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                  ₱ {parseFloat(plan.GrossPremium ?? plan.DuePremium ?? (plan as any).BeforeVatPremium ?? (plan as any).NetPremium ?? '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
               </div>
 

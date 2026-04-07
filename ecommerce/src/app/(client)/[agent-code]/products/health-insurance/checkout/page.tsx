@@ -9,6 +9,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+
+const ID_FORMATS: Record<string, { regex: RegExp; hint: string; placeholder: string }> = {
+  PAS: { regex: /^[A-Z][A-Z0-9]\d{6}[A-Z0-9]$/, hint: 'Format: A0123456B or AB1234567', placeholder: 'e.g. A0123456B' },
+  DRV: { regex: /^[A-Z]\d{2}-\d{2}-\d{6}$/, hint: "Format: A00-00-000000", placeholder: 'e.g. A12-34-567890' },
+  SSS: { regex: /^\d{2}-\d{7}-\d{1}$/, hint: 'Format: 00-0000000-0', placeholder: 'e.g. 12-3456789-0' },
+  TIN: { regex: /^\d{3}-\d{3}-\d{3}-\d{3}$/, hint: 'Format: 000-000-000-000', placeholder: 'e.g. 123-456-789-000' },
+  PHI: { regex: /^\d{4}-\d{4}-\d{4}-\d{4}$/, hint: 'Format: 0000-0000-0000-0000', placeholder: 'e.g. 1234-5678-9012-3456' },
+}
+
+function validateIdNo(idType: string, value: string): string {
+  const format = ID_FORMATS[idType]
+  if (!format) return ''
+  if (!value) return 'ID number is required'
+  if (!format.regex.test(value)) return format.hint
+  return ''
+}
 
 export default function CheckoutPage() {
   const params = useParams()
@@ -23,8 +40,16 @@ export default function CheckoutPage() {
 
   // Billing
   const [fullName, setFullName] = useState('')
-  const [tin, setTin] = useState('')
-  const [address, setAddress] = useState('')
+  const [email, setEmail] = useState('')
+  const [placeOfBirth, setPlaceOfBirth] = useState('')
+  const [idNo, setIdNo] = useState('')
+  const [idNoError, setIdNoError] = useState('')
+  const [idTypeCode, setIdTypeCode] = useState('PAS')
+  const [province, setProvince] = useState('')
+  const [city, setCity] = useState('')
+  const [postCode, setPostCode] = useState('')
+  const [addressLine1, setAddressLine1] = useState('')
+  const [addressLine2, setAddressLine2] = useState('')
 
   // Card
   const [cardFirst, setCardFirst] = useState('')
@@ -68,12 +93,18 @@ export default function CheckoutPage() {
         PolicyCustomerList: [{
           FirstName: fullName.split(' ')[0] ?? fullName,
           LastName: fullName.split(' ').slice(1).join(' ') || fullName,
+          PlaceOfBirth: placeOfBirth,
           DateOfBirth: insuredInfo?.dateOfBirth ?? '',
+          IdNo: idNo,
+          IdTypeCode: idTypeCode,
+          AddrProvince: province,
+          City: city,
+          PostCode: postCode,
           Gender: insuredInfo?.genderCode ?? 'M',
           Mobile: insuredInfo?.mobile ?? '',
-          Email: '',
-          AddressLine1: address,
-          AddressLine2: '',
+          Email: email,
+          AddressLine1: addressLine1,
+          AddressLine2: addressLine2,
         }],
         PolicyLobList: [{
           ProductCode: 'HEALTH',
@@ -103,30 +134,32 @@ export default function CheckoutPage() {
       })
 
       const fullQuoteData = await fullQuoteRes.json()
-      const resolvedProposalNo = fullQuoteData?.ProposalNo ?? fullQuoteData?.proposalNo ?? null
+      const resolvedProposalNo = fullQuoteData?.ProposalNo ?? fullQuoteData?.proposalNo ?? fullQuoteData?.data?.ProposalNo ?? null
 
-      if (resolvedProposalNo) {
-        setProposalNo(resolvedProposalNo)
-
-        // Step 4: Issue Quote
-        await fetch('/api/health-insurance/issue-quote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ProposalNo: resolvedProposalNo,
-            CustomField: {
-              PlanName: firstItem?.planName ?? '',
-              PaymentBrand: paymentTab === 'card' ? 'VISA' : 'GCASH',
-            },
-          }),
-        })
+      if (!resolvedProposalNo) {
+        toast.error('Failed to create proposal. Please try again.')
+        return
       }
+
+      setProposalNo(resolvedProposalNo)
+
+      // Step 4: Issue Quote
+      await fetch('/api/health-insurance/issue-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ProposalNo: resolvedProposalNo,
+          CustomField: {
+            PlanName: firstItem?.planName ?? '',
+            PaymentBrand: paymentTab === 'card' ? 'VISA' : 'GCASH',
+          },
+        }),
+      })
 
       setShowSuccess(true)
     } catch (err) {
       console.error('Payment error:', err)
-      // Still show success dialog — payment UI is not yet connected to real gateway
-      setShowSuccess(true)
+      toast.error('Payment failed. Please try again.')
     } finally {
       setIsProcessing(false)
     }
@@ -206,18 +239,78 @@ export default function CheckoutPage() {
               <h2 className="from-primary to-accent mb-4 bg-gradient-to-r bg-clip-text text-xl font-black text-transparent">
                 Billing Information
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-700">Full Name</label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter Full Name" className="rounded-full" />
+                  <label className="text-primary mb-1 block text-sm font-medium">Full Name <span className="text-red-500">*</span></label>
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. Juan Dela Cruz" className="h-12 rounded-full" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-700">TIN (Tax Identification Number)</label>
-                  <Input value={tin} onChange={(e) => setTin(e.target.value)} placeholder="0000 0000 0000 0000" className="rounded-full" />
+                  <label className="text-primary mb-1 block text-sm font-medium">Email Address <span className="text-red-500">*</span></label>
+                  <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. juan@example.com" className="h-12 rounded-full" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-700">Address (Optional)</label>
-                  <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Enter Full Address" className="rounded-full" />
+                  <label className="text-primary mb-1 block text-sm font-medium">Place of Birth <span className="text-red-500">*</span></label>
+                  <Input value={placeOfBirth} onChange={(e) => setPlaceOfBirth(e.target.value)} placeholder="e.g. Manila, Philippines" className="h-12 rounded-full" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-primary mb-1 block text-sm font-medium">ID Type <span className="text-red-500">*</span></label>
+                    <select
+                      value={idTypeCode}
+                      onChange={(e) => {
+                        setIdTypeCode(e.target.value)
+                        setIdNoError(validateIdNo(e.target.value, idNo))
+                      }}
+                      className="h-12 w-full rounded-full border px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="PAS">Passport</option>
+                      <option value="DRV">Driver's License</option>
+                      <option value="SSS">SSS</option>
+                      <option value="TIN">TIN</option>
+                      <option value="PHI">PhilHealth</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-primary mb-1 block text-sm font-medium">ID Number <span className="text-red-500">*</span></label>
+                    <Input
+                      value={idNo}
+                      onChange={(e) => {
+                        setIdNo(e.target.value)
+                        setIdNoError(validateIdNo(idTypeCode, e.target.value))
+                      }}
+                      placeholder={ID_FORMATS[idTypeCode]?.placeholder ?? 'Enter ID Number'}
+                      className={`h-12 rounded-full ${idNoError ? 'border-red-500' : ''}`}
+                    />
+                    {ID_FORMATS[idTypeCode] && (
+                      <p className="text-muted-foreground mt-1 text-xs">{ID_FORMATS[idTypeCode].hint}</p>
+                    )}
+                    {idNoError && <p className="mt-1 text-xs text-red-500">{idNoError}</p>}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-primary mb-1 block text-sm font-medium">Address Line 1 <span className="text-red-500">*</span></label>
+                  <Input value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="e.g. 123 Rizal Street, Barangay San Antonio" className="h-12 rounded-full" />
+                </div>
+                <div>
+                  <div className="mb-1 flex justify-between">
+                    <label className="text-primary text-sm font-medium">Address Line 2</label>
+                    <span className="text-primary text-xs">(Optional)</span>
+                  </div>
+                  <Input value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} placeholder="e.g. Unit 4B, Tower 2" className="h-12 rounded-full" />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-primary mb-1 block text-sm font-medium">Province <span className="text-red-500">*</span></label>
+                    <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="e.g. Metro Manila" className="h-12 rounded-full" />
+                  </div>
+                  <div>
+                    <label className="text-primary mb-1 block text-sm font-medium">City <span className="text-red-500">*</span></label>
+                    <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Makati" className="h-12 rounded-full" />
+                  </div>
+                  <div>
+                    <label className="text-primary mb-1 block text-sm font-medium">Post Code <span className="text-red-500">*</span></label>
+                    <Input value={postCode} onChange={(e) => setPostCode(e.target.value)} placeholder="e.g. 1200" className="h-12 rounded-full" />
+                  </div>
                 </div>
               </div>
             </div>

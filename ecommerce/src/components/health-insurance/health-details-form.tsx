@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from '@tanstack/react-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,6 +17,8 @@ import { FieldInfo } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { useHealthCartStore } from '@/store/health-cart-store'
+import { getEcho } from '@/lib/echo'
+import axios from 'axios'
 import {
   Select,
   SelectContent,
@@ -74,6 +77,61 @@ function buildPayload(value: HealthDetailsFormType) {
 
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const { setInsuredInfo, setCompareQuotePlans, setIsLoadingPlans } = useHealthCartStore()
+  const echoRef = useRef<any>(null)
+  const channelRef = useRef<any>(null)
+  const queue = useRef<string[]>([])
+  const isProcessing = useRef(false)
+
+  const closeEchoConnection = (channelId: string) => {
+    try {
+      if (echoRef.current) {
+        echoRef.current.leave?.(channelId)
+        const connector = echoRef.current?.connector as any
+        if (connector?.pusher?.disconnect) connector.pusher.disconnect()
+        channelRef.current = null
+        echoRef.current = null
+      }
+    } catch {}
+  }
+
+  const fetchPlanByCacheKey = async (cacheKey: string) => {
+    try {
+      const res = await axios.get(
+        `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
+      )
+      const data = res.data
+      if (!data.success || !data.data?.Plans?.length) return null
+      return data.data
+    } catch {
+      return null
+    }
+  }
+
+  const processQueue = async () => {
+    if (isProcessing.current) return
+    isProcessing.current = true
+
+    while (queue.current.length > 0) {
+      const batch = queue.current.splice(0, 5)
+      const results = await Promise.allSettled(
+        batch.map((cacheKey) => fetchPlanByCacheKey(cacheKey))
+      )
+      const successfulPlans = results
+        .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled' && r.value !== null)
+        .map((r) => r.value)
+
+      if (successfulPlans.length > 0) {
+        const allPlans = successfulPlans.flatMap((p: any) => p.Plans ?? [])
+        setCompareQuotePlans(allPlans)
+        setIsLoadingPlans(false)
+        setTimeout(() => {
+          document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+      }
+    }
+
+    isProcessing.current = false
+  }
 
   const form = useForm({
     defaultValues: {
@@ -87,7 +145,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     } as HealthDetailsFormType,
     onSubmit: async ({ value }) => {
       try {
-        // Reset plans and show loading immediately, scroll down
+        // Reset and show loading, scroll down immediately
         setCompareQuotePlans([])
         setIsLoadingPlans(true)
         setTimeout(() => {
@@ -118,47 +176,33 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           effectiveDate: value.effectiveDate,
         })
 
-        // Poll GET compare-quote with clientRequestId to retrieve plans
-        // The Postman collection shows: GET /quote/health/compare-quote with ClientRequestId
-        let attempts = 0
-        const maxAttempts = 2
-        const pollInterval = 5000
-
-        const poll = async (): Promise<void> => {
-          attempts++
-          try {
-            const getRes = await fetch(
-              `/api/health-insurance/compare-quote?clientRequestId=${clientRequestId}`
-            )
-            if (getRes.ok) {
-              const getData = await getRes.json()
-              console.log(`GET compare-quote attempt ${attempts}:`, JSON.stringify(getData, null, 2))
-              const plans =
-                getData?.data?.Plans ??
-                getData?.Plans ??
-                getData?.data?.plans ??
-                getData?.plans ??
-                []
-              if (plans.length > 0) {
-                setCompareQuotePlans(plans)
-                setIsLoadingPlans(false)
-                setTimeout(() => {
-                  document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
-                }, 100)
-                return
-              }
-            }
-          } catch {}
-
-          if (attempts < maxAttempts) {
-            setTimeout(poll, pollInterval)
-          } else {
-            setIsLoadingPlans(false)
-            toast.error('No plans available. Please try again.')
-          }
+        // Subscribe to WebSocket channel using clientRequestId — same as travel insurance
+        const echo = getEcho()
+        if (echo.connector.pusher.connection.state !== 'connected') {
+          echo.connector.pusher.connect()
         }
 
-        setTimeout(poll, pollInterval)
+        const channel = echo
+          .channel(clientRequestId)
+          .listen('.insurance.plan.received', (e: any) => {
+            const cacheKey = e['cache_key']
+            console.log('Health plan received, cache_key:', cacheKey)
+            queue.current.push(cacheKey)
+            processQueue()
+          })
+
+        echoRef.current = echo
+        channelRef.current = channel
+
+        // 30s timeout fallback
+        setTimeout(() => {
+          const { compareQuotePlans } = useHealthCartStore.getState()
+          if (!compareQuotePlans.length) {
+            setIsLoadingPlans(false)
+            closeEchoConnection(clientRequestId)
+            toast.error('Plans are taking longer than expected. Please try again.')
+          }
+        }, 30000)
 
       } catch (err) {
         setIsLoadingPlans(false)
@@ -171,13 +215,12 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   return (
     <Card className={cn('w-full rounded-2xl border-0 shadow-2xl bg-white', className)}>
       <CardContent className="px-6 pt-6 pb-7 sm:px-8">
-        {/* Header */}
         <div className="mb-5">
           <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
           <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
         </div>
 
-        {/* Row 1: Full Name | Email Address | Phone Number */}
+        {/* Row 1: Full Name | Email | Phone */}
         <div className="mb-4 grid gap-4 sm:grid-cols-3">
           <form.Field name="insuredName">
             {(field) => (
@@ -217,7 +260,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           </form.Field>
         </div>
 
-        {/* Row 2: Date of Birth | Coverage Start Date */}
+        {/* Row 2: DOB | Coverage Start */}
         <div className="mb-4 grid gap-4 sm:grid-cols-2">
           <form.Field name="dateOfBirth">
             {(field) => (
