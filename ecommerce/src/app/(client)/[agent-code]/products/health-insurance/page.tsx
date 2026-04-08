@@ -8,6 +8,7 @@ import { FAQsSection } from '@/components/faqs-section'
 import { HealthDetailsForm } from '@/components/health-insurance/health-details-form'
 import { HealthPlansGrid } from '@/components/health-insurance/health-plans-grid'
 import { HealthTestimonials } from '@/components/health-insurance/health-testimonials'
+import { HealthProposalSearch } from '@/components/health-insurance/health-proposal-search'
 import { HEALTH_FAQS } from '@/constants/faqs/health-insurance'
 
 export default function HealthInsurancePage() {
@@ -61,12 +62,17 @@ const HealthInsurance = () => {
         </div>
       </div>
 
-      {/* Get Personalized Advice form */}
+      {/* Get Personalized Advice form — scrolls to plans on submit */}
       <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
         <HealthDetailsForm />
       </div>
 
-      {/* Health Plans Grid */}
+      {/* Proposal Search */}
+      <div className="mx-auto mt-8 w-full max-w-7xl px-1.5">
+        <HealthProposalSearch />
+      </div>
+
+      {/* Health Plans Grid — shown after Get Advice is clicked */}
       <div className="mt-16">
         <HealthPlansGrid />
       </div>
@@ -78,7 +84,6 @@ const HealthInsurance = () => {
       <section className="w-full bg-[#eef2f7] py-16">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-3 md:gap-12">
-            {/* Left */}
             <div className="space-y-4">
               <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-3xl font-black text-transparent leading-tight">
                 Got a question about Health Insurance in the Philippines?
@@ -95,13 +100,8 @@ const HealthInsurance = () => {
                 </button>
               </div>
             </div>
-            {/* Right — accordion */}
             <div className="md:col-span-2">
-              <FAQsSection
-                faqs={HEALTH_FAQS}
-                title=""
-                description=""
-              />
+              <FAQsSection faqs={HEALTH_FAQS} title="" description="" />
             </div>
           </div>
         </div>
