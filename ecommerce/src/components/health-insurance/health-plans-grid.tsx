@@ -6,6 +6,7 @@ import { Search, ShoppingCart, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
+import { useHealthAvailStore } from '@/store/health-avail-store'
 
 const CARRIER_LOGOS: Record<string, string> = {
   OONAPH: '/images/providers/1 Oona.svg',
@@ -41,6 +42,7 @@ export function HealthPlansGrid() {
   const router = useRouter()
   const agentCode = params['agent-code'] as string
   const { compareQuotePlans, addItem, isLoadingPlans } = useHealthCartStore()
+  const { setStep } = useHealthAvailStore()
 
   const filtered = useMemo(() => {
     if (!compareQuotePlans.length) return []
@@ -68,7 +70,13 @@ export function HealthPlansGrid() {
       carrierPlanCode: plan.CarrierPlanCode,
       carrierProductCode: plan.CarrierProductCode,
     }, 1)
-    router.push(`/${agentCode}/products/health-insurance/checkout`)
+    setStep(1)
+    // If already on avail page, just set step; otherwise navigate there
+    if (!window.location.pathname.includes('/avail')) {
+      router.push(`/${agentCode}/products/health-insurance/avail`)
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   if (isLoadingPlans) {

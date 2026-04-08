@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useRef } from 'react'
-import { ChevronRight, CheckCircle, Loader2 } from 'lucide-react'
+import { ChevronRight, CheckCircle, Loader2, ArrowLeft, CreditCard, Smartphone, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
@@ -13,6 +13,9 @@ import { toast } from 'sonner'
 import { usePaymentAuth, usePaymentSubmit } from '@/app/data/mutations/payment'
 import { usePaymentPolling } from '@/hooks/use-payment-polling'
 import { generateTransactionId } from '@/utils/payment-mappers'
+import PaymentBrands from '@/components/payment/payment-brands'
+import { PaymentBrand } from '@/types/payment'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const ID_FORMATS: Record<string, { regex: RegExp; hint: string; placeholder: string }> = {
   PAS: { regex: /^[A-Z][A-Z0-9]\d{6}[A-Z0-9]$/, hint: 'Format: A0123456B or AB1234567', placeholder: 'e.g. A0123456B' },
@@ -36,6 +39,9 @@ export default function CheckoutPage() {
   const agentCode = params['agent-code'] as string
   const { items, clearCart, insuredInfo, setProposalNo, proposalNo } = useHealthCartStore()
   const [paymentTab, setPaymentTab] = useState<'card' | 'ewallet'>('card')
+  const [checkoutStep, setCheckoutStep] = useState<1 | 2>(1)
+  const [selectedBrand, setSelectedBrand] = useState<PaymentBrand | null>(null)
+  const [paymentMethodTab, setPaymentMethodTab] = useState<'all' | 'cards' | 'digital'>('all')
   const [showSuccess, setShowSuccess] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isAwaitingPayment, setIsAwaitingPayment] = useState(false)
@@ -138,7 +144,7 @@ export default function CheckoutPage() {
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
-  const validateForm = (): boolean => {
+  const validateBillingForm = (): boolean => {
     const errors: Record<string, string> = {}
 
     if (!fullName.trim()) errors.fullName = 'Full name is required'
@@ -157,25 +163,32 @@ export default function CheckoutPage() {
     if (!city.trim()) errors.city = 'City is required'
     if (!postCode.trim()) errors.postCode = 'Post code is required'
 
-    if (paymentTab === 'card') {
+    setFormErrors(errors)
+
+    if (Object.keys(errors).length > 0) {
+      const firstErrorKey = Object.keys(errors)[0]
+      const el = document.getElementById(`field-${firstErrorKey}`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return false
+    }
+    return true
+  }
+
+  const validateForm = (): boolean => {
+    if (!selectedBrand) {
+      toast.error('Please select a payment method.')
+      return false
+    }
+    if (selectedBrand.is_card) {
+      const errors: Record<string, string> = {}
       if (!cardFirst.trim()) errors.cardFirst = 'First name on card is required'
       if (!cardLast.trim()) errors.cardLast = 'Last name on card is required'
       if (!cardNumber.trim()) errors.cardNumber = 'Card number is required'
       if (!expiry.trim()) errors.expiry = 'Expiry date is required'
       else if (!/^\d{2}\/\d{4}$/.test(expiry)) errors.expiry = 'Format: MM/YYYY'
       if (!cvv.trim()) errors.cvv = 'CVV is required'
-    } else {
-      if (!walletNumber.trim()) errors.walletNumber = 'Wallet number is required'
-    }
-
-    setFormErrors(errors)
-
-    if (Object.keys(errors).length > 0) {
-      // Scroll to first error
-      const firstErrorKey = Object.keys(errors)[0]
-      const el = document.getElementById(`field-${firstErrorKey}`)
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return false
+      setFormErrors(errors)
+      if (Object.keys(errors).length > 0) return false
     }
     return true
   }
@@ -269,7 +282,9 @@ export default function CheckoutPage() {
 
       // Step 3: Go through DLT payment gateway (same as travel insurance)
       const transactionId = generateTransactionId()
-      const isCard = paymentTab === 'card'
+      const isCard = selectedBrand?.is_card ?? true
+      const brandCode = selectedBrand?.code ?? 'VISA'
+      const brandValue = selectedBrand?.value ?? 'Visa'
 
       const authResponse = await getPaymentAuth()
       if (!authResponse?.access_token) {
@@ -305,8 +320,8 @@ export default function CheckoutPage() {
             expiration_year: (expiry.split('/')[1] ?? '').slice(-2).padStart(2, '0'),
             ccv: parseInt(cvv, 10),
           }),
-          payment_brand_code: isCard ? 'VISA' : 'GCASH',
-          payment_brand: isCard ? 'Visa' : 'GCash',
+          payment_brand_code: brandCode,
+          payment_brand: brandValue,
           amount: duePremium,
           currency: 'PHP',
           description: 'Health Insurance Premium',
