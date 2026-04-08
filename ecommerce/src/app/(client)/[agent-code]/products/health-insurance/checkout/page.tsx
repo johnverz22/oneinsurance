@@ -3,13 +3,16 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { ChevronRight, CheckCircle } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { ChevronRight, CheckCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { usePaymentAuth, usePaymentSubmit } from '@/app/data/mutations/payment'
+import { usePaymentPolling } from '@/hooks/use-payment-polling'
+import { generateTransactionId } from '@/utils/payment-mappers'
 
 const ID_FORMATS: Record<string, { regex: RegExp; hint: string; placeholder: string }> = {
   PAS: { regex: /^[A-Z][A-Z0-9]\d{6}[A-Z0-9]$/, hint: 'Format: A0123456B or AB1234567', placeholder: 'e.g. A0123456B' },
@@ -35,8 +38,75 @@ export default function CheckoutPage() {
   const [paymentTab, setPaymentTab] = useState<'card' | 'ewallet'>('card')
   const [showSuccess, setShowSuccess] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isAwaitingPayment, setIsAwaitingPayment] = useState(false)
   const [coupon, setCoupon] = useState('')
   const [agent, setAgent] = useState('')
+  const isProcessingQuoteRef = useRef(false)
+
+  const { mutateAsync: getPaymentAuth } = usePaymentAuth()
+  const { mutateAsync: submitPayment } = usePaymentSubmit()
+
+  const { startPolling, stopPolling } = usePaymentPolling({
+    proposalNumber: proposalNo ?? '',
+    onSuccess: async (data) => {
+      // Payment confirmed — now call set-merchant then issue-quote
+      try {
+        isProcessingQuoteRef.current = true
+        const firstItem = items[0]
+
+        // Step 3: Set Merchant
+        await fetch('/api/payment/set-merchant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            merchant_transaction_id: data.proposal_number,
+            amount: grandTotal,
+            transaction_status: 'Payment Successful',
+            transaction_status_code: 'OK.00.00',
+            other_reference: {
+              other_reference_1: proposalNo,
+              other_reference_1_caption: 'proposal',
+            },
+          }),
+        })
+
+        // Step 4: Issue Quote
+        const issueRes = await fetch('/api/health-insurance/issue-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ProposalNo: proposalNo,
+            CustomField: {
+              PlanName: firstItem?.planName ?? '',
+              PaymentBrand: paymentTab === 'card' ? 'VISA' : 'GCASH',
+            },
+          }),
+        })
+
+        if (issueRes.ok) {
+          setIsAwaitingPayment(false)
+          setShowSuccess(true)
+        } else {
+          toast.error('Policy issuance failed. Please contact support.')
+        }
+      } catch (err) {
+        toast.error('Something went wrong after payment. Please contact support.')
+      } finally {
+        isProcessingQuoteRef.current = false
+        setIsProcessing(false)
+      }
+    },
+    onError: () => {
+      setIsAwaitingPayment(false)
+      setIsProcessing(false)
+      toast.error('Payment failed. Please try again.')
+    },
+    onTimeout: () => {
+      setIsAwaitingPayment(false)
+      setIsProcessing(false)
+      toast.error('Payment verification timed out. Please contact support.')
+    },
+  })
 
   // Billing
   const [fullName, setFullName] = useState('')
@@ -50,6 +120,7 @@ export default function CheckoutPage() {
   const [postCode, setPostCode] = useState('')
   const [addressLine1, setAddressLine1] = useState('')
   const [addressLine2, setAddressLine2] = useState('')
+  const [phone, setPhone] = useState('')
 
   // Card
   const [cardFirst, setCardFirst] = useState('')
@@ -65,17 +136,65 @@ export default function CheckoutPage() {
 
   const grandTotal = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
 
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {}
+
+    if (!fullName.trim()) errors.fullName = 'Full name is required'
+    if (!email.trim()) errors.email = 'Email is required'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email'
+    if (!placeOfBirth.trim()) errors.placeOfBirth = 'Place of birth is required'
+    if (!idNo.trim()) errors.idNo = 'ID number is required'
+    else {
+      const idErr = validateIdNo(idTypeCode, idNo)
+      if (idErr) errors.idNo = idErr
+    }
+    if (!addressLine1.trim()) errors.addressLine1 = 'Address line 1 is required'
+    if (!phone.trim()) errors.phone = 'Phone number is required'
+    else if (!/^(\+63|0)?9\d{9}$/.test(phone.replace(/\s/g, ''))) errors.phone = 'Enter a valid PH mobile number'
+    if (!province.trim()) errors.province = 'Province is required'
+    if (!city.trim()) errors.city = 'City is required'
+    if (!postCode.trim()) errors.postCode = 'Post code is required'
+
+    if (paymentTab === 'card') {
+      if (!cardFirst.trim()) errors.cardFirst = 'First name on card is required'
+      if (!cardLast.trim()) errors.cardLast = 'Last name on card is required'
+      if (!cardNumber.trim()) errors.cardNumber = 'Card number is required'
+      if (!expiry.trim()) errors.expiry = 'Expiry date is required'
+      else if (!/^\d{2}\/\d{4}$/.test(expiry)) errors.expiry = 'Format: MM/YYYY'
+      if (!cvv.trim()) errors.cvv = 'CVV is required'
+    } else {
+      if (!walletNumber.trim()) errors.walletNumber = 'Wallet number is required'
+    }
+
+    setFormErrors(errors)
+
+    if (Object.keys(errors).length > 0) {
+      // Scroll to first error
+      const firstErrorKey = Object.keys(errors)[0]
+      const el = document.getElementById(`field-${firstErrorKey}`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return false
+    }
+    return true
+  }
+
   const handlePayNow = async () => {
+    if (!validateForm()) return
     setIsProcessing(true)
     try {
       // Step 2: Full Quote — get ProposalNo
       const firstItem = items[0]
+      // Format dates without Z suffix to match BE expectation: "2024-01-09T01:15:00"
+      const formatDate = (isoString: string) => isoString.replace(/\.\d{3}Z$/, '').replace('Z', '')
+
       const effectiveDate = insuredInfo?.effectiveDate
-        ? new Date(insuredInfo.effectiveDate).toISOString()
-        : new Date().toISOString()
+        ? formatDate(new Date(insuredInfo.effectiveDate).toISOString())
+        : formatDate(new Date().toISOString())
       const expiryDate = insuredInfo?.effectiveDate
-        ? (() => { const d = new Date(insuredInfo.effectiveDate); d.setFullYear(d.getFullYear() + 1); d.setDate(d.getDate() - 1); return d.toISOString() })()
-        : new Date().toISOString()
+        ? (() => { const d = new Date(insuredInfo.effectiveDate); d.setFullYear(d.getFullYear() + 1); d.setDate(d.getDate() - 1); return formatDate(d.toISOString()) })()
+        : formatDate(new Date().toISOString())
 
       const fullQuotePayload = {
         AgentCode: agentCode,
@@ -83,16 +202,18 @@ export default function CheckoutPage() {
         ProductType: 'CI',
         ProductVersion: '1.0',
         ProductName: 'Health Insurance',
-        CarrierCode: 'OONAPH',
-        CarrierPlanCode: 'FC',
-        CarrierProductCode: 'PHCI',
+        CarrierCode: firstItem?.carrierCode ?? 'OONAPH',
+        CarrierPlanCode: firstItem?.carrierPlanCode ?? 'FC',
+        CarrierProductCode: firstItem?.carrierProductCode ?? 'PHCI',
         CarrierProductName: firstItem?.planName ?? 'Health Insurance',
         EffectiveDate: effectiveDate,
         ExpiryDate: expiryDate,
         HealthPolicyType: '1',
         PolicyCustomerList: [{
           FirstName: fullName.split(' ')[0] ?? fullName,
+          MiddleName: '',
           LastName: fullName.split(' ').slice(1).join(' ') || fullName,
+          Suffix: '',
           PlaceOfBirth: placeOfBirth,
           DateOfBirth: insuredInfo?.dateOfBirth ?? '',
           IdNo: idNo,
@@ -104,7 +225,7 @@ export default function CheckoutPage() {
           Mobile: insuredInfo?.mobile ?? '',
           Email: email,
           AddressLine1: addressLine1,
-          AddressLine2: addressLine2,
+          AddressLine2: addressLine2 || 'N/A',
         }],
         PolicyLobList: [{
           ProductCode: 'HEALTH',
@@ -114,6 +235,7 @@ export default function CheckoutPage() {
             GenderCode: insuredInfo?.genderCode ?? 'M',
             DateOfBirth: insuredInfo?.dateOfBirth ?? '',
             IsSmoker: insuredInfo?.isSmoker ?? 'N',
+            Suffix: '',
             IsMainInsured: 'Y',
             IsAdultFlag: 'Y',
             PolicyCoverageList: [{
@@ -135,6 +257,8 @@ export default function CheckoutPage() {
 
       const fullQuoteData = await fullQuoteRes.json()
       const resolvedProposalNo = fullQuoteData?.ProposalNo ?? fullQuoteData?.proposalNo ?? fullQuoteData?.data?.ProposalNo ?? null
+      const businessObjectId = fullQuoteData?.BusinessObjectId ?? fullQuoteData?.data?.BusinessObjectId ?? resolvedProposalNo
+      const duePremium = fullQuoteData?.DuePremium ?? fullQuoteData?.data?.DuePremium ?? grandTotal
 
       if (!resolvedProposalNo) {
         toast.error('Failed to create proposal. Please try again.')
@@ -143,20 +267,90 @@ export default function CheckoutPage() {
 
       setProposalNo(resolvedProposalNo)
 
-      // Step 4: Issue Quote
-      await fetch('/api/health-insurance/issue-quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ProposalNo: resolvedProposalNo,
-          CustomField: {
-            PlanName: firstItem?.planName ?? '',
-            PaymentBrand: paymentTab === 'card' ? 'VISA' : 'GCASH',
+      // Step 3: Go through DLT payment gateway (same as travel insurance)
+      const transactionId = generateTransactionId()
+      const isCard = paymentTab === 'card'
+
+      const authResponse = await getPaymentAuth()
+      if (!authResponse?.access_token) {
+        toast.error('Payment authentication failed. Please try again.')
+        return
+      }
+
+      const paymentResult = await submitPayment({
+        data: {
+          merchant_account_id: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
+          merchant_transaction_id: transactionId,
+          product_reference_id: String(businessObjectId ?? resolvedProposalNo),
+          product_description: `Health Insurance - ${firstItem?.planName ?? ''}`,
+          other_reference_1: resolvedProposalNo,
+          other_reference_1_caption: 'proposal',
+          other_reference_2: `${fullName.split(' ')[0]} ${fullName.split(' ').slice(1).join(' ')}`.trim(),
+          other_reference_2_caption: 'customer',
+          first_name: fullName.split(' ')[0] ?? fullName,
+          last_name: fullName.split(' ').length > 1 ? fullName.split(' ').slice(1).join(' ') : fullName,
+          email: email.trim().toLowerCase(),
+          phone: phone ? `+63${phone.replace(/^(\+63|0)/, '')}` : (insuredInfo?.mobile ? `+63${insuredInfo.mobile}` : ''),
+          address_line_one: addressLine1.trim(),
+          address_line_two: addressLine2.trim() || 'N/A',
+          city_municipality: city.trim().split(',')[0].trim(),
+          state_province_region: province.trim(),
+          country_code: 'PH',
+          postal_code: postCode.trim(),
+          is_card_payment: isCard,
+          ...(isCard && {
+            card_holder_name: `${cardFirst} ${cardLast}`.trim().toUpperCase(),
+            card_number: cardNumber.replace(/\s/g, ''),
+            expiration_month: expiry.split('/')[0]?.padStart(2, '0'),
+            expiration_year: (expiry.split('/')[1] ?? '').slice(-2).padStart(2, '0'),
+            ccv: parseInt(cvv, 10),
+          }),
+          payment_brand_code: isCard ? 'VISA' : 'GCASH',
+          payment_brand: isCard ? 'Visa' : 'GCash',
+          amount: duePremium,
+          currency: 'PHP',
+          description: 'Health Insurance Premium',
+          callback_url: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/checkout`,
+          time_offset: (() => {
+            const off = new Date().getTimezoneOffset()
+            const h = Math.abs(off) / 60
+            const m = Math.abs(off) % 60
+            const sign = off <= 0 ? '+' : '-'
+            return `${sign}${Math.floor(h)}:${m.toString().padStart(2, '0')}`
+          })(),
+          device: {
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            browser_color_depth: String(window.screen.colorDepth),
+            browser_language: navigator.language,
+            browser_screen_height: String(window.screen.height),
+            browser_screen_width: String(window.screen.width),
+            os: navigator.platform,
+            browser_accept_header: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            user_agent: navigator.userAgent,
+            browser_javascript_enabled: true,
+            browser_java_enabled: navigator.javaEnabled?.() ?? false,
+            accept_content: 'text/html',
           },
-        }),
+        },
+        brand_token: authResponse.access_token,
       })
 
-      setShowSuccess(true)
+      if (!paymentResult?.success || !(paymentResult as any)?.data?.status_code?.includes('OK')) {
+        toast.error(paymentResult?.message ?? 'Payment submission failed.')
+        return
+      }
+
+      // If redirect URL (e-wallet), redirect user
+      const redirectUrl = (paymentResult as any)?.data?.redirect_url
+      if (redirectUrl) {
+        localStorage.setItem('health_proposal_no', resolvedProposalNo)
+        window.location.href = redirectUrl
+        return
+      }
+
+      // Card payment confirmed — start polling for verification
+      setIsAwaitingPayment(true)
+      startPolling()
     } catch (err) {
       console.error('Payment error:', err)
       toast.error('Payment failed. Please try again.')
@@ -242,15 +436,32 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div>
                   <label className="text-primary mb-1 block text-sm font-medium">Full Name <span className="text-red-500">*</span></label>
-                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. Juan Dela Cruz" className="h-12 rounded-full" />
+                  <Input id="field-fullName" value={fullName} onChange={(e) => { setFullName(e.target.value); setFormErrors(p => ({...p, fullName: ''})) }} placeholder="e.g. Juan Dela Cruz" className={`h-12 rounded-full ${formErrors.fullName ? 'border-red-500' : ''}`} />
+                  {formErrors.fullName && <p className="mt-1 text-xs text-red-500">{formErrors.fullName}</p>}
                 </div>
                 <div>
                   <label className="text-primary mb-1 block text-sm font-medium">Email Address <span className="text-red-500">*</span></label>
-                  <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. juan@example.com" className="h-12 rounded-full" />
+                  <Input id="field-email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors(p => ({...p, email: ''})) }} placeholder="e.g. juan@example.com" className={`h-12 rounded-full ${formErrors.email ? 'border-red-500' : ''}`} />
+                  {formErrors.email && <p className="mt-1 text-xs text-red-500">{formErrors.email}</p>}
+                </div>
+                <div>
+                  <label className="text-primary mb-1 block text-sm font-medium">Phone Number <span className="text-red-500">*</span></label>
+                  <div className={`flex h-12 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${formErrors.phone ? 'border-red-500' : ''}`}>
+                    <span className="border-r px-3 text-sm text-gray-500">+63</span>
+                    <Input
+                      id="field-phone"
+                      value={phone}
+                      onChange={(e) => { setPhone(e.target.value); setFormErrors(p => ({...p, phone: ''})) }}
+                      placeholder="9XXXXXXXXX"
+                      className="h-full flex-1 border-0 shadow-none focus-visible:ring-0"
+                    />
+                  </div>
+                  {formErrors.phone && <p className="mt-1 text-xs text-red-500">{formErrors.phone}</p>}
                 </div>
                 <div>
                   <label className="text-primary mb-1 block text-sm font-medium">Place of Birth <span className="text-red-500">*</span></label>
-                  <Input value={placeOfBirth} onChange={(e) => setPlaceOfBirth(e.target.value)} placeholder="e.g. Manila, Philippines" className="h-12 rounded-full" />
+                  <Input id="field-placeOfBirth" value={placeOfBirth} onChange={(e) => { setPlaceOfBirth(e.target.value); setFormErrors(p => ({...p, placeOfBirth: ''})) }} placeholder="e.g. Manila, Philippines" className={`h-12 rounded-full ${formErrors.placeOfBirth ? 'border-red-500' : ''}`} />
+                  {formErrors.placeOfBirth && <p className="mt-1 text-xs text-red-500">{formErrors.placeOfBirth}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -289,7 +500,8 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <label className="text-primary mb-1 block text-sm font-medium">Address Line 1 <span className="text-red-500">*</span></label>
-                  <Input value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="e.g. 123 Rizal Street, Barangay San Antonio" className="h-12 rounded-full" />
+                  <Input id="field-addressLine1" value={addressLine1} onChange={(e) => { setAddressLine1(e.target.value); setFormErrors(p => ({...p, addressLine1: ''})) }} placeholder="e.g. 123 Rizal Street, Barangay San Antonio" className={`h-12 rounded-full ${formErrors.addressLine1 ? 'border-red-500' : ''}`} />
+                  {formErrors.addressLine1 && <p className="mt-1 text-xs text-red-500">{formErrors.addressLine1}</p>}
                 </div>
                 <div>
                   <div className="mb-1 flex justify-between">
@@ -301,15 +513,18 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-primary mb-1 block text-sm font-medium">Province <span className="text-red-500">*</span></label>
-                    <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="e.g. Metro Manila" className="h-12 rounded-full" />
+                    <Input id="field-province" value={province} onChange={(e) => { setProvince(e.target.value); setFormErrors(p => ({...p, province: ''})) }} placeholder="e.g. Metro Manila" className={`h-12 rounded-full ${formErrors.province ? 'border-red-500' : ''}`} />
+                    {formErrors.province && <p className="mt-1 text-xs text-red-500">{formErrors.province}</p>}
                   </div>
                   <div>
                     <label className="text-primary mb-1 block text-sm font-medium">City <span className="text-red-500">*</span></label>
-                    <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Makati" className="h-12 rounded-full" />
+                    <Input id="field-city" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors(p => ({...p, city: ''})) }} placeholder="e.g. Makati" className={`h-12 rounded-full ${formErrors.city ? 'border-red-500' : ''}`} />
+                    {formErrors.city && <p className="mt-1 text-xs text-red-500">{formErrors.city}</p>}
                   </div>
                   <div>
                     <label className="text-primary mb-1 block text-sm font-medium">Post Code <span className="text-red-500">*</span></label>
-                    <Input value={postCode} onChange={(e) => setPostCode(e.target.value)} placeholder="e.g. 1200" className="h-12 rounded-full" />
+                    <Input id="field-postCode" value={postCode} onChange={(e) => { setPostCode(e.target.value); setFormErrors(p => ({...p, postCode: ''})) }} placeholder="e.g. 1200" className={`h-12 rounded-full ${formErrors.postCode ? 'border-red-500' : ''}`} />
+                    {formErrors.postCode && <p className="mt-1 text-xs text-red-500">{formErrors.postCode}</p>}
                   </div>
                 </div>
               </div>
@@ -342,24 +557,29 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="mb-1 block text-xs font-semibold text-gray-700">Name on Card</label>
-                      <Input value={cardFirst} onChange={(e) => setCardFirst(e.target.value)} placeholder="First Name" className="rounded-full" />
+                      <Input id="field-cardFirst" value={cardFirst} onChange={(e) => { setCardFirst(e.target.value); setFormErrors(p => ({...p, cardFirst: ''})) }} placeholder="First Name" className={`rounded-full ${formErrors.cardFirst ? 'border-red-500' : ''}`} />
+                      {formErrors.cardFirst && <p className="mt-1 text-xs text-red-500">{formErrors.cardFirst}</p>}
                     </div>
                     <div className="mt-5">
-                      <Input value={cardLast} onChange={(e) => setCardLast(e.target.value)} placeholder="Last Name" className="rounded-full" />
+                      <Input id="field-cardLast" value={cardLast} onChange={(e) => { setCardLast(e.target.value); setFormErrors(p => ({...p, cardLast: ''})) }} placeholder="Last Name" className={`rounded-full ${formErrors.cardLast ? 'border-red-500' : ''}`} />
+                      {formErrors.cardLast && <p className="mt-1 text-xs text-red-500">{formErrors.cardLast}</p>}
                     </div>
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-semibold text-gray-700">Card Number</label>
-                    <Input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} placeholder="0000 0000 0000 0000" className="rounded-full" />
+                    <Input id="field-cardNumber" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors(p => ({...p, cardNumber: ''})) }} placeholder="0000 0000 0000 0000" className={`rounded-full ${formErrors.cardNumber ? 'border-red-500' : ''}`} />
+                    {formErrors.cardNumber && <p className="mt-1 text-xs text-red-500">{formErrors.cardNumber}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="mb-1 block text-xs font-semibold text-gray-700">Expiry</label>
-                      <Input value={expiry} onChange={(e) => setExpiry(e.target.value)} placeholder="MM/YYYY" className="rounded-full" />
+                      <Input id="field-expiry" value={expiry} onChange={(e) => { setExpiry(e.target.value); setFormErrors(p => ({...p, expiry: ''})) }} placeholder="MM/YYYY" className={`rounded-full ${formErrors.expiry ? 'border-red-500' : ''}`} />
+                      {formErrors.expiry && <p className="mt-1 text-xs text-red-500">{formErrors.expiry}</p>}
                     </div>
                     <div>
                       <label className="mb-1 block text-xs font-semibold text-gray-700">CVV</label>
-                      <Input value={cvv} onChange={(e) => setCvv(e.target.value)} placeholder="CVV" className="rounded-full" />
+                      <Input id="field-cvv" value={cvv} onChange={(e) => { setCvv(e.target.value); setFormErrors(p => ({...p, cvv: ''})) }} placeholder="CVV" className={`rounded-full ${formErrors.cvv ? 'border-red-500' : ''}`} />
+                      {formErrors.cvv && <p className="mt-1 text-xs text-red-500">{formErrors.cvv}</p>}
                     </div>
                   </div>
                 </div>
@@ -400,9 +620,14 @@ export default function CheckoutPage() {
               <Button
                 className="from-primary to-accent rounded-full bg-gradient-to-r px-8 text-white"
                 onClick={handlePayNow}
-                disabled={isProcessing}
+                disabled={isProcessing || isAwaitingPayment}
               >
-                {isProcessing ? 'Processing...' : 'Pay Now'}
+                {isProcessing ? 'Processing...' : isAwaitingPayment ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Verifying Payment...
+                  </span>
+                ) : 'Pay Now'}
               </Button>
             </div>
           </div>

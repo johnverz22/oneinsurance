@@ -15,6 +15,9 @@ export type CartItem = {
   image: string
   premium: number
   quantity: number
+  carrierCode?: string
+  carrierPlanCode?: string
+  carrierProductCode?: string
 }
 
 export type HealthInsuredInfo = {
