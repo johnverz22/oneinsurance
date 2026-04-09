@@ -154,7 +154,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       // Clear any previous error state before making new request
       // Don't set status to undefined - just let the new request set it
       
-      const clientRequestId = await mutateAsync(value)
+      const clientRequestId = await mutateAsync({ values: value, agentCode: agentCode ?? '' })
       setFormModified(false)
       setClientRequest({
         id: clientRequestId,

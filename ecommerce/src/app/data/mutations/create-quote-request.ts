@@ -73,14 +73,7 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
 
 export const useCreateQuoteRequest = () => {
   return useMutation({
-    mutationFn: async (values: TravelInsuranceFormData) => {
-      // Debug environment variables
-      console.log('Environment check:', {
-        baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
-        hasToken: !!process.env.NEXT_PUBLIC_ACCESS_TOKEN,
-        tokenLength: process.env.NEXT_PUBLIC_ACCESS_TOKEN?.length
-      })
-
+    mutationFn: async ({ values, agentCode }: { values: TravelInsuranceFormData; agentCode?: string }) => {
       const initCompareQuoteRequoteBody =
         travelInsuranceSchemaToInitCompareQuote(values, agentCode)
       try {
@@ -88,7 +81,6 @@ export const useCreateQuoteRequest = () => {
         return response.data.ClientRequestId
       } catch (error: any) {
         console.error('Mutation error:', error)
-        // Re-throw with more user-friendly message
         if (error.message.includes('Network Error')) {
           throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
         }
