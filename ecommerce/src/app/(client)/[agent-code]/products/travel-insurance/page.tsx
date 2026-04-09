@@ -11,6 +11,7 @@ import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/trav
 import { TRAVEL_FAQS } from '@/constants/faqs/travel-insurance-faqs'
 import { CoverageOptionsForm } from '@/components/travel-insurance/coverage-options-form'
 import { useCreateQuoteRequest } from '@/app/data/mutations/create-quote-request'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { PageLoader } from '@/components/page-loader'
 import { Star } from 'lucide-react'
@@ -34,6 +35,7 @@ function TravelInsurancePageSSR() {
   const { resetApiResponse } = useFullQuoteResponseStore()
   const router = useRouter()
   const { mutateAsync } = useCreateQuoteRequest()
+  const { agentCode } = useAgentCodeStore()
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {

@@ -82,10 +82,9 @@ export const useCreateQuoteRequest = () => {
       })
 
       const initCompareQuoteRequoteBody =
-        travelInsuranceSchemaToInitCompareQuote(values)
+        travelInsuranceSchemaToInitCompareQuote(values, agentCode)
       try {
         const response = await initCompareQuote(initCompareQuoteRequoteBody)
-
         return response.data.ClientRequestId
       } catch (error: any) {
         console.error('Mutation error:', error)

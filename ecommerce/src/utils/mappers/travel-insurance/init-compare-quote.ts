@@ -4,7 +4,8 @@ import {
 } from '@/types/travel-insurance/travel-insurance-request'
 
 export function travelInsuranceSchemaToInitCompareQuote(
-  travelInsurance: TravelInsuranceFormData
+  travelInsurance: TravelInsuranceFormData,
+  agentCode?: string
 ) {
   // Ensure dates are properly converted to Date objects
   const dateOfBirth = travelInsurance.dateOfBirth
@@ -33,6 +34,8 @@ export function travelInsuranceSchemaToInitCompareQuote(
   }))
 
   return {
+    AgentCode: agentCode ?? '',
+    Slug: 'travel-insurance',
     ProductCode: 'TRAVEL',
     ProductVersion: '1.0',
     EffectiveDate: departureDate,
