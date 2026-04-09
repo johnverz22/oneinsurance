@@ -363,6 +363,8 @@ export type TravelersInfoFormData = z.infer<typeof travelersInfoSchema>
 
 // Root object
 export interface InitTravelInsuranceRequest {
+  AgentCode?: string // Required by BE for LOB validation
+  Slug?: string // Required by BE for LOB validation (e.g. "travel-insurance")
   ProductCode: string // e.g., "TRAVEL"
   ProductVersion: string // e.g., "1.0"
   EffectiveDate: string // ISO Date (YYYY-MM-DD)

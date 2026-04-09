@@ -11,6 +11,7 @@ import {
   travelInsuranceSchema,
 } from '@/types/travel-insurance/travel-insurance-request'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 import { TravelCoverageMap } from '@/constants/travel-coverage'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { MultiSelect } from '@/components/ui/multi-select'
@@ -36,6 +37,7 @@ type TravelDetailsFormProps = {
 
 export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   const { mutateAsync } = useCreateQuoteRequest()
+  const { agentCode } = useAgentCodeStore()
   const {
     travelDetails,
     updateTravelDetails,
