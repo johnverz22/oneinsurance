@@ -9,6 +9,7 @@ import {
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
 import { PaymentSubmitRequest } from '@/types/payment'
+import { COMPANIES } from '@/constants/companies'
 
 type InvoiceRendererProps = {
   invoiceData: {
@@ -49,6 +50,8 @@ type InvoiceRendererProps = {
 }
 
 const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
+  const carrierName = COMPANIES.find(c => c.carrierCode === invoiceData.policy.carrier)?.companyName || invoiceData.policy.carrier || ''
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -66,6 +69,11 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           <View style={styles.infoBlock}>
             <Text style={styles.infoLabel}>Policy Number</Text>
             <Text style={styles.infoText}>{invoiceData.carrierPolicyNumber || invoiceData.policyNumber}</Text>
+          </View>
+
+          <View style={styles.infoBlock}>
+            <Text style={styles.infoLabel}>Insurance Provider</Text>
+            <Text style={[styles.infoText, { fontWeight: 'bold' }]}>{carrierName}</Text>
           </View>
 
           <View style={styles.infoBlock}>
@@ -109,12 +117,12 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           <View style={styles.tableRow}>
             <View style={styles.colDescription}>
               <Text style={styles.cellText}>{invoiceData.planName || invoiceData.policy.plan}</Text>
-              <Text
-                style={[
-                  styles.cellText,
-                  { fontSize: 7, color: '#999', marginTop: 2 },
-                ]}
-              >
+              {carrierName ? (
+                <Text style={[styles.cellText, { fontSize: 7, color: '#555', marginTop: 1, fontWeight: 'bold' }]}>
+                  {carrierName}
+                </Text>
+              ) : null}
+              <Text style={[styles.cellText, { fontSize: 7, color: '#999', marginTop: 2 }]}>
                 {invoiceData.travel.destinations}
               </Text>
               <Text style={[styles.cellText, { fontSize: 7, color: '#999' }]}>

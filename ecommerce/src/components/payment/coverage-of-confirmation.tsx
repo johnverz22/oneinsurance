@@ -14,6 +14,7 @@ import { transformToCOCData } from '@/utils/travel-summary-helpers'
 import { GenerateAndDownloadCoverNote } from '../travel-insurance/coverage-of-confirmation-renderer'
 import { differenceInDays } from 'date-fns'
 import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
+import { COMPANIES } from '@/constants/companies'
 
 interface coverNoteProps {
   policyData: TravelPolicyData | null | undefined
@@ -64,6 +65,7 @@ export function CoverageOfConfirmation({
   quoteData,
 }: coverNoteProps) {
   const { coverageOption, travelersInfo } = useTravelInsuranceStore()
+  const carrierName = COMPANIES.find(c => c.carrierCode === (quoteData.CarrierCode || coverageOption.carrierCode))?.companyName || quoteData.CarrierCode || ''
 
   if (quoteData.PolicyCustomerList) {
     quoteData.PolicyCustomerList = quoteData.PolicyCustomerList.map(
@@ -122,11 +124,18 @@ export function CoverageOfConfirmation({
             </div>
           </div>
 
-          <div className="grid gap-8 border-b p-8 md:grid-cols-2">
+          <div className="grid gap-8 border-b p-8 md:grid-cols-3">
             <div>
               <p className="text-xs font-medium text-gray-500">Policy Number</p>
               <p className="mt-1 text-sm text-gray-800">
                 {policyData?.CarrierPolicyNo || 'N/A'}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-medium text-gray-500">Insurance Provider</p>
+              <p className="mt-1 text-sm font-semibold text-gray-800">
+                {carrierName}
               </p>
             </div>
 
