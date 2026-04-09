@@ -9,6 +9,7 @@ import {
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
 import { Coverage } from '../payment/coverage-of-confirmation'
+import { COMPANIES } from '@/constants/companies'
 
 type COCRendererProps = {
   cocData: {
@@ -47,12 +48,15 @@ type COCRendererProps = {
   }
 }
 
-export const COCRenderer = ({ cocData }: COCRendererProps) => (
+export const COCRenderer = ({ cocData }: COCRendererProps) => {
+  const carrierName = COMPANIES.find(c => c.carrierCode === cocData.policy.carrier)?.companyName || cocData.policy.carrier || ''
+
+  return (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Coverage of Confirmation</Text>
+          <Text style={styles.title}>Cover Note</Text>
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
           <Text style={styles.policyNo}>#{localStorage.getItem('payment_transaction_id') || cocData.policyNumber}</Text>
         </View>
@@ -62,6 +66,9 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
       <View style={styles.section}>
         <View style={styles.twoCol}>
           <View style={styles.col}>
+            <Text style={styles.label}>Insurance Provider</Text>
+            <Text style={[styles.value, { fontWeight: 'bold' }]}>{carrierName}</Text>
+
             <Text style={styles.label}>Plan</Text>
             <Text style={styles.value}>
               {cocData.policy.plan} (
@@ -161,13 +168,14 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => (
       </View>
     </Page>
   </Document>
-)
+  )
+}
 
 export const GenerateAndDownloadCoverNote = ({ cocData }: COCRendererProps) => {
   return (
     <PDFDownloadLink
       document={<COCRenderer cocData={cocData} />}
-      fileName="certificate-of-coverage.pdf"
+      fileName="cover-note.pdf"
     >
       {({ loading }) => (
         <Button className="w-full font-bold" variant="outline" size="lg">

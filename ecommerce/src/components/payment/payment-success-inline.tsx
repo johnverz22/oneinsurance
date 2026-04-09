@@ -13,6 +13,7 @@ import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { getPlanName } from '@/utils/custom-fields-storage'
+import { COMPANIES } from '@/constants/companies'
 import {
   getCityNameByCityCode,
   getProvinceNameByProvCode,
@@ -35,6 +36,7 @@ export function PaymentSuccessInline({
 }: PaymentSuccessInlineProps) {
   const [showCovernote, setShowCoverNote] = useState(false)
   const { travelersInfo, paymentBillingDetails } = useTravelInsuranceStore()
+  const carrierName = COMPANIES.find(c => c.carrierCode === quoteData?.CarrierCode)?.companyName || quoteData?.CarrierCode || ''
 
   const INVOICE_DATA = transformToInvoiceData(
     policyData,
@@ -112,13 +114,21 @@ export function PaymentSuccessInline({
                 </div>
               </div>
 
-              <div className="grid gap-8 border-b p-8 md:grid-cols-2">
+              <div className="grid gap-8 border-b p-8 md:grid-cols-3">
                 <div>
                   <p className="text-xs font-medium text-gray-500">
                     Policy Number
                   </p>
                   <p className="mt-1 text-sm text-gray-800">
                     {policyData?.CarrierPolicyNo || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">
+                    Insurance Provider
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-800">
+                    {carrierName}
                   </p>
                 </div>
                 <div>
@@ -185,6 +195,9 @@ export function PaymentSuccessInline({
                         <p className="text-sm font-medium text-gray-800">
                           {getPlanName() || quoteData.CarrierPlanCode}
                         </p>
+                        {carrierName && (
+                          <p className="text-xs font-semibold text-gray-600">{carrierName}</p>
+                        )}
                         <p className="text-xs text-gray-500">{destinations}</p>
                         <p className="text-xs text-gray-500">
                           {quoteData.TravelDays ||
