@@ -20,7 +20,7 @@ import { getEcho } from '@/lib/echo'
 import axios from 'axios'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-function buildPayload(value: HealthDetailsFormType) {
+function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
   const effectiveDate = new Date(value.effectiveDate)
   const expiryDate = new Date(effectiveDate)
   expiryDate.setFullYear(expiryDate.getFullYear() + 1)
@@ -28,6 +28,8 @@ function buildPayload(value: HealthDetailsFormType) {
   const effectiveISO = effectiveDate.toISOString()
   const expiryISO = expiryDate.toISOString()
   return {
+    AgentCode: agentCode ?? '',
+    Slug: 'health-insurance',
     ProductCode: 'HEALTH',
     ProductType: 'CI',
     ProductVersion: '1.0',
@@ -116,7 +118,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
         setCompareQuotePlans([])
         setIsLoadingPlans(true)
 
-        const payload = buildPayload(value)
+        const payload = buildPayload(value, agentCode)
         const res = await fetch('/api/health-insurance/compare-quote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
