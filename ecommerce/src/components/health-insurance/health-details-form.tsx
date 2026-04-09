@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
+import { useParams } from 'next/navigation'
 import {
   Select,
   SelectContent,
@@ -31,7 +32,7 @@ type HealthDetailsFormProps = {
   className?: string
 }
 
-function buildPayload(value: HealthDetailsFormType) {
+function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
   const effectiveDate = new Date(value.effectiveDate)
   const expiryDate = new Date(effectiveDate)
   expiryDate.setFullYear(expiryDate.getFullYear() + 1)
@@ -41,6 +42,8 @@ function buildPayload(value: HealthDetailsFormType) {
   const expiryISO = expiryDate.toISOString()
 
   return {
+    AgentCode: agentCode ?? '',
+    Slug: 'health-insurance',
     ProductCode: 'HEALTH',
     ProductType: 'CI',
     ProductVersion: '1.0',
@@ -77,6 +80,8 @@ function buildPayload(value: HealthDetailsFormType) {
 
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const { setInsuredInfo, setCompareQuotePlans, setIsLoadingPlans } = useHealthCartStore()
+  const params = useParams()
+  const agentCode = params['agent-code'] as string
   const echoRef = useRef<any>(null)
   const channelRef = useRef<any>(null)
   const queue = useRef<string[]>([])
@@ -152,7 +157,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
 
-        const payload = buildPayload(value)
+        const payload = buildPayload(value, agentCode)
         const res = await fetch('/api/health-insurance/compare-quote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

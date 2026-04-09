@@ -11,6 +11,7 @@ import {
   travelInsuranceSchema,
 } from '@/types/travel-insurance/travel-insurance-request'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 import { TravelCoverageMap } from '@/constants/travel-coverage'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { MultiSelect } from '@/components/ui/multi-select'
@@ -36,6 +37,7 @@ type TravelDetailsFormProps = {
 
 export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   const { mutateAsync } = useCreateQuoteRequest()
+  const { agentCode } = useAgentCodeStore()
   const {
     travelDetails,
     updateTravelDetails,
@@ -152,7 +154,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       // Clear any previous error state before making new request
       // Don't set status to undefined - just let the new request set it
       
-      const clientRequestId = await mutateAsync(value)
+      const clientRequestId = await mutateAsync({ values: value, agentCode: agentCode ?? '' })
       setFormModified(false)
       setClientRequest({
         id: clientRequestId,
