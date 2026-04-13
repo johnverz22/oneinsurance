@@ -8,6 +8,7 @@ import { useHealthAvailStore } from '@/store/health-avail-store'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { useParams } from 'next/navigation'
 import { generateHealthQuotePDF } from '@/utils/generate-health-quote-pdf'
+import { COMPANIES } from '@/constants/companies'
 import type { PersonalInfoData } from './health-personal-info-form'
 
 interface Props {
@@ -20,6 +21,10 @@ export function HealthReviewPage({ personalInfo }: Props) {
   const params = useParams()
   const agentCode = params['agent-code'] as string
   const item = items[0]
+
+  const provider = item ? (COMPANIES.find(c => c.carrierCode === item.carrierCode) ?? null) : null
+  const providerName = provider?.companyName ?? item?.provider ?? ''
+  const providerLogo = provider?.image ?? item?.providerLogo ?? null
 
   const handleCopyProposal = async () => {
     if (!proposalNo) return
@@ -36,7 +41,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
     generateHealthQuotePDF({
       proposalNo,
       planName: item.planName,
-      providerName: item.provider,
+      providerName: providerName,
       premium: item.premium,
       insuredName: personalInfo.fullName,
       dateOfBirth: insuredInfo?.dateOfBirth ?? '',
@@ -95,10 +100,12 @@ export function HealthReviewPage({ personalInfo }: Props) {
           <CardContent className="space-y-4">
             <div className="flex items-start gap-4">
               <div className="flex h-16 w-32 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
-                <img src={item.providerLogo} alt={item.provider} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                {providerLogo ? (
+                  <img src={providerLogo} alt={providerName} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                ) : null}
               </div>
               <div>
-                <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{item.provider}</span>
+                <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{providerName}</span>
                 <h3 className="text-xl font-black uppercase text-gray-900">{item.planName}</h3>
               </div>
               <div className="ml-auto shrink-0">

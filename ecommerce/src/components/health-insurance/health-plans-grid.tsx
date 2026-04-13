@@ -7,18 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { useHealthAvailStore } from '@/store/health-avail-store'
-
-const CARRIER_LOGOS: Record<string, string> = {
-  OONAPH: '/images/providers/1 Oona.svg',
-  PACIFIC: '/images/providers/5 Pacific Cross.svg',
-  MALAYAN: '/images/providers/2 Malayan.svg',
-}
-
-const CARRIER_NAMES: Record<string, string> = {
-  OONAPH: 'Oona Insurance',
-  PACIFIC: 'Pacific Cross',
-  MALAYAN: 'Malayan Insurance',
-}
+import { COMPANIES } from '@/constants/companies'
 
 function getPremium(plan: any): number {
   return parseFloat(
@@ -26,14 +15,36 @@ function getPremium(plan: any): number {
   )
 }
 
-function getCarrierKey(plan: any): string {
-  // Try CarrierCode first, then extract from CarrierPlanCode prefix
-  if (plan.CarrierCode) return plan.CarrierCode
-  const code = plan.CarrierPlanCode ?? ''
-  if (code.startsWith('OONAPH') || code.includes('OONA')) return 'OONAPH'
-  if (code.startsWith('PACIFIC') || code.includes('PACIFIC')) return 'PACIFIC'
-  if (code.startsWith('MALAYAN') || code.includes('MALAYAN')) return 'MALAYAN'
-  return 'OONAPH'
+function getProvider(plan: any) {
+  // The health insurance API returns CarrierCode as "HEALTH" (product code, not carrier)
+  // The actual carrier is in CarrierProductCode or CarrierPlanCode
+  // Pacific Cross health plans use CarrierProductCode "PHCI" or similar
+  const fields = [
+    plan.CarrierCode,
+    plan.CarrierProductCode,
+    plan.CarrierPlanCode,
+  ].filter(Boolean).map((s: string) => s.toUpperCase())
+
+  for (const field of fields) {
+    // Exact match first
+    const exact = COMPANIES.find((c) => c.carrierCode === field)
+    if (exact) return exact
+  }
+
+  // Known health insurance carrier product codes
+  for (const field of fields) {
+    if (field.includes('PACIFIC') || field.includes('PCROSS') || field === 'PHCI') {
+      return COMPANIES.find((c) => c.carrierCode === 'PACIFIC') ?? null
+    }
+    if (field.includes('OONA')) {
+      return COMPANIES.find((c) => c.carrierCode === 'OONAPH') ?? null
+    }
+    if (field.includes('MALAYAN')) {
+      return COMPANIES.find((c) => c.carrierCode === 'MALAYAN') ?? null
+    }
+  }
+
+  return null
 }
 
 export function HealthPlansGrid() {
@@ -53,17 +64,18 @@ export function HealthPlansGrid() {
   }, [compareQuotePlans, search])
 
   const handleGetStarted = (plan: typeof compareQuotePlans[0]) => {
+    const provider = getProvider(plan)
     addItem({
       id: plan.CarrierPlanCode,
       planId: plan.CarrierPlanCode,
       planName: plan.CarrierPlanDesc,
       planSlug: plan.CarrierPlanCode,
       tierName: plan.CarrierPlanDesc,
-      tierSubtitle: plan.CarrierProductName,
+      tierSubtitle: provider?.companyName ?? plan.CarrierProductName,
       tierDescription: plan.MainBenefits?.slice(0, 3).map((b: any) => b.BenefitDesc).join(', ') ?? '',
-      provider: plan.CarrierProductName,
+      provider: provider?.companyName ?? plan.CarrierProductName,
       providerSlug: plan.CarrierPlanCode,
-      providerLogo: CARRIER_LOGOS[getCarrierKey(plan)] ?? '/images/providers/1 Oona.svg',
+      providerLogo: provider?.image ?? '',
       image: '/our-products-health.webp',
       premium: getPremium(plan),
       carrierCode: (plan as any).CarrierCode,
@@ -152,9 +164,9 @@ export function HealthPlansGrid() {
         {/* Plans Grid — pixel-perfect match to travel insurance cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((plan) => {
-            const carrierKey = getCarrierKey(plan)
-            const logo = CARRIER_LOGOS[carrierKey] ?? '/images/providers/1 Oona.svg'
-            const carrierName = CARRIER_NAMES[carrierKey] ?? plan.CarrierProductName
+            const provider = getProvider(plan)
+            const logo = provider?.image ?? null
+            const carrierName = provider?.companyName ?? plan.CarrierProductName ?? plan.CarrierCode ?? ''
             const premium = getPremium(plan)
             const benefits: any[] = plan.MainBenefits ?? []
 
@@ -177,15 +189,19 @@ export function HealthPlansGrid() {
 
                 {/* Logo in bordered box — exactly like travel */}
                 <div className="mb-3 flex h-16 w-32 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
-                  <img
-                    src={logo}
-                    alt={carrierName}
-                    className="h-full w-full object-contain"
-                    onError={(e) => {
-                      const t = e.target as HTMLImageElement
-                      t.style.display = 'none'
-                    }}
-                  />
+                  {logo ? (
+                    <img
+                      src={logo}
+                      alt={carrierName}
+                      className="h-full w-full object-contain"
+                      onError={(e) => {
+                        const t = e.target as HTMLImageElement
+                        t.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    <span className="text-xs font-semibold text-gray-400 text-center leading-tight">{carrierName}</span>
+                  )}
                 </div>
 
                 {/* Provider name badge — bordered pill like travel */}

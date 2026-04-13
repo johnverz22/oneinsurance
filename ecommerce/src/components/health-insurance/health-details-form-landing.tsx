@@ -74,6 +74,11 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
       const res = await axios.get(`/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`)
       const data = res.data
       if (!data.success || !data.data?.Plans?.length) return null
+      const carrierCode = data.data.CarrierCode ?? ''
+      data.data.Plans = data.data.Plans.map((plan: any) => ({
+        ...plan,
+        CarrierCode: plan.CarrierCode || carrierCode,
+      }))
       return data.data
     } catch { return null }
   }
