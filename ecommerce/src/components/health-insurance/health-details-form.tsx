@@ -79,7 +79,7 @@ function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
 }
 
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
-  const { setInsuredInfo, setCompareQuotePlans, setIsLoadingPlans } = useHealthCartStore()
+  const { setInsuredInfo, setCompareQuotePlans, setIsLoadingPlans, setPlansError } = useHealthCartStore()
   const params = useParams()
   const agentCode = params['agent-code'] as string
   const echoRef = useRef<any>(null)
@@ -157,6 +157,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     onSubmit: async ({ value }) => {
       try {
         // Reset and show loading, scroll down immediately
+        setPlansError(null)
         setCompareQuotePlans([])
         setIsLoadingPlans(true)
         setTimeout(() => {
@@ -170,7 +171,13 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           body: JSON.stringify(payload),
         })
 
-        if (!res.ok) throw new Error('Failed to get quote')
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          const errMsg = errData?.message || errData?.error || 'Unable to load health insurance plans.'
+          setIsLoadingPlans(false)
+          setPlansError(errMsg)
+          return
+        }
 
         const data = await res.json()
         const clientRequestId = data?.data?.ClientRequestId ?? data?.ClientRequestId
@@ -217,7 +224,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
       } catch (err) {
         setIsLoadingPlans(false)
-        toast.error('Something went wrong. Please try again.')
+        setPlansError('Something went wrong. Please try again.')
       }
     },
     validators: { onChange: HealthDetailsFormSchema },
