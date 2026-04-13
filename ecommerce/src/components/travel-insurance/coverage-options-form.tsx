@@ -417,6 +417,36 @@ export function CoverageOptionsForm() {
   }
 
   if (isError) {
+    const errorMessage = clientRequest.errorMessage || ''
+    const isAuthError = errorMessage.toLowerCase().includes('agent') ||
+      errorMessage.toLowerCase().includes('authorized') ||
+      errorMessage.toLowerCase().includes('lob') ||
+      errorMessage.toLowerCase().includes('slug') ||
+      errorMessage.toLowerCase().includes('validation')
+
+    if (isAuthError) {
+      return (
+        <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
+          <div className="mx-auto max-w-lg rounded-2xl border border-orange-200 bg-orange-50 p-8 text-center shadow-sm">
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
+                <svg className="h-7 w-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="mb-2 text-lg font-bold text-orange-800">Travel Insurance Not Available</h3>
+            <p className="mb-4 text-sm text-orange-700">
+              Your agent account is not yet authorized to offer travel insurance plans. Please contact your administrator to enable this product for your account.
+            </p>
+            <p className="text-xs text-orange-600">
+              If you believe this is an error, please reach out to support for assistance.
+            </p>
+          </div>
+        </div>
+      )
+    }
+
     return <ServerOffline onRefresh={handleRefetch} />
   }
 
