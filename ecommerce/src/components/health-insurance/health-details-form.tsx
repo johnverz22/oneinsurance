@@ -106,6 +106,12 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
       )
       const data = res.data
       if (!data.success || !data.data?.Plans?.length) return null
+      // Inject CarrierCode from parent into each plan (API puts it on data, not on each plan)
+      const carrierCode = data.data.CarrierCode ?? ''
+      data.data.Plans = data.data.Plans.map((plan: any) => ({
+        ...plan,
+        CarrierCode: plan.CarrierCode || carrierCode,
+      }))
       return data.data
     } catch {
       return null

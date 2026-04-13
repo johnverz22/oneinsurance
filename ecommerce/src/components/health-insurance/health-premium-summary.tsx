@@ -1,6 +1,7 @@
 'use client'
 
 import { useHealthCartStore } from '@/store/health-cart-store'
+import { COMPANIES } from '@/constants/companies'
 
 export function HealthPremiumSummary() {
   const { items } = useHealthCartStore()
@@ -8,6 +9,9 @@ export function HealthPremiumSummary() {
   const total = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
 
   if (!item) return null
+
+  const provider = COMPANIES.find(c => c.carrierCode === item.carrierCode) ?? null
+  const providerName = provider?.companyName ?? item.provider
 
   return (
     <div className="sticky top-6 rounded-2xl bg-white p-6 shadow-sm">
@@ -19,7 +23,7 @@ export function HealthPremiumSummary() {
       <div className="space-y-3 rounded-xl border p-4 text-sm">
         <div>
           <p className="text-xs text-gray-400">Insurance Provider</p>
-          <p className="font-semibold text-gray-800">{item.provider}</p>
+          <p className="font-semibold text-gray-800">{providerName}</p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Plan</p>

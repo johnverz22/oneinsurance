@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { PageLoader } from '@/components/page-loader'
 import { FAQsSection } from '@/components/faqs-section'
 import { HealthDetailsForm } from '@/components/health-insurance/health-details-form'
@@ -10,6 +10,8 @@ import { HealthPlansGrid } from '@/components/health-insurance/health-plans-grid
 import { HealthTestimonials } from '@/components/health-insurance/health-testimonials'
 import { HealthProposalSearch } from '@/components/health-insurance/health-proposal-search'
 import { HEALTH_FAQS } from '@/constants/faqs/health-insurance'
+import { useHealthCartStore } from '@/store/health-cart-store'
+import { useHealthAvailStore } from '@/store/health-avail-store'
 
 export default function HealthInsurancePage() {
   return (
@@ -21,6 +23,14 @@ export default function HealthInsurancePage() {
 
 const HealthInsurance = () => {
   const router = useRouter()
+  const { clearCart } = useHealthCartStore()
+  const { resetSteps } = useHealthAvailStore()
+
+  // Clear stale cart and steps when landing on the main health insurance page
+  useEffect(() => {
+    clearCart()
+    resetSteps()
+  }, [])
 
   return (
     <div className="relative overflow-hidden">

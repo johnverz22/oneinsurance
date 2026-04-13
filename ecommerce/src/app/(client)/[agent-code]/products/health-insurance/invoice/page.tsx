@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/page-loader'
+import { COMPANIES } from '@/constants/companies'
 
 function InvoiceContent() {
   const params = useParams()
@@ -36,6 +37,7 @@ function InvoiceContent() {
   dueDate.setDate(dueDate.getDate() + 1)
 
   const displayTotal = policyData?.GrossPremium ?? total
+  const carrierName = COMPANIES.find(c => c.carrierCode === policyData?.CarrierCode)?.companyName ?? policyData?.CarrierProductName ?? ''
 
   return (
     <div className="min-h-screen bg-[#eef2f7] px-4 py-8">
@@ -112,7 +114,7 @@ function InvoiceContent() {
             <tbody>
               <tr className="border-t">
                 <td className="py-3 text-gray-700">
-                  {policyData?.ProductName ?? 'Health Insurance'} — {policyData?.CarrierProductName ?? ''}
+                  {policyData?.ProductName ?? 'Health Insurance'} — {carrierName}
                 </td>
                 <td className="py-3 text-center text-gray-700">1</td>
                 <td className="py-3 text-right text-gray-700">

@@ -30,6 +30,7 @@ export type HealthInsuredInfo = {
 }
 
 export type CompareQuotePlan = {
+  CarrierCode?: string
   CarrierPlanCode: string
   CarrierPlanDesc: string
   CarrierProductCode: string

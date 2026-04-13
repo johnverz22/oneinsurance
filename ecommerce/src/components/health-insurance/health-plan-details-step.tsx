@@ -4,12 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useHealthAvailStore } from '@/store/health-avail-store'
 import { useHealthCartStore } from '@/store/health-cart-store'
-
-const CARRIER_LOGOS: Record<string, string> = {
-  OONAPH: '/images/providers/1 Oona.svg',
-  PACIFIC: '/images/providers/5 Pacific Cross.svg',
-  MALAYAN: '/images/providers/2 Malayan.svg',
-}
+import { COMPANIES } from '@/constants/companies'
 
 export function HealthPlanDetailsStep() {
   const { prevStep, nextStep } = useHealthAvailStore()
@@ -25,7 +20,9 @@ export function HealthPlanDetailsStep() {
     )
   }
 
-  const logo = item.providerLogo || CARRIER_LOGOS['OONAPH']
+  const provider = COMPANIES.find(c => c.carrierCode === item.carrierCode) ?? null
+  const logo = provider?.image ?? item.providerLogo ?? null
+  const providerName = provider?.companyName ?? item.provider
   const benefits = item.tierDescription ? item.tierDescription.split(', ') : []
 
   return (
@@ -39,10 +36,12 @@ export function HealthPlanDetailsStep() {
         {/* Provider + Plan */}
         <div className="mb-6 flex items-start gap-4">
           <div className="flex h-16 w-32 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
-            <img src={logo} alt={item.provider} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            {logo ? (
+              <img src={logo} alt={providerName} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ) : null}
           </div>
           <div>
-            <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{item.provider}</span>
+            <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{providerName}</span>
             <h3 className="text-lg font-black uppercase text-gray-900">{item.planName}</h3>
             <p className="text-sm text-gray-500">{item.tierSubtitle}</p>
           </div>
