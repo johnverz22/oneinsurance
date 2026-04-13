@@ -124,14 +124,14 @@ export function HealthPlansGrid() {
                 </svg>
               </div>
             </div>
-            <h3 className="mb-2 text-lg font-bold text-orange-800">Health Insurance Not Available</h3>
+            <h3 className="mb-2 text-lg font-bold text-orange-800">This Insurance is Currently Unavailable</h3>
             <p className="mb-4 text-sm text-orange-700">
               {plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('authorized') || plansError.toLowerCase().includes('lob')
-                ? "Your agent account is not yet authorized to offer health insurance plans. Please contact your administrator to enable this product for your account."
+                ? "We're sorry, but health insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
                 : plansError}
             </p>
             <p className="text-xs text-orange-600">
-              If you believe this is an error, please reach out to support for assistance.
+              Please contact your agent or reach out to our support team for assistance.
             </p>
           </div>
         </div>
