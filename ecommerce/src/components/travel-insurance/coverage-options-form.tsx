@@ -435,12 +435,12 @@ export function CoverageOptionsForm() {
                 </svg>
               </div>
             </div>
-            <h3 className="mb-2 text-lg font-bold text-orange-800">Travel Insurance Not Available</h3>
+            <h3 className="mb-2 text-lg font-bold text-orange-800">This Insurance is Currently Unavailable</h3>
             <p className="mb-4 text-sm text-orange-700">
-              Your agent account is not yet authorized to offer travel insurance plans. Please contact your administrator to enable this product for your account.
+              We're sorry, but travel insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent.
             </p>
             <p className="text-xs text-orange-600">
-              If you believe this is an error, please reach out to support for assistance.
+              Please contact your agent or reach out to our support team for assistance.
             </p>
           </div>
         </div>
