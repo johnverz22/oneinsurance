@@ -99,28 +99,37 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     } catch {}
   }
 
-  const fetchPlanByCacheKey = async (cacheKey: string) => {
-    try {
-      const res = await axios.get(
-        `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
-      )
-      const data = res.data
-      if (!data.success || !data.data?.Plans?.length) return null
-      // Inject CarrierCode from parent into each plan (API puts it on data, not on each plan)
-      const carrierCode = data.data.CarrierCode ?? ''
-      data.data.Plans = data.data.Plans.map((plan: any) => ({
-        ...plan,
-        CarrierCode: plan.CarrierCode || carrierCode,
-      }))
-      return data.data
-    } catch {
-      return null
+  const fetchPlanByCacheKey = async (cacheKey: string, retries = 2): Promise<any> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const res = await axios.get(
+          `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
+        )
+        const data = res.data
+        // Empty plans is a valid response (e.g. OONAPH has no plans) — don't retry
+        if (!data.success || !data.data?.Plans?.length) return null
+        // Inject CarrierCode from parent into each plan (API puts it on data, not on each plan)
+        const carrierCode = data.data.CarrierCode ?? ''
+        data.data.Plans = data.data.Plans.map((plan: any) => ({
+          ...plan,
+          CarrierCode: plan.CarrierCode || carrierCode,
+        }))
+        return data.data
+      } catch (err: any) {
+        // Only retry on network errors or 5xx, not 404 (cache not ready yet)
+        const status = err?.response?.status
+        if (status === 404 || attempt >= retries) return null
+        await new Promise(r => setTimeout(r, 1000 * attempt))
+      }
     }
+    return null
   }
 
   const processQueue = async () => {
     if (isProcessing.current) return
     isProcessing.current = true
+
+    let foundPlans = false
 
     while (queue.current.length > 0) {
       const batch = queue.current.splice(0, 5)
@@ -135,10 +144,16 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         const allPlans = successfulPlans.flatMap((p: any) => p.Plans ?? [])
         setCompareQuotePlans(allPlans)
         setIsLoadingPlans(false)
+        foundPlans = true
         setTimeout(() => {
           document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
       }
+    }
+
+    // If queue is empty and no plans found, stop loading so user isn't stuck
+    if (!foundPlans) {
+      setIsLoadingPlans(false)
     }
 
     isProcessing.current = false
@@ -212,15 +227,15 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         echoRef.current = echo
         channelRef.current = channel
 
-        // 30s timeout fallback
+        // 60s timeout fallback — increased to handle slow connections
         setTimeout(() => {
-          const { compareQuotePlans } = useHealthCartStore.getState()
-          if (!compareQuotePlans.length) {
+          const { compareQuotePlans, isLoadingPlans } = useHealthCartStore.getState()
+          if (!compareQuotePlans.length && isLoadingPlans) {
             setIsLoadingPlans(false)
             closeEchoConnection(clientRequestId)
-            toast.error('Plans are taking longer than expected. Please try again.')
+            setPlansError('Plans are taking longer than expected. Please try again.')
           }
-        }, 30000)
+        }, 60000)
 
       } catch (err) {
         setIsLoadingPlans(false)
