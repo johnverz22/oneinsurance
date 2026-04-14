@@ -128,7 +128,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
             </Text>
             <Text style={[styles.tableCell, styles.tdRight]}>
               {typeof item.sumInsured === 'number'
-                ? `PHP ${item.sumInsured.toLocaleString()}`
+                ? `PHP ${item.sumInsured.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
                 : item.sumInsured}
             </Text>
           </View>

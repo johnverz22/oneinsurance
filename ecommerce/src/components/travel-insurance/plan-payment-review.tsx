@@ -54,7 +54,7 @@ export const PlanPaymentReview = ({
             Total Premium
           </h2>
           <p className="text-center text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
-            ₱{grossPremium.toLocaleString()}
+            ₱{grossPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
           </p>
         </CardHeader>
         
