@@ -126,12 +126,25 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   }
 
   const processQueue = async () => {
-    if (isProcessing.current) return
+    if (isProcessing.current) {
+      // Already processing — new items will be picked up in the current loop
+      return
+    }
     isProcessing.current = true
 
     let foundPlans = false
 
-    while (queue.current.length > 0) {
+    // Keep looping — wait briefly for any late-arriving cache keys
+    let emptyLoops = 0
+    while (emptyLoops < 3) {
+      if (queue.current.length === 0) {
+        // Wait a bit for more events to arrive before giving up
+        await new Promise(r => setTimeout(r, 500))
+        emptyLoops++
+        continue
+      }
+      emptyLoops = 0 // reset if we got items
+
       const batch = queue.current.splice(0, 5)
       const results = await Promise.allSettled(
         batch.map((cacheKey) => fetchPlanByCacheKey(cacheKey))
@@ -151,12 +164,12 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
       }
     }
 
-    // If queue is empty and no plans found, stop loading so user isn't stuck
+    isProcessing.current = false
+
+    // If no plans found after draining the queue, stop loading
     if (!foundPlans) {
       setIsLoadingPlans(false)
     }
-
-    isProcessing.current = false
   }
 
   const form = useForm({
