@@ -58,7 +58,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
         <View>
           <Text style={styles.title}>Cover Note</Text>
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
-          <Text style={styles.policyNo}>#{localStorage.getItem('payment_transaction_id') || cocData.policyNumber}</Text>
+          <Text style={styles.policyNo}>#{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber}</Text>
         </View>
         <Image src="/images/IFRC.png" style={styles.logo} />
       </View>
