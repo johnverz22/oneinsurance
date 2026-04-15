@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Component, ReactNode } from 'react'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, FileText, Shield } from 'lucide-react'
 import { PaymentBrand, PaymentSubmitResponse } from '@/types/payment'
 import { FullQuoteResponse, TravelPolicyData } from '@/types/travel-insurance/policy-types'
+import dynamic from 'next/dynamic'
 import { CoverageOfConfirmation } from './coverage-of-confirmation'
-import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
+
+// Dynamically import PDF component to avoid SSR/hydration crash from @react-pdf/renderer
+const GenerateAndDownloadInvoice = dynamic(
+  () => import('../travel-insurance/invoice-renderer').then(m => ({ default: m.GenerateAndDownloadInvoice })),
+  { ssr: false, loading: () => <button className="w-full font-bold border rounded-lg px-4 py-2 text-sm">Loading PDF...</button> }
+)
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { getPlanName } from '@/utils/custom-fields-storage'
@@ -19,6 +25,40 @@ import {
   getProvinceNameByProvCode,
 } from '@/utils/address-util'
 
+// Error boundary to prevent full page crash
+class PaymentSuccessErrorBoundary extends Component<
+  { children: ReactNode; onContinue: () => void },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: false, error: '' }
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="mx-auto max-w-6xl space-y-6 p-6 text-center">
+          <div className="flex justify-center">
+            <div className="rounded-full bg-green-100 p-4">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-green-700">Payment Successful!</h1>
+          <p className="text-lg text-gray-600">Your travel insurance policy has been successfully issued.</p>
+          <p className="text-sm text-gray-500">A confirmation has been sent to your email.</p>
+          <Button onClick={this.props.onContinue} size="lg" className="from-primary to-lilac bg-gradient-to-r px-8 py-3 font-medium text-white">
+            Buy new Travel Insurance
+          </Button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 interface PaymentSuccessInlineProps {
   onContinue: () => void
   paymentMethod: PaymentBrand
@@ -27,7 +67,15 @@ interface PaymentSuccessInlineProps {
   paymentSubmit: PaymentSubmitResponse['data']
 }
 
-export function PaymentSuccessInline({
+export function PaymentSuccessInline(props: PaymentSuccessInlineProps) {
+  return (
+    <PaymentSuccessErrorBoundary onContinue={props.onContinue}>
+      <PaymentSuccessInlineInner {...props} />
+    </PaymentSuccessErrorBoundary>
+  )
+}
+
+function PaymentSuccessInlineInner({
   onContinue,
   paymentMethod,
   policyData,
