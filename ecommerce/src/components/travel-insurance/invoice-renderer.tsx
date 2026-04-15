@@ -59,7 +59,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           <View>
             <Text style={styles.invoiceTitle}>Invoice</Text>
             <Text style={styles.invoiceNumber}>
-              #{localStorage.getItem('payment_transaction_id') || invoiceData.policyNumber}
+              #{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || invoiceData.policyNumber}
             </Text>
           </View>
           <Image style={styles.logo} src="/images/IFRC.png" />

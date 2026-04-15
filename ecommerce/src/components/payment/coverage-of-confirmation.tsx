@@ -110,7 +110,7 @@ export function CoverageOfConfirmation({
                 Cover Note
               </h1>
               <p className="text-sm text-gray-600">
-                #{localStorage.getItem('payment_transaction_id') || policyData?.CarrierPolicyNo || 'N/A'}
+                #{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || policyData?.CarrierPolicyNo || 'N/A'}
               </p>
             </div>
 
