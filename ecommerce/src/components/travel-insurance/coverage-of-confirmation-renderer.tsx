@@ -58,7 +58,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
         <View>
           <Text style={styles.title}>Cover Note</Text>
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
-          <Text style={styles.policyNo}>#{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber}</Text>
+          <Text style={styles.policyNo}>{`#${(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber || ''}`}</Text>
         </View>
         <Image src={`${typeof window !== 'undefined' ? window.location.origin : ''}/images/IFRC.png`} style={styles.logo} />
       </View>
@@ -71,8 +71,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
 
             <Text style={styles.label}>Plan</Text>
             <Text style={styles.value}>
-              {cocData.policy.plan} (
-              {cocData.plan?.code || cocData.policy.carrier})
+              {`${cocData.policy.plan || ''} (${cocData.plan?.code || cocData.policy.carrier || ''})`}
             </Text>
 
             <Text style={styles.label}>Issued Date</Text>
@@ -80,7 +79,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
 
             <Text style={styles.label}>Travel Period</Text>
             <Text style={styles.value}>
-              {cocData.travel.departureDate} - {cocData.travel.returnDate}
+              {`${cocData.travel.departureDate || ''} - ${cocData.travel.returnDate || ''}`}
             </Text>
 
             <Text style={styles.label}>Duration</Text>
@@ -102,7 +101,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
                 <Text style={styles.customerName}>{c.name.toUpperCase()}</Text>
                 <Text style={styles.customerText}>{c.address}</Text>
                 <Text style={styles.customerText}>{c.email}</Text>
-                <Text style={styles.customerText}>(+63) {c.phone}</Text>
+                <Text style={styles.customerText}>{`(+63) ${c.phone || ''}`}</Text>
               </View>
             ))}
           </View>
@@ -147,7 +146,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Coverage Period</Text>
             <Text style={styles.value}>
-              {cocData.status.effectiveDate} - {cocData.status.expiryDate}
+              {`${cocData.status.effectiveDate || ''} - ${cocData.status.expiryDate || ''}`}
             </Text>
           </View>
           <View style={styles.summaryItem}>

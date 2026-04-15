@@ -59,7 +59,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
           <View>
             <Text style={styles.invoiceTitle}>Invoice</Text>
             <Text style={styles.invoiceNumber}>
-              #{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || invoiceData.policyNumber}
+              {`#${(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || invoiceData.policyNumber || ''}`}
             </Text>
           </View>
           <Image style={styles.logo} src={`${typeof window !== 'undefined' ? window.location.origin : ''}/images/IFRC.png`} />
@@ -126,7 +126,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
                 {invoiceData.travel.destinations}
               </Text>
               <Text style={[styles.cellText, { fontSize: 7, color: '#999' }]}>
-                {invoiceData.travel.duration} • {invoiceData.travel.type}
+                {`${invoiceData.travel.duration || ''} • ${invoiceData.travel.type || ''}`}
               </Text>
             </View>
             <Text style={[styles.cellText, styles.colUnits]}>1</Text>
@@ -164,8 +164,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
             <View style={styles.statusItem}>
               <Text style={styles.infoLabel}>Coverage Period</Text>
               <Text style={styles.cellText}>
-                {invoiceData.status.effectiveDate} -{' '}
-                {invoiceData.status.expiryDate}
+                {`${invoiceData.status.effectiveDate || ''} - ${invoiceData.status.expiryDate || ''}`}
               </Text>
             </View>
           </View>
