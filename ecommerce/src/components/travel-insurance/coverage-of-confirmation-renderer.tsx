@@ -1,20 +1,14 @@
-import React from 'react'
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  PDFDownloadLink,
-} from '@react-pdf/renderer'
+'use client'
+
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Coverage } from '../payment/coverage-of-confirmation'
 import { COMPANIES } from '@/constants/companies'
 
 type COCRendererProps = {
   cocData: {
-    policyNumber: string // IMO Policy No. (internal use only)
-    carrierPolicyNumber: string // Carrier Policy No. (for client documents)
+    policyNumber: string
+    carrierPolicyNumber: string
     proposalNumber: string
     invoiceDate: string
     customers: {
@@ -48,226 +42,174 @@ type COCRendererProps = {
   }
 }
 
-export const COCRenderer = ({ cocData }: COCRendererProps) => {
-  const carrierName = COMPANIES.find(c => c.carrierCode === cocData.policy.carrier)?.companyName || cocData.policy.carrier || ''
-
-  return (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Cover Note</Text>
-          <Text style={styles.subtitle}>Issued by One Insurance</Text>
-          <Text style={styles.policyNo}>{`#${(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber || ''}`}</Text>
-        </View>
-        <Text style={[styles.subtitle, { fontWeight: 'bold', fontSize: 11 }]}>One Insurance</Text>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.twoCol}>
-          <View style={styles.col}>
-            <Text style={styles.label}>Insurance Provider</Text>
-            <Text style={[styles.value, { fontWeight: 'bold' }]}>{carrierName}</Text>
-
-            <Text style={styles.label}>Plan</Text>
-            <Text style={styles.value}>
-              {`${cocData.policy.plan || ''} (${cocData.plan?.code || cocData.policy.carrier || ''})`}
-            </Text>
-
-            <Text style={styles.label}>Issued Date</Text>
-            <Text style={styles.value}>{cocData.status.issueDate}</Text>
-
-            <Text style={styles.label}>Travel Period</Text>
-            <Text style={styles.value}>
-              {`${cocData.travel.departureDate || ''} - ${cocData.travel.returnDate || ''}`}
-            </Text>
-
-            <Text style={styles.label}>Duration</Text>
-            <Text style={styles.value}>{cocData.travel.duration}</Text>
-
-            <Text style={styles.label}>Destinations</Text>
-            <Text style={styles.value}>{cocData.travel.destinations}</Text>
-          </View>
-
-          <View style={styles.col}>
-            <Text style={styles.label}>Travel Type</Text>
-            <Text style={styles.value}>{cocData.travel.type}</Text>
-
-            <Text style={[styles.sectionSubTitle, { marginTop: 10 }]}>
-              Insured Individuals
-            </Text>
-            {cocData.customers.map((c, i) => (
-              <View key={i} style={styles.customerBlock}>
-                <Text style={styles.customerName}>{c.name.toUpperCase()}</Text>
-                <Text style={styles.customerText}>{c.address}</Text>
-                <Text style={styles.customerText}>{c.email}</Text>
-                <Text style={styles.customerText}>{`(+63) ${c.phone || ''}`}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Coverage Details</Text>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableCell, styles.thLeft]}>Coverage Name</Text>
-          <Text style={[styles.tableCell, styles.thRight]}>Sum Insured</Text>
-        </View>
-        {cocData.coverage.map((item, i) => (
-          <View
-            key={i}
-            style={[
-              styles.tableRow,
-              i % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
-            ]}
-          >
-            <Text style={[styles.tableCell, styles.tdLeft]}>
-              {item.coverageName}
-            </Text>
-            <Text style={[styles.tableCell, styles.tdRight]}>
-              {typeof item.sumInsured === 'number'
-                ? `PHP ${item.sumInsured.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
-                : item.sumInsured}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.summary}>
-        <Text style={styles.sectionTitle}>Policy Summary</Text>
-        <View style={styles.summaryGrid}>
-          <View style={styles.summaryItem}>
-            <Text style={styles.label}>Status</Text>
-            <Text style={[styles.value, styles.statusValue]}>
-              {cocData.status.status}
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.label}>Coverage Period</Text>
-            <Text style={styles.value}>
-              {`${cocData.status.effectiveDate || ''} - ${cocData.status.expiryDate || ''}`}
-            </Text>
-          </View>
-          <View style={styles.summaryItem}>
-            <Text style={styles.label}>Coverage Area</Text>
-            <Text style={styles.value}>{cocData.policy.coverageArea}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Thank you for choosing One Insurance. Stay protected and travel with
-          confidence.
-        </Text>
-        <Text style={styles.footerSub}>
-          This document is electronically generated and valid without signature.
-        </Text>
-      </View>
-    </Page>
-  </Document>
-  )
-}
-
 export const GenerateAndDownloadCoverNote = ({ cocData }: COCRendererProps) => {
+  const [loading, setLoading] = useState(false)
+
+  const handleDownload = async () => {
+    try {
+      setLoading(true)
+      const { jsPDF } = await import('jspdf')
+      const doc = new jsPDF()
+      const carrierName = COMPANIES.find(c => c.carrierCode === cocData.policy.carrier)?.companyName || cocData.policy.carrier || ''
+      const txId = (typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber || ''
+
+      const margin = 15
+      let y = 20
+
+      // Header
+      doc.setFontSize(22)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Cover Note', margin, y)
+      y += 7
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(100)
+      doc.text('Issued by One Insurance', margin, y)
+      y += 5
+      doc.text(`#${txId}`, margin, y)
+      y += 8
+      doc.setDrawColor(220)
+      doc.line(margin, y, 195, y)
+      y += 10
+
+      // Policy info
+      doc.setFontSize(8)
+      doc.setTextColor(100)
+      doc.text('Insurance Provider', margin, y)
+      doc.text('Plan', 80, y)
+      doc.text('Issued Date', 145, y)
+      y += 5
+      doc.setFontSize(9)
+      doc.setTextColor(0)
+      doc.setFont('helvetica', 'bold')
+      doc.text(carrierName || 'N/A', margin, y)
+      doc.text(`${cocData.policy.plan || ''} (${cocData.plan?.code || cocData.policy.carrier || ''})`, 80, y)
+      doc.text(cocData.status.issueDate || '', 145, y)
+      y += 10
+
+      // Travel info
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.setTextColor(100)
+      doc.text('Travel Period', margin, y)
+      doc.text('Duration', 80, y)
+      doc.text('Travel Type', 145, y)
+      y += 5
+      doc.setFontSize(9)
+      doc.setTextColor(0)
+      doc.text(`${cocData.travel.departureDate || ''} - ${cocData.travel.returnDate || ''}`, margin, y)
+      doc.text(cocData.travel.duration || '', 80, y)
+      doc.text(cocData.travel.type || '', 145, y)
+      y += 8
+
+      doc.setFontSize(8)
+      doc.setTextColor(100)
+      doc.text('Destinations', margin, y)
+      y += 5
+      doc.setFontSize(9)
+      doc.setTextColor(0)
+      doc.text(cocData.travel.destinations || '', margin, y)
+      y += 12
+
+      // Insured individuals
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.text('Insured Individuals', margin, y)
+      y += 6
+      cocData.customers.forEach((c, i) => {
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9)
+        doc.setTextColor(0)
+        doc.text(c.name.toUpperCase(), margin, y); y += 4
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        doc.setTextColor(60)
+        doc.text(c.address || '', margin, y); y += 4
+        doc.text(c.email || '', margin, y); y += 4
+        doc.text(`(+63) ${c.phone || ''}`, margin, y); y += 6
+        if (i < cocData.customers.length - 1) {
+          doc.setDrawColor(230)
+          doc.line(margin, y, 195, y)
+          y += 4
+        }
+      })
+      y += 4
+
+      // Coverage table
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(0)
+      doc.text('Coverage Details', margin, y)
+      y += 6
+      doc.setDrawColor(220)
+      doc.line(margin, y, 195, y)
+      y += 4
+      doc.setFontSize(8)
+      doc.setTextColor(100)
+      doc.text('Coverage Name', margin, y)
+      doc.text('Sum Insured', 195, y, { align: 'right' })
+      y += 3
+      doc.line(margin, y, 195, y)
+      y += 5
+
+      cocData.coverage.forEach((item, i) => {
+        if (y > 270) { doc.addPage(); y = 20 }
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(9)
+        doc.setTextColor(0)
+        doc.text(item.coverageName || '', margin, y)
+        const si = typeof item.sumInsured === 'number'
+          ? `PHP ${item.sumInsured.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
+          : String(item.sumInsured || 'Included')
+        doc.text(si, 195, y, { align: 'right' })
+        y += 5
+        if (i % 2 === 0) {
+          doc.setFillColor(249, 249, 249)
+          doc.rect(margin, y - 5, 180, 5, 'F')
+        }
+      })
+      y += 6
+
+      // Policy summary
+      doc.setFillColor(247, 247, 247)
+      doc.rect(margin, y, 180, 30, 'F')
+      y += 6
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8)
+      doc.text('POLICY SUMMARY', margin + 3, y)
+      y += 6
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(100)
+      doc.text('Status', margin + 3, y)
+      doc.text('Coverage Period', 80, y)
+      doc.text('Coverage Area', 145, y)
+      y += 4
+      doc.setTextColor(0)
+      doc.setFont('helvetica', 'bold')
+      doc.text(cocData.status.status || 'Active', margin + 3, y)
+      doc.text(`${cocData.status.effectiveDate || ''} - ${cocData.status.expiryDate || ''}`, 80, y)
+      doc.text(cocData.policy.coverageArea || '', 145, y)
+      y += 14
+
+      // Footer
+      doc.setFont('helvetica', 'italic')
+      doc.setFontSize(8)
+      doc.setTextColor(100)
+      doc.text('Thank you for choosing One Insurance. Stay protected and travel with confidence.', 105, y, { align: 'center' })
+      y += 5
+      doc.text('This document is electronically generated and valid without signature.', 105, y, { align: 'center' })
+
+      doc.save('cover-note.pdf')
+    } catch (e) {
+      console.error('PDF generation failed:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <PDFDownloadLink
-      document={<COCRenderer cocData={cocData} />}
-      fileName="cover-note.pdf"
-    >
-      {(({ loading }: { loading: boolean }) => (
-        <Button className="w-full font-bold" variant="outline" size="lg">
-          {loading ? 'Generating Cover Note...' : 'Generate And Download Cover Note'}
-        </Button>
-      )) as any}
-    </PDFDownloadLink>
+    <Button className="w-full font-bold" variant="outline" size="lg" onClick={handleDownload} disabled={loading}>
+      {loading ? 'Generating Cover Note...' : 'Generate And Download Cover Note'}
+    </Button>
   )
 }
-
-const styles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontFamily: 'Helvetica',
-    fontSize: 9,
-    color: '#222',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    marginBottom: 24,
-  },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#111' },
-  subtitle: { fontSize: 10, color: '#666', marginTop: 2 },
-  policyNo: { fontSize: 9, color: '#333', marginTop: 4 },
-  logo: { width: 80, height: 28 },
-  section: { marginBottom: 20 },
-  twoCol: { flexDirection: 'row', justifyContent: 'space-between' },
-  col: { width: '48%' },
-  label: { fontSize: 8, color: '#666', marginTop: 6 },
-  value: { fontSize: 9, color: '#222', marginTop: 1 },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#111',
-    marginBottom: 8,
-  },
-  sectionSubTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  customerBlock: {
-    marginBottom: 6,
-    paddingBottom: 4,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#ddd',
-  },
-  customerName: { fontSize: 9, fontWeight: 'bold', color: '#000' },
-  customerText: { fontSize: 8, color: '#444' },
-  tableHeader: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    paddingBottom: 6,
-  },
-  tableRow: { flexDirection: 'row', paddingVertical: 6 },
-  tableRowEven: { backgroundColor: '#f9f9f9' },
-  tableRowOdd: { backgroundColor: '#fff' },
-  tableCell: { flex: 1, fontSize: 9 },
-  thLeft: { fontWeight: 'bold', color: '#444' },
-  thRight: { fontWeight: 'bold', color: '#444', textAlign: 'right' },
-  tdLeft: { textAlign: 'left' },
-  tdRight: { textAlign: 'right' },
-  summary: {
-    backgroundColor: '#f7f7f7',
-    padding: 12,
-    borderRadius: 4,
-  },
-  summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
-  summaryItem: { width: '50%', marginBottom: 6 },
-  statusValue: { color: '#008000', fontWeight: 'bold' },
-  footer: {
-    marginTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingTop: 8,
-  },
-  footerText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 9,
-    fontStyle: 'italic',
-  },
-  footerSub: {
-    textAlign: 'center',
-    color: '#999',
-    fontSize: 8,
-    marginTop: 2,
-  },
-})
