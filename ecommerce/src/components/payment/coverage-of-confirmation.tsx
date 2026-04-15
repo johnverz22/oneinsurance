@@ -1,6 +1,5 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,11 +15,7 @@ import { differenceInDays } from 'date-fns'
 import { CoverageOptionFormData } from '@/types/travel-insurance/travel-insurance-request'
 import { COMPANIES } from '@/constants/companies'
 
-// Dynamically import PDF component to avoid SSR crash
-const GenerateAndDownloadCoverNote = dynamic(
-  () => import('../travel-insurance/coverage-of-confirmation-renderer').then(m => ({ default: m.GenerateAndDownloadCoverNote })),
-  { ssr: false, loading: () => <button className="w-full font-bold border rounded-lg px-4 py-2 text-sm">Loading PDF...</button> }
-)
+import { GenerateAndDownloadCoverNote } from '../travel-insurance/coverage-of-confirmation-renderer'
 
 interface coverNoteProps {
   policyData: TravelPolicyData | null | undefined

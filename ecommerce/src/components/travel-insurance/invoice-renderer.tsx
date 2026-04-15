@@ -5,6 +5,7 @@ import {
   View,
   Document,
   StyleSheet,
+  PDFDownloadLink,
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
 import { PaymentSubmitRequest } from '@/types/payment'
@@ -181,30 +182,17 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
 export const GenerateAndDownloadInvoice = ({
   invoiceData,
 }: InvoiceRendererProps) => {
-  const [loading, setLoading] = React.useState(false)
-
-  const handleDownload = async () => {
-    try {
-      setLoading(true)
-      const { pdf } = await import('@react-pdf/renderer')
-      const blob = await pdf(<InsuranceInvoice invoiceData={invoiceData} />).toBlob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'policy-invoice.pdf'
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (e) {
-      console.error('PDF generation failed:', e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <Button className="w-full font-bold" variant="outline" size="lg" onClick={handleDownload} disabled={loading}>
-      {loading ? 'Generating Invoice...' : 'Generate And Download Invoice'}
-    </Button>
+    <PDFDownloadLink
+      document={<InsuranceInvoice invoiceData={invoiceData} />}
+      fileName="policy-invoice.pdf"
+    >
+      {(({ loading }: { loading: boolean }) => (
+        <Button className="w-full font-bold" variant="outline" size="lg">
+          {loading ? 'Generating Invoice...' : 'Generate And Download Invoice'}
+        </Button>
+      )) as any}
+    </PDFDownloadLink>
   )
 }
 
