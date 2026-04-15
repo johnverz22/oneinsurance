@@ -188,11 +188,11 @@ export const GenerateAndDownloadInvoice = ({
       document={<InsuranceInvoice invoiceData={invoiceData} />}
       fileName="policy-invoice.pdf"
     >
-      {({ loading }) => (
+      {(({ loading }: { loading: boolean }) => (
         <Button className="w-full font-bold" variant="outline" size="lg">
           {loading ? 'Generating Invoice...' : 'Generate And Download Invoice'}
         </Button>
-      )}
+      )) as any}
     </PDFDownloadLink>
   )
 }

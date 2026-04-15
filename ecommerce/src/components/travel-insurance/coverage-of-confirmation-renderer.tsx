@@ -177,13 +177,13 @@ export const GenerateAndDownloadCoverNote = ({ cocData }: COCRendererProps) => {
       document={<COCRenderer cocData={cocData} />}
       fileName="cover-note.pdf"
     >
-      {({ loading }) => (
+      {(({ loading }: { loading: boolean }) => (
         <Button className="w-full font-bold" variant="outline" size="lg">
           {loading
             ? 'Generating Cover Note...'
             : 'Generate And Download Cover Note'}
         </Button>
-      )}
+      )) as any}
     </PDFDownloadLink>
   )
 }
