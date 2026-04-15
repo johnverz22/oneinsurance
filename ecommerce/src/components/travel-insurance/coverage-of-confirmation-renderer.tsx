@@ -4,7 +4,6 @@ import {
   Page,
   Text,
   View,
-  Image,
   StyleSheet,
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
@@ -60,7 +59,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
           <Text style={styles.policyNo}>{`#${(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber || ''}`}</Text>
         </View>
-        <Image src={`${typeof window !== 'undefined' ? window.location.origin : ''}/images/IFRC.png`} style={styles.logo} />
+        <Text style={[styles.subtitle, { fontWeight: 'bold', fontSize: 11 }]}>One Insurance</Text>
       </View>
 
       <View style={styles.section}>

@@ -3,7 +3,6 @@ import {
   Page,
   Text,
   View,
-  Image,
   Document,
   StyleSheet,
 } from '@react-pdf/renderer'
@@ -62,7 +61,7 @@ const InsuranceInvoice = ({ invoiceData }: InvoiceRendererProps) => {
               {`#${(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || invoiceData.policyNumber || ''}`}
             </Text>
           </View>
-          <Image style={styles.logo} src={`${typeof window !== 'undefined' ? window.location.origin : ''}/images/IFRC.png`} />
+          <Text style={[styles.invoiceTitle, { fontSize: 11 }]}>One Insurance</Text>
         </View>
 
         <View style={styles.infoSection}>
