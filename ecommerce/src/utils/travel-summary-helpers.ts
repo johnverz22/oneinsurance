@@ -36,7 +36,7 @@ export const transformToInvoiceData = (
   return {
     policyNumber: policyData?.PolicyNo || '',
     carrierPolicyNumber: policyData?.CarrierPolicyNo || '',
-    planName: localStorage.getItem('planName') || '',
+    planName: (typeof window !== 'undefined' ? localStorage.getItem('planName') : null) || '',
     proposalNumber: policyData?.ProposalNo || '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
     customer: {

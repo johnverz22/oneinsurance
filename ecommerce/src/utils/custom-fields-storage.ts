@@ -15,6 +15,7 @@ const CUSTOM_FIELDS_KEY = 'travel-insurance-custom-fields'
  */
 export function storeCustomFields(fields: CustomFields): void {
   try {
+    if (typeof window === 'undefined') return
     const existingFields = getCustomFields()
     const updatedFields = { ...existingFields, ...fields }
     localStorage.setItem(CUSTOM_FIELDS_KEY, JSON.stringify(updatedFields))
@@ -29,6 +30,7 @@ export function storeCustomFields(fields: CustomFields): void {
  */
 export function getCustomFields(): CustomFields {
   try {
+    if (typeof window === 'undefined') return {}
     const stored = localStorage.getItem(CUSTOM_FIELDS_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
@@ -46,6 +48,7 @@ export function getCustomFields(): CustomFields {
  */
 export function clearCustomFields(): void {
   try {
+    if (typeof window === 'undefined') return
     localStorage.removeItem(CUSTOM_FIELDS_KEY)
     console.log('CustomFields cleared')
   } catch (error) {
