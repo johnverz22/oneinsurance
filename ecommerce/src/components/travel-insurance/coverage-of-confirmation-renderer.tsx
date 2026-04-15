@@ -60,7 +60,7 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
           <Text style={styles.subtitle}>Issued by One Insurance</Text>
           <Text style={styles.policyNo}>#{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || cocData.policyNumber}</Text>
         </View>
-        <Image src="/images/IFRC.png" style={styles.logo} />
+        <Image src={`${typeof window !== 'undefined' ? window.location.origin : ''}/images/IFRC.png`} style={styles.logo} />
       </View>
 
       <View style={styles.section}>
