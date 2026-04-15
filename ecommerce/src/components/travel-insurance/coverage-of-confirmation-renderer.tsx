@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Document,
   Page,
@@ -5,7 +6,6 @@ import {
   View,
   Image,
   StyleSheet,
-  PDFDownloadLink,
 } from '@react-pdf/renderer'
 import { Button } from '@/components/ui/button'
 import { Coverage } from '../payment/coverage-of-confirmation'
@@ -172,19 +172,30 @@ export const COCRenderer = ({ cocData }: COCRendererProps) => {
 }
 
 export const GenerateAndDownloadCoverNote = ({ cocData }: COCRendererProps) => {
+  const [loading, setLoading] = React.useState(false)
+
+  const handleDownload = async () => {
+    try {
+      setLoading(true)
+      const { pdf } = await import('@react-pdf/renderer')
+      const blob = await pdf(<COCRenderer cocData={cocData} />).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'cover-note.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('PDF generation failed:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <PDFDownloadLink
-      document={<COCRenderer cocData={cocData} />}
-      fileName="cover-note.pdf"
-    >
-      {(({ loading }: { loading: boolean }) => (
-        <Button className="w-full font-bold" variant="outline" size="lg">
-          {loading
-            ? 'Generating Cover Note...'
-            : 'Generate And Download Cover Note'}
-        </Button>
-      )) as any}
-    </PDFDownloadLink>
+    <Button className="w-full font-bold" variant="outline" size="lg" onClick={handleDownload} disabled={loading}>
+      {loading ? 'Generating Cover Note...' : 'Generate And Download Cover Note'}
+    </Button>
   )
 }
 
