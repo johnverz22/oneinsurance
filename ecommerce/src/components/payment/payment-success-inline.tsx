@@ -8,14 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, FileText, Shield } from 'lucide-react'
 import { PaymentBrand, PaymentSubmitResponse } from '@/types/payment'
 import { FullQuoteResponse, TravelPolicyData } from '@/types/travel-insurance/policy-types'
-import dynamic from 'next/dynamic'
 import { CoverageOfConfirmation } from './coverage-of-confirmation'
-
-// Dynamically import PDF component to avoid SSR/hydration crash from @react-pdf/renderer
-const GenerateAndDownloadInvoice = dynamic(
-  () => import('../travel-insurance/invoice-renderer').then(m => ({ default: m.GenerateAndDownloadInvoice })),
-  { ssr: false, loading: () => <button className="w-full font-bold border rounded-lg px-4 py-2 text-sm">Loading PDF...</button> }
-)
+import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer'
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { getPlanName } from '@/utils/custom-fields-storage'
