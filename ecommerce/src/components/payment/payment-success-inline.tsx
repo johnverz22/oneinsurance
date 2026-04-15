@@ -38,6 +38,25 @@ export function PaymentSuccessInline({
   const { travelersInfo, paymentBillingDetails } = useTravelInsuranceStore()
   const carrierName = COMPANIES.find(c => c.carrierCode === quoteData?.CarrierCode)?.companyName || quoteData?.CarrierCode || ''
 
+  // Guard: if quoteData is missing (e.g. store reset after redirect), show a safe fallback
+  if (!quoteData) {
+    return (
+      <div className="mx-auto max-w-6xl space-y-6 p-6 text-center">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+        </div>
+        <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
+        <p className="text-lg text-gray-600">Your travel insurance policy has been successfully issued.</p>
+        <p className="text-sm text-gray-500">Policy details have been sent to your email.</p>
+        <Button onClick={onContinue} size="lg" className="from-primary to-lilac bg-gradient-to-r px-8 py-3 font-medium text-white">
+          Buy new Travel Insurance
+        </Button>
+      </div>
+    )
+  }
+
   const INVOICE_DATA = transformToInvoiceData(
     policyData,
     quoteData,
