@@ -54,7 +54,6 @@ jobs:
         working-directory: ecommerce
         run: |
           npm run build
-          npm prune --omit=dev
 
       - name: Archive build
         working-directory: ecommerce
