@@ -47,18 +47,18 @@ jobs:
       - name: Install dependencies
         working-directory: ecommerce
         run: |
-          rm -f package-lock.json
-          npm install --legacy-peer-deps
+          corepack enable
+          yarn install --no-immutable
 
       - name: Build app
         working-directory: ecommerce
         run: |
-          npm run build
+          yarn build
 
       - name: Archive build
         working-directory: ecommerce
         run: |
-          tar -czf ecommerce-build.tar.gz .next node_modules public package.json package-lock.json next.config.ts tsconfig.json .env auth.db
+          tar -czf ecommerce-build.tar.gz .next node_modules public package.json next.config.ts tsconfig.json .env auth.db
 
       - name: Upload production bundle
         uses: actions/upload-artifact@v4
