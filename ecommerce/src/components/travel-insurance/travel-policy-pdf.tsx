@@ -172,11 +172,11 @@ export const DownloadPDFButton = (travelPolicy: any) => {
       document={<TravelPolicyPDF data={travelPolicy} />}
       fileName="travel-policy.pdf"
     >
-      {({ loading }) => (
+      {(({ loading }: { loading: boolean }) => (
         <Button className="w-full font-bold" variant="outline" size="lg">
           {loading ? 'Generating PDF...' : 'View and Download Travel Policy'}
         </Button>
-      )}
+      )) as any}
     </PDFDownloadLink>
   )
 }

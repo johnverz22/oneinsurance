@@ -1253,7 +1253,7 @@ export function PersonalInfoForm() {
                                             return (
                                               <div className="space-y-2">
                                                 <Label className="text-primary block">
-                                                  Relationship
+                                                  Relationship to Beneficiary
                                                 </Label>
                                                 <Input
                                                   value={

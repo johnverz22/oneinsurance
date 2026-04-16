@@ -48,13 +48,12 @@ jobs:
         working-directory: ecommerce
         run: |
           rm -f package-lock.json
-          npm install
+          npm install --legacy-peer-deps
 
       - name: Build app
         working-directory: ecommerce
         run: |
           npm run build
-          npm prune --omit=dev
 
       - name: Archive build
         working-directory: ecommerce

@@ -64,7 +64,12 @@ export const initCompareQuote = async (data: InitTravelInsuranceRequest) => {
     
     // If backend returned an error response with data, use it
     if (error.response?.data) {
-      throw new Error(error.response.data.error || error.response.data.message || 'An error occurred')
+      const msg = error.response.data.error || error.response.data.message || 'An error occurred'
+      // Attach status code so callers can differentiate
+      const err = new Error(msg) as any
+      err.statusCode = error.response.status
+      err.responseData = error.response.data
+      throw err
     }
     
     throw error

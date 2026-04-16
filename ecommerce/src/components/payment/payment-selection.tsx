@@ -172,15 +172,14 @@ export default function PaymentSelection() {
         is_card: false,
       })
 
-      setShowSuccessDialog(true)
       setIsIssuingQuote(false)
       popup.show({
         title: 'Payment Successful!',
-        description:
-          'Your policy details have been confirmed and recorded in our system.',
+        description: 'Your policy details have been confirmed and recorded in our system.',
         note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
         confirmText: 'Done',
         variant: 'success',
+        onConfirm: () => setShowSuccessDialog(true),
       })
     } catch (error: any) {
       console.error('Issue quote error:', error)
@@ -301,15 +300,13 @@ export default function PaymentSelection() {
     // Store the response and show success dialog
     setIssueQuoteResponse(response)
     setPolicyNo(response.data?.PolicyNo ?? '')
-    setShowSuccessDialog(true)
-
     popup.show({
       title: 'Payment Successful!',
-      description:
-        'Your policy details have been confirmed and recorded in our system.',
+      description: 'Your policy details have been confirmed and recorded in our system.',
       note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
       confirmText: 'Done',
       variant: 'success',
+      onConfirm: () => setShowSuccessDialog(true),
     })
   }
 

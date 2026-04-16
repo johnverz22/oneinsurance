@@ -166,8 +166,9 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
         behavior: 'smooth',
         block: 'start',
       })
-    } catch (err) {
-      setClientRequest({ status: 'error' })
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Unable to load travel insurance plans.'
+      setClientRequest({ status: 'error', errorMessage })
       throw err
     }
   }

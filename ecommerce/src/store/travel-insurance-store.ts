@@ -27,6 +27,7 @@ import { CustomFields } from '@/utils/custom-fields-storage'
 export type ClientRequest = {
   id?: string | undefined
   status: 'success' | 'fetching' | 'error'
+  errorMessage?: string
 }
 
 export type TravelInsuranceStoreState = {

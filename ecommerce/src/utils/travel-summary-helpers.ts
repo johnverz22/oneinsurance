@@ -18,14 +18,14 @@ export const transformToInvoiceData = (
   paymentMethod: PaymentBrand,
   paymentBillingDetails: PaymentSubmitRequest
 ) => {
-  const effectiveDate = new Date(quoteData.EffectiveDate)
-  const expiryDate = new Date(quoteData.ExpiryDate)
+  const effectiveDate = quoteData?.EffectiveDate ? new Date(quoteData.EffectiveDate) : new Date()
+  const expiryDate = quoteData?.ExpiryDate ? new Date(quoteData.ExpiryDate) : new Date()
   const calculatedTravelDays = differenceInDays(expiryDate, effectiveDate) + 1
 
-  const basePremium = quoteData.DuePremium || 0
+  const basePremium = quoteData?.DuePremium || 0
 
   const destinations =
-    quoteData.TravelDetailList && quoteData.TravelDetailList.length > 0
+    quoteData?.TravelDetailList && quoteData.TravelDetailList.length > 0
       ? quoteData.TravelDetailList.map((travel: any) => {
           return travel.PlaceOfOrgin && travel.TravelCountry
             ? `${travel.PlaceOfOrgin} → ${travel.TravelCountry}`
@@ -36,7 +36,7 @@ export const transformToInvoiceData = (
   return {
     policyNumber: policyData?.PolicyNo || '',
     carrierPolicyNumber: policyData?.CarrierPolicyNo || '',
-    planName: localStorage.getItem('planName') || '',
+    planName: (typeof window !== 'undefined' ? localStorage.getItem('planName') : null) || '',
     proposalNumber: policyData?.ProposalNo || '',
     invoiceDate: format(new Date(), 'MMMM dd, yyyy'),
     customer: {
@@ -47,16 +47,16 @@ export const transformToInvoiceData = (
         `${paymentBillingDetails?.address_line_one || ''}, ${paymentBillingDetails?.address_line_two || ''}`.trim(),
     },
     travel: {
-      type: quoteData.TravelType || '',
+      type: quoteData?.TravelType || '',
       departureDate: format(effectiveDate, 'MMMM dd, yyyy'),
       returnDate: format(expiryDate, 'MMMM dd, yyyy'),
-      duration: `${quoteData.TravelDays || calculatedTravelDays || 0} Days`,
+      duration: `${quoteData?.TravelDays || calculatedTravelDays || 0} Days`,
       destinations: destinations,
     },
     policy: {
-      carrier: quoteData.CarrierCode || '',
-      plan: quoteData.CarrierPlanCode || '',
-      coverageArea: quoteData.TravelDetailList?.[0]?.TravelCoverageArea || '',
+      carrier: quoteData?.CarrierCode || '',
+      plan: quoteData?.CarrierPlanCode || '',
+      coverageArea: quoteData?.TravelDetailList?.[0]?.TravelCoverageArea || '',
     },
     payment: {
       basePremium: basePremium,
@@ -65,8 +65,8 @@ export const transformToInvoiceData = (
     status: {
       issueDate: format(new Date(), 'MMMM dd, yyyy'),
       status: 'Active',
-      effectiveDate: format(new Date(quoteData.EffectiveDate), 'MMMM dd, yyyy'),
-      expiryDate: format(new Date(quoteData.ExpiryDate), 'MMMM dd, yyyy'),
+      effectiveDate: format(effectiveDate, 'MMMM dd, yyyy'),
+      expiryDate: format(expiryDate, 'MMMM dd, yyyy'),
     },
   }
 }
