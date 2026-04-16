@@ -124,7 +124,7 @@ export function ReviewCoverage() {
                             <small className="text-muted-foreground text-right text-xs">
                               {benefit.DefaultLimitDesc !== '0'
                                 ? benefit.DefaultLimitDesc
-                                : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString()}`}
+                                : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
                               <br />
                               {benefit.LimitModeDesc}
                             </small>
@@ -142,7 +142,7 @@ export function ReviewCoverage() {
                   </div>
                 </div>
                 <div className="bg-tertiary w-max self-end rounded-full px-6 py-2 text-center text-base font-bold text-white">
-                  PHP {plan.DuePremium.toLocaleString()}
+                  PHP {Number(plan.DuePremium).toLocaleString('en-PH')}
                 </div>
               </div>
             </div>
@@ -188,7 +188,7 @@ export function ReviewCoverage() {
                                   <p className="text-primary font-semibold">
                                     {benefit.DefaultLimitDesc !== '0'
                                       ? benefit.DefaultLimitDesc
-                                      : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString()}`}
+                                      : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
                                     <br />
                                     {benefit.LimitModeDesc}
                                   </p>

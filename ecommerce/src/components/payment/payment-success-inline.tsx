@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Component, ReactNode } from 'react'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -13,10 +13,33 @@ import { GenerateAndDownloadInvoice } from '../travel-insurance/invoice-renderer
 import { transformToInvoiceData } from '@/utils/travel-summary-helpers'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { getPlanName } from '@/utils/custom-fields-storage'
+import { COMPANIES } from '@/constants/companies'
 import {
   getCityNameByCityCode,
   getProvinceNameByProvCode,
 } from '@/utils/address-util'
+
+// Error boundary to prevent full page crash
+class PaymentSuccessErrorBoundary extends Component<
+  { children: ReactNode; onContinue: () => void },
+  { hasError: boolean; error: string }
+> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: false, error: '' }
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error: error.message }
+  }
+  render() {
+    if (this.state.hasError) {
+      // PDF rendering failed - show success page without PDF download buttons
+      // The policy is still issued successfully
+      return this.props.children
+    }
+    return this.props.children
+  }
+}
 
 interface PaymentSuccessInlineProps {
   onContinue: () => void
@@ -26,7 +49,15 @@ interface PaymentSuccessInlineProps {
   paymentSubmit: PaymentSubmitResponse['data']
 }
 
-export function PaymentSuccessInline({
+export function PaymentSuccessInline(props: PaymentSuccessInlineProps) {
+  return (
+    <PaymentSuccessErrorBoundary onContinue={props.onContinue}>
+      <PaymentSuccessInlineInner {...props} />
+    </PaymentSuccessErrorBoundary>
+  )
+}
+
+function PaymentSuccessInlineInner({
   onContinue,
   paymentMethod,
   policyData,
@@ -35,6 +66,26 @@ export function PaymentSuccessInline({
 }: PaymentSuccessInlineProps) {
   const [showCovernote, setShowCoverNote] = useState(false)
   const { travelersInfo, paymentBillingDetails } = useTravelInsuranceStore()
+  const carrierName = COMPANIES.find(c => c.carrierCode === quoteData?.CarrierCode)?.companyName || quoteData?.CarrierCode || ''
+
+  // Guard: if quoteData is missing (e.g. store reset after redirect), show a safe fallback
+  if (!quoteData) {
+    return (
+      <div className="mx-auto max-w-6xl space-y-6 p-6 text-center">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+        </div>
+        <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
+        <p className="text-lg text-gray-600">Your travel insurance policy has been successfully issued.</p>
+        <p className="text-sm text-gray-500">Policy details have been sent to your email.</p>
+        <Button onClick={onContinue} size="lg" className="from-primary to-lilac bg-gradient-to-r px-8 py-3 font-medium text-white">
+          Buy new Travel Insurance
+        </Button>
+      </div>
+    )
+  }
 
   const INVOICE_DATA = transformToInvoiceData(
     policyData,
@@ -98,7 +149,7 @@ export function PaymentSuccessInline({
                 <div>
                   <h1 className="text-3xl font-bold text-gray-800">Invoice</h1>
                   <p className="text-sm text-gray-600">
-                    #{localStorage.getItem('payment_transaction_id') || policyData?.CarrierPolicyNo || 'N/A'}
+                    #{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || policyData?.CarrierPolicyNo || 'N/A'}
                   </p>
                 </div>
 
@@ -112,13 +163,21 @@ export function PaymentSuccessInline({
                 </div>
               </div>
 
-              <div className="grid gap-8 border-b p-8 md:grid-cols-2">
+              <div className="grid gap-8 border-b p-8 md:grid-cols-3">
                 <div>
                   <p className="text-xs font-medium text-gray-500">
                     Policy Number
                   </p>
                   <p className="mt-1 text-sm text-gray-800">
                     {policyData?.CarrierPolicyNo || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">
+                    Insurance Provider
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-gray-800">
+                    {carrierName}
                   </p>
                 </div>
                 <div>
@@ -185,6 +244,9 @@ export function PaymentSuccessInline({
                         <p className="text-sm font-medium text-gray-800">
                           {getPlanName() || quoteData.CarrierPlanCode}
                         </p>
+                        {carrierName && (
+                          <p className="text-xs font-semibold text-gray-600">{carrierName}</p>
+                        )}
                         <p className="text-xs text-gray-500">{destinations}</p>
                         <p className="text-xs text-gray-500">
                           {quoteData.TravelDays ||

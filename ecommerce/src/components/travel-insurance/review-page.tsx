@@ -306,7 +306,7 @@ export function TravelInsuranceReviewPage() {
                         <small className="text-muted-foreground text-right text-xs">
                           {benefit.DefaultLimitDesc !== '0'
                             ? benefit.DefaultLimitDesc
-                            : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString()}`}
+                            : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
                           <br />
                           {benefit.LimitModeDesc}
                         </small>
@@ -339,7 +339,7 @@ export function TravelInsuranceReviewPage() {
                                 <small className="text-muted-foreground text-right text-xs">
                                   {addon.DefaultLimitDesc
                                     ? addon.DefaultLimitDesc
-                                    : `Up to ₱${Number.parseFloat(addon.Silimit ?? '0').toLocaleString()}`}
+                                    : `Up to ₱${Number.parseFloat(addon.Silimit ?? '0').toLocaleString('en-PH')}`}
                                   <br />
                                   {addon.LimitModeDesc}
                                 </small>
