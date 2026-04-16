@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from '@tanstack/react-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,8 +15,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
-import { MultiSelect } from '@/components/ui/multi-select'
-import { TravelCoverageMap } from '@/constants/travel-coverage'
+import { toast } from 'sonner'
+import { useHealthCartStore } from '@/store/health-cart-store'
+import { getEcho } from '@/lib/echo'
+import axios from 'axios'
+import { useParams } from 'next/navigation'
 import {
   Select,
   SelectContent,
@@ -24,228 +27,374 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { QuoteSuccessDialog } from './quote-success-dialog'
 
 type HealthDetailsFormProps = {
   className?: string
 }
 
-function generateQuoteId() {
-  return `OONA-${Date.now().toString().slice(-13)}`
+function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
+  const effectiveDate = new Date(value.effectiveDate)
+  const expiryDate = new Date(effectiveDate)
+  expiryDate.setFullYear(expiryDate.getFullYear() + 1)
+  expiryDate.setDate(expiryDate.getDate() - 1)
+
+  const effectiveISO = effectiveDate.toISOString()
+  const expiryISO = expiryDate.toISOString()
+
+  return {
+    AgentCode: agentCode ?? '',
+    Slug: 'health-insurance',
+    ProductCode: 'HEALTH',
+    ProductType: 'CI',
+    ProductVersion: '1.0',
+    EffectiveDate: effectiveISO,
+    ExpiryDate: expiryISO,
+    LGT: 50,
+    PolicyCustomerList: [{ Mobile: value.mobile }],
+    PolicyLobList: [
+      {
+        ProductCode: 'HEALTH',
+        PolicyRiskList: [
+          {
+            ProductElementCode: 'R00001',
+            InsuredName: value.insuredName,
+            GenderCode: value.genderCode,
+            DateOfBirth: value.dateOfBirth,
+            IsSmoker: value.isSmoker,
+            IsMainInsured: 'Y',
+            IsAdultFlag: 'Y',
+            PolicyCoverageList: [
+              {
+                ProductElementCode: 'C0001634',
+                EffectiveDate: effectiveISO,
+                ExpiryDate: expiryISO,
+                SumInsured: 500000,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  }
 }
 
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
-  const [showSuccess, setShowSuccess] = useState(false)
-  const [quoteId, setQuoteId] = useState('')
+  const { setInsuredInfo, setCompareQuotePlans, setIsLoadingPlans, setPlansError } = useHealthCartStore()
+  const params = useParams()
+  const agentCode = params['agent-code'] as string
+  const echoRef = useRef<any>(null)
+  const channelRef = useRef<any>(null)
+  const queue = useRef<string[]>([])
+  const isProcessing = useRef(false)
+
+  const closeEchoConnection = (channelId: string) => {
+    try {
+      if (echoRef.current) {
+        echoRef.current.leave?.(channelId)
+        const connector = echoRef.current?.connector as any
+        if (connector?.pusher?.disconnect) connector.pusher.disconnect()
+        channelRef.current = null
+        echoRef.current = null
+      }
+    } catch {}
+  }
+
+  const fetchPlanByCacheKey = async (cacheKey: string, retries = 2): Promise<any> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const res = await axios.get(
+          `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
+        )
+        const data = res.data
+        // Empty plans is a valid response (e.g. OONAPH has no plans) — don't retry
+        if (!data.success || !data.data?.Plans?.length) return null
+        // Inject CarrierCode from parent into each plan (API puts it on data, not on each plan)
+        const carrierCode = data.data.CarrierCode ?? ''
+        data.data.Plans = data.data.Plans.map((plan: any) => ({
+          ...plan,
+          CarrierCode: plan.CarrierCode || carrierCode,
+        }))
+        return data.data
+      } catch (err: any) {
+        // Only retry on network errors or 5xx, not 404 (cache not ready yet)
+        const status = err?.response?.status
+        if (status === 404 || attempt >= retries) return null
+        await new Promise(r => setTimeout(r, 1000 * attempt))
+      }
+    }
+    return null
+  }
+
+  const processQueue = async () => {
+    if (isProcessing.current) {
+      // Already processing — new items will be picked up in the current loop
+      return
+    }
+    isProcessing.current = true
+
+    let foundPlans = false
+
+    // Keep looping — wait briefly for any late-arriving cache keys
+    let emptyLoops = 0
+    while (emptyLoops < 3) {
+      if (queue.current.length === 0) {
+        // Wait a bit for more events to arrive before giving up
+        await new Promise(r => setTimeout(r, 500))
+        emptyLoops++
+        continue
+      }
+      emptyLoops = 0 // reset if we got items
+
+      const batch = queue.current.splice(0, 5)
+      const results = await Promise.allSettled(
+        batch.map((cacheKey) => fetchPlanByCacheKey(cacheKey))
+      )
+      const successfulPlans = results
+        .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled' && r.value !== null)
+        .map((r) => r.value)
+
+      if (successfulPlans.length > 0) {
+        const allPlans = successfulPlans.flatMap((p: any) => p.Plans ?? [])
+        setCompareQuotePlans(allPlans)
+        setIsLoadingPlans(false)
+        foundPlans = true
+        setTimeout(() => {
+          document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+      }
+    }
+
+    isProcessing.current = false
+
+    // If no plans found after draining the queue, stop loading
+    if (!foundPlans) {
+      setIsLoadingPlans(false)
+    }
+  }
 
   const form = useForm({
     defaultValues: {
-      fullName: '',
-      email: '',
-      mobileNumber: '',
-      countryOfResidency: '',
-      travelFrequency: '',
+      insuredName: '',
+      mobile: '',
+      dateOfBirth: '',
+      genderCode: '' as 'M' | 'F',
+      isSmoker: '' as 'Y' | 'N',
+      effectiveDate: '',
       agreedToTerms: false,
     } as HealthDetailsFormType,
     onSubmit: async ({ value }) => {
-      // TODO: replace with real API call when BE provides endpoint
-      const id = generateQuoteId()
-      setQuoteId(id)
-      setShowSuccess(true)
+      try {
+        // Reset and show loading, scroll down immediately
+        setPlansError(null)
+        setCompareQuotePlans([])
+        setIsLoadingPlans(true)
+        setTimeout(() => {
+          document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+
+        const payload = buildPayload(value, agentCode)
+        const res = await fetch('/api/health-insurance/compare-quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          const errMsg = errData?.message || errData?.error || 'Unable to load health insurance plans.'
+          setIsLoadingPlans(false)
+          setPlansError(errMsg)
+          return
+        }
+
+        const data = await res.json()
+        const clientRequestId = data?.data?.ClientRequestId ?? data?.ClientRequestId
+
+        if (!clientRequestId) throw new Error('No ClientRequestId returned')
+
+        // Save insured info
+        setInsuredInfo({
+          insuredName: value.insuredName,
+          mobile: value.mobile,
+          dateOfBirth: value.dateOfBirth,
+          genderCode: value.genderCode,
+          isSmoker: value.isSmoker,
+          effectiveDate: value.effectiveDate,
+        })
+
+        // Subscribe to WebSocket channel using clientRequestId — same as travel insurance
+        const echo = getEcho()
+        if (echo.connector.pusher.connection.state !== 'connected') {
+          echo.connector.pusher.connect()
+        }
+
+        const channel = echo
+          .channel(clientRequestId)
+          .listen('.insurance.plan.received', (e: any) => {
+            const cacheKey = e['cache_key']
+            console.log('Health plan received, cache_key:', cacheKey)
+            queue.current.push(cacheKey)
+            processQueue()
+          })
+
+        echoRef.current = echo
+        channelRef.current = channel
+
+        // 60s timeout fallback — increased to handle slow connections
+        setTimeout(() => {
+          const { compareQuotePlans, isLoadingPlans } = useHealthCartStore.getState()
+          if (!compareQuotePlans.length && isLoadingPlans) {
+            setIsLoadingPlans(false)
+            closeEchoConnection(clientRequestId)
+            setPlansError('Plans are taking longer than expected. Please try again.')
+          }
+        }, 60000)
+
+      } catch (err) {
+        setIsLoadingPlans(false)
+        setPlansError('Something went wrong. Please try again.')
+      }
     },
-    validators: {
-      onChange: HealthDetailsFormSchema,
-    },
+    validators: { onChange: HealthDetailsFormSchema },
   })
 
-  const handleSubmitAnother = () => {
-    setShowSuccess(false)
-    form.reset()
-  }
-
   return (
-    <>
-      <QuoteSuccessDialog
-        open={showSuccess}
-        quoteId={quoteId}
-        onSubmitAnother={handleSubmitAnother}
-      />
-      <Card
-        data-testid="health-details-form"
-        className={cn(
-          'w-full space-y-6 rounded-md border shadow-none backdrop-blur-sm lg:rounded-xl lg:shadow-2xl',
-          className
-        )}
-      >
-      <CardContent className="space-y-6 px-4 pt-3 pb-6 sm:px-8">
-        <div className="space-y-0.5">
-          <h2 className="text-2xl font-bold">Get Personalized Advice</h2>
-          <p className="text-muted-foreground font-light">
-            Let our experts recommend the best plan for you
-          </p>
+    <Card className={cn('w-full rounded-2xl border-0 shadow-2xl bg-white', className)}>
+      <CardContent className="px-6 pt-6 pb-7 sm:px-8">
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
+          <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
         </div>
 
-        <div className="grid gap-2.5 lg:grid-cols-3">
-          <form.Field
-            name="fullName"
-            children={(field) => {
-              const hasError = fieldHasError(field)
+        {/* Row 1: Full Name | Email | Phone */}
+        <div className="mb-4 grid gap-4 sm:grid-cols-3">
+          <form.Field name="insuredName">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Full Name <span className="text-red-500">*</span></Label>
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Enter Full Name"
+                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
 
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">First Name</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12', { 'border-destructive': hasError })}
-                    placeholder="Enter first name"
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
+            <Input placeholder="Enter Email Address" className="h-11 rounded-full" />
+          </div>
 
-          <form.Field
-            name="email"
-            children={(field) => {
-              const hasError = fieldHasError(field)
-
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">Email Address</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12', { 'border-destructive': hasError })}
-                    placeholder="Enter email address"
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
-
-          <form.Field
-            name="mobileNumber"
-            children={(field) => {
-              const hasError = fieldHasError(field)
-
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">Phone Number</Label>
-                  <Input
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12', { 'border-destructive': hasError })}
-                    placeholder="Enter phone number"
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
+          <form.Field name="mobile">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Phone Number <span className="text-red-500">*</span></Label>
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Enter Phone Number"
+                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
         </div>
 
-        <div className="grid gap-2.5 lg:grid-cols-2">
-          <form.Field
-            name="countryOfResidency"
-            children={(field) => {
-              const options = TravelCoverageMap.WORLD.map((country: any) => ({
-                ...country,
-                label: `${country.flag} ${country.name}`,
-                value: country.code,
-              }))
+        {/* Row 2: DOB | Coverage Start */}
+        <div className="mb-4 grid gap-4 sm:grid-cols-2">
+          <form.Field name="dateOfBirth">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Date of Birth <span className="text-red-500">*</span></Label>
+                <Input
+                  type="date"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
 
-              return (
-                <div className="w-full space-y-2">
-                  <Label className="block font-light">
-                    Country of Residency
-                  </Label>
-
-                  <MultiSelect
-                    options={options}
-                    className="dark:bg-input/30 border-muted-foreground/30 relative flex h-12 w-full items-center gap-1.5 overflow-hidden rounded-full border bg-white px-3 hover:bg-white"
-                    hideSelectAll={true}
-                    singleLine
-                    onValueChange={(values) => {
-                      const lastSelected = values[values.length - 1]
-                      field.handleChange(lastSelected)
-                    }}
-                    placeholder="Select your destinations"
-                    autoSize={false}
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
-
-          <form.Field
-            name="travelFrequency"
-            children={(field) => {
-              const hasError = fieldHasError(field)
-
-              return (
-                <div className="space-y-2">
-                  <Label className="block font-light">Travel Frequency</Label>
-
-                  <Select
-                    onValueChange={(v) => field.handleChange(v)}
-                    defaultValue={field.state.value}
-                  >
-                    <SelectTrigger
-                      className={cn('h-12 w-full', {
-                        'border-destructive': hasError,
-                      })}
-                    >
-                      <SelectValue placeholder="Select travel frequency" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      <SelectItem value="rarely">Rarely</SelectItem>
-                      <SelectItem value="occasionally">Occasionally</SelectItem>
-                      <SelectItem value="frequently">Frequently</SelectItem>
-                      <SelectItem value="very-frequently">
-                        Very Frequently
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <FieldInfo field={field} />
-                </div>
-              )
-            }}
-          />
+          <form.Field name="effectiveDate">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Coverage Start Date <span className="text-red-500">*</span></Label>
+                <Input
+                  type="date"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
         </div>
 
-        <div className="relative flex flex-col gap-4 sm:gap-6 md:flex-row md:items-start md:justify-between">
+        {/* Row 3: Gender | Smoker */}
+        <div className="mb-5 grid gap-4 sm:grid-cols-2">
+          <form.Field name="genderCode">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Gender <span className="text-red-500">*</span></Label>
+                <Select onValueChange={(v) => field.handleChange(v as 'M' | 'F')} value={field.state.value}>
+                  <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
+                    <SelectValue placeholder="Select Gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Male</SelectItem>
+                    <SelectItem value="F">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="isSmoker">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Do you smoke? <span className="text-red-500">*</span></Label>
+                <Select onValueChange={(v) => field.handleChange(v as 'Y' | 'N')} value={field.state.value}>
+                  <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
+                    <SelectValue placeholder="Select Smoking Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="N">No</SelectItem>
+                    <SelectItem value="Y">Yes</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
+        </div>
+
+        {/* Row 4: Terms + Get Advice */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <form.Field name="agreedToTerms">
             {(field) => (
-              <div className="w-full max-w-80 space-y-2 sm:flex-1">
-                <div className="flex items-center gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="terms"
                     checked={field.state.value}
-                    onCheckedChange={(value) => {
-                      field.handleChange(value as boolean)
-                    }}
-                    className="data-[state=checked]:border-lilac data-[state=checked]:bg-lilac h-5 w-5"
+                    onCheckedChange={(v) => field.handleChange(v as boolean)}
+                    className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4"
                   />
-
-                  <Label
-                    htmlFor="terms"
-                    className="flex cursor-pointer flex-wrap text-sm leading-relaxed"
-                  >
-                    I agree to the{' '}
-                    <Link
-                      href="/terms-and-condition"
-                      target="_blank"
-                      className="text-lilac inline font-medium underline underline-offset-8"
-                    >
+                  <Label htmlFor="terms" className="cursor-pointer text-sm">
+                    I agree with the{' '}
+                    <Link href="/travel-insurance-terms" target="_blank" className="text-primary font-medium underline underline-offset-4">
                       Terms & Conditions
                     </Link>
                   </Label>
@@ -255,27 +404,20 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
             )}
           </form.Field>
 
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-          >
-            {(field) => (
+          <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
+            {([canSubmit, isSubmitting]) => (
               <Button
                 type="submit"
-                disabled={!form.state.canSubmit}
-                onClick={(e) => {
-                  e.preventDefault()
-                  form.handleSubmit()
-                }}
-                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
-                size="lg"
+                disabled={!canSubmit || !!isSubmitting}
+                onClick={(e) => { e.preventDefault(); form.handleSubmit() }}
+                className="from-primary to-accent h-11 w-full rounded-full bg-gradient-to-r px-10 text-sm font-semibold text-white sm:w-auto"
               >
-                Get Advice
+                {isSubmitting ? 'Searching...' : 'Get Advice'}
               </Button>
             )}
           </form.Subscribe>
         </div>
       </CardContent>
     </Card>
-    </>
   )
 }
