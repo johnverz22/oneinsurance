@@ -179,7 +179,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
       dateOfBirth: '',
       genderCode: '' as 'M' | 'F',
       isSmoker: '' as 'Y' | 'N',
-      effectiveDate: '',
+      effectiveDate: new Date().toISOString().split('T')[0], // defaults to today e.g. 2026-04-16
       agreedToTerms: false,
     } as HealthDetailsFormType,
     onSubmit: async ({ value }) => {
@@ -412,7 +412,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
                 onClick={(e) => { e.preventDefault(); form.handleSubmit() }}
                 className="from-primary to-accent h-11 w-full rounded-full bg-gradient-to-r px-10 text-sm font-semibold text-white sm:w-auto"
               >
-                {isSubmitting ? 'Searching...' : 'Get Advice'}
+                {isSubmitting ? 'Searching...' : 'Search Plans'}
               </Button>
             )}
           </form.Subscribe>
