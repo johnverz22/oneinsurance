@@ -3,7 +3,6 @@ import Image from 'next/image'
 import { COMPANIES } from '@/constants/companies'
 import { INSURANCES } from '@/constants/insurances'
 import { redirect } from 'next/navigation'
-import DOMPurify from 'isomorphic-dompurify'
 
 export default async function ProviderSynopsisPage({
   params,
@@ -17,7 +16,8 @@ export default async function ProviderSynopsisPage({
     redirect('/')
   }
 
-  const description = DOMPurify.sanitize(company.description)
+  // Strip any HTML tags from description as a simple sanitization
+  const description = company.description.replace(/<[^>]*>/g, '')
 
   return (
     <div className="min-h-screen">

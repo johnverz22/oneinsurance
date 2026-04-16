@@ -3,7 +3,7 @@ name: Deploy OneInsurance App
 on:
   push:
     branches:
-      - main
+      - feature/health-insurance
     paths:
       - "ecommerce/**"
   workflow_dispatch:
