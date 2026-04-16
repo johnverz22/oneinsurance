@@ -113,10 +113,14 @@ export function CoverageOptionsForm() {
   const [isError, setIsError] = useState(false) // Tracks error state
   const [expectedProviders, setExpectedProviders] = useState(0) // Track expected number of providers
   const [receivedProviders, setReceivedProviders] = useState(0) // Track received providers
+  const receivedProvidersRef = useRef(0) // Ref to track received providers without stale closure
+  const expectedProvidersRef = useRef(0) // Ref to track expected providers without stale closure
+  const allProvidersTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Timeout for all providers
 
   // Configuration constants
   const CONCURRENCY_LIMIT = 5
   const REQUEST_TIMEOUT = 10000 // 10 seconds
+  const ALL_PROVIDERS_TIMEOUT = 30000 // 30 seconds max wait for all providers
 
   // Helper function: Fetch plan with timeout
   const fetchPlanWithTimeout = async (
@@ -187,13 +191,36 @@ export function CoverageOptionsForm() {
     }
   }
 
+  // Helper: check plans and finalize loading state
+  const finalizeLoading = () => {
+    const currentPlans = useTravelInsuranceStore.getState().insurancePlans
+    const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
+    if (!hasAnyPlans) {
+      console.log('❌ No plans available from any provider - showing error')
+      setIsError(true)
+    } else {
+      console.log('✅ Plans available - clearing any error state')
+      setIsError(false)
+    }
+    isProcessing.current = false
+    setIsLoading(false)
+  }
+
   useEffect(() => {
     if (clientRequest.id !== undefined) {
       // Reset error state and counters when starting a new search
       setIsError(false)
-      setExpectedProviders(2) // Typically Malayan and Oona
+      receivedProvidersRef.current = 0
+      expectedProvidersRef.current = 0
+      setExpectedProviders(0)
       setReceivedProviders(0)
-      
+
+      // Clear any previous timeout
+      if (allProvidersTimeoutRef.current) {
+        clearTimeout(allProvidersTimeoutRef.current)
+        allProvidersTimeoutRef.current = null
+      }
+
       const echo = getEcho()
 
       if (echo.connector.pusher.connection.state !== 'connected') {
@@ -252,39 +279,30 @@ export function CoverageOptionsForm() {
         const duration = (endTime - startTime).toFixed(2)
         console.log(`✨ Queue processing complete in ${duration}ms (processed ${totalItems} items)`)
 
-        // Increment received providers count
-        setReceivedProviders(prev => {
-          const newCount = prev + 1
-          console.log(`📊 Received ${newCount}/${expectedProviders} providers`)
-          return newCount
-        })
+        // Increment received providers count using ref (avoids stale closure)
+        receivedProvidersRef.current += 1
+        setReceivedProviders(receivedProvidersRef.current)
+        console.log(`📊 Received ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
 
-        // Check if we've received all expected providers
-        const currentReceivedCount = receivedProviders + 1
-        
         // Only check for errors after ALL providers have responded
-        if (currentReceivedCount >= expectedProviders) {
+        if (receivedProvidersRef.current >= expectedProvidersRef.current) {
           console.log('🔍 All providers received - checking for plans...')
           
           // Small delay to ensure state is updated
           await new Promise(resolve => setTimeout(resolve, 100))
           
-          const currentPlans = useTravelInsuranceStore.getState().insurancePlans
-          const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
-          
-          if (!hasAnyPlans && totalItems > 0) {
-            console.log('❌ No plans available from any provider - showing error')
-            setIsError(true)
-          } else if (hasAnyPlans) {
-            console.log('✅ Plans available - clearing any error state')
-            setIsError(false)
+          // Clear the hard timeout since all providers responded
+          if (allProvidersTimeoutRef.current) {
+            clearTimeout(allProvidersTimeoutRef.current)
+            allProvidersTimeoutRef.current = null
           }
-        } else {
-          console.log(`⏳ Waiting for more providers (${currentReceivedCount}/${expectedProviders})...`)
-        }
 
-        isProcessing.current = false
-        setIsLoading(false)
+          finalizeLoading()
+        } else {
+          console.log(`⏳ Waiting for more providers (${receivedProvidersRef.current}/${expectedProvidersRef.current})...`)
+          isProcessing.current = false
+          setIsLoading(false)
+        }
       }
 
       const channel = echo
@@ -299,6 +317,21 @@ export function CoverageOptionsForm() {
           console.log(`   Cache key: ${cacheKey}`)
           console.log(`   Queue size: ${queue.current.length}`)
           console.log(`   Processing: ${isProcessing.current ? 'Yes' : 'No'}`)
+
+          // Set expected providers from the event if available, otherwise default to 2
+          if (expectedProvidersRef.current === 0) {
+            const count = e['total_providers'] ?? 2
+            expectedProvidersRef.current = count
+            setExpectedProviders(count)
+            console.log(`📋 Expected providers set to: ${count}`)
+
+            // Hard timeout fallback — if not all providers respond, finalize anyway
+            if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
+            allProvidersTimeoutRef.current = setTimeout(() => {
+              console.log(`⏰ Timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
+              finalizeLoading()
+            }, ALL_PROVIDERS_TIMEOUT)
+          }
           
           processQueue()
         })
@@ -309,6 +342,10 @@ export function CoverageOptionsForm() {
 
     return () => {
       closeEchoConnection()
+      if (allProvidersTimeoutRef.current) {
+        clearTimeout(allProvidersTimeoutRef.current)
+        allProvidersTimeoutRef.current = null
+      }
     }
   }, [clientRequest.id])
 
@@ -535,7 +572,7 @@ export function CoverageOptionsForm() {
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
-        {isLoading || !hasPlans ? (
+        {isLoading ? (
           <div className="min-h-screen">
             <div className="mx-auto w-full max-w-7xl space-y-4">
               <Skeleton className="h-16 w-full p-4" />
@@ -544,6 +581,28 @@ export function CoverageOptionsForm() {
                   <Skeleton className="h-96 w-full" key={index} />
                 ))}
               </div>
+            </div>
+          </div>
+        ) : !hasPlans ? (
+          <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
+            <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-900">
+              <div className="mb-4 flex justify-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                  <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-gray-800 dark:text-white">No Plans Available</h3>
+              <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+                No travel insurance plans are available for your selected dates and destination. Please try different travel details or contact your agent for assistance.
+              </p>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                Modify Search
+              </button>
             </div>
           </div>
         ) : (
