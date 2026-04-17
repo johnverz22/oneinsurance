@@ -202,6 +202,12 @@ export function CoverageOptionsForm() {
       console.log('✅ Plans available - clearing any error state')
       setIsError(false)
     }
+    // Stop everything — close WebSocket and clear timeout
+    closeEchoConnection()
+    if (allProvidersTimeoutRef.current) {
+      clearTimeout(allProvidersTimeoutRef.current)
+      allProvidersTimeoutRef.current = null
+    }
     isProcessing.current = false
     setIsLoading(false)
   }
