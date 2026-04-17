@@ -86,6 +86,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const channelRef = useRef<any>(null)
   const queue = useRef<string[]>([])
   const isProcessing = useRef(false)
+  const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const closeEchoConnection = (channelId: string) => {
     try {
@@ -158,6 +159,11 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         setCompareQuotePlans(allPlans)
         setIsLoadingPlans(false)
         foundPlans = true
+        // Clear the fallback timeout — we got plans
+        if (fallbackTimeoutRef.current) {
+          clearTimeout(fallbackTimeoutRef.current)
+          fallbackTimeoutRef.current = null
+        }
         setTimeout(() => {
           document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
@@ -166,8 +172,12 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
     isProcessing.current = false
 
-    // If no plans found after draining the queue, stop loading
+    // If no plans found after draining the queue, stop loading and clear timeout
     if (!foundPlans) {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current)
+        fallbackTimeoutRef.current = null
+      }
       setIsLoadingPlans(false)
     }
   }
@@ -241,13 +251,14 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         channelRef.current = channel
 
         // 60s timeout fallback — increased to handle slow connections
-        setTimeout(() => {
+        fallbackTimeoutRef.current = setTimeout(() => {
           const { compareQuotePlans, isLoadingPlans } = useHealthCartStore.getState()
           if (!compareQuotePlans.length && isLoadingPlans) {
             setIsLoadingPlans(false)
             closeEchoConnection(clientRequestId)
             setPlansError('Plans are taking longer than expected. Please try again.')
           }
+          fallbackTimeoutRef.current = null
         }, 60000)
 
       } catch (err) {
