@@ -186,11 +186,13 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   }, [options])
 
   const isDetailsFormState = useMemo(() => {
-    // If form is submitting or we're already fetching, disable
-    if (
-      form.state.isSubmitting ||
-      (clientRequest.id && clientRequest.status === 'fetching')
-    ) {
+    // If clientRequest is actively fetching/submitting, show Searching
+    if (clientRequest.id && clientRequest.status === 'fetching') {
+      return { canSubmit: false, title: 'Searching...' }
+    }
+
+    // If form is submitting (tanstack internal) AND no error yet, show Searching
+    if (form.state.isSubmitting && clientRequest.status !== 'error') {
       return { canSubmit: false, title: 'Searching...' }
     }
 
@@ -731,12 +733,13 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
           >
             {([canSubmit, isSubmitting]) => (
               <Button
-                type="submit"
-                disabled={!canSubmit || isSubmitting}
+                type="button"
+                disabled={!isDetailsFormState.canSubmit}
                 onClick={(e) => {
                   e.preventDefault()
-                  form.handleSubmit()
+                  if (isSubmitting) return
                   setInsurancePlans(null)
+                  form.handleSubmit()
                 }}
                 className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-100 sm:w-auto sm:px-8 dark:text-white"
                 size="lg"

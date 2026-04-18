@@ -198,6 +198,8 @@ export function CoverageOptionsForm() {
     if (!hasAnyPlans) {
       console.log('❌ No plans available from any provider - showing error')
       setIsError(true)
+      // Reset clientRequest status so the Search button stops showing "Searching..."
+      setClientRequest({ ...useTravelInsuranceStore.getState().clientRequest, status: 'error' })
     } else {
       console.log('✅ Plans available - clearing any error state')
       setIsError(false)
@@ -331,12 +333,19 @@ export function CoverageOptionsForm() {
             setExpectedProviders(count)
             console.log(`📋 Expected providers set to: ${count}`)
 
-            // Hard timeout fallback — if not all providers respond, finalize anyway
+            // Hard timeout fallback — if not all providers respond within 30s, finalize anyway
             if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
             allProvidersTimeoutRef.current = setTimeout(() => {
               console.log(`⏰ Timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
               finalizeLoading()
             }, ALL_PROVIDERS_TIMEOUT)
+          } else {
+            // After first provider responded, shorten the timeout to 8s for remaining providers
+            if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
+            allProvidersTimeoutRef.current = setTimeout(() => {
+              console.log(`⏰ Short timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
+              finalizeLoading()
+            }, 8000)
           }
           
           processQueue()
