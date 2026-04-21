@@ -309,7 +309,8 @@ export function CoverageOptionsForm() {
         } else {
           console.log(`⏳ Waiting for more providers (${receivedProvidersRef.current}/${expectedProvidersRef.current})...`)
           isProcessing.current = false
-          setIsLoading(false)
+          // Keep isLoading = true while waiting for remaining providers
+          // so the skeleton shows instead of the "No Plans" card
         }
       }
 
@@ -588,17 +589,16 @@ export function CoverageOptionsForm() {
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
         {isLoading ? (
-          <div className="min-h-screen">
-            <div className="mx-auto w-full max-w-7xl space-y-4">
-              <Skeleton className="h-16 w-full p-4" />
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((_, index) => (
-                  <Skeleton className="h-96 w-full" key={index} />
-                ))}
-              </div>
-            </div>
+          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 py-16">
+            <svg className="text-primary h-12 w-12 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <p className="text-muted-foreground text-base">
+              We're searching for the best plans for you. This may take a moment...
+            </p>
           </div>
-        ) : !hasPlans ? (
+        ) : isError ? (
           <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
             <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-900">
               <div className="mb-4 flex justify-center">
