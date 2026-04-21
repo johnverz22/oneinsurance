@@ -434,8 +434,8 @@ export function ProposalSearch() {
             </div>
             <Button
               onClick={handleSearch}
-              disabled={isLoading || !proposalNumber.trim()}
-              className="from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-100 dark:text-white"
+              disabled={isLoading}
+              className="from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-50 dark:text-white"
               size="lg"
             >
               {isLoading ? (

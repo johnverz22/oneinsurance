@@ -22,6 +22,7 @@ export type CartItem = {
 
 export type HealthInsuredInfo = {
   insuredName: string
+  email: string
   mobile: string
   dateOfBirth: string
   genderCode: 'M' | 'F'

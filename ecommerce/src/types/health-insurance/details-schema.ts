@@ -2,6 +2,7 @@ import z from 'zod'
 
 export const HealthDetailsFormSchema = z.object({
   insuredName: z.string().min(1, { message: 'Please enter your full name.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
   mobile: z.string().regex(/^9\d{9}$/, {
     message: 'Mobile number must start with 9 and be 10 digits long.',
   }),
