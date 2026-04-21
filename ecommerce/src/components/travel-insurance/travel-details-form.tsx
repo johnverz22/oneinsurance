@@ -48,6 +48,8 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
     resetQuoteRefetchCount,
   } = useTravelInsuranceStore()
 
+  const [isSearching, setIsSearching] = useState(false)
+
   // Track domestic mode explicitly — derived from store on init, then controlled by toggle
   const [isDomesticMode, setIsDomesticMode] = useState(() => {
     return travelDetails.travelDetailList?.length > 0 &&
@@ -154,6 +156,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       // Clear any previous error state before making new request
       // Don't set status to undefined - just let the new request set it
       
+      setIsSearching(true)
       const clientRequestId = await mutateAsync({ values: value, agentCode: agentCode ?? '' })
       setFormModified(false)
       setClientRequest({
@@ -167,6 +170,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
         block: 'start',
       })
     } catch (err: any) {
+      setIsSearching(false)
       const errorMessage = err?.message || 'Unable to load travel insurance plans.'
       setClientRequest({ status: 'error', errorMessage })
       throw err
@@ -191,11 +195,10 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       return { canSubmit: false, title: 'Searching...' }
     }
 
-    // If form is submitting (tanstack internal) AND no error yet, show Searching
-    if (form.state.isSubmitting && clientRequest.status !== 'error') {
+    // Only show Searching when the API call is actually in progress
+    if (isSearching && clientRequest.status !== 'error') {
       return { canSubmit: false, title: 'Searching...' }
     }
-
     // Use Zod schema to perform a quick validation on currentValues so
     // we can enable the Search button immediately after user edits fields
     try {
@@ -207,11 +210,18 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       return { canSubmit: false, title: 'Search' }
     }
   }, [
-    form.state.isSubmitting,
+    isSearching,
     currentValues,
     clientRequest.id,
     clientRequest.status,
   ])
+
+  // Reset isSearching when clientRequest status becomes error (e.g. finalizeLoading sets it)
+  useEffect(() => {
+    if (clientRequest.status === 'error') {
+      setIsSearching(false)
+    }
+  }, [clientRequest.status])
 
   useEffect(() => {
     // Skip setting form as modified on initial load
@@ -734,14 +744,15 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
             {([canSubmit, isSubmitting]) => (
               <Button
                 type="button"
-                disabled={!isDetailsFormState.canSubmit}
+                disabled={isSearching && clientRequest.status !== 'error'}
                 onClick={(e) => {
                   e.preventDefault()
-                  if (isSubmitting) return
+                  if (isSearching && clientRequest.status !== 'error') return
+                  setIsSearching(false)
                   setInsurancePlans(null)
                   form.handleSubmit()
                 }}
-                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-100 sm:w-auto sm:px-8 dark:text-white"
+                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
                 size="lg"
               >
                 {isDetailsFormState.title}
