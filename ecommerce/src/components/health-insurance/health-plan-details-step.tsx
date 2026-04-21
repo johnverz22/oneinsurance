@@ -5,17 +5,21 @@ import { ArrowLeft } from 'lucide-react'
 import { useHealthAvailStore } from '@/store/health-avail-store'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { COMPANIES } from '@/constants/companies'
+import { useParams, useRouter } from 'next/navigation'
 
 export function HealthPlanDetailsStep() {
-  const { prevStep, nextStep } = useHealthAvailStore()
+  const { nextStep } = useHealthAvailStore()
   const { items, insuredInfo } = useHealthCartStore()
+  const params = useParams()
+  const router = useRouter()
+  const agentCode = params['agent-code'] as string
   const item = items[0]
 
   if (!item) {
     return (
       <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
         <p className="text-muted-foreground">No plan selected. Please go back and select a plan.</p>
-        <Button variant="outline" className="mt-4 rounded-full" onClick={prevStep}>Back</Button>
+        <Button variant="outline" className="mt-4 rounded-full" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>Back</Button>
       </div>
     )
   }
@@ -104,7 +108,7 @@ export function HealthPlanDetailsStep() {
       </div>
 
       <div className="flex items-center justify-between">
-        <Button variant="outline" className="rounded-full px-8" onClick={prevStep}>
+        <Button variant="outline" className="rounded-full px-8" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>

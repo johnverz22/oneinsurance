@@ -136,6 +136,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
 
         setInsuredInfo({
           insuredName: value.insuredName,
+          email: value.email ?? '',
           mobile: value.mobile,
           dateOfBirth: value.dateOfBirth,
           genderCode: value.genderCode,

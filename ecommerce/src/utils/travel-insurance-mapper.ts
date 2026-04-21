@@ -13,6 +13,14 @@ import { InsurancePlan } from '@/types/plan'
 import { calculateAge } from './calculate-age'
 import { log } from 'console'
 
+// Helper: format a Date to YYYY-MM-DD using LOCAL date parts (avoids UTC timezone shift)
+function formatLocalDate(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 export function mapTravelInsuranceStoreToFullQuoteRequest(
   travelInsurance: Omit<
     TravelInsuranceStoreState,
@@ -83,26 +91,9 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
     // )
   }
 
-  const departureDate = new Date(
-    travelInsurance.travelDetails.departureDate.toString()
-  )
-    .toISOString()
-    .split('T')
-    .at(0)
-
-  const returnDate = new Date(
-    travelInsurance.travelDetails.returnDate!.toString()
-  )
-    .toISOString()
-    .split('T')
-    .at(0)
-
-  const dateOfBirth = new Date(
-    travelInsurance.travelDetails.dateOfBirth!.toString()
-  )
-    .toISOString()
-    .split('T')
-    .at(0)
+  const departureDate = formatLocalDate(new Date(travelInsurance.travelDetails.departureDate.toString()))
+  const returnDate = formatLocalDate(new Date(travelInsurance.travelDetails.returnDate!.toString()))
+  const dateOfBirth = formatLocalDate(new Date(travelInsurance.travelDetails.dateOfBirth!.toString()))
 
   const age = calculateAge(new Date(travelInsurance.travelDetails.dateOfBirth!))
 
@@ -119,7 +110,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       AddressLine1: kycProfile.address,
       AddressLine2: null,
       City: kycProfile.city,
-      DateOfBirth: kycDobDate.toISOString().split('T').at(0),
+      DateOfBirth: formatLocalDate(kycDobDate),
       Email: kycProfile.email,
       FirstName: kycProfile.firstName,
       Gender: kycProfile.gender === 'male' ? 'M' : kycProfile.gender === 'female' ? 'F' : 'M',
@@ -147,13 +138,13 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       AddressLine1: traveler.address.line1,
       AddressLine2: traveler.address.line2 || null,
       City: traveler.address.city,
-      DateOfBirth: dobDate.toISOString().split('T').at(0),
+      DateOfBirth: formatLocalDate(dobDate),
       Email: traveler.email,
       FirstName: traveler.firstName,
       Gender: traveler.gender,
       IdNo: traveler.idNumber,
       IdTypeCode: traveler.idType,
-      IsPolicyHolder: 'N', // Travelers are not policy holders when KYC profile is provided, or first traveler is policy holder when no KYC
+      IsPolicyHolder: 'N',
       LastName: traveler.lastName,
       MiddleName: traveler.middleName || '',
       Mobile: `+63${traveler.mobileNumber}`,
@@ -190,7 +181,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
       AddressLine2: traveler.address.line2 || null,
       Age: travelerAge,
       City: traveler.address.city,
-      DateOfBirth: dobDate.toISOString().split('T').at(0),
+      DateOfBirth: formatLocalDate(dobDate),
       Email: traveler.email,
       Gender: traveler.gender,
       IdNo: traveler.idNumber,
@@ -214,7 +205,7 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
         FirstName: traveler.beneficiary.firstName,
         MiddleName: traveler.beneficiary.middleName || null,
         LastName: traveler.beneficiary.lastName!,
-        DateOfBirth: beneficiaryDob.toISOString().split('T').at(0)!,
+        DateOfBirth: formatLocalDate(beneficiaryDob),
         Relationship: traveler.beneficiary.relationship!,
       } as Nominee)
     }
@@ -239,7 +230,6 @@ export function mapTravelInsuranceStoreToFullQuoteRequest(
         : new Date(traveler.dateOfBirth)
     
     const formattedDob = `${String(dobDate.getMonth() + 1).padStart(2, '0')}-${String(dobDate.getDate()).padStart(2, '0')}-${dobDate.getFullYear()}`
-
     return {
       first_name: traveler.firstName,
       middle_name: traveler.middleName || '',

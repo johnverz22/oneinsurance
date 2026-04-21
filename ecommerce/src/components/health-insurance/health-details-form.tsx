@@ -137,10 +137,9 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
     // Keep looping — wait briefly for any late-arriving cache keys
     let emptyLoops = 0
-    while (emptyLoops < 3) {
+    while (emptyLoops < 2) {
       if (queue.current.length === 0) {
-        // Wait a bit for more events to arrive before giving up
-        await new Promise(r => setTimeout(r, 500))
+        await new Promise(r => setTimeout(r, 200))
         emptyLoops++
         continue
       }
@@ -185,11 +184,12 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const form = useForm({
     defaultValues: {
       insuredName: '',
+      email: '',
       mobile: '',
       dateOfBirth: '',
       genderCode: '' as 'M' | 'F',
       isSmoker: '' as 'Y' | 'N',
-      effectiveDate: new Date().toISOString().split('T')[0], // defaults to today e.g. 2026-04-16
+      effectiveDate: new Date().toISOString().split('T')[0],
       agreedToTerms: false,
     } as HealthDetailsFormType,
     onSubmit: async ({ value }) => {
@@ -203,6 +203,17 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         }, 100)
 
         const payload = buildPayload(value, agentCode)
+
+        // Establish Echo connection BEFORE calling compare-quote API
+        // so the WebSocket is ready when the BE fires the event
+        const echo = getEcho()
+        if (echo.connector.pusher.connection.state !== 'connected') {
+          echo.connector.pusher.connect()
+          // Wait briefly for connection to establish
+          await new Promise(r => setTimeout(r, 300))
+        }
+        echoRef.current = echo
+
         const res = await fetch('/api/health-insurance/compare-quote', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -219,12 +230,14 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
         const data = await res.json()
         const clientRequestId = data?.data?.ClientRequestId ?? data?.ClientRequestId
+        const supportedCarriers: string[] = data?.data?.SupportedCarrier ?? []
 
         if (!clientRequestId) throw new Error('No ClientRequestId returned')
 
         // Save insured info
         setInsuredInfo({
           insuredName: value.insuredName,
+          email: value.email,
           mobile: value.mobile,
           dateOfBirth: value.dateOfBirth,
           genderCode: value.genderCode,
@@ -232,12 +245,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           effectiveDate: value.effectiveDate,
         })
 
-        // Subscribe to WebSocket channel using clientRequestId — same as travel insurance
-        const echo = getEcho()
-        if (echo.connector.pusher.connection.state !== 'connected') {
-          echo.connector.pusher.connect()
-        }
-
+        // Subscribe to WebSocket channel using clientRequestId
         const channel = echo
           .channel(clientRequestId)
           .listen('.insurance.plan.received', (e: any) => {
@@ -247,8 +255,21 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
             processQueue()
           })
 
-        echoRef.current = echo
         channelRef.current = channel
+
+        // Fallback poll: if the WebSocket event fired before we subscribed (BE is fast),
+        // try fetching known cache key patterns directly after a short delay
+        setTimeout(async () => {
+          if (queue.current.length === 0 && useHealthCartStore.getState().isLoadingPlans) {
+            console.log('No WebSocket events received yet — trying direct cache poll...')
+            const carriers = supportedCarriers.length > 0 ? supportedCarriers : ['OONAPH']
+            for (const carrier of carriers) {
+              const cacheKey = `${carrier}_${clientRequestId}`
+              queue.current.push(cacheKey)
+            }
+            processQueue()
+          }
+        }, 1500)
 
         // 60s timeout fallback — increased to handle slow connections
         fallbackTimeoutRef.current = setTimeout(() => {
@@ -287,7 +308,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  placeholder="Enter Full Name"
+                  placeholder="e.g. Juan dela Cruz"
                   className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
@@ -295,10 +316,22 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
             )}
           </form.Field>
 
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
-            <Input placeholder="Enter Email Address" className="h-11 rounded-full" />
-          </div>
+          <form.Field name="email">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
+                <Input
+                  type="email"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="e.g. juan@email.com"
+                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
 
           <form.Field name="mobile">
             {(field) => (
@@ -308,7 +341,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  placeholder="Enter Phone Number"
+                  placeholder="e.g. 9171234567"
                   className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
@@ -419,7 +452,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
             {([canSubmit, isSubmitting]) => (
               <Button
                 type="submit"
-                disabled={!canSubmit || !!isSubmitting}
+                disabled={!!isSubmitting}
                 onClick={(e) => { e.preventDefault(); form.handleSubmit() }}
                 className="from-primary to-accent h-11 w-full rounded-full bg-gradient-to-r px-10 text-sm font-semibold text-white sm:w-auto"
               >
