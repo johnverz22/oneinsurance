@@ -216,9 +216,9 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
     clientRequest.status,
   ])
 
-  // Reset isSearching when clientRequest status becomes error (e.g. finalizeLoading sets it)
+  // Reset isSearching when clientRequest status changes
   useEffect(() => {
-    if (clientRequest.status === 'error') {
+    if (clientRequest.status === 'error' || clientRequest.status === 'success') {
       setIsSearching(false)
     }
   }, [clientRequest.status])

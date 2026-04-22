@@ -120,7 +120,7 @@ export function CoverageOptionsForm() {
   // Configuration constants
   const CONCURRENCY_LIMIT = 5
   const REQUEST_TIMEOUT = 10000 // 10 seconds
-  const ALL_PROVIDERS_TIMEOUT = 30000 // 30 seconds max wait for all providers
+  const ALL_PROVIDERS_TIMEOUT = 10000 // 10 seconds max wait for all providers
 
   // Helper function: Fetch plan with timeout
   const fetchPlanWithTimeout = async (
@@ -309,8 +309,15 @@ export function CoverageOptionsForm() {
         } else {
           console.log(`⏳ Waiting for more providers (${receivedProvidersRef.current}/${expectedProvidersRef.current})...`)
           isProcessing.current = false
-          // Keep isLoading = true while waiting for remaining providers
-          // so the skeleton shows instead of the "No Plans" card
+          // Show plans immediately if we have any — don't wait for all providers
+          const currentPlans = useTravelInsuranceStore.getState().insurancePlans
+          const hasPlans = currentPlans?.data?.some((p: any) => p.Plans && p.Plans.length > 0)
+          if (hasPlans) {
+            // Display what we have now, keep listening for more providers
+            setIsLoading(false)
+            setIsError(false)
+          }
+          // Keep the timeout running — it will finalize when remaining providers respond or time out
         }
       }
 
