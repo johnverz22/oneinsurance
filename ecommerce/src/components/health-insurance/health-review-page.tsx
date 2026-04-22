@@ -43,7 +43,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
       planName: item.planName,
       providerName: providerName,
       premium: item.premium,
-      insuredName: personalInfo.fullName,
+      insuredName: `${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim(),
       dateOfBirth: insuredInfo?.dateOfBirth ?? '',
       gender: insuredInfo?.genderCode ?? 'M',
       isSmoker: insuredInfo?.isSmoker ?? 'N',
@@ -138,7 +138,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
           <CheckCircle className="text-primary" />
         </CardHeader>
         <CardContent className="space-y-1">
-          {row('Full Name', personalInfo.fullName)}
+          {row('Full Name', `${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim())}
           {row('Email', personalInfo.email)}
           {row('Phone', personalInfo.phone ? `+63 ${personalInfo.phone}` : '')}
           {row('Place of Birth', personalInfo.placeOfBirth)}
