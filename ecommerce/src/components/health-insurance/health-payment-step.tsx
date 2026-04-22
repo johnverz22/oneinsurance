@@ -45,14 +45,14 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
 
   // Card fields — pre-filled from personalInfo
   const [cardNumber, setCardNumber] = useState('')
-  const [cardholderName, setCardholderName] = useState(`${personalInfo.fullName.split(' ')[0]} ${personalInfo.fullName.split(' ').slice(1).join(' ')}`.trim().toUpperCase())
+  const [cardholderName, setCardholderName] = useState(`${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim().toUpperCase())
   const [expiryMonth, setExpiryMonth] = useState('')
   const [expiryYear, setExpiryYear] = useState('')
   const [cvv, setCvv] = useState('')
 
   // Personal details — pre-filled
-  const [firstName, setFirstName] = useState(personalInfo.fullName.split(' ')[0] ?? '')
-  const [lastName, setLastName] = useState(personalInfo.fullName.split(' ').slice(1).join(' ') || personalInfo.fullName)
+  const [firstName, setFirstName] = useState(personalInfo.firstName ?? '')
+  const [lastName, setLastName] = useState(personalInfo.lastName ?? '')
   const [email, setEmail] = useState(personalInfo.email)
   const [phone, setPhone] = useState(personalInfo.phone)
 
@@ -212,7 +212,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
   const handleViewInvoice = () => {
     setShowSuccess(false)
     clearCart()
-    router.push(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(personalInfo.fullName)}&total=${grandTotal}&proposal=${proposalNo ?? ''}`)
+    router.push(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(`${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim())}&total=${grandTotal}&proposal=${proposalNo ?? ''}`)
   }
 
   const err = (key: string) => errors[key] ? <p className="mt-1 text-xs text-red-500">{errors[key]}</p> : null
