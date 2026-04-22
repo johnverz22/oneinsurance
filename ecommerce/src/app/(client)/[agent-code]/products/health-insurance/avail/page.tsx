@@ -17,7 +17,12 @@ import { cn } from '@/lib/utils'
 import type { PersonalInfoData } from '@/components/health-insurance/health-personal-info-form'
 
 const EMPTY_PERSONAL_INFO: PersonalInfoData = {
-  fullName: '',
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  suffix: 'No Suffix',
+  gender: 'M',
+  dateOfBirth: '',
   email: '',
   phone: '',
   placeOfBirth: '',
@@ -28,6 +33,8 @@ const EMPTY_PERSONAL_INFO: PersonalInfoData = {
   province: '',
   city: '',
   postCode: '',
+  isCovidVaccinated: false,
+  isDataSharingConsent: false,
 }
 
 function HealthAvailContent() {
