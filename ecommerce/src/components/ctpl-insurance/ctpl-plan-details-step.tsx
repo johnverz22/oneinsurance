@@ -1,92 +1,261 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { useParams, useRouter } from 'next/navigation'
-import { COMPANIES } from '@/constants/companies'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { format } from 'date-fns'
 
-const PRICES: Record<string, number> = {
-  PRIVATECAR: 599, MOTORCYCLE: 290, TPMB: 1150, ACTC: 790, LMT: 660, HTPB: 1250, PTB: 1100,
-}
-
-const PLAN_BENEFITS: Record<string, string[]> = {
-  PRIVATECAR: ['Third-party bodily injury coverage', 'Third-party property damage', 'Legal liability coverage', 'Ride hailing included'],
-  MOTORCYCLE: ['Third-party bodily injury coverage', 'Third-party property damage', 'Legal liability coverage', 'Ride hailing included'],
-  TPMB: ['Third-party bodily injury coverage', 'Third-party property damage', 'Public utility vehicle coverage', 'Passenger liability'],
-  ACTC: ['Third-party bodily injury coverage', 'Third-party property damage', 'Tourist car coverage', 'AC vehicle included'],
-  LMT: ['Third-party bodily injury coverage', 'Third-party property damage', 'Cargo vehicle coverage', 'Delivery vehicle included'],
-  HTPB: ['Third-party bodily injury coverage', 'Third-party property damage', 'Heavy vehicle coverage', 'Private bus included'],
-  PTB: ['Third-party bodily injury coverage', 'Third-party property damage', 'Public bus coverage', 'Tourist bus included'],
+type Plan = {
+  CarrierCode: string
+  CarrierName: string
+  CarrierPlanCode: string
+  CarrierProductCode: string
+  CarrierProductName: string
+  Premium: number
+  Benefits?: string[]
 }
 
 export default function CtplPlanDetailsStep() {
-  const { selectedVehicle, increaseStep } = useCtplInsuranceStateStore()
+  const { 
+    selectedVehicle, 
+    insuranceType, 
+    duration,
+    sumInsured,
+    setSumInsured,
+    increaseStep,
+    setClientRequestId,
+    updateCoverageOption
+  } = useCtplInsuranceStateStore()
+  
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
 
-  const price = PRICES[selectedVehicle?.code ?? 'PRIVATECAR'] ?? 599
-  const benefits = PLAN_BENEFITS[selectedVehicle?.code ?? 'PRIVATECAR'] ?? []
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [sumInsuredInput, setSumInsuredInput] = useState(sumInsured?.toString() || '100000')
+
+  // Fetch plans on mount
+  useEffect(() => {
+    if (insuranceType && selectedVehicle?.code && duration?.effectiveDate) {
+      fetchPlans()
+    }
+  }, [insuranceType, selectedVehicle, duration])
+
+  const fetchPlans = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const effectiveDate = format(duration.effectiveDate, 'yyyy-MM-dd')
+      const expiryDate = format(duration.expiryDate, 'yyyy-MM-dd')
+
+      const basePayload = {
+        Duration: duration.duration.toString(),
+        EffectiveDate: effectiveDate,
+        ExpiryDate: expiryDate,
+        IsCTPL: insuranceType === 'CTPL' ? 'Y' : 'N',
+        PolicyLobList: [
+          {
+            ProductCode: 'MOTOR',
+            PolicyRiskList: [
+              {
+                ProductElementCode: 'R00004',
+                IsPlateNoAvailable: 'Y',
+              },
+            ],
+          },
+        ],
+        ProductCode: 'MOTOR',
+        ProductType: selectedVehicle.code,
+        ProductVersion: '1.0',
+        AgentCode: agentCode,
+        Slug: insuranceType === 'CTPL' ? 'motor-ctpl' : 'motor-comprehensive',
+      }
+
+      // Add SumInsured for Comprehensive
+      const payload = insuranceType === 'COMPREHENSIVE' 
+        ? { ...basePayload, SumInsured: parseInt(sumInsuredInput) }
+        : basePayload
+
+      const endpoint = insuranceType === 'CTPL' 
+        ? '/api/motor-insurance/ctpl/compare-quote'
+        : '/api/motor-insurance/comprehensive/compare-quote'
+
+      console.log('Fetching plans with payload:', payload)
+
+      const response = await axios.post(endpoint, payload)
+
+      console.log('Compare quote response:', response.data)
+
+      // Store ClientRequestId
+      if (response.data?.ClientRequestId) {
+        setClientRequestId(response.data.ClientRequestId)
+      }
+
+      // Extract plans from response
+      const plansList = response.data?.SupportedCarrier || []
+      setPlans(plansList)
+
+      if (plansList.length === 0) {
+        setError('No plans available for this vehicle type')
+      }
+    } catch (err: any) {
+      console.error('Error fetching plans:', err)
+      setError(err.response?.data?.message || 'Failed to fetch plans. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSelectPlan = (plan: Plan) => {
+    setSelectedPlan(plan)
+    // Cast to any to avoid type mismatch - the store will handle the actual plan data
+    updateCoverageOption({
+      selectedPlan: plan as any,
+      carrierCode: plan.CarrierCode,
+    })
+  }
+
+  const handleContinue = () => {
+    if (!selectedPlan) {
+      alert('Please select a plan to continue')
+      return
+    }
+    
+    // Save sumInsured for Comprehensive
+    if (insuranceType === 'COMPREHENSIVE') {
+      setSumInsured(parseInt(sumInsuredInput))
+    }
+    
+    increaseStep()
+  }
+
+  const handleSumInsuredChange = (value: string) => {
+    setSumInsuredInput(value)
+  }
 
   return (
     <div className="space-y-6">
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <h2 className="from-primary to-accent mb-6 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
-          Your Plan Details
+          {insuranceType === 'CTPL' ? 'CTPL' : 'Comprehensive'} Insurance Plans
         </h2>
 
-        {/* Plan Card */}
-        <div className="mb-6 flex items-start gap-4">
-          <div className="flex h-16 w-32 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
-            <span className="text-2xl">🚗</span>
-          </div>
+        {/* Vehicle Info */}
+        <div className="mb-6 flex items-start gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+          <span className="text-3xl">🚗</span>
           <div className="flex-1">
-            <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">CTPL Insurance</span>
-            <h3 className="text-lg font-black uppercase text-gray-900">{selectedVehicle?.title}</h3>
-            <p className="text-sm text-gray-500">Ride Hailing Included</p>
-          </div>
-          <div className="shrink-0">
-            <span className="rounded-full bg-[#F5A623] px-4 py-2 text-sm font-bold text-white">
-              ₱ {price.toLocaleString()}
+            <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">
+              {insuranceType} Insurance
             </span>
+            <h3 className="text-lg font-black uppercase text-gray-900">{selectedVehicle?.title}</h3>
+            <p className="text-sm text-gray-500">Coverage Period: {duration.duration} Year{duration.duration > 1 ? 's' : ''}</p>
           </div>
         </div>
 
-        <hr className="mb-4" />
+        {/* Sum Insured Input for Comprehensive */}
+        {insuranceType === 'COMPREHENSIVE' && (
+          <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <Label htmlFor="sumInsured" className="mb-2 block text-sm font-semibold text-gray-700">
+              Sum Insured (Vehicle Value) <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
+                <Input
+                  id="sumInsured"
+                  type="number"
+                  value={sumInsuredInput}
+                  onChange={(e) => handleSumInsuredChange(e.target.value)}
+                  className="pl-8"
+                  placeholder="100000"
+                  min="10000"
+                  step="10000"
+                />
+              </div>
+              <Button
+                onClick={fetchPlans}
+                disabled={loading || !sumInsuredInput}
+                className="from-primary to-accent bg-gradient-to-r text-white"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update Plans'}
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">Enter the current market value of your vehicle</p>
+          </div>
+        )}
 
-        {/* Benefits */}
-        <ul className="mb-6 space-y-2.5">
-          {benefits.map((b, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <svg className="text-primary mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <span className="text-sm font-semibold uppercase tracking-wide text-gray-700">{b}</span>
-            </li>
-          ))}
-        </ul>
+        <hr className="mb-6" />
 
-        <hr className="mb-4" />
+        {/* Loading State */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="text-primary mb-4 h-12 w-12 animate-spin" />
+            <p className="text-gray-600">Loading available plans...</p>
+          </div>
+        )}
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-xs text-gray-400">Vehicle Type</p>
-            <p className="font-semibold text-gray-800">{selectedVehicle?.title}</p>
+        {/* Error State */}
+        {error && !loading && (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center">
+            <p className="text-red-600">{error}</p>
+            <Button
+              onClick={fetchPlans}
+              variant="outline"
+              className="mt-4"
+            >
+              Try Again
+            </Button>
           </div>
-          <div>
-            <p className="text-xs text-gray-400">Premium</p>
-            <p className="font-semibold text-gray-800">₱ {price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+        )}
+
+        {/* Plans List */}
+        {!loading && !error && plans.length > 0 && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">Select a plan to continue:</p>
+            {plans.map((plan, index) => (
+              <div
+                key={index}
+                onClick={() => handleSelectPlan(plan)}
+                className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                  selectedPlan?.CarrierCode === plan.CarrierCode && selectedPlan?.CarrierPlanCode === plan.CarrierPlanCode
+                    ? 'border-primary bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="rounded-full border border-gray-200 bg-white px-3 py-0.5 text-xs font-semibold text-gray-600">
+                        {plan.CarrierName || plan.CarrierCode}
+                      </span>
+                      {selectedPlan?.CarrierCode === plan.CarrierCode && selectedPlan?.CarrierPlanCode === plan.CarrierPlanCode && (
+                        <span className="text-primary text-sm">✓ Selected</span>
+                      )}
+                    </div>
+                    <h4 className="mb-1 text-base font-black uppercase text-gray-900">
+                      {plan.CarrierProductName || plan.CarrierPlanCode}
+                    </h4>
+                    <p className="text-xs text-gray-500">Plan Code: {plan.CarrierPlanCode}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="rounded-full bg-[#F5A623] px-4 py-2 text-sm font-bold text-white">
+                      ₱ {plan.Premium?.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="text-xs text-gray-400">Coverage Period</p>
-            <p className="font-semibold text-gray-800">1 Year</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400">Product Code</p>
-            <p className="font-semibold text-gray-800">CTPL</p>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between">
@@ -100,7 +269,8 @@ export default function CtplPlanDetailsStep() {
         </Button>
         <Button
           className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
-          onClick={increaseStep}
+          onClick={handleContinue}
+          disabled={!selectedPlan || loading}
         >
           Continue to Vehicle Details
         </Button>

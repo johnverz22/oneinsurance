@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { IdUploadComponent } from '@/components/id-upload/id-upload-component'
 import { provinces } from '@/constants/phil-prov'
 import { citiesMunicipalities } from '@/constants/phil-city-mun'
 import { getZipCodeByCityCode } from '@/utils/address-util'
+import { useParams } from 'next/navigation'
+import { format } from 'date-fns'
 
 const ID_TYPES = [
   { value: 'PAS', label: 'Passport' },
@@ -23,10 +25,29 @@ const ID_TYPES = [
 const SUFFIXES = ['No Suffix', 'Jr.', 'Sr.', 'II', 'III', 'IV', 'V']
 
 export default function CtplPersonalInfoForm() {
-  const { personalInfo, setPersonalInfo, increaseStep, decreaseStep } = useCtplInsuranceStateStore()
+  const { 
+    personalInfo, 
+    setPersonalInfo, 
+    increaseStep, 
+    decreaseStep,
+    insuranceType,
+    selectedVehicle,
+    duration,
+    vehicleRegistration,
+    coverageOption,
+    clientRequestId,
+    sumInsured,
+    setFullQuoteResponse
+  } = useCtplInsuranceStateStore()
+  
+  const params = useParams()
+  const agentCode = params['agent-code'] as string
+  
   const [selectedProvinceCode, setSelectedProvinceCode] = useState('')
   const [selectedCityCode, setSelectedCityCode] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [apiError, setApiError] = useState('')
 
   const [form, setForm] = useState({
     firstName: personalInfo.firstName || '',
@@ -71,27 +92,123 @@ export default function CtplPersonalInfoForm() {
     return Object.keys(e).length === 0
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validate()) return
-    setPersonalInfo({
-      ...personalInfo,
-      firstName: form.firstName,
-      middleName: form.middleName,
-      lastName: form.lastName,
-      suffix: form.suffix,
-      gender: form.gender,
-      dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth) : new Date(),
-      idType: form.idType,
-      idNumber: form.idNumber,
-      province: form.province,
-      city: form.city,
-      zipCode: form.zipCode,
-      addressLine1: form.addressLine1,
-      addressLine2: form.addressLine2,
-      mobileNumber: form.mobileNumber,
-      email: form.email,
-    })
-    increaseStep()
+    
+    setApiError('')
+    setIsSubmitting(true)
+    
+    try {
+      // Save personal info to store first
+      setPersonalInfo({
+        ...personalInfo,
+        firstName: form.firstName,
+        middleName: form.middleName,
+        lastName: form.lastName,
+        suffix: form.suffix,
+        gender: form.gender,
+        dateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth) : new Date(),
+        idType: form.idType,
+        idNumber: form.idNumber,
+        province: form.province,
+        city: form.city,
+        zipCode: form.zipCode,
+        addressLine1: form.addressLine1,
+        addressLine2: form.addressLine2,
+        mobileNumber: form.mobileNumber,
+        email: form.email,
+      })
+
+      // Determine API endpoint based on insurance type
+      const endpoint = insuranceType === 'CTPL' 
+        ? '/api/motor-insurance/ctpl/full-quote'
+        : '/api/motor-insurance/comprehensive/full-quote'
+
+      // Build full-quote payload
+      const payload: any = {
+        CarrierCode: coverageOption.carrierCode,
+        CarrierPlanCode: coverageOption.selectedPlan?.CarrierPlanCode,
+        CarrierProductCode: coverageOption.selectedPlan?.CarrierProductCode,
+        Duration: String(duration.duration),
+        EffectiveDate: format(duration.effectiveDate, 'yyyy-MM-dd'),
+        ExpiryDate: format(duration.expiryDate, 'yyyy-MM-dd'),
+        IsCTPL: insuranceType === 'CTPL' ? 'Y' : 'N',
+        PolicyCustomerList: [{
+          AddrProvince: selectedProvinceCode || form.province,
+          AddressLine1: form.addressLine1,
+          AddressLine2: form.addressLine2,
+          City: selectedCityCode || form.city,
+          CustomerType: 'INDIVIDUAL',
+          DateOfBirth: form.dateOfBirth ? new Date(form.dateOfBirth).toISOString() : new Date().toISOString(),
+          Email: form.email,
+          FirstName: form.firstName,
+          Gender: form.gender,
+          IdNo: form.idNumber,
+          IdTypeCode: form.idType,
+          LastName: form.lastName,
+          MiddleName: form.middleName,
+          Mobile: form.mobileNumber,
+          PostCode: parseInt(form.zipCode) || 0,
+          Suffix: form.suffix === 'No Suffix' ? '' : form.suffix,
+          Title: form.gender === 'M' ? 'Mr' : form.gender === 'F' ? 'Miss' : ''
+        }],
+        PolicyLobList: [{
+          PolicyRiskList: [{
+            BodyType: vehicleRegistration.bodyType,
+            ChassisNo: vehicleRegistration.chassisNumber,
+            DateOfRegistration: format(new Date(vehicleRegistration.dateOfRegistration), 'yyyy-MM-dd'),
+            EngineNo: vehicleRegistration.engineNumber,
+            FieldOfficeCode: vehicleRegistration.fieldOfficeCode,
+            IsPlateNoAvailable: vehicleRegistration.plateNumber ? 'Y' : 'N',
+            LicensePlateNumber: vehicleRegistration.plateNumber,
+            ModelYear: String(vehicleRegistration.modelYear),
+            MvFileNumber: vehicleRegistration.mvFileNumber,
+            ProductElementCode: 'R00004', // Default risk element code
+            SubModel: vehicleRegistration.subModel,
+            VehicleMake: vehicleRegistration.make,
+            VehicleModel: vehicleRegistration.model,
+            VehicleUsage: vehicleRegistration.typeOfUse
+          }],
+          ProductCode: 'MOTOR'
+        }],
+        ProductCode: 'MOTOR',
+        ProductType: selectedVehicle?.code || 'MOTORCYCLE',
+        ProductVersion: '1.0',
+        AgentCode: agentCode,
+        Slug: insuranceType === 'CTPL' ? 'motor-ctpl' : 'motor-comprehensive',
+        ClientRequestId: clientRequestId
+      }
+
+      // Add SumInsured for Comprehensive
+      if (insuranceType === 'COMPREHENSIVE' && sumInsured) {
+        payload.SumInsured = sumInsured
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to request full quote')
+      }
+
+      const data = await response.json()
+      console.log('Full quote response:', data)
+
+      // Save full quote response to store
+      setFullQuoteResponse(data)
+
+      // Navigate to review page
+      increaseStep()
+    } catch (error) {
+      console.error('Full quote error:', error)
+      setApiError(error instanceof Error ? error.message : 'Failed to request full quote. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const err = (field: string) => errors[field] ? <p className="mt-1 text-xs text-red-500">{errors[field]}</p> : null
@@ -247,7 +364,7 @@ export default function CtplPersonalInfoForm() {
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="outline" className="rounded-full px-8" onClick={decreaseStep}>
+        <Button variant="outline" className="rounded-full px-8" onClick={decreaseStep} disabled={isSubmitting}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
@@ -255,10 +372,25 @@ export default function CtplPersonalInfoForm() {
           size="lg"
           className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
           onClick={handleNext}
+          disabled={isSubmitting}
         >
-          Request Full Quote
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Requesting Quote...
+            </>
+          ) : (
+            'Request Full Quote'
+          )}
         </Button>
       </div>
+
+      {/* API Error */}
+      {apiError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm text-red-600">{apiError}</p>
+        </div>
+      )}
     </div>
   )
 }
