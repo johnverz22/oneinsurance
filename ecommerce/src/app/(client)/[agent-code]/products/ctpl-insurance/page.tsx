@@ -11,6 +11,7 @@ import { CtplInsuranceProduct } from '@/types/ctpl-insurance'
 import { Star, Car, Bike, Truck, Bus } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { removeStorage } from '@/utils/remove-session-storage'
+import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
 
 const VEHICLE_TYPES: (CtplInsuranceProduct & { price: number; subtitle: string; emoji: string })[] = [
   { image: '/images/logo.png', title: 'Private Cars', code: 'PRIVATECAR', price: 599, subtitle: 'Ride hailing included', emoji: '🚗' },
@@ -19,15 +20,6 @@ const VEHICLE_TYPES: (CtplInsuranceProduct & { price: number; subtitle: string; 
   { image: '/images/logo.png', title: 'Tourist Car', code: 'ACTC', price: 790, subtitle: 'AC & tourist cars', emoji: '🚙' },
   { image: '/images/logo.png', title: 'Light & Medium Truck', code: 'LMT', price: 660, subtitle: 'Cargo & delivery', emoji: '🚛' },
   { image: '/images/logo.png', title: 'Heavy Truck & Private Bus', code: 'HTPB', price: 1250, subtitle: 'Heavy commercial vehicles', emoji: '🚚' },
-]
-
-const MOCK_PLANS = [
-  { carrier: 'Malayan Insurance', plan: 'CTPL Basic', price: 599, benefits: ['Third-party bodily injury', 'Third-party property damage', 'Legal liability coverage', 'Unlimited coverage per accident'] },
-  { carrier: 'OONA Insurance', plan: 'CTPL Standard', price: 750, benefits: ['All Basic benefits', 'Passenger personal accident', 'Unnamed driver coverage', 'Emergency roadside assistance'] },
-  { carrier: 'Pacific Cross', plan: 'CTPL Plus', price: 950, benefits: ['All Standard benefits', 'Medical expense coverage', 'UPPA for driver & passengers', 'Priority claims processing'] },
-  { carrier: 'Malayan Insurance', plan: 'CTPL Comprehensive', price: 1200, benefits: ['All Plus benefits', 'Own damage coverage', 'Theft protection', 'Natural disaster coverage'] },
-  { carrier: 'OONA Insurance', plan: 'CTPL Shield', price: 850, benefits: ['Third-party liability', 'Unnamed driver & passenger', 'Self-ignition & theft protection', 'Budget-friendly option'] },
-  { carrier: 'Pacific Cross', plan: 'CTPL Complete', price: 1100, benefits: ['Comprehensive third-party', 'Own vehicle damage', 'Vandalism & collision', 'UPPA & roadside assistance'] },
 ]
 
 const CTPL_FAQS = [
@@ -50,31 +42,143 @@ function CtplInsurance() {
   const router = useRouter()
   const params = useParams()
   const agentCode = params['agent-code'] as string
-  const { reset } = useCtplInsuranceStateStore()
+  const { insuranceType, setInsuranceType, reset, setClientRequestId, updateCoverageOption } = useCtplInsuranceStateStore()
   const [showAll, setShowAll] = useState(false)
-  const [search, setSearch] = useState('')
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false)
+  const [plans, setPlans] = useState<any[]>([])
+  const [plansError, setPlansError] = useState<string | null>(null)
 
   useEffect(() => {
     reset()
     removeStorage('ctpl-insurance-storage')
   }, [])
 
-  const handleBuyNow = (vehicle: typeof VEHICLE_TYPES[0]) => {
+  // Call compare-quote API when insurance type is selected
+  useEffect(() => {
+    if (insuranceType) {
+      fetchPlans()
+    }
+  }, [insuranceType])
+
+  const fetchPlans = async () => {
+    setIsLoadingPlans(true)
+    setPlans([])
+    setPlansError(null)
+    
+    try {
+      const endpoint = insuranceType === 'CTPL'
+        ? '/api/motor-insurance/ctpl/compare-quote'
+        : '/api/motor-insurance/comprehensive/compare-quote'
+
+      // Set default dates (1 year from today)
+      const effectiveDate = new Date()
+      const expiryDate = new Date()
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1)
+
+      // Build PolicyRiskList based on insurance type
+      const policyRiskList = insuranceType === 'COMPREHENSIVE'
+        ? [
+            {
+              ProductElementCode: 'R00004',
+              IsPlateNoAvailable: 'Y',
+              VehicleMake: '3',
+              VehicleModel: '9',
+              BodyType: '4',
+              ModelYear: '2023',
+              SubModel: '17',
+              VehicleUsage: '1',
+            },
+          ]
+        : [
+            {
+              ProductElementCode: 'R00004',
+              IsPlateNoAvailable: 'Y',
+            },
+          ]
+
+      const basePayload = {
+        Duration: '1',
+        EffectiveDate: effectiveDate.toISOString().split('T')[0],
+        ExpiryDate: expiryDate.toISOString().split('T')[0],
+        IsCTPL: insuranceType === 'CTPL' ? 'Y' : 'N',
+        PolicyLobList: [
+          {
+            ProductCode: 'MOTOR',
+            PolicyRiskList: policyRiskList,
+          },
+        ],
+        ProductCode: 'MOTOR',
+        ProductType: 'MOTORCYCLE', // Default to motorcycle, will be updated when user selects
+        ProductVersion: '1.0',
+        AgentCode: agentCode,
+        Slug: insuranceType === 'CTPL' ? 'motor-ctpl' : 'motor-comprehensive',
+      }
+
+      // Add SumInsured for Comprehensive insurance
+      const payload = insuranceType === 'COMPREHENSIVE'
+        ? { ...basePayload, SumInsured: 100000 }
+        : basePayload
+
+      console.log('Calling compare-quote API:', endpoint, payload)
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+      console.log('Compare-quote response:', data)
+
+      if (response.ok && data.success && data.data) {
+        // Store ClientRequestId
+        if (data.data.ClientRequestId) {
+          setClientRequestId(data.data.ClientRequestId)
+        }
+
+        // Extract plans from response
+        const plansList = data.data.CarrierPlanList || []
+        setPlans(plansList)
+        console.log('Plans loaded:', plansList.length)
+        
+        // If no plans returned, show error
+        if (plansList.length === 0) {
+          setPlansError('No plans available for this insurance type.')
+        }
+      } else {
+        console.error('Failed to load plans:', data)
+        const errorMsg = data.error || data.message || 'Failed to load plans. Please try again.'
+        setPlansError(errorMsg)
+        setPlans([])
+      }
+    } catch (error: any) {
+      console.error('Error fetching plans:', error)
+      const errorMsg = error.message || 'Failed to load plans. Please try again.'
+      setPlansError(errorMsg)
+      setPlans([])
+    } finally {
+      setIsLoadingPlans(false)
+    }
+  }
+
+  const handleBuyNow = (plan: any) => {
+    // Store the selected plan
+    updateCoverageOption({
+      carrierCode: plan.CarrierCode,
+      selectedPlan: plan,
+    })
+
+    // Set duration
     const start = new Date()
     const end = new Date()
     end.setFullYear(end.getFullYear() + 1)
-    useCtplInsuranceStateStore.getState().reset()
-    useCtplInsuranceStateStore.getState().setSelectedVehicle({ image: vehicle.image, title: vehicle.title, code: vehicle.code })
     useCtplInsuranceStateStore.getState().setDuration({ duration: 1, effectiveDate: start, expiryDate: end })
+    
+    // Navigate to avail page
     router.push(`/${agentCode}/products/ctpl-insurance/avail`)
   }
 
-  const displayedVehicles = showAll ? VEHICLE_TYPES : VEHICLE_TYPES.slice(0, 2)
-
-  const filteredPlans = MOCK_PLANS.filter(p =>
-    p.plan.toLowerCase().includes(search.toLowerCase()) ||
-    p.carrier.toLowerCase().includes(search.toLowerCase())
-  )
+  const displayedPlans = showAll ? plans : plans.slice(0, 2)
 
   return (
     <div className="relative overflow-hidden">
@@ -117,108 +221,174 @@ function CtplInsurance() {
         </div>
       </div>
 
-      {/* Vehicle Classification */}
-      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
-        <div className="rounded-2xl bg-white p-6 shadow-2xl">
-          <h2 className="mb-1 text-xl font-bold text-gray-900">Vehicle Classification</h2>
-          <p className="mb-5 text-sm text-gray-500">Let our experts recommend the best plan for you</p>
+      {/* Insurance Type Selection */}
+      {!insuranceType && (
+        <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
+          <div className="rounded-2xl bg-white p-8 shadow-2xl">
+            <h2 className="mb-2 text-center text-2xl font-black text-gray-900">Choose Your Insurance Type</h2>
+            <p className="mb-8 text-center text-sm text-gray-500">Select the type of motor insurance you need</p>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {displayedVehicles.map((v) => (
-              <div key={v.code} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{v.emoji}</span>
-                  <div>
-                    <p className="font-bold text-gray-900">{v.title}</p>
-                    <p className="text-xs text-gray-500">{v.subtitle}</p>
-                  </div>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <button
+                onClick={() => setInsuranceType('CTPL')}
+                className="group flex flex-col items-center gap-4 rounded-2xl border-2 border-gray-200 bg-gradient-to-br from-blue-50 to-white p-8 transition-all hover:border-primary hover:shadow-lg"
+              >
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl group-hover:scale-110 transition-transform">
+                  🛡️
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <p className="text-primary font-bold">₱ {v.price.toLocaleString()}</p>
-                  <p className="text-xs text-gray-400">Includes all taxes & fees</p>
-                  <Button
-                    size="sm"
-                    className="from-primary to-accent rounded-full bg-gradient-to-r px-5 text-white"
-                    onClick={() => handleBuyNow(v)}
-                  >
-                    Buy Now
-                  </Button>
+                <div className="text-center">
+                  <h3 className="mb-2 text-xl font-black text-gray-900">CTPL Insurance</h3>
+                  <p className="text-sm text-gray-600">Compulsory Third Party Liability - Required by law for all vehicles</p>
+                  <p className="mt-3 text-xs text-gray-500">Covers third-party bodily injury and property damage</p>
                 </div>
-              </div>
-            ))}
+                <span className="from-primary to-accent mt-2 rounded-full bg-gradient-to-r px-6 py-2 text-sm font-semibold text-white">
+                  Select CTPL
+                </span>
+              </button>
+
+              <button
+                onClick={() => setInsuranceType('COMPREHENSIVE')}
+                className="group flex flex-col items-center gap-4 rounded-2xl border-2 border-gray-200 bg-gradient-to-br from-green-50 to-white p-8 transition-all hover:border-primary hover:shadow-lg"
+              >
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-4xl group-hover:scale-110 transition-transform">
+                  🚗
+                </div>
+                <div className="text-center">
+                  <h3 className="mb-2 text-xl font-black text-gray-900">Comprehensive Insurance</h3>
+                  <p className="text-sm text-gray-600">Complete protection for your vehicle and third parties</p>
+                  <p className="mt-3 text-xs text-gray-500">Covers own damage, theft, and third-party liability</p>
+                </div>
+                <span className="from-primary to-accent mt-2 rounded-full bg-gradient-to-r px-6 py-2 text-sm font-semibold text-white">
+                  Select Comprehensive
+                </span>
+              </button>
+            </div>
           </div>
 
-          {!showAll && (
-            <div className="mt-4 flex justify-center">
-              <Button variant="outline" className="rounded-full px-8" onClick={() => setShowAll(true)}>
-                View All
-              </Button>
-            </div>
-          )}
+          {/* Proposal Search - Below Insurance Type Selection */}
+          <div className="mt-6">
+            <MotorProposalSearch />
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Plans Grid */}
-      <div className="mx-auto mt-16 w-full max-w-7xl px-4">
-        <div className="mb-8 text-center">
-          <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-3xl font-black text-transparent md:text-4xl lg:text-5xl">
-            Choose Your CTPL Plans
-          </h2>
-          <p className="mt-2 text-gray-500">
-            Explore reliable CTPL plans from trusted providers—so you can drive with confidence, knowing you're covered.
-          </p>
-        </div>
-
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search Plans..."
-            className="h-10 w-64 rounded-full border border-gray-200 bg-white px-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          <Button size="sm" className="from-primary to-accent rounded-full bg-gradient-to-r text-white gap-1.5">
-            <span className="text-xs">↑↓</span> Recommended
-          </Button>
-          <Button size="sm" variant="outline" className="rounded-full gap-1.5">
-            All
-          </Button>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredPlans.map((plan, i) => (
-            <div key={i} className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <div className="mb-3 flex h-16 w-32 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
-                <span className="text-xs font-semibold text-gray-400 text-center leading-tight">{plan.carrier}</span>
+      {/* Vehicle Classification / Plans */}
+      {insuranceType && (
+        <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
+          <div className="rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="mb-1 text-xl font-bold text-gray-900">Available Plans</h2>
+                <p className="text-sm text-gray-500">
+                  {insuranceType === 'CTPL' ? 'CTPL Insurance' : 'Comprehensive Insurance'} - Select your plan
+                </p>
               </div>
-              <span className="mb-2 w-fit rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{plan.carrier}</span>
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <h3 className="text-base font-black leading-snug text-gray-900 uppercase">{plan.plan}</h3>
-                <span className="shrink-0 rounded-full bg-[#F5A623] px-3 py-1.5 text-sm font-bold text-white whitespace-nowrap">
-                  ₱ {plan.price.toLocaleString()}
-                </span>
-              </div>
-              <hr className="mb-3 border-gray-100" />
-              <ul className="mb-4 space-y-2.5 flex-1">
-                {plan.benefits.map((b, j) => (
-                  <li key={j} className="flex items-start gap-2">
-                    <svg className="text-primary mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-700">{b}</span>
-                  </li>
-                ))}
-              </ul>
-              <hr className="mb-4 border-gray-100" />
               <Button
-                className="from-primary to-accent w-full rounded-full bg-gradient-to-r py-2.5 text-sm font-semibold text-white"
-                onClick={() => handleBuyNow(VEHICLE_TYPES[0])}
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => {
+                  setInsuranceType(null as any)
+                  setPlans([])
+                  reset()
+                }}
               >
-                Get Started
+                Change Type
               </Button>
             </div>
-          ))}
+
+            {/* Loading Spinner */}
+            {isLoadingPlans && (
+              <div className="flex min-h-[300px] items-center justify-center">
+                <div className="text-center space-y-4">
+                  <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                  <p className="text-sm text-gray-600">Loading available plans...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Plans Display */}
+            {!isLoadingPlans && plans.length > 0 && (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {displayedPlans.map((plan, index) => (
+                    <div key={index} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                          <span className="text-2xl">🚗</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">{plan.CarrierPlanDesc || plan.CarrierName}</p>
+                          <p className="text-xs text-gray-500">{plan.CarrierName}</p>
+                          {plan.ProductType && (
+                            <p className="text-xs text-gray-400">{plan.ProductType}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <p className="text-primary font-bold">₱ {(plan.Premium || 0).toLocaleString()}</p>
+                        <p className="text-xs text-gray-400">Includes all taxes & fees</p>
+                        <Button
+                          size="sm"
+                          className="from-primary to-accent rounded-full bg-gradient-to-r px-5 text-white"
+                          onClick={() => handleBuyNow(plan)}
+                        >
+                          Buy Now
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {plans.length > 2 && !showAll && (
+                  <div className="mt-4 flex justify-center">
+                    <Button variant="outline" className="rounded-full px-8" onClick={() => setShowAll(true)}>
+                      View All ({plans.length} plans)
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* No Plans Found / Error */}
+            {!isLoadingPlans && (plans.length === 0 || plansError) && (
+              <div className="flex min-h-[200px] items-center justify-center">
+                <div className="w-full max-w-2xl rounded-xl border-2 border-orange-200 bg-orange-50 p-6 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
+                    <svg
+                      className="h-8 w-8 text-orange-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="mb-2 text-lg font-bold text-orange-800">
+                    This Insurance is Currently Unavailable
+                  </h3>
+                  <p className="mb-4 text-sm text-orange-700">
+                    {plansError && (plansError.toLowerCase().includes('agent') || 
+                     plansError.toLowerCase().includes('authorized') || 
+                     plansError.toLowerCase().includes('lob') ||
+                     plansError.toLowerCase().includes('not assigned'))
+                      ? "We're sorry, but motor insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
+                      : plansError || 'No plans available at the moment.'}
+                  </p>
+                  <p className="text-xs text-orange-600">
+                    Please contact your agent for assistance or try again later.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Testimonials */}
       <div className="mx-auto mt-16 w-full max-w-7xl px-4">

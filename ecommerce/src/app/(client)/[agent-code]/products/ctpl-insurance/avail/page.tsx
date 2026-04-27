@@ -18,10 +18,27 @@ function CtplAvailContent() {
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
-  const { step, highestVisitedStep, selectedVehicle, setHighestVisitedStep } = useCtplInsuranceStateStore()
+  const { step, highestVisitedStep, selectedVehicle, setHighestVisitedStep, setStep } = useCtplInsuranceStateStore()
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => { setHydrated(true) }, [])
+
+  // Handle step parameter from URL (for proposal search)
+  useEffect(() => {
+    if (hydrated) {
+      const urlParams = new URLSearchParams(window.location.search)
+      const stepParam = urlParams.get('step')
+      
+      if (stepParam) {
+        const targetStep = parseInt(stepParam)
+        if (!isNaN(targetStep) && targetStep >= 0 && targetStep <= 4) {
+          console.log(`📍 Navigating to step ${targetStep} from URL parameter`)
+          setStep(targetStep)
+          setHighestVisitedStep(targetStep)
+        }
+      }
+    }
+  }, [hydrated, setStep, setHighestVisitedStep])
 
   useEffect(() => {
     if (hydrated && !selectedVehicle?.title) {
