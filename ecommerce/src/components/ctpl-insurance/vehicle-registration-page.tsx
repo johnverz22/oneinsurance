@@ -207,14 +207,14 @@ export default function VehicleRegistration() {
                 {(field) => (
                   <div>
                     <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Make
+                      Make (Code)
                     </Label>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="e.g. Toyota"
+                      placeholder="e.g. 3"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -225,14 +225,14 @@ export default function VehicleRegistration() {
                 {(field) => (
                   <div>
                     <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Model
+                      Model (Code)
                     </Label>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="e.g. Vios"
+                      placeholder="e.g. 9"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -243,14 +243,14 @@ export default function VehicleRegistration() {
                 {(field) => (
                   <div>
                     <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Body Type
+                      Body Type (Code)
                     </Label>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="e.g. Sedan"
+                      placeholder="e.g. 4"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -268,7 +268,7 @@ export default function VehicleRegistration() {
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="e.g. 2020"
+                      placeholder="e.g. 2023"
                       autoComplete="off"
                       type="number"
                       min="1900"
@@ -284,15 +284,15 @@ export default function VehicleRegistration() {
                 {(field) => (
                   <div>
                     <div className="mb-2 flex items-center justify-between">
-                      <Label htmlFor={field.name} className="font-semibold">Sub Model</Label>
-                      <span className="text-muted-foreground text-xs">Format: 1.3 E CVT</span>
+                      <Label htmlFor={field.name} className="font-semibold">Sub Model (Code)</Label>
+                      <span className="text-muted-foreground text-xs">Format: 17</span>
                     </div>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="e.g. 1.3 E CVT"
+                      placeholder="e.g. 17"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -304,20 +304,16 @@ export default function VehicleRegistration() {
                 {(field) => (
                   <div>
                     <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Type of Use
+                      Vehicle Usage (Code)
                     </Label>
-                    <Select
+                    <Input
+                      name={field.name}
                       value={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Type of Use" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PRIVATE">Private</SelectItem>
-                        <SelectItem value="PUBLIC">Public</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="e.g. 1"
+                      autoComplete="off"
+                    />
                     <FieldInfo field={field} />
                   </div>
                 )}
