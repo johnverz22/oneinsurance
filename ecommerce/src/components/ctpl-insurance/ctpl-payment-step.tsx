@@ -1,292 +1,544 @@
 'use client'
 
-import Image from 'next/image'
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ArrowLeft, Lock, CheckCircle } from 'lucide-react'
-import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { format, addYears } from 'date-fns'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  CreditCard,
+  Smartphone,
+  ShoppingCart,
+  ArrowLeft,
+  Shield,
+} from 'lucide-react'
+import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
+import { CardPaymentForm } from '@/components/payment/card-payment-form'
+import { DigitalPaymentForm } from '@/components/payment/digital-payment-form'
+import PaymentBrands, {
+  CardPaymentBrands,
+  DigitalPaymentBrands,
+} from '@/components/payment/payment-brands'
+import { PaymentBrand, PaymentSubmitRequest } from '@/types/payment'
+import {
+  generateTransactionId,
+  type PaymentRequestConfig,
+} from '@/utils/payment-mappers'
+import { usePaymentAuth, usePaymentSubmit } from '@/app/data/mutations/payment'
+import { usePaymentPolling } from '@/hooks/use-payment-polling'
 import { popup } from '@/store/use-popup-store'
+import { toast } from 'sonner'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { PageLoader } from '@/components/page-loader'
+import {
+  saveProposalNumber,
+  getProposalNumber,
+  clearProposalNumber,
+} from '@/utils/payment-storage'
+import { delay } from '@/utils/delay'
 
-const PRICES: Record<string, number> = {
-  PRIVATECAR: 599, MOTORCYCLE: 290, TPMB: 1150, ACTC: 790, LMT: 660, HTPB: 1250, PTB: 1100,
+// Utility function to remove transaction_id from URL
+const removeTransactionIdFromUrl = () => {
+  if (typeof window !== 'undefined') {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('transaction_id')
+    window.history.replaceState({}, '', url.toString())
+  }
 }
 
-type PaymentBrand = { label: string; type: 'Card' | 'Digital'; logo: string }
-
-const PAYMENT_BRANDS: PaymentBrand[] = [
-  { label: 'Discover', type: 'Card', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Discover_Card_logo.svg/200px-Discover_Card_logo.svg.png' },
-  { label: 'Diners', type: 'Card', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Diners_Club_Logo3.svg/200px-Diners_Club_Logo3.svg.png' },
-  { label: 'Mastercard', type: 'Card', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png' },
-  { label: 'Visa', type: 'Card', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png' },
-  { label: 'QR Ph', type: 'Card', logo: 'https://www.bsp.gov.ph/Media/QR-Ph-Logo.png' },
-  { label: 'GrabPay', type: 'Digital', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/GrabPay_logo.svg/200px-GrabPay_logo.svg.png' },
-  { label: 'UnionPay', type: 'Digital', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/UnionPay_logo.svg/200px-UnionPay_logo.svg.png' },
-  { label: 'GCash', type: 'Digital', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/GCash_logo.svg/200px-GCash_logo.svg.png' },
-  { label: 'Maya', type: 'Digital', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Maya_logo.svg/200px-Maya_logo.svg.png' },
-]
-
 export default function CtplPaymentStep() {
-  const { selectedVehicle, personalInfo, decreaseStep } = useCtplInsuranceStateStore()
+  const {
+    personalInfo,
+    decreaseStep,
+    insuranceType,
+    fullQuoteResponse,
+    clientRequestId,
+    coverageOption,
+  } = useCtplInsuranceStateStore()
+
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
 
-  const [filter, setFilter] = useState<'all' | 'cards' | 'digital'>('all')
-  const [selectedBrand, setSelectedBrand] = useState<PaymentBrand | null>(null)
-  const [showDone, setShowDone] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'all' | 'cards' | 'digital'>('all')
+  const [selectedPaymentBrand, setSelectedPaymentBrand] = useState<PaymentBrand | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [showCardPaymentProcessing, setShowCardPaymentProcessing] = useState(false)
+  const [isIssuingQuote, setIsIssuingQuote] = useState(false)
+  const [paymentProviderMessage, setPaymentProviderMessage] = useState<string | null>(null)
+  const isProcessingQuoteRef = useRef(false)
 
-  // Card fields
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardFirstName, setCardFirstName] = useState(personalInfo.firstName ?? '')
-  const [cardLastName, setCardLastName] = useState(personalInfo.lastName ?? '')
-  const [expiryMonth, setExpiryMonth] = useState('')
-  const [expiryYear, setExpiryYear] = useState('')
-  const [cvv, setCvv] = useState('')
+  const { mutateAsync: submitPayment } = usePaymentSubmit()
+  const { mutateAsync: getPaymentAuth } = usePaymentAuth()
 
-  // Personal details
-  const [email, setEmail] = useState(personalInfo.email ?? '')
-  const [phone, setPhone] = useState(personalInfo.mobileNumber ?? '')
+  const premium = fullQuoteResponse?.TotalPremium || fullQuoteResponse?.GrossPremium || 0
+  const proposalNumber = fullQuoteResponse?.ProposalNo || ''
 
-  // Billing address
-  const [country] = useState('Philippines')
-  const [province, setProvince] = useState(personalInfo.province ?? '')
-  const [city, setCity] = useState(personalInfo.city ?? '')
-  const [postCode, setPostCode] = useState(personalInfo.zipCode ?? '')
-  const [address1, setAddress1] = useState(personalInfo.addressLine1 ?? '')
-  const [address2, setAddress2] = useState(personalInfo.addressLine2 ?? '')
+  // Payment success handler
+  async function handlePaymentSuccess(data: any) {
+    if (isProcessingQuoteRef.current) {
+      console.log('Already processing quote, skipping duplicate call')
+      return
+    }
 
-  const price = PRICES[selectedVehicle?.code ?? 'PRIVATECAR'] ?? 599
-  const today = new Date()
-  const policyExpiry = addYears(today, 1)
+    isProcessingQuoteRef.current = true
 
-  const filteredBrands = PAYMENT_BRANDS.filter(b => {
-    if (filter === 'cards') return b.type === 'Card'
-    if (filter === 'digital') return b.type === 'Digital'
-    return true
+    try {
+      clearProposalNumber()
+      setShowCardPaymentProcessing(false)
+      setIsIssuingQuote(true)
+
+      // Determine API endpoint based on insurance type
+      const endpoint = insuranceType === 'CTPL'
+        ? '/api/motor-insurance/ctpl/issue-quote'
+        : '/api/motor-insurance/comprehensive/issue-quote'
+
+      // Build issue-quote payload
+      const payload = {
+        ClientRequestId: clientRequestId,
+        CarrierCode: coverageOption.carrierCode,
+        PaymentBrand: selectedPaymentBrand?.value || 'Digital Payment',
+        AgentCode: agentCode,
+      }
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Issue quote failed:', errorData)
+        router.push(`/${agentCode}/payment-error`)
+        return
+      }
+
+      const issueData = await response.json()
+      console.log('Issue quote response:', issueData)
+
+      setIsIssuingQuote(false)
+      popup.show({
+        title: 'Payment Successful!',
+        description: 'Your policy details have been confirmed and recorded in our system.',
+        note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
+        confirmText: 'Done',
+        variant: 'success',
+        onConfirm: () => router.push(`/${agentCode}/products/ctpl-insurance/invoice`),
+      })
+    } catch (error: any) {
+      console.error('Issue quote error:', error)
+      const rawMessage = error.message || ''
+      const displayMessage =
+        rawMessage.toLowerCase() === 'successful'
+          ? 'Your payment was received but policy issuance is pending. Please contact support with your proposal number.'
+          : rawMessage || 'Payment confirmation failed. Please contact support.'
+      toast.error(displayMessage)
+      setIsIssuingQuote(false)
+      isProcessingQuoteRef.current = false
+
+      if (proposalNumber) {
+        router.push(`/${agentCode}/payment-error`)
+      }
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Payment error handler
+  function handlePaymentError(error: Error) {
+    clearProposalNumber()
+    setShowCardPaymentProcessing(false)
+    setIsProcessing(false)
+
+    if (proposalNumber) {
+      router.push(`/${agentCode}/payment-error`)
+    } else {
+      const rawMsg = error.message || ''
+      const displayMsg =
+        rawMsg.toLowerCase() === 'successful'
+          ? 'Your payment was received but policy issuance is pending. Please contact support with your proposal number.'
+          : rawMsg || 'Payment failed. Please contact support.'
+      toast.error(displayMsg)
+    }
+  }
+
+  // Payment timeout handler
+  function handlePaymentTimeout() {
+    setShowCardPaymentProcessing(false)
+    setIsProcessing(false)
+
+    if (proposalNumber) {
+      router.push(`/${agentCode}/payment-error`)
+    } else {
+      clearProposalNumber()
+      toast.error('Payment verification timed out. Please contact support.')
+    }
+  }
+
+  // Polling hook
+  const { startPolling } = usePaymentPolling({
+    proposalNumber: proposalNumber,
+    onSuccess: handlePaymentSuccess,
+    onError: handlePaymentError,
+    onTimeout: handlePaymentTimeout,
   })
 
-  if (showDone) {
-    // Navigate immediately — this block should not render
-    router.push(`/${agentCode}/products/ctpl-insurance/invoice`)
-    return null
+  // Check for proposal number on component mount (e-wallet return)
+  useEffect(() => {
+    const storedProposalNumber = getProposalNumber()
+
+    if (storedProposalNumber && !isProcessing) {
+      removeTransactionIdFromUrl()
+      setIsProcessing(true)
+      setShowCardPaymentProcessing(true)
+      startPolling()
+    }
+  }, [])
+
+  // Create payment configuration
+  const paymentConfig: PaymentRequestConfig = {
+    merchantAccountId: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
+    merchantTransactionId: generateTransactionId(),
+    productReferenceId: `${fullQuoteResponse?.BusinessObjectId}` || 'MOTOR-INSURANCE',
+    productDescription: fullQuoteResponse?.ProductCode || 'Motor Insurance',
+    amount: premium,
+    currency: 'PHP',
+    description: `${insuranceType} Insurance Premium Payment`,
+    callbackUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/ctpl-insurance/avail`,
+    other_reference_1: proposalNumber,
+    other_reference_1_caption: 'proposal',
+  }
+
+  const handleBrandSelect = (brand: PaymentBrand) => {
+    setSelectedPaymentBrand(brand)
+  }
+
+  const handleCardPaymentSubmit = async (paymentRequest: PaymentSubmitRequest) => {
+    setIsProcessing(true)
+    try {
+      const paymentId = generateTransactionId()
+      localStorage.setItem('payment_transaction_id', paymentId)
+
+      const authResponse = await getPaymentAuth()
+      if (!authResponse?.access_token) {
+        alert('Payment authentication failed. Please try again.')
+        return
+      }
+
+      setShowCardPaymentProcessing(true)
+
+      const paymentResult = await submitPayment({
+        data: {
+          ...paymentRequest,
+          merchant_transaction_id: paymentId,
+        },
+        brand_token: authResponse.access_token,
+      })
+
+      if (!paymentResult?.success || !paymentResult.data.status_code.includes('OK')) {
+        alert(paymentResult?.message || 'Payment submission failed. Please try again.')
+        setShowCardPaymentProcessing(false)
+        return
+      }
+
+      // Start polling for payment verification
+      startPolling()
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message || error.message || 'Payment failed. Please try again.'
+      )
+      setShowCardPaymentProcessing(false)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDigitalPaymentSubmit = async (paymentRequest: PaymentSubmitRequest) => {
+    setIsProcessing(true)
+    try {
+      const paymentId = generateTransactionId()
+      localStorage.setItem('payment_transaction_id', paymentId)
+
+      const authResponse = await getPaymentAuth()
+      if (!authResponse?.access_token) {
+        alert('Payment authentication failed. Please try again.')
+        return
+      }
+
+      const paymentResult = await submitPayment({
+        data: {
+          ...paymentRequest,
+          merchant_transaction_id: paymentId,
+        },
+        brand_token: authResponse.access_token,
+      })
+
+      if (!paymentResult?.success || !paymentResult.data.status_code.includes('OK')) {
+        alert(paymentResult.message || 'Payment submission failed. Please try again.')
+        return
+      }
+
+      const redirectUrl = paymentResult.data.redirect_url
+      if (redirectUrl) {
+        saveProposalNumber(proposalNumber)
+        alert("You will be redirected to payment wall. Please don't close this tab.")
+        window.location.href = redirectUrl
+        return
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Payment failed. Please try again.')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Convert fullQuoteResponse to match FullQuoteResponse['data'] structure
+  const fullQuoteData = {
+    ...fullQuoteResponse,
+    PolicyCustomerList: fullQuoteResponse?.PolicyCustomerList || [
+      {
+        FirstName: personalInfo.firstName || '',
+        LastName: personalInfo.lastName || '',
+        MiddleName: personalInfo.middleName || '',
+        Email: personalInfo.email || '',
+        Mobile: personalInfo.mobileNumber || '',
+        AddressLine1: personalInfo.addressLine1 || '',
+        AddressLine2: personalInfo.addressLine2 || '',
+        City: personalInfo.city || '',
+        AddrProvince: personalInfo.province || '',
+        PostCode: personalInfo.zipCode || '',
+      },
+    ],
+  } as any
+
+  if (isIssuingQuote) {
+    return <PageLoader />
   }
 
   return (
-    <div className="space-y-0">
-      {/* Header row */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
-            Choose Your Payment Method
-          </h2>
-          <p className="text-sm text-gray-500">Select which payment you will use</p>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-400">Total Amount</p>
-          <p className="text-2xl font-black text-gray-900">₱{price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
-        </div>
-      </div>
+    <>
+      <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
+        <CardHeader className="flex items-center justify-between -space-y-2 border-b pt-6">
+          <div className="flex-1">
+            <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
+              Choose Your Payment Method
+            </h2>
+            <p className="text-muted-foreground text-sm">Select which payment you will use</p>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <p className="text-muted-foreground text-xs">Total Amount</p>
+            <p className="text-primary text-2xl font-bold">
+              ₱
+              {premium.toLocaleString('en-PH', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </p>
+          </div>
+        </CardHeader>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Left — Payment brands */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm space-y-4">
-          {/* Filter tabs */}
-          <div className="flex gap-2 rounded-xl border border-gray-200 p-1">
-            {(['all', 'cards', 'digital'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => { setFilter(f); setSelectedBrand(null) }}
-                className={cn(
-                  'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-all',
-                  filter === f ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                )}
+        <CardContent>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Left Side - Payment Method Selection */}
+            <div className="space-y-6">
+              <Tabs
+                value={paymentMethod}
+                onValueChange={(value) => setPaymentMethod(value as any)}
               >
-                {f === 'all' ? '🛒 All Methods' : f === 'cards' ? '💳 Cards' : '📱 Digital Wallets'}
-              </button>
-            ))}
-          </div>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="all" className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    All Methods
+                  </TabsTrigger>
+                  <TabsTrigger value="cards" className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Cards
+                  </TabsTrigger>
+                  <TabsTrigger value="digital" className="flex items-center gap-2">
+                    <Smartphone className="h-4 w-4" />
+                    Digital Wallets
+                  </TabsTrigger>
+                </TabsList>
 
-          <div>
-            <p className="mb-3 text-sm font-semibold text-gray-700">All Payment Options</p>
-            <p className="mb-1 text-center text-sm font-semibold text-gray-800">Choose Your Payment Method</p>
-            <p className="mb-4 text-center text-xs text-gray-500">Secure and encrypted payment options</p>
+                <TabsContent value="all" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>All Payment Options</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <PaymentBrands
+                        onBrandSelect={handleBrandSelect}
+                        selectedBrand={selectedPaymentBrand}
+                        className="grid-cols-2 sm:grid-cols-3"
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-            <div className="grid grid-cols-3 gap-3">
-              {filteredBrands.map(brand => (
-                <button
-                  key={brand.label}
-                  onClick={() => setSelectedBrand(brand)}
-                  className={cn(
-                    'relative flex flex-col items-center justify-between gap-2 rounded-xl border p-3 transition-all',
-                    selectedBrand?.label === brand.label
-                      ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                      : 'border-gray-200 hover:border-gray-300'
-                  )}
-                >
-                  {selectedBrand?.label === brand.label && (
-                    <div className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
-                      <CheckCircle className="h-3 w-3 text-white" />
+                <TabsContent value="cards" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Credit & Debit Cards</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardPaymentBrands
+                        onBrandSelect={handleBrandSelect}
+                        selectedBrand={selectedPaymentBrand}
+                        className="grid-cols-2 sm:grid-cols-3"
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="digital" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Digital Wallets & E-Money</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <DigitalPaymentBrands
+                        onBrandSelect={handleBrandSelect}
+                        selectedBrand={selectedPaymentBrand}
+                        className="grid-cols-2 sm:grid-cols-3"
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Right Side - Payment Form */}
+            <div className="space-y-6">
+              {!selectedPaymentBrand ? (
+                <Card className="h-full min-h-[500px]">
+                  <CardContent className="flex h-full items-center justify-center p-8">
+                    <div className="space-y-4 text-center">
+                      <div className="bg-primary/10 dark:bg-primary/50 mx-auto flex h-24 w-24 items-center justify-center rounded-full">
+                        <Shield className="text-accent h-12 w-12" />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-primary dark:text-accent text-xl font-semibold">
+                          Select Payment Method
+                        </h3>
+                        <p className="text-muted-foreground max-w-sm">
+                          Choose your preferred payment method from the options on the left to
+                          continue
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <CreditCard className="h-4 w-4" />
+                          <span>Cards</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Smartphone className="h-4 w-4" />
+                          <span>Digital Wallets</span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex h-10 w-full items-center justify-center">
-                    <img
-                      src={brand.logo}
-                      alt={brand.label}
-                      className="h-8 w-auto max-w-[80px] object-contain"
-                      onError={(e) => {
-                        const t = e.target as HTMLImageElement
-                        t.style.display = 'none'
-                        t.nextElementSibling?.classList.remove('hidden')
-                      }}
-                    />
-                    <span className="hidden text-sm font-bold text-gray-700">{brand.label}</span>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Shield className="h-4 w-4" />
+                    <span>Complete your payment securely</span>
                   </div>
-                  <span className={cn(
-                    'flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white',
-                    brand.type === 'Card' ? 'bg-primary' : 'bg-gray-500'
-                  )}>
-                    {brand.type === 'Card' ? '💳' : '📱'} {brand.type}
-                  </span>
-                </button>
-              ))}
+
+                  {selectedPaymentBrand.is_card ? (
+                    <CardPaymentForm
+                      selectedBrand={selectedPaymentBrand}
+                      onSubmit={handleCardPaymentSubmit}
+                      isLoading={isProcessing}
+                      className="max-w-none"
+                      paymentConfig={paymentConfig}
+                      fullQuoteResponse={fullQuoteData}
+                    />
+                  ) : (
+                    <DigitalPaymentForm
+                      selectedBrand={selectedPaymentBrand}
+                      onSubmit={handleDigitalPaymentSubmit}
+                      isLoading={isProcessing}
+                      className="max-w-none"
+                      paymentConfig={paymentConfig}
+                      fullQuoteResponse={fullQuoteData}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Right — Card info + personal details + billing */}
-        <div className="space-y-4">
-          {/* Selected brand preview */}
-          {selectedBrand && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-              <p className="mb-2 text-xs text-gray-400">Complete your payment securely</p>
-              <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3">
-                <img src={selectedBrand.logo} alt={selectedBrand.label} className="h-8 w-auto max-w-[60px] object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                <div>
-                  <p className="text-sm font-semibold">Pay with {selectedBrand.label}</p>
-                  <p className="flex items-center gap-1 text-xs text-gray-500"><Lock className="h-3 w-3" /> Secure payment processing</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Card Information */}
-          {selectedBrand?.type === 'Card' && (
-            <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-              <h3 className="flex items-center gap-2 font-semibold text-gray-800">
-                <span>💳</span> Card Information
-              </h3>
-              <div className="space-y-1.5">
-                <Label className="text-sm text-gray-600">Card Number</Label>
-                <Input value={cardNumber} onChange={e => setCardNumber(e.target.value)} placeholder="1234 5678 9012 3456" className="h-11 rounded-xl" maxLength={19} />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-gray-600">MM</Label>
-                  <Input value={expiryMonth} onChange={e => setExpiryMonth(e.target.value)} placeholder="MM" className="h-11 rounded-xl" maxLength={2} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-gray-600">YYYY</Label>
-                  <Input value={expiryYear} onChange={e => setExpiryYear(e.target.value)} placeholder="YYYY" className="h-11 rounded-xl" maxLength={4} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm text-gray-600">123</Label>
-                  <Input value={cvv} onChange={e => setCvv(e.target.value)} placeholder="CVV" className="h-11 rounded-xl" maxLength={4} type="password" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Personal Details */}
-          <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-semibold text-gray-800">Personal Details</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-sm text-gray-600">First Name</Label>
-                <Input value={cardFirstName} onChange={e => setCardFirstName(e.target.value)} placeholder="First Name" className="h-11 rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm text-gray-600">Last Name</Label>
-                <Input value={cardLastName} onChange={e => setCardLastName(e.target.value)} placeholder="Last Name" className="h-11 rounded-xl" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-gray-600">Email Address</Label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" className="h-11 rounded-xl" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-gray-600">Phone Number (Optional)</Label>
-              <div className="flex h-11 items-center overflow-hidden rounded-xl border bg-white">
-                <span className="border-r px-3 text-sm text-gray-500">+63</span>
-                <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="9XX XXX XXXX" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
-              </div>
-            </div>
-          </div>
-
-          {/* Billing Address */}
-          <div className="rounded-2xl bg-white p-5 shadow-sm space-y-4">
-            <h3 className="font-semibold text-gray-800">Billing Address</h3>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-gray-600">Country</Label>
-              <div className="flex h-11 items-center rounded-xl border bg-gray-50 px-3">
-                <span className="text-sm text-gray-700">Philippines</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-sm text-gray-600">State/Province/Region</Label>
-                <Input value={province} onChange={e => setProvince(e.target.value)} placeholder="Province" className="h-11 rounded-xl" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm text-gray-600">City/Municipality</Label>
-                <Input value={city} onChange={e => setCity(e.target.value)} placeholder="City" className="h-11 rounded-xl" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-gray-600">Postal Code</Label>
-              <Input value={postCode} onChange={e => setPostCode(e.target.value)} placeholder="Postal Code" className="h-11 rounded-xl" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-gray-600">Address Line 1</Label>
-              <Input value={address1} onChange={e => setAddress1(e.target.value)} placeholder="Address Line 1" className="h-11 rounded-xl" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-sm text-gray-600">Address Line 2</Label>
-              <Input value={address2} onChange={e => setAddress2(e.target.value)} placeholder="Address Line 2" className="h-11 rounded-xl" />
-            </div>
-
-            <Button
-              className="from-primary to-accent w-full rounded-full bg-gradient-to-r py-3 font-semibold text-white disabled:opacity-50"
-              disabled={!selectedBrand}
-              onClick={() => {
-                popup.show({
-                  title: 'Payment Successful!',
-                  description: 'Your policy details have been confirmed and recorded in our system.',
-                  note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
-                  confirmText: 'Done',
-                  variant: 'success',
-                  onConfirm: () => router.push(`/${agentCode}/products/ctpl-insurance/invoice`),
-                })
-              }}
-            >
-              <Lock className="mr-2 h-4 w-4" />
-              Complete Payment
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Back to Review */}
-      <div className="pt-4">
-        <Button variant="outline" className="rounded-full px-8" onClick={decreaseStep}>
+      {/* Back Button */}
+      <div className="mt-6 flex justify-center lg:justify-start">
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="rounded-full px-12 font-semibold"
+          onClick={decreaseStep}
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Review
         </Button>
       </div>
-    </div>
+
+      <CardPaymentProcessingDialog
+        isOpen={showCardPaymentProcessing}
+        message={paymentProviderMessage}
+      />
+    </>
+  )
+}
+
+function CardPaymentProcessingDialog({
+  isOpen,
+  message,
+}: {
+  isOpen: boolean
+  message: string | null
+}) {
+  return (
+    <Dialog open={isOpen}>
+      <DialogHeader>
+        <DialogTitle></DialogTitle>
+      </DialogHeader>
+      <DialogContent className="flex flex-col items-center justify-center gap-4 py-10">
+        <svg width="60" height="60" viewBox="0 0 50 50" className="mb-2">
+          <circle
+            cx="25"
+            cy="25"
+            r="20"
+            stroke="#0070f3"
+            strokeWidth="5"
+            fill="none"
+            strokeDasharray="31.4 31.4"
+            strokeDashoffset="0"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 25 25"
+              to="360 25 25"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
+        {message ? (
+          <h2 className="text-lg font-semibold text-gray-800">{message}</h2>
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold text-gray-800">Processing your payment...</h2>
+            <p className="max-w-xs text-center text-gray-500">
+              Please wait while we process your payment. Do not close or refresh this window.
+            </p>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }

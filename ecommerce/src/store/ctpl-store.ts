@@ -13,7 +13,12 @@ export type CptlInsuranceState = {
   highestVisitedStep: number
   increaseStep: () => void
   decreaseStep: () => void
+  setStep: (step: number) => void
   setHighestVisitedStep: (step: number) => void
+  insuranceType: 'CTPL' | 'COMPREHENSIVE' | null
+  setInsuranceType: (type: 'CTPL' | 'COMPREHENSIVE') => void
+  sumInsured: number | null
+  setSumInsured: (amount: number) => void
   selectedVehicle: CtplInsuranceProduct
   setSelectedVehicle: (vehicle: CtplInsuranceProduct) => void
   duration: CtplDuration
@@ -24,6 +29,8 @@ export type CptlInsuranceState = {
   setPersonalInfo: (data: PersonalInfoFormData) => void
   clientRequestId: string
   setClientRequestId: (id: string) => void
+  fullQuoteResponse: any
+  setFullQuoteResponse: (data: any) => void
   coverageOption: CTPLCoverageOptionFormData
   updateCoverageOption: (data: Partial<CTPLCoverageOptionFormData>) => void
   reset: () => void
@@ -32,6 +39,8 @@ export type CptlInsuranceState = {
 const initialCptlInsuranceState = {
   step: 0,
   highestVisitedStep: 0,
+  insuranceType: null,
+  sumInsured: null,
   selectedVehicle: {
     image: '',
     title: '',
@@ -71,6 +80,7 @@ const initialCptlInsuranceState = {
     email: '',
   } as PersonalInfoFormData,
   clientRequestId: '',
+  fullQuoteResponse: null,
   coverageOption: {
     selectedPlan: undefined,
     selectedAddonBenefits: undefined,
@@ -91,12 +101,16 @@ export const useCtplInsuranceStateStore = create<CptlInsuranceState>()(
           ),
         })),
       decreaseStep: () => set((state) => ({ step: state.step - 1 })),
+      setStep: (step) => set({ step }),
       setHighestVisitedStep: (step) => set({ highestVisitedStep: step }),
+      setInsuranceType: (type) => set({ insuranceType: type }),
+      setSumInsured: (amount) => set({ sumInsured: amount }),
       setSelectedVehicle: (product) => set({ selectedVehicle: product }),
       setDuration: (duration) => set({ duration }),
       setVehicleRegistration: (data) => set({ vehicleRegistration: data }),
       setPersonalInfo: (data) => set({ personalInfo: data }),
       setClientRequestId: (id) => set({ clientRequestId: id }),
+      setFullQuoteResponse: (data) => set({ fullQuoteResponse: data }),
       updateCoverageOption: (data) =>
         set((state) => ({
           coverageOption: { ...state.coverageOption, ...data },
