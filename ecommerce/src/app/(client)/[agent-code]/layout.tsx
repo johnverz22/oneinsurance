@@ -35,7 +35,7 @@ export default function ProductsLayout({
 
   return (
     <>
-      {!pathname.includes('travel') && !pathname.includes('health') && (
+      {!pathname.includes('travel') && !pathname.includes('health') && !pathname.includes('ctpl') && (
         <div className="h-full w-full">
           <Header navigations={NAVIGATIONS} isNavigationVisible={true} />
           <div className="sm:hidden">

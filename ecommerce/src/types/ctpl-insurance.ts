@@ -56,9 +56,7 @@ export const VehicleRegistrationSchema = z.object({
   chassisNumber: z
     .string()
     .min(1, 'Chassis Number is required')
-    .min(17, 'Chassis Number must be at least 17 characters')
-    .max(17, 'Chassis Number must be exactly 17 characters')
-    .regex(/^[A-HJ-NPR-Z0-9]{17}$/, 'Invalid VIN format')
+    .regex(/^[A-Z0-9-]+$/, 'Chassis Number must contain only letters, numbers, and hyphens')
     .transform((val) => val.toUpperCase()),
 
   // Vehicle specifications
