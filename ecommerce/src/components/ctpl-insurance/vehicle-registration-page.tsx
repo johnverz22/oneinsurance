@@ -28,6 +28,7 @@ export default function VehicleRegistration() {
     vehicleRegistration,
     selectedVehicle,
     increaseStep,
+    decreaseStep,
   } = useCtplInsuranceStateStore()
 
   const form = useForm({
@@ -84,12 +85,13 @@ export default function VehicleRegistration() {
                     >
                       Field Office Code
                     </Label>
+                    <p className="text-muted-foreground mb-1 text-xs">Format: NCR-MM-001</p>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter Field Office Code"
+                      placeholder="e.g. NCR-MM-001"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -123,15 +125,16 @@ export default function VehicleRegistration() {
               <form.Field name="mvFileNumber">
                 {(field) => (
                   <div>
-                    <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      MV File Number
-                    </Label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label htmlFor={field.name} className="font-semibold">MV File Number</Label>
+                      <span className="text-muted-foreground text-xs">Format: 034-035567</span>
+                    </div>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter MV File Number"
+                      placeholder="e.g. 034-035567"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -141,15 +144,16 @@ export default function VehicleRegistration() {
               <form.Field name="plateNumber">
                 {(field) => (
                   <div>
-                    <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Plate Number
-                    </Label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label htmlFor={field.name} className="font-semibold">Plate Number</Label>
+                      <span className="text-muted-foreground text-xs">Format: ABC 1234 or ABC123</span>
+                    </div>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter Plate Number"
+                      placeholder="e.g. ABC 1234"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -161,15 +165,16 @@ export default function VehicleRegistration() {
               <form.Field name="engineNumber">
                 {(field) => (
                   <div>
-                    <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Engine Number
-                    </Label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label htmlFor={field.name} className="font-semibold">Engine Number</Label>
+                      <span className="text-muted-foreground text-xs">Format: 2NG-W7V659-321</span>
+                    </div>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter Engine Number"
+                      placeholder="e.g. 2NG-W7V659-321"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -179,15 +184,16 @@ export default function VehicleRegistration() {
               <form.Field name="chassisNumber">
                 {(field) => (
                   <div>
-                    <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Chassis Number
-                    </Label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label htmlFor={field.name} className="font-semibold">Chassis Number</Label>
+                      <span className="text-muted-foreground text-xs">Format: CHS-W746564B9-321</span>
+                    </div>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter Chassis Number"
+                      placeholder="e.g. CHS-W7V659-321"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -208,7 +214,7 @@ export default function VehicleRegistration() {
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter make"
+                      placeholder="e.g. Toyota"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -226,7 +232,7 @@ export default function VehicleRegistration() {
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter model"
+                      placeholder="e.g. Vios"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -244,7 +250,7 @@ export default function VehicleRegistration() {
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter body type"
+                      placeholder="e.g. Sedan"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -262,7 +268,7 @@ export default function VehicleRegistration() {
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="YYYY"
+                      placeholder="e.g. 2020"
                       autoComplete="off"
                       type="number"
                       min="1900"
@@ -277,15 +283,16 @@ export default function VehicleRegistration() {
               <form.Field name="subModel">
                 {(field) => (
                   <div>
-                    <Label htmlFor={field.name} className="mb-2 font-semibold">
-                      Sub Model
-                    </Label>
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label htmlFor={field.name} className="font-semibold">Sub Model</Label>
+                      <span className="text-muted-foreground text-xs">Format: 1.3 E CVT</span>
+                    </div>
                     <Input
                       name={field.name}
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder="Enter Sub Model"
+                      placeholder="e.g. 1.3 E CVT"
                       autoComplete="off"
                     />
                     <FieldInfo field={field} />
@@ -320,42 +327,52 @@ export default function VehicleRegistration() {
         </CardContent>
       </Card>
 
-      <div className="bg-card border-muted-foreground/20 flex w-full items-center justify-between rounded-md border px-6 py-5">
-        <div className="flex flex-col gap-2">
-          <form.Field name="agreeToTerms">
-            {(field) => (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  name={field.name}
-                  checked={field.state.value}
-                  onCheckedChange={(checked) =>
-                    checked
-                      ? field.handleChange(true)
-                      : field.handleChange(false)
-                  }
-                  className="size-6"
-                />
-                <Label htmlFor={field.name} className="font-semibold">
-                  I agree to the Terms & Conditions and Privacy Policy
-                </Label>
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-        </div>
+      <div className="bg-card border-muted-foreground/20 flex w-full flex-col gap-4 rounded-md border px-6 py-5">
+        <form.Field name="agreeToTerms">
+          {(field) => (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                name={field.name}
+                checked={field.state.value}
+                onCheckedChange={(checked) =>
+                  checked
+                    ? field.handleChange(true)
+                    : field.handleChange(false)
+                }
+                className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4"
+              />
+              <Label htmlFor={field.name} className="cursor-pointer text-sm">
+                I agree to the Terms & Conditions and Privacy Policy
+              </Label>
+              <FieldInfo field={field} />
+            </div>
+          )}
+        </form.Field>
 
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
         >
           {([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              size="lg"
-              className="text-white"
-              disabled={!canSubmit || isSubmitting}
-            >
-              Next <ArrowRight />
-            </Button>
+            <div className="flex items-center justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="rounded-full px-8"
+                onClick={decreaseStep}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              <Button
+                type="submit"
+                size="lg"
+                className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
+                disabled={!canSubmit || isSubmitting}
+              >
+                Continue to Personal Information
+              </Button>
+            </div>
           )}
         </form.Subscribe>
       </div>
