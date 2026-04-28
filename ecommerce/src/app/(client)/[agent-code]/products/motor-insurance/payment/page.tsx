@@ -69,10 +69,10 @@ function CtplPaymentContent() {
             Your policy details have been confirmed and recorded in our system. Please note that this serves as a confirmation of coverage only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and made available to you shortly.
           </p>
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1 rounded-full" onClick={() => router.push(`/${agentCode}/products/ctpl-insurance/invoice`)}>
+            <Button variant="outline" className="flex-1 rounded-full" onClick={() => router.push(`/${agentCode}/products/motor-insurance/invoice`)}>
               View Invoice
             </Button>
-            <Button className="from-primary to-accent flex-1 rounded-full bg-gradient-to-r text-white" onClick={() => router.push(`/${agentCode}/products/ctpl-insurance/certificate`)}>
+            <Button className="from-primary to-accent flex-1 rounded-full bg-gradient-to-r text-white" onClick={() => router.push(`/${agentCode}/products/motor-insurance/certificate`)}>
               View Cover Note
             </Button>
           </div>

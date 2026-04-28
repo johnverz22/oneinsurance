@@ -39,6 +39,20 @@ function CtplInsurance() {
   const [isLoadingPlans, setIsLoadingPlans] = useState(false)
   const [plans, setPlans] = useState<any[]>([])
   const [plansError, setPlansError] = useState<string | null>(null)
+  const [showComprehensiveForm, setShowComprehensiveForm] = useState(false)
+  const [switchingType, setSwitchingType] = useState(false) // shows only the other type option
+
+  // Comprehensive form fields
+  const [comprehensiveForm, setComprehensiveForm] = useState({
+    vehicleMake: '',
+    vehicleModel: '',
+    bodyType: '',
+    modelYear: '',
+    subModel: '',
+    vehicleUsage: '',
+    sumInsured: '100000',
+  })
+  const [comprehensiveFormErrors, setComprehensiveFormErrors] = useState<Record<string, string>>({})
 
   const echoRef = useRef<any>(null)
   const channelRef = useRef<any>(null)
@@ -52,12 +66,66 @@ function CtplInsurance() {
     removeStorage('ctpl-insurance-storage')
   }, [])
 
+  const isInitialMount = useRef(true)
+
   useEffect(() => {
-    if (insuranceType) {
+    // Skip on initial mount and when resetting to null (back to selection)
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    // CTPL: call compare-quote immediately on type selection
+    // COMPREHENSIVE: show form first, don't call API yet
+    if (insuranceType === 'CTPL') {
+      setShowComprehensiveForm(false)
       fetchPlans()
+    } else if (insuranceType === 'COMPREHENSIVE') {
+      setShowComprehensiveForm(true)
+      setPlans([])
+      setPlansError(null)
     }
     return () => closeEchoConnection()
   }, [insuranceType])
+
+  const handleChangeType = () => {
+    // Don't reset plans - just show the other type option
+    setSwitchingType(true)
+    setShowComprehensiveForm(false)
+  }
+
+  const handleBackToSelection = () => {
+    // Just close the switcher, keep current type and plans
+    setSwitchingType(false)
+  }
+
+  const handleSwitchToType = (newType: 'CTPL' | 'COMPREHENSIVE') => {
+    setSwitchingType(false)
+    setPlans([])
+    setPlansError(null)
+    setComprehensiveForm({ vehicleMake: '', vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '', sumInsured: '100000' })
+    setComprehensiveFormErrors({})
+    isInitialMount.current = false
+    setInsuranceType(newType)
+  }
+
+  const validateComprehensiveForm = () => {
+    const errors: Record<string, string> = {}
+    if (!comprehensiveForm.vehicleMake) errors.vehicleMake = 'Vehicle Make is required'
+    if (!comprehensiveForm.vehicleModel) errors.vehicleModel = 'Vehicle Model is required'
+    if (!comprehensiveForm.bodyType) errors.bodyType = 'Body Type is required'
+    if (!comprehensiveForm.modelYear) errors.modelYear = 'Model Year is required'
+    if (!comprehensiveForm.subModel) errors.subModel = 'Sub Model is required'
+    if (!comprehensiveForm.vehicleUsage) errors.vehicleUsage = 'Vehicle Usage is required'
+    if (!comprehensiveForm.sumInsured || parseInt(comprehensiveForm.sumInsured) < 10000) errors.sumInsured = 'Sum Insured must be at least ₱10,000'
+    setComprehensiveFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleSearchComprehensivePlans = () => {
+    if (!validateComprehensiveForm()) return
+    setShowComprehensiveForm(false)
+    fetchPlans()
+  }
 
   const closeEchoConnection = () => {
     try {
@@ -141,7 +209,16 @@ function CtplInsurance() {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1)
 
       const policyRiskList = insuranceType === 'COMPREHENSIVE'
-        ? [{ ProductElementCode: 'R00004', IsPlateNoAvailable: 'Y', VehicleMake: '3', VehicleModel: '9', BodyType: '4', ModelYear: '2023', SubModel: '17', VehicleUsage: '1' }]
+        ? [{
+            ProductElementCode: 'R00004',
+            IsPlateNoAvailable: 'Y',
+            VehicleMake: comprehensiveForm.vehicleMake,
+            VehicleModel: comprehensiveForm.vehicleModel,
+            BodyType: comprehensiveForm.bodyType,
+            ModelYear: comprehensiveForm.modelYear,
+            SubModel: comprehensiveForm.subModel,
+            VehicleUsage: comprehensiveForm.vehicleUsage,
+          }]
         : [{ ProductElementCode: 'R00004', IsPlateNoAvailable: 'Y' }]
 
       const basePayload = {
@@ -157,7 +234,9 @@ function CtplInsurance() {
         Slug: 'motor-insurance',
       }
 
-      const payload = insuranceType === 'COMPREHENSIVE' ? { ...basePayload, SumInsured: 100000 } : basePayload
+      const payload = insuranceType === 'COMPREHENSIVE'
+        ? { ...basePayload, SumInsured: parseInt(comprehensiveForm.sumInsured) || 100000 }
+        : basePayload
 
       // Set up WebSocket BEFORE calling API
       const echo = getEcho()
@@ -244,7 +323,7 @@ function CtplInsurance() {
     const end = new Date()
     end.setFullYear(end.getFullYear() + 1)
     useCtplInsuranceStateStore.getState().setDuration({ duration: 1, effectiveDate: start, expiryDate: end })
-    router.push(`/${agentCode}/products/ctpl-insurance/avail`)
+    router.push(`/${agentCode}/products/motor-insurance/avail`)
   }
 
   return (
@@ -310,18 +389,110 @@ function CtplInsurance() {
                   <h2 className="text-xl font-black text-gray-900">{insuranceType === 'CTPL' ? '🛡️ CTPL Insurance' : '🚗 Comprehensive Insurance'}</h2>
                   <p className="text-sm text-gray-500">{insuranceType === 'CTPL' ? 'Compulsory Third Party Liability - Required by law' : 'Complete protection for your vehicle and third parties'}</p>
                 </div>
-                <Button variant="outline" size="sm" className="rounded-full" onClick={() => { setInsuranceType(null as any); setPlans([]); reset() }}>
-                  Change Type
-                </Button>
+                <div className="flex gap-2">
+                  {switchingType && (
+                    <Button variant="outline" size="sm" className="rounded-full" onClick={handleBackToSelection}>
+                      ← Back
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" className="rounded-full" onClick={handleChangeType}>
+                    Change Type
+                  </Button>
+                </div>
               </div>
+
+              {/* Type Switcher - shows only the other type */}
+              {switchingType && (
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <p className="mb-4 text-center text-sm text-gray-600">Switch to:</p>
+                  <button
+                    onClick={() => handleSwitchToType(insuranceType === 'CTPL' ? 'COMPREHENSIVE' : 'CTPL')}
+                    className="group mx-auto flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border-2 border-gray-200 bg-gradient-to-br from-green-50 to-white p-6 transition-all hover:border-primary hover:shadow-lg"
+                  >
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl group-hover:scale-110 transition-transform">
+                      {insuranceType === 'CTPL' ? '🚗' : '🛡️'}
+                    </div>
+                    <div className="text-center">
+                      <h3 className="mb-1 text-lg font-black text-gray-900">
+                        {insuranceType === 'CTPL' ? 'Comprehensive Insurance' : 'CTPL Insurance'}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {insuranceType === 'CTPL'
+                          ? 'Complete protection for your vehicle and third parties'
+                          : 'Compulsory Third Party Liability - Required by law'}
+                      </p>
+                    </div>
+                    <span className="from-primary to-accent mt-2 rounded-full bg-gradient-to-r px-6 py-2 text-sm font-semibold text-white">
+                      Select {insuranceType === 'CTPL' ? 'Comprehensive' : 'CTPL'}
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
-            {/* Proposal Search - below the type badge */}
-            <div className="mt-4">
-              <MotorProposalSearch />
-            </div>
+            <div className="mt-4"><MotorProposalSearch /></div>
           </div>
 
-          {/* Plans - full width below, like travel */}
+          {/* Comprehensive Vehicle Details Form */}
+          {insuranceType === 'COMPREHENSIVE' && showComprehensiveForm && (
+            <div className="mx-auto mt-8 w-full max-w-7xl px-4">
+              <div className="rounded-2xl bg-white p-8 shadow-sm">
+                <h2 className="mb-2 text-xl font-black text-gray-900">Vehicle Details</h2>
+                <p className="mb-6 text-sm text-gray-500">Please provide your vehicle information to get Comprehensive insurance plans</p>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    { key: 'vehicleMake', label: 'Vehicle Make', placeholder: 'e.g. 3 (Honda)' },
+                    { key: 'vehicleModel', label: 'Vehicle Model', placeholder: 'e.g. 9' },
+                    { key: 'bodyType', label: 'Body Type', placeholder: 'e.g. 4' },
+                    { key: 'modelYear', label: 'Model Year', placeholder: 'e.g. 2023' },
+                    { key: 'subModel', label: 'Sub Model', placeholder: 'e.g. 17' },
+                    { key: 'vehicleUsage', label: 'Vehicle Usage', placeholder: 'e.g. 1' },
+                  ].map(({ key, label, placeholder }) => (
+                    <div key={key}>
+                      <label className="mb-1 block text-sm font-semibold text-gray-700">
+                        {label} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={placeholder}
+                        value={comprehensiveForm[key as keyof typeof comprehensiveForm]}
+                        onChange={e => setComprehensiveForm(prev => ({ ...prev, [key]: e.target.value }))}
+                        className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors[key] ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                      />
+                      {comprehensiveFormErrors[key] && <p className="mt-1 text-xs text-red-500">{comprehensiveFormErrors[key]}</p>}
+                    </div>
+                  ))}
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-700">
+                      Sum Insured (Vehicle Value) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">₱</span>
+                      <input
+                        type="number"
+                        placeholder="100000"
+                        min="10000"
+                        value={comprehensiveForm.sumInsured}
+                        onChange={e => setComprehensiveForm(prev => ({ ...prev, sumInsured: e.target.value }))}
+                        className={`w-full rounded-xl border pl-8 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.sumInsured ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                      />
+                    </div>
+                    {comprehensiveFormErrors.sumInsured && <p className="mt-1 text-xs text-red-500">{comprehensiveFormErrors.sumInsured}</p>}
+                  </div>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
+                    onClick={handleSearchComprehensivePlans}
+                  >
+                    Search Plans
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Plans - full width below, like travel - only show when not in comprehensive form */}
+          {!showComprehensiveForm && (
           <div id="motor-plans-section" className="w-full mt-8 border-t border-gray-100">
             <div className="mx-auto w-full max-w-7xl px-4 py-8">
               <div className="mb-8 text-center">
@@ -406,6 +577,7 @@ function CtplInsurance() {
               )}
             </div>
           </div>
+          )}
         </>
       )}
 

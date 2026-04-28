@@ -47,7 +47,7 @@ export default function CTPLPeriodForm() {
       console.log(value)
       if (expiryDate) {
         setDuration(value)
-        router.push('/products/ctpl-insurance/avail')
+        router.push('/products/motor-insurance/avail')
       } else {
         // handle error or show message if expiryDate is not set
         alert('Please enter a valid duration to calculate expiry date.')
