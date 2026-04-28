@@ -123,7 +123,7 @@ export default function CtplPlanDetailsStep() {
         <Button
           variant="outline"
           className="rounded-full px-8"
-          onClick={() => router.push(`/${agentCode}/products/ctpl-insurance`)}
+          onClick={() => router.push(`/${agentCode}/products/motor-insurance`)}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back

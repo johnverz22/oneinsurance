@@ -123,7 +123,7 @@ export default function CtplInvoicePage() {
         <hr className="mb-4" />
 
         <div className="flex justify-between">
-          <Button variant="outline" className="rounded-full px-6" onClick={() => router.push(`/${agentCode}/products/ctpl-insurance/certificate`)}>
+          <Button variant="outline" className="rounded-full px-6" onClick={() => router.push(`/${agentCode}/products/motor-insurance/certificate`)}>
             View Cover Note
           </Button>
           <Button className="from-primary to-accent rounded-full bg-gradient-to-r px-8 text-white" onClick={() => router.push(`/${agentCode}`)}>
