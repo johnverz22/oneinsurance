@@ -129,6 +129,8 @@ export default function CtplPersonalInfoForm() {
         CarrierCode: coverageOption.carrierCode,
         CarrierPlanCode: coverageOption.selectedPlan?.CarrierPlanCode,
         CarrierProductCode: coverageOption.selectedPlan?.CarrierProductCode,
+        CarrierProductName: (coverageOption.selectedPlan as any)?.CarrierProductName || '',
+        CurrencyCode: 'PHP',
         Duration: String(duration.duration),
         EffectiveDate: format(duration.effectiveDate, 'yyyy-MM-dd'),
         ExpiryDate: format(duration.expiryDate, 'yyyy-MM-dd'),
@@ -175,8 +177,11 @@ export default function CtplPersonalInfoForm() {
         ProductType: selectedVehicle?.code || 'MOTORCYCLE',
         ProductVersion: '1.0',
         AgentCode: agentCode,
-        Slug: insuranceType === 'CTPL' ? 'motor-ctpl' : 'motor-comprehensive',
-        ClientRequestId: clientRequestId
+        Slug: 'motor-insurance',
+        ClientRequestId: clientRequestId,
+        CustomField: {
+          PlanName: (coverageOption.selectedPlan as any)?.CarrierProductName || (coverageOption.selectedPlan as any)?.CarrierPlanDesc || 'CTPL Plan'
+        }
       }
 
       // Add SumInsured for Comprehensive
