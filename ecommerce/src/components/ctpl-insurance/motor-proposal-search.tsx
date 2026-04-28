@@ -219,7 +219,7 @@ export function MotorProposalSearch() {
         // Step 3: Personal info
         // Step 4: Review ← Navigate here
         // Step 5: Payment
-        router.push(`/${agentCode}/products/ctpl-insurance/avail?step=4`)
+        router.push(`/${agentCode}/products/motor-insurance/avail?step=4`)
         toast.success('Loading proposal...')
       }
     } catch (error) {

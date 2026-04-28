@@ -124,7 +124,7 @@ export default function CtplPaymentStep() {
         note: 'Please note that this serves as a cover note only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and be made available to you shortly.',
         confirmText: 'Done',
         variant: 'success',
-        onConfirm: () => router.push(`/${agentCode}/products/ctpl-insurance/invoice`),
+        onConfirm: () => router.push(`/${agentCode}/products/motor-insurance/invoice`),
       })
     } catch (error: any) {
       console.error('Issue quote error:', error)
@@ -205,7 +205,7 @@ export default function CtplPaymentStep() {
     amount: premium,
     currency: 'PHP',
     description: `${insuranceType} Insurance Premium Payment`,
-    callbackUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/ctpl-insurance/avail`,
+    callbackUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/motor-insurance/avail`,
     other_reference_1: proposalNumber,
     other_reference_1_caption: 'proposal',
   }

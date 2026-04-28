@@ -42,7 +42,7 @@ function CtplAvailContent() {
 
   useEffect(() => {
     if (hydrated && !selectedVehicle?.title) {
-      router.push(`/${agentCode}/products/ctpl-insurance`)
+      router.push(`/${agentCode}/products/motor-insurance`)
     }
   }, [hydrated, selectedVehicle, agentCode, router])
 
