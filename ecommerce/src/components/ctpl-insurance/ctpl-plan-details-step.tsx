@@ -1,7 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, CheckCircle, Car } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ArrowLeft, CheckCircle, Car, Info } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { useParams, useRouter } from 'next/navigation'
 import { COMPANIES } from '@/constants/companies'
@@ -9,12 +10,7 @@ import Image from 'next/image'
 import { format } from 'date-fns'
 
 export default function CtplPlanDetailsStep() {
-  const {
-    insuranceType,
-    duration,
-    coverageOption,
-    increaseStep,
-  } = useCtplInsuranceStateStore()
+  const { insuranceType, duration, coverageOption, increaseStep } = useCtplInsuranceStateStore()
 
   const params = useParams()
   const router = useRouter()
@@ -23,120 +19,197 @@ export default function CtplPlanDetailsStep() {
   const plan = coverageOption?.selectedPlan as any
   const carrier = COMPANIES.find(c => c.carrierCode === coverageOption?.carrierCode)
 
-  // Premium values from the plan
   const grossPremium = parseFloat(plan?.GrossPremium || plan?.BeforeVatPremium || '0')
   const duePremium = parseFloat(plan?.DuePremium || '0')
   const vatAmount = parseFloat(plan?.VatAmount || '0')
   const stampDuty = parseFloat(plan?.StampDuty || '0')
   const lgtAmount = parseFloat(plan?.LGTAmount || '0')
   const premiumTax = parseFloat(plan?.PremiumTaxAmt || '0')
-
-  const row = (label: string, value: string) => (
-    <div className="flex justify-between border-b border-gray-100 py-2 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-semibold text-gray-900">{value}</span>
-    </div>
-  )
+  const totalPremium = duePremium > 0 ? duePremium : grossPremium
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h2 className="from-primary to-accent mb-6 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
-          Your Selected Plan
-        </h2>
+    <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 lg:flex-row">
 
-        {/* Carrier & Plan Info */}
-        <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-5">
-          <div className="flex items-center gap-4">
-            {carrier?.image ? (
-              <div className="flex h-16 w-24 items-center justify-center">
-                <Image src={carrier.image} alt={carrier.companyName} width={96} height={48} className="object-contain" />
+      {/* LEFT — 3/5 width, matches travel */}
+      <div className="lg:w-3/5 space-y-4">
+
+        {/* Plan Details card */}
+        <Card className="bg-background overflow-hidden shadow-none">
+          <CardHeader className="pb-2 pt-6">
+            <h2 className="text-xl font-black text-gray-900">Plan Details</h2>
+          </CardHeader>
+          <CardContent className="space-y-5 px-6 pb-6">
+            {/* Carrier row — logo left, name+badge right */}
+            <div className="flex items-start gap-4">
+              {carrier?.image ? (
+                <div className="flex h-12 w-20 shrink-0 items-center">
+                  <Image src={carrier.image} alt={carrier.companyName} width={80} height={40} className="object-contain object-left" />
+                </div>
+              ) : (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <Car className="h-5 w-5 text-primary" />
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-500">{carrier?.companyName || coverageOption?.carrierCode}</p>
+                <h3 className="text-base font-black text-gray-900 leading-snug">
+                  {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
+                </h3>
+                <span className="mt-1 inline-block rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
+                  {insuranceType} Insurance
+                </span>
               </div>
-            ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <Car className="h-7 w-7 text-primary" />
+            </div>
+
+            {/* Coverage period */}
+            {duration?.effectiveDate && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs font-semibold text-primary mb-1">Coverage Period</p>
+                <p className="text-sm font-bold text-gray-900">
+                  {format(new Date(duration.effectiveDate), 'MMMM d, yyyy')} – {format(new Date(duration.expiryDate), 'MMMM d, yyyy')}
+                </p>
+                <p className="text-xs text-primary mt-0.5">{duration.duration} Year Coverage</p>
               </div>
             )}
-            <div>
-              <span className="mb-1 inline-block rounded-full border border-gray-200 bg-white px-3 py-0.5 text-xs text-gray-600">
-                {insuranceType} Insurance
-              </span>
-              <h3 className="text-lg font-black text-gray-900">
-                {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
-              </h3>
-              <p className="text-sm text-gray-500">{carrier?.companyName || coverageOption?.carrierCode}</p>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Coverage Period */}
-        {duration?.effectiveDate && (
-          <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-            <p className="text-xs font-semibold text-blue-600 mb-1">Coverage Period</p>
-            <p className="text-sm font-bold text-blue-900">
-              {format(new Date(duration.effectiveDate), 'MMMM d, yyyy')} – {format(new Date(duration.expiryDate), 'MMMM d, yyyy')}
-            </p>
-            <p className="text-xs text-blue-600 mt-1">{duration.duration} Year Coverage</p>
-          </div>
-        )}
-
-        {/* Premium Breakdown */}
-        <div className="mb-6 rounded-xl border border-gray-100 bg-white p-4">
-          <p className="mb-3 text-sm font-bold text-gray-700">Premium Breakdown</p>
-          {row('Base Premium', `₱ ${grossPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`)}
-          {vatAmount > 0 && row('VAT', `₱ ${vatAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`)}
-          {stampDuty > 0 && row('Stamp Duty', `₱ ${stampDuty.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`)}
-          {lgtAmount > 0 && row('LGT', `₱ ${lgtAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`)}
-          {premiumTax > 0 && row('Premium Tax', `₱ ${premiumTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`)}
-          <div className="mt-2 flex justify-between border-t border-gray-200 pt-2">
-            <span className="font-bold text-gray-800">Total Premium</span>
-            <span className="text-lg font-black text-primary">
-              ₱ {duePremium > 0
-                ? duePremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })
-                : grossPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-        </div>
-
-        {/* Main Benefits */}
+        {/* Benefits card — matches travel plan card with two-column internal layout */}
         {plan?.MainBenefits?.length > 0 && (
-          <div className="rounded-xl border border-gray-100 bg-white p-4">
-            <p className="mb-3 text-sm font-bold text-gray-700">Coverage Benefits</p>
-            <div className="space-y-2">
-              {plan.MainBenefits.map((benefit: any, i: number) => (
-                <div key={i} className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{benefit.BenefitDesc}</p>
-                    {benefit.Silimit && (
-                      <p className="text-xs text-gray-500">
-                        Coverage: ₱ {parseInt(benefit.Silimit).toLocaleString('en-PH')}
-                      </p>
-                    )}
+          <Card className="bg-background overflow-hidden shadow-none">
+            <CardContent className="px-6 py-6">
+              <div className="flex gap-6">
+                {/* Left: carrier logo + plan name (like travel) */}
+                <div className="w-36 shrink-0 space-y-3">
+                  {carrier?.image ? (
+                    <Image src={carrier.image} alt={carrier.companyName} width={80} height={40} className="object-contain object-left" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <Car className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500">{carrier?.companyName || coverageOption?.carrierCode}</p>
+                  <p className="text-sm font-black text-gray-900 leading-snug">
+                    {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
+                  </p>
+                </div>
+
+                {/* Right: benefits list */}
+                <div className="flex-1">
+                  <h3 className="mb-3 text-base font-black text-primary">Benefits</h3>
+                  <div className="space-y-2.5">
+                    {plan.MainBenefits.map((benefit: any, i: number) => (
+                      <div key={i} className="flex items-start justify-between gap-4 border-b border-gray-50 pb-2.5 last:border-0 last:pb-0">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                          <span className="text-sm text-gray-700">{benefit.BenefitDesc}</span>
+                        </div>
+                        {benefit.Silimit && (
+                          <span className="shrink-0 text-sm text-gray-600">
+                            ₱ {parseInt(benefit.Silimit).toLocaleString('en-PH')}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Orange price pill at bottom — matches travel */}
+                  <div className="mt-4 flex justify-end">
+                    <span className="rounded-full bg-orange-400 px-5 py-1.5 text-sm font-bold text-white">
+                      ₱ {totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
+
+        {/* Buttons — Cancel left, Next right — exactly like travel */}
+        <div className="flex items-center justify-between pt-2">
+          <Button
+            variant="outline"
+            size="lg"
+            className="rounded-full px-10 font-semibold"
+            onClick={() => router.push(`/${agentCode}/products/motor-insurance`)}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            size="lg"
+            className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
+            onClick={increaseStep}
+          >
+            Next
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          className="rounded-full px-8"
-          onClick={() => router.push(`/${agentCode}/products/motor-insurance`)}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <Button
-          className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
-          onClick={increaseStep}
-        >
-          Continue to Vehicle Details
-        </Button>
+      {/* RIGHT — 2/5 width sticky sidebar, exactly like travel PlanPaymentReview */}
+      <div className="lg:w-2/5">
+        <div className="sticky top-24 flex w-full flex-col space-y-6">
+          <Card className="bg-background overflow-hidden shadow-none">
+            <CardHeader className="pt-6 pb-4">
+              <h2 className="text-center text-2xl font-black text-gray-900">
+                Total Premium
+              </h2>
+              <p className="mt-2 text-center text-3xl font-bold lg:text-4xl">
+                ₱{totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+              </p>
+            </CardHeader>
+
+            <CardContent className="space-y-4 px-6 pb-8">
+              {/* Insurance Provider */}
+              <div className="rounded-lg border border-gray-300 px-4 py-3">
+                <p className="mb-1 text-sm text-gray-600">Insurance Provider</p>
+                <p className="font-semibold text-gray-900">{carrier?.companyName || coverageOption?.carrierCode}</p>
+              </div>
+
+              {/* Plan */}
+              <div className="rounded-lg border border-gray-300 px-4 py-3">
+                <p className="mb-1 text-sm text-gray-600">Plan</p>
+                <p className="font-semibold uppercase text-gray-900">
+                  {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
+                </p>
+              </div>
+
+              {/* Premium Breakdown */}
+              <div className="rounded-lg border border-gray-300 px-4 py-3 space-y-2">
+                <p className="text-sm text-gray-600">Premium Breakdown</p>
+                {[
+                  { label: 'Base Premium', value: grossPremium },
+                  { label: 'VAT', value: vatAmount },
+                  { label: 'Stamp Duty', value: stampDuty },
+                  { label: 'LGT', value: lgtAmount },
+                  { label: 'Premium Tax', value: premiumTax },
+                ].filter(r => r.value > 0).map(r => (
+                  <div key={r.label} className="flex justify-between text-sm">
+                    <span className="text-gray-500">{r.label}</span>
+                    <span className="font-medium text-gray-900">₱ {r.value.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between border-t border-gray-200 pt-2 text-sm font-bold">
+                  <span className="text-gray-800">Total</span>
+                  <span className="text-primary">₱ {totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+
+              {/* About this premium — matches travel info note */}
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <Info className="h-4 w-4" />
+                  About this premium
+                </div>
+                <p className="text-sm leading-relaxed text-gray-600">
+                  The total premium already includes the base insurance cost, applicable taxes and fees as determined by the insurance provider.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
     </div>
   )
 }
