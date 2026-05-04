@@ -177,8 +177,6 @@ export default function CtplPersonalInfoForm() {
         ProductType: selectedVehicle?.code || 'MOTORCYCLE',
         ProductVersion: '1.0',
         AgentCode: agentCode,
-        Slug: 'motor-insurance',
-        ClientRequestId: clientRequestId,
         CustomField: {
           PlanName: (coverageOption.selectedPlan as any)?.CarrierProductName || (coverageOption.selectedPlan as any)?.CarrierPlanDesc || 'CTPL Plan'
         }
