@@ -26,7 +26,7 @@ export default function CtplPremiumSummary() {
     <div className="lg:sticky lg:top-24 space-y-4">
       <Card className="overflow-hidden shadow-sm">
         <CardContent className="p-6 space-y-4">
-          <h3 className="text-xl font-bold text-gray-800 text-center">Gross Premium</h3>
+          <h3 className="text-xl font-bold text-gray-800 text-center">Total Premium</h3>
           <div className="text-center">
             <p className="text-sm text-gray-500">Total Payment</p>
             <p className="text-4xl font-black text-gray-900">₱ {price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
