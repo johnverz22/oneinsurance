@@ -8,14 +8,11 @@ export async function GET(req: NextRequest) {
     const cacheKey = searchParams.get('cacheKey')
 
     if (!cacheKey) {
-      return NextResponse.json(
-        { error: 'Cache key is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Cache key is required' }, { status: 400 })
     }
 
+    // Same endpoint as travel/health — the cache key is universal
     const url = `${process.env.BASE_URL}/quote/compare/${cacheKey}`
-
     console.log('Motor Insurance Load Quote by Cache URL:', url)
 
     const response = await axios.get(url, {
@@ -27,15 +24,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response.data, { status: 200 })
   } catch (error: any) {
-    console.error('Error loading motor insurance quote by cache:', error)
-
-    if (axios.isAxiosError(error)) {
-      return handleServerSideAxiosError(error)
-    }
-
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error loading motor insurance quote by cache:', error.response?.data || error.message)
+    if (axios.isAxiosError(error)) return handleServerSideAxiosError(error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

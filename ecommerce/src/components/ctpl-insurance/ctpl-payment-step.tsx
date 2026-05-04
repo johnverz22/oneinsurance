@@ -94,12 +94,12 @@ export default function CtplPaymentStep() {
         ? '/api/motor-insurance/ctpl/issue-quote'
         : '/api/motor-insurance/comprehensive/issue-quote'
 
-      // Build issue-quote payload
+      // Build issue-quote payload — Postman: { ProposalNo, CustomField: { PlanName } }
       const payload = {
-        ClientRequestId: clientRequestId,
-        CarrierCode: coverageOption.carrierCode,
-        PaymentBrand: selectedPaymentBrand?.value || 'Digital Payment',
-        AgentCode: agentCode,
+        ProposalNo: proposalNumber,
+        CustomField: {
+          PlanName: (coverageOption.selectedPlan as any)?.CarrierProductName || (coverageOption.selectedPlan as any)?.CarrierPlanDesc || 'CTPL Plan',
+        },
       }
 
       const response = await fetch(endpoint, {
