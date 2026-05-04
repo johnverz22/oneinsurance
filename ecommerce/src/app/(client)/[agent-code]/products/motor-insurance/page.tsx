@@ -326,11 +326,7 @@ function CtplInsurance() {
             <h2 className="text-2xl font-black text-gray-900">Choose Your Insurance Type</h2>
             <p className="text-sm text-gray-500 mt-1">Select the coverage that fits your needs</p>
 
-            {/* Car image + label row */}
-            <div className="mt-6 flex items-center gap-3">
-              <Image src="/car-side.png" alt="Motor Vehicle" width={180} height={80} className="h-16 w-auto object-contain" />
-              <span className="text-lg font-bold text-gray-800">Motor Insurance</span>
-            </div>
+
           </div>
 
           {/* Two option cards */}

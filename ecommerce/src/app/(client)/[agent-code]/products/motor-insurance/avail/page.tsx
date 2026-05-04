@@ -108,13 +108,20 @@ function CtplAvailContent() {
       </div>
 
       {/* Content */}
-      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 lg:flex-row">
-        <div className={cn('lg:w-3/5', { 'lg:w-full': step === 3 || step === 4 })}>
-          {stepContent()}
-        </div>
-        {showSidebar && (
-          <div className="relative lg:w-2/5">
-            <CtplPremiumSummary />
+      <div className="relative mx-auto max-w-7xl px-1.5">
+        {step === 0 ? (
+          // Plan Details step manages its own two-column layout internally
+          <div className="py-6">{stepContent()}</div>
+        ) : (
+          <div className="relative flex flex-col-reverse gap-8 lg:flex-row">
+            <div className={cn('lg:w-3/5', { 'lg:w-full': step === 3 || step === 4 })}>
+              {stepContent()}
+            </div>
+            {showSidebar && (
+              <div className="relative lg:w-2/5">
+                <CtplPremiumSummary />
+              </div>
+            )}
           </div>
         )}
       </div>
