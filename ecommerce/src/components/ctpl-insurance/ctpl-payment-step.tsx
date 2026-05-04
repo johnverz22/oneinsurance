@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   ArrowLeft,
   Shield,
+  Loader2,
 } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { CardPaymentForm } from '@/components/payment/card-payment-form'
@@ -507,27 +508,7 @@ function CardPaymentProcessingDialog({
         <DialogTitle></DialogTitle>
       </DialogHeader>
       <DialogContent className="flex flex-col items-center justify-center gap-4 py-10">
-        <svg width="60" height="60" viewBox="0 0 50 50" className="mb-2">
-          <circle
-            cx="25"
-            cy="25"
-            r="20"
-            stroke="#0070f3"
-            strokeWidth="5"
-            fill="none"
-            strokeDasharray="31.4 31.4"
-            strokeDashoffset="0"
-          >
-            <animateTransform
-              attributeName="transform"
-              type="rotate"
-              from="0 25 25"
-              to="360 25 25"
-              dur="1s"
-              repeatCount="indefinite"
-            />
-          </circle>
-        </svg>
+        <Loader2 className="h-14 w-14 animate-spin text-primary mb-2" />
         {message ? (
           <h2 className="text-lg font-semibold text-gray-800">{message}</h2>
         ) : (
