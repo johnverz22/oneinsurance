@@ -184,7 +184,10 @@ function CtplInsurance() {
 
   const fetchPlanByCacheKey = async (cacheKey: string): Promise<any> => {
     try {
-      const res = await axios.get(`/api/motor-insurance/load-quote-by-cache?cacheKey=${cacheKey}`, { timeout: 10000 })
+      const endpoint = insuranceType === 'COMPREHENSIVE'
+        ? `/api/motor-insurance/comprehensive/load-quote-by-cache?cacheKey=${cacheKey}`
+        : `/api/motor-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
+      const res = await axios.get(endpoint, { timeout: 10000 })
       const data = res.data
       if (!data.success || !data.data) return null
       const planData = data.data
