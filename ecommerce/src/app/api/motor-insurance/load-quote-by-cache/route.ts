@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const response = await axios.get(url, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
       },
     })
 
