@@ -7,7 +7,7 @@ import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
 import { FAQsSection } from '@/components/faqs-section'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
-import { Star } from 'lucide-react'
+import { Star, Shield, Car, CheckCircle2, AlertTriangle, ChevronRight, Search, Loader2, TriangleAlert } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
@@ -41,10 +41,18 @@ function CtplInsurance() {
   const [plansError, setPlansError] = useState<string | null>(null)
   const [showComprehensiveForm, setShowComprehensiveForm] = useState(false)
   const [comprehensiveForm, setComprehensiveForm] = useState({
-    vehicleMake: '', vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '', sumInsured: '100000',
+    vehicleType: '', vehicleMake: '', vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '', sumInsured: '100000',
   })
   const [comprehensiveFormErrors, setComprehensiveFormErrors] = useState<Record<string, string>>({})
 
+  // Cascading dropdown options
+  const [makeOptions, setMakeOptions] = useState<{ code: string; label: string }[]>([])
+  const [modelOptions, setModelOptions] = useState<{ code: string; label: string }[]>([])
+  const [bodyTypeOptions, setBodyTypeOptions] = useState<{ code: string; label: string }[]>([])
+  const [yearOptions, setYearOptions] = useState<{ code: string; label: string }[]>([])
+  const [subModelOptions, setSubModelOptions] = useState<{ code: string; label: string }[]>([])
+  const [usageOptions, setUsageOptions] = useState<{ code: string; label: string }[]>([])
+  const [loadingField, setLoadingField] = useState<string | null>(null)
   const echoRef = useRef<any>(null)
   const channelRef = useRef<any>(null)
   const queueRef = useRef<string[]>([])
@@ -72,6 +80,106 @@ function CtplInsurance() {
       if (connector?.pusher?.disconnect) connector.pusher.disconnect()
       channelRef.current = null; echoRef.current = null
     } catch {}
+  }
+
+  // Cascade fetch helpers
+  const fetchMakes = async (vType: string) => {
+    if (!vType) return
+    setLoadingField('vehicleMake')
+    setMakeOptions([]); setModelOptions([]); setBodyTypeOptions([]); setYearOptions([]); setSubModelOptions([]); setUsageOptions([])
+    try {
+      const res = await fetch(`/api/motor-insurance/vehicle-data/makes?vehicleType=${vType}`)
+      const data = await res.json()
+      if (data.success) setMakeOptions(data.data)
+    } catch {}
+    setLoadingField(null)
+  }
+
+  const fetchModels = async (vType: string, makeCode: string) => {
+    if (!vType || !makeCode) return
+    setLoadingField('vehicleModel')
+    setModelOptions([]); setBodyTypeOptions([]); setYearOptions([]); setSubModelOptions([]); setUsageOptions([])
+    try {
+      const res = await fetch(`/api/motor-insurance/vehicle-data/models?vehicleType=${vType}&makeCode=${makeCode}`)
+      const data = await res.json()
+      if (data.success) setModelOptions(data.data)
+    } catch {}
+    setLoadingField(null)
+  }
+
+  const fetchBodyTypes = async (vType: string, makeCode: string, modelCode: string) => {
+    if (!vType || !makeCode || !modelCode) return
+    setLoadingField('bodyType')
+    setBodyTypeOptions([]); setYearOptions([]); setSubModelOptions([]); setUsageOptions([])
+    try {
+      const res = await fetch(`/api/motor-insurance/vehicle-data/body-types?vehicleType=${vType}&makeCode=${makeCode}&modelCode=${modelCode}`)
+      const data = await res.json()
+      if (data.success) setBodyTypeOptions(data.data)
+    } catch {}
+    setLoadingField(null)
+  }
+
+  const fetchYears = async (vType: string, makeCode: string, modelCode: string, btCode: string) => {
+    if (!vType || !makeCode || !modelCode || !btCode) return
+    setLoadingField('modelYear')
+    setYearOptions([]); setSubModelOptions([]); setUsageOptions([])
+    try {
+      const res = await fetch(`/api/motor-insurance/vehicle-data/years?vehicleType=${vType}&makeCode=${makeCode}&modelCode=${modelCode}&bodyTypeCode=${btCode}`)
+      const data = await res.json()
+      if (data.success) setYearOptions(data.data)
+    } catch {}
+    setLoadingField(null)
+  }
+
+  const fetchSubModels = async (vType: string, makeCode: string, modelCode: string, btCode: string, year: string) => {
+    if (!vType || !makeCode || !modelCode || !btCode || !year) return
+    setLoadingField('subModel')
+    setSubModelOptions([]); setUsageOptions([])
+    try {
+      const res = await fetch(`/api/motor-insurance/vehicle-data/submodels?vehicleType=${vType}&makeCode=${makeCode}&modelCode=${modelCode}&bodyTypeCode=${btCode}&year=${year}`)
+      const data = await res.json()
+      if (data.success) setSubModelOptions(data.data)
+    } catch {}
+    setLoadingField(null)
+  }
+
+  const fetchUsages = async (vType: string, makeCode: string, modelCode: string, btCode: string, year: string, smCode: string) => {
+    if (!vType || !makeCode || !modelCode || !btCode || !year || !smCode) return
+    setLoadingField('vehicleUsage')
+    setUsageOptions([])
+    try {
+      const res = await fetch(`/api/motor-insurance/vehicle-data/usages?vehicleType=${vType}&makeCode=${makeCode}&modelCode=${modelCode}&bodyTypeCode=${btCode}&year=${year}&subModelCode=${smCode}`)
+      const data = await res.json()
+      if (data.success) setUsageOptions(data.data)
+    } catch {}
+    setLoadingField(null)
+  }
+
+  const handleComprehensiveFieldChange = (field: string, value: string) => {
+    const f = comprehensiveForm
+    if (field === 'vehicleType') {
+      setComprehensiveForm(prev => ({ ...prev, vehicleType: value, vehicleMake: '', vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '' }))
+      fetchMakes(value)
+    } else if (field === 'vehicleMake') {
+      setComprehensiveForm(prev => ({ ...prev, vehicleMake: value, vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '' }))
+      fetchModels(f.vehicleType, value)
+    } else if (field === 'vehicleModel') {
+      setComprehensiveForm(prev => ({ ...prev, vehicleModel: value, bodyType: '', modelYear: '', subModel: '', vehicleUsage: '' }))
+      fetchBodyTypes(f.vehicleType, f.vehicleMake, value)
+    } else if (field === 'bodyType') {
+      setComprehensiveForm(prev => ({ ...prev, bodyType: value, modelYear: '', subModel: '', vehicleUsage: '' }))
+      fetchYears(f.vehicleType, f.vehicleMake, f.vehicleModel, value)
+    } else if (field === 'modelYear') {
+      setComprehensiveForm(prev => ({ ...prev, modelYear: value, subModel: '', vehicleUsage: '' }))
+      fetchSubModels(f.vehicleType, f.vehicleMake, f.vehicleModel, f.bodyType, value)
+    } else if (field === 'subModel') {
+      setComprehensiveForm(prev => ({ ...prev, subModel: value, vehicleUsage: '' }))
+      fetchUsages(f.vehicleType, f.vehicleMake, f.vehicleModel, f.bodyType, f.modelYear, value)
+    } else if (field === 'vehicleUsage') {
+      setComprehensiveForm(prev => ({ ...prev, vehicleUsage: value }))
+    } else if (field === 'sumInsured') {
+      setComprehensiveForm(prev => ({ ...prev, sumInsured: value }))
+    }
   }
 
   const fetchPlanByCacheKey = async (cacheKey: string): Promise<any> => {
@@ -155,6 +263,7 @@ function CtplInsurance() {
 
   const validateComprehensiveForm = () => {
     const errors: Record<string, string> = {}
+    if (!comprehensiveForm.vehicleType) errors.vehicleType = 'Required'
     if (!comprehensiveForm.vehicleMake) errors.vehicleMake = 'Required'
     if (!comprehensiveForm.vehicleModel) errors.vehicleModel = 'Required'
     if (!comprehensiveForm.bodyType) errors.bodyType = 'Required'
@@ -182,7 +291,7 @@ function CtplInsurance() {
   const selectType = (type: 'CTPL' | 'COMPREHENSIVE') => {
     if (insuranceType === type) return
     setPlans([]); setPlansError(null)
-    setComprehensiveForm({ vehicleMake: '', vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '', sumInsured: '100000' })
+    setComprehensiveForm({ vehicleType: '', vehicleMake: '', vehicleModel: '', bodyType: '', modelYear: '', subModel: '', vehicleUsage: '', sumInsured: '100000' })
     setComprehensiveFormErrors({})
     isInitialMount.current = false
     setInsuranceType(type)
@@ -236,10 +345,12 @@ function CtplInsurance() {
               }`}
             >
               {insuranceType === 'CTPL' && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">✓</span>
+                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">
+                  <CheckCircle2 className="h-4 w-4" />
+                </span>
               )}
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full text-3xl ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
-                🛡️
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
+                <Shield className={`h-6 w-6 ${insuranceType === 'CTPL' ? 'text-primary' : 'text-blue-400'}`} />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 text-sm">CTPL Insurance</h3>
@@ -264,10 +375,12 @@ function CtplInsurance() {
               }`}
             >
               {insuranceType === 'COMPREHENSIVE' && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">✓</span>
+                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">
+                  <CheckCircle2 className="h-4 w-4" />
+                </span>
               )}
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full text-3xl ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
-                🚗
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
+                <Car className={`h-6 w-6 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-green-400'}`} />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 text-sm">Comprehensive</h3>
@@ -288,26 +401,115 @@ function CtplInsurance() {
             <div className="border-t border-gray-100 bg-gray-50 px-6 py-5">
               <h3 className="mb-1 font-bold text-gray-800">Vehicle Details</h3>
               <p className="mb-4 text-xs text-gray-500">Provide your vehicle info to get Comprehensive plans</p>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  { key: 'vehicleMake', label: 'Vehicle Make', placeholder: 'e.g. 3' },
-                  { key: 'vehicleModel', label: 'Vehicle Model', placeholder: 'e.g. 9' },
-                  { key: 'bodyType', label: 'Body Type', placeholder: 'e.g. 4' },
-                  { key: 'modelYear', label: 'Model Year', placeholder: 'e.g. 2023' },
-                  { key: 'subModel', label: 'Sub Model', placeholder: 'e.g. 17' },
-                  { key: 'vehicleUsage', label: 'Vehicle Usage', placeholder: 'e.g. 1' },
-                ].map(({ key, label, placeholder }) => (
-                  <div key={key}>
-                    <label className="mb-1 block text-xs font-semibold text-gray-600">{label} <span className="text-red-500">*</span></label>
-                    <input
-                      type="text" placeholder={placeholder}
-                      value={comprehensiveForm[key as keyof typeof comprehensiveForm]}
-                      onChange={e => setComprehensiveForm(prev => ({ ...prev, [key]: e.target.value }))}
-                      className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors[key] ? 'border-red-400' : 'border-gray-200'}`}
-                    />
-                    {comprehensiveFormErrors[key] && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors[key]}</p>}
-                  </div>
-                ))}
+              <div className="grid gap-3 sm:grid-cols-2">
+
+                {/* Vehicle Type */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Type <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.vehicleType}
+                    onChange={e => handleComprehensiveFieldChange('vehicleType', e.target.value)}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.vehicleType ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">Select Vehicle Type</option>
+                    {[{ value: 'MOTORCYCLE', label: 'Motorcycle' }, { value: 'PRIVATECAR', label: 'Private Car' }, { value: 'COMMERCIAL', label: 'Commercial' }, { value: 'LTO', label: 'LTO' }].map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  {comprehensiveFormErrors.vehicleType && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleType}</p>}
+                </div>
+
+                {/* Make */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Make <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.vehicleMake}
+                    onChange={e => handleComprehensiveFieldChange('vehicleMake', e.target.value)}
+                    disabled={!comprehensiveForm.vehicleType || loadingField === 'vehicleMake'}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleMake ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">{loadingField === 'vehicleMake' ? 'Loading...' : 'Select Make'}</option>
+                    {makeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
+                  </select>
+                  {comprehensiveFormErrors.vehicleMake && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleMake}</p>}
+                </div>
+
+                {/* Model */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Model <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.vehicleModel}
+                    onChange={e => handleComprehensiveFieldChange('vehicleModel', e.target.value)}
+                    disabled={!comprehensiveForm.vehicleMake || loadingField === 'vehicleModel'}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleModel ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">{loadingField === 'vehicleModel' ? 'Loading...' : 'Select Model'}</option>
+                    {modelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
+                  </select>
+                  {comprehensiveFormErrors.vehicleModel && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleModel}</p>}
+                </div>
+
+                {/* Body Type */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Body Type <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.bodyType}
+                    onChange={e => handleComprehensiveFieldChange('bodyType', e.target.value)}
+                    disabled={!comprehensiveForm.vehicleModel || loadingField === 'bodyType'}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.bodyType ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">{loadingField === 'bodyType' ? 'Loading...' : 'Select Body Type'}</option>
+                    {bodyTypeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
+                  </select>
+                  {comprehensiveFormErrors.bodyType && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.bodyType}</p>}
+                </div>
+
+                {/* Model Year */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Model Year <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.modelYear}
+                    onChange={e => handleComprehensiveFieldChange('modelYear', e.target.value)}
+                    disabled={!comprehensiveForm.bodyType || loadingField === 'modelYear'}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.modelYear ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">{loadingField === 'modelYear' ? 'Loading...' : 'Select Year'}</option>
+                    {yearOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
+                  </select>
+                  {comprehensiveFormErrors.modelYear && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.modelYear}</p>}
+                </div>
+
+                {/* Sub Model */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Sub Model <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.subModel}
+                    onChange={e => handleComprehensiveFieldChange('subModel', e.target.value)}
+                    disabled={!comprehensiveForm.modelYear || loadingField === 'subModel'}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.subModel ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">{loadingField === 'subModel' ? 'Loading...' : 'Select Sub Model'}</option>
+                    {subModelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
+                  </select>
+                  {comprehensiveFormErrors.subModel && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.subModel}</p>}
+                </div>
+
+                {/* Vehicle Usage */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Usage <span className="text-red-500">*</span></label>
+                  <select
+                    value={comprehensiveForm.vehicleUsage}
+                    onChange={e => handleComprehensiveFieldChange('vehicleUsage', e.target.value)}
+                    disabled={!comprehensiveForm.subModel || loadingField === 'vehicleUsage'}
+                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleUsage ? 'border-red-400' : 'border-gray-200'}`}
+                  >
+                    <option value="">{loadingField === 'vehicleUsage' ? 'Loading...' : 'Select Usage'}</option>
+                    {usageOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
+                  </select>
+                  {comprehensiveFormErrors.vehicleUsage && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleUsage}</p>}
+                </div>
+
+                {/* Sum Insured */}
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-gray-600">Sum Insured <span className="text-red-500">*</span></label>
                   <div className="relative">
@@ -315,7 +517,7 @@ function CtplInsurance() {
                     <input
                       type="number" placeholder="100000" min="10000"
                       value={comprehensiveForm.sumInsured}
-                      onChange={e => setComprehensiveForm(prev => ({ ...prev, sumInsured: e.target.value }))}
+                      onChange={e => handleComprehensiveFieldChange('sumInsured', e.target.value)}
                       className={`w-full rounded-xl border bg-white pl-7 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.sumInsured ? 'border-red-400' : 'border-gray-200'}`}
                     />
                   </div>
@@ -348,10 +550,7 @@ function CtplInsurance() {
 
             {isLoadingPlans && (
               <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 py-16">
-                <svg className="text-primary h-12 w-12 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
+                <Loader2 className="text-primary h-12 w-12 animate-spin" />
                 <p className="text-muted-foreground text-base">We're searching for the best plans for you...</p>
               </div>
             )}
@@ -361,9 +560,7 @@ function CtplInsurance() {
                 <div className="mx-auto max-w-lg rounded-2xl border border-orange-200 bg-orange-50 p-8 text-center shadow-sm">
                   <div className="mb-4 flex justify-center">
                     <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
-                      <svg className="h-7 w-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                      </svg>
+                      <TriangleAlert className="h-7 w-7 text-orange-500" />
                     </div>
                   </div>
                   <h3 className="mb-2 text-lg font-bold text-orange-800">This Insurance is Currently Unavailable</h3>
@@ -414,9 +611,7 @@ function CtplInsurance() {
                         <div className="mb-4 space-y-1.5 flex-1">
                           {benefits.slice(0, 5).map((benefit: any, i: number) => (
                             <div key={i} className="flex items-start gap-2">
-                              <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
+                              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
                               <span className="text-xs font-medium uppercase text-gray-700">{benefit.BenefitDesc}</span>
                             </div>
                           ))}

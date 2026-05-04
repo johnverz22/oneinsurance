@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, CheckCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Car } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { useParams, useRouter } from 'next/navigation'
 import { COMPANIES } from '@/constants/companies'
@@ -53,7 +53,9 @@ export default function CtplPlanDetailsStep() {
                 <Image src={carrier.image} alt={carrier.companyName} width={96} height={48} className="object-contain" />
               </div>
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">🚗</div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <Car className="h-7 w-7 text-primary" />
+              </div>
             )}
             <div>
               <span className="mb-1 inline-block rounded-full border border-gray-200 bg-white px-3 py-0.5 text-xs text-gray-600">
