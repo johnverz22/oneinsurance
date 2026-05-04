@@ -246,12 +246,6 @@ function CtplInsurance() {
         queueRef.current.push(e['cache_key']); processQueue()
       })
       channelRef.current = channel
-      setTimeout(() => {
-        if (queueRef.current.length === 0 && supportedCarriers.length > 0) {
-          for (const carrier of supportedCarriers) queueRef.current.push(`${carrier}_${clientReqId}`)
-          processQueue()
-        }
-      }, 1500)
       fallbackTimeoutRef.current = setTimeout(() => {
         closeEchoConnection(); setIsLoadingPlans(false)
         setPlans(prev => { if (prev.length === 0) setPlansError('Plans are taking longer than expected. Please try again.'); return prev })
