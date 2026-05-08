@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Search, ShoppingCart, Loader2 } from 'lucide-react'
+import { Search, ShoppingCart, Loader2, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
@@ -116,23 +116,24 @@ export function HealthPlansGrid() {
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-8 text-center">
             Choose your Health Plans
           </h2>
-          <div className="mx-auto max-w-lg rounded-2xl border border-orange-200 bg-orange-50 p-8 text-center shadow-sm">
+          <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
             <div className="mb-4 flex justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
-                <svg className="h-7 w-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                </svg>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                <TriangleAlert className="h-7 w-7 text-gray-400" />
               </div>
             </div>
-            <h3 className="mb-2 text-lg font-bold text-orange-800">This Insurance is Currently Unavailable</h3>
-            <p className="mb-4 text-sm text-orange-700">
+            <h3 className="mb-2 text-lg font-bold text-gray-800">No Plans Available</h3>
+            <p className="mb-4 text-sm text-gray-500">
               {plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('authorized') || plansError.toLowerCase().includes('lob')
                 ? "We're sorry, but health insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
                 : plansError}
             </p>
-            <p className="text-xs text-orange-600">
-              Please contact your agent or reach out to our support team for assistance.
-            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
+            >
+              Modify Search
+            </button>
           </div>
         </div>
       </section>
@@ -243,7 +244,7 @@ export function HealthPlansGrid() {
                     {plan.CarrierPlanDesc}
                   </h3>
                   {premium > 0 && (
-                    <span className="shrink-0 rounded-full bg-[#F5A623] px-3 py-1.5 text-sm font-bold text-white whitespace-nowrap">
+                    <span className="shrink-0 rounded-full bg-orange-400 px-3 py-1.5 text-sm font-bold text-white whitespace-nowrap">
                       ₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
                     </span>
                   )}
@@ -294,7 +295,7 @@ export function HealthPlansGrid() {
 
                 {/* Get Started button — same as travel */}
                 <Button
-                  className="from-primary to-accent w-full rounded-full bg-gradient-to-r py-2.5 text-sm font-semibold text-white"
+                  className="bg-primary from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
                   onClick={() => handleGetStarted(plan)}
                 >
                   Get Started

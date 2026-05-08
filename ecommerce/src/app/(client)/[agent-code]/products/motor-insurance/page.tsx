@@ -7,7 +7,7 @@ import { PageLoader } from '@/components/page-loader'
 import { Button } from '@/components/ui/button'
 import { FAQsSection } from '@/components/faqs-section'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
-import { Star, Shield, Car, CheckCircle2, AlertTriangle, ChevronRight, Search, Loader2, TriangleAlert } from 'lucide-react'
+import { Star, Shield, Car, CheckCircle2, Loader2, TriangleAlert } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
@@ -300,7 +300,7 @@ function CtplInsurance() {
       <div className="relative h-[25rem] w-full md:h-[35rem] lg:h-[45rem]">
         <div className="relative h-full w-full">
           <Image src="/our-products-motorvehicle.webp" alt="motor-hero" className="aspect-video object-cover opacity-75" sizes="100vw" fill />
-          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 bg-black/80" />
         </div>
         <div tabIndex={0} role="button" onClick={() => router.push('/')} className="absolute top-8 left-4 z-10 cursor-pointer rounded-tl-full rounded-br-full bg-white px-12 py-1 shadow-lg lg:left-28">
           <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-10 w-auto" priority />
@@ -317,208 +317,172 @@ function CtplInsurance() {
 
       {/* Main Card - always visible, overlaps hero */}
       <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
-        <div className="rounded-2xl bg-white shadow-2xl overflow-hidden">
-          {/* Header with car image */}
-          <div className="px-8 pt-8 pb-6">
+        <div className="rounded-md bg-white shadow-lg backdrop-blur-sm overflow-hidden lg:rounded-xl">
+          {/* Header */}
+          <div className="px-4 pt-3 pb-6 sm:px-8">
             <h2 className="text-2xl font-black text-gray-900">Choose Your Insurance Type</h2>
             <p className="text-sm text-gray-500 mt-1">Select the coverage that fits your needs</p>
 
-
-          </div>
-
-          {/* Two option cards */}
-          <div className="grid grid-cols-2 gap-4 px-8 pb-8">
-            {/* CTPL */}
-            <button
-              onClick={() => selectType('CTPL')}
-              className={`group relative flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-all text-center ${
-                insuranceType === 'CTPL'
-                  ? 'border-primary bg-primary/5 shadow-md'
-                  : 'border-gray-200 bg-gray-50 hover:border-primary/50 hover:shadow-sm'
-              }`}
-            >
-              {insuranceType === 'CTPL' && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">
-                  <CheckCircle2 className="h-4 w-4" />
+            {/* Pill-style toggle — matches travel's trip type toggle */}
+            <div className="mt-5 border-muted-foreground/30 flex w-full rounded-full border bg-gray-100 p-1">
+              <button
+                onClick={() => selectType('CTPL')}
+                className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-all sm:px-6 sm:py-2 ${
+                  insuranceType === 'CTPL' ? 'bg-primary text-white shadow-md' : 'text-foreground hover:text-primary'
+                }`}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  CTPL Insurance
                 </span>
-              )}
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
-                <Shield className={`h-6 w-6 ${insuranceType === 'CTPL' ? 'text-primary' : 'text-blue-400'}`} />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 text-sm">CTPL Insurance</h3>
-                <p className="text-xs text-gray-500">Required by law for all vehicles</p>
-              </div>
-              <span className={`rounded-full border px-4 py-1 text-xs font-medium transition-all ${
-                insuranceType === 'CTPL'
-                  ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
-                  : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
-              }`}>
-                {insuranceType === 'CTPL' ? 'Selected ✓' : 'Select CTPL'}
-              </span>
-            </button>
-
-            {/* Comprehensive */}
-            <button
-              onClick={() => selectType('COMPREHENSIVE')}
-              className={`group relative flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-all text-center ${
-                insuranceType === 'COMPREHENSIVE'
-                  ? 'border-primary bg-primary/5 shadow-md'
-                  : 'border-gray-200 bg-gray-50 hover:border-primary/50 hover:shadow-sm'
-              }`}
-            >
-              {insuranceType === 'COMPREHENSIVE' && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white text-xs">
-                  <CheckCircle2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => selectType('COMPREHENSIVE')}
+                className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-all sm:px-6 sm:py-2 ${
+                  insuranceType === 'COMPREHENSIVE' ? 'bg-primary text-white shadow-md' : 'text-foreground hover:text-primary'
+                }`}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <Car className="h-4 w-4" />
+                  Comprehensive
                 </span>
-              )}
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
-                <Car className={`h-6 w-6 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-green-400'}`} />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 text-sm">Comprehensive</h3>
-                <p className="text-xs text-gray-500">Complete vehicle protection</p>
-              </div>
-              <span className={`rounded-full border px-4 py-1 text-xs font-medium transition-all ${
-                insuranceType === 'COMPREHENSIVE'
-                  ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
-                  : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
-              }`}>
-                {insuranceType === 'COMPREHENSIVE' ? 'Selected ✓' : 'Select Comprehensive'}
-              </span>
-            </button>
+              </button>
+            </div>
           </div>
 
           {/* Comprehensive Form - expands inside the card */}
           {insuranceType === 'COMPREHENSIVE' && showComprehensiveForm && (
-            <div className="border-t border-gray-100 bg-gray-50 px-6 py-5">
+            <div className="border-t border-gray-100 bg-gray-50 px-4 py-5 sm:px-8">
               <h3 className="mb-1 font-bold text-gray-800">Vehicle Details</h3>
               <p className="mb-4 text-xs text-gray-500">Provide your vehicle info to get Comprehensive plans</p>
               <div className="grid gap-3 sm:grid-cols-2">
 
                 {/* Vehicle Type */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Type <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Vehicle Type <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.vehicleType}
                     onChange={e => handleComprehensiveFieldChange('vehicleType', e.target.value)}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.vehicleType ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.vehicleType ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">Select Vehicle Type</option>
                     {[{ value: 'MOTORCYCLE', label: 'Motorcycle' }, { value: 'PRIVATECAR', label: 'Private Car' }, { value: 'COMMERCIAL', label: 'Commercial' }, { value: 'LTO', label: 'LTO' }].map(o => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
                   </select>
-                  {comprehensiveFormErrors.vehicleType && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleType}</p>}
+                  {comprehensiveFormErrors.vehicleType && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.vehicleType}</p>}
                 </div>
 
                 {/* Make */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Make <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Vehicle Make <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.vehicleMake}
                     onChange={e => handleComprehensiveFieldChange('vehicleMake', e.target.value)}
                     disabled={!comprehensiveForm.vehicleType || loadingField === 'vehicleMake'}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleMake ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleMake ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'vehicleMake' ? 'Loading...' : 'Select Make'}</option>
                     {makeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                   </select>
-                  {comprehensiveFormErrors.vehicleMake && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleMake}</p>}
+                  {comprehensiveFormErrors.vehicleMake && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.vehicleMake}</p>}
                 </div>
 
                 {/* Model */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Model <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Vehicle Model <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.vehicleModel}
                     onChange={e => handleComprehensiveFieldChange('vehicleModel', e.target.value)}
                     disabled={!comprehensiveForm.vehicleMake || loadingField === 'vehicleModel'}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleModel ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleModel ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'vehicleModel' ? 'Loading...' : 'Select Model'}</option>
                     {modelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                   </select>
-                  {comprehensiveFormErrors.vehicleModel && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleModel}</p>}
+                  {comprehensiveFormErrors.vehicleModel && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.vehicleModel}</p>}
                 </div>
 
                 {/* Body Type */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Body Type <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Body Type <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.bodyType}
                     onChange={e => handleComprehensiveFieldChange('bodyType', e.target.value)}
                     disabled={!comprehensiveForm.vehicleModel || loadingField === 'bodyType'}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.bodyType ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.bodyType ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'bodyType' ? 'Loading...' : 'Select Body Type'}</option>
                     {bodyTypeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                   </select>
-                  {comprehensiveFormErrors.bodyType && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.bodyType}</p>}
+                  {comprehensiveFormErrors.bodyType && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.bodyType}</p>}
                 </div>
 
                 {/* Model Year */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Model Year <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Model Year <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.modelYear}
                     onChange={e => handleComprehensiveFieldChange('modelYear', e.target.value)}
                     disabled={!comprehensiveForm.bodyType || loadingField === 'modelYear'}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.modelYear ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.modelYear ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'modelYear' ? 'Loading...' : 'Select Year'}</option>
                     {yearOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                   </select>
-                  {comprehensiveFormErrors.modelYear && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.modelYear}</p>}
+                  {comprehensiveFormErrors.modelYear && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.modelYear}</p>}
                 </div>
 
                 {/* Sub Model */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Sub Model <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Sub Model <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.subModel}
                     onChange={e => handleComprehensiveFieldChange('subModel', e.target.value)}
                     disabled={!comprehensiveForm.modelYear || loadingField === 'subModel'}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.subModel ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.subModel ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'subModel' ? 'Loading...' : 'Select Sub Model'}</option>
                     {subModelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                   </select>
-                  {comprehensiveFormErrors.subModel && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.subModel}</p>}
+                  {comprehensiveFormErrors.subModel && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.subModel}</p>}
                 </div>
 
                 {/* Vehicle Usage */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Vehicle Usage <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Vehicle Usage <span className="text-destructive">*</span></label>
                   <select
                     value={comprehensiveForm.vehicleUsage}
                     onChange={e => handleComprehensiveFieldChange('vehicleUsage', e.target.value)}
                     disabled={!comprehensiveForm.subModel || loadingField === 'vehicleUsage'}
-                    className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleUsage ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleUsage ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'vehicleUsage' ? 'Loading...' : 'Select Usage'}</option>
                     {usageOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                   </select>
-                  {comprehensiveFormErrors.vehicleUsage && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.vehicleUsage}</p>}
+                  {comprehensiveFormErrors.vehicleUsage && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.vehicleUsage}</p>}
                 </div>
 
                 {/* Sum Insured */}
                 <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">Sum Insured <span className="text-red-500">*</span></label>
+                  <label className="mb-1 block text-sm font-medium text-primary">Sum Insured <span className="text-destructive">*</span></label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">₱</span>
                     <input
                       type="number" placeholder="100000" min="10000"
                       value={comprehensiveForm.sumInsured}
                       onChange={e => handleComprehensiveFieldChange('sumInsured', e.target.value)}
-                      className={`w-full rounded-xl border bg-white pl-7 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.sumInsured ? 'border-red-400' : 'border-gray-200'}`}
+                      className={`w-full rounded-full border bg-white pl-7 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.sumInsured ? 'border-red-400' : 'border-gray-200'}`}
                     />
                   </div>
-                  {comprehensiveFormErrors.sumInsured && <p className="mt-0.5 text-xs text-red-500">{comprehensiveFormErrors.sumInsured}</p>}
+                  {comprehensiveFormErrors.sumInsured && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.sumInsured}</p>}
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
-                <Button className="from-primary to-accent rounded-full bg-gradient-to-r px-8 font-semibold text-white" onClick={handleSearchComprehensivePlans}>
+                <Button
+                  className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-8 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+                  onClick={handleSearchComprehensivePlans}
+                >
                   Search Plans
                 </Button>
               </div>
@@ -550,19 +514,24 @@ function CtplInsurance() {
 
             {!isLoadingPlans && plansError && plans.length === 0 && (
               <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
-                <div className="mx-auto max-w-lg rounded-2xl border border-orange-200 bg-orange-50 p-8 text-center shadow-sm">
+                <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
                   <div className="mb-4 flex justify-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100">
-                      <TriangleAlert className="h-7 w-7 text-orange-500" />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                      <TriangleAlert className="h-7 w-7 text-gray-400" />
                     </div>
                   </div>
-                  <h3 className="mb-2 text-lg font-bold text-orange-800">This Insurance is Currently Unavailable</h3>
-                  <p className="mb-4 text-sm text-orange-700">
+                  <h3 className="mb-2 text-lg font-bold text-gray-800">No Plans Available</h3>
+                  <p className="mb-4 text-sm text-gray-500">
                     {plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('lob')
-                      ? "Motor insurance plans are not currently available through this link."
+                      ? "Motor insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
                       : plansError}
                   </p>
-                  <p className="text-xs text-orange-600">Please contact your agent for assistance or try again later.</p>
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
+                  >
+                    Modify Search
+                  </button>
                 </div>
               </div>
             )}
@@ -571,7 +540,7 @@ function CtplInsurance() {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-8">
                 {plans.map((plan, index) => {
                   const carrier = COMPANIES.find(c => c.carrierCode === plan.CarrierCode)
-                  const premium = parseFloat(plan.GrossPremium) || parseFloat(plan.DuePremium) || parseFloat(plan.BeforeVatPremium) || Number(plan.Premium) || 0
+                  const premium = parseFloat(plan.DuePremium) || parseFloat(plan.GrossPremium) || parseFloat(plan.BeforeVatPremium) || Number(plan.Premium) || 0
                   const benefits = plan.MainBenefits || []
                   return (
                     <div key={index} className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md">
@@ -611,7 +580,7 @@ function CtplInsurance() {
                           {benefits.length > 5 && <p className="text-xs text-gray-400 italic">and many more...</p>}
                         </div>
                       )}
-                      <Button className="from-primary to-accent mt-auto w-full rounded-full bg-gradient-to-r font-semibold text-white" onClick={() => handleBuyNow(plan)}>
+                      <Button className="bg-primary from-primary to-accent mt-auto h-12 w-full rounded-full bg-gradient-to-r via-90% text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50" onClick={() => handleBuyNow(plan)}>
                         Get Started
                       </Button>
                     </div>

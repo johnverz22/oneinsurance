@@ -214,7 +214,7 @@ export default function CtplPersonalInfoForm() {
     }
   }
 
-  const err = (field: string) => errors[field] ? <p className="mt-1 text-xs text-red-500">{errors[field]}</p> : null
+  const err = (field: string) => errors[field] ? <p className="mt-1 text-xs text-destructive">{errors[field]}</p> : null
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
@@ -232,7 +232,7 @@ export default function CtplPersonalInfoForm() {
       {/* Name Row */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-1.5">
-          <Label className="text-primary">First Name <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">First Name <span className="text-destructive">*</span></Label>
           <Input value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="Enter first name" className={`h-12 ${errors.firstName ? 'border-destructive' : ''}`} />
           {err('firstName')}
         </div>
@@ -244,7 +244,7 @@ export default function CtplPersonalInfoForm() {
           <Input value={form.middleName} onChange={e => set('middleName', e.target.value)} placeholder="Enter middle name" className="h-12" />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">Last Name <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Last Name <span className="text-destructive">*</span></Label>
           <Input value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Enter last name" className={`h-12 ${errors.lastName ? 'border-destructive' : ''}`} />
           {err('lastName')}
         </div>
@@ -263,7 +263,7 @@ export default function CtplPersonalInfoForm() {
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">Gender <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Gender <span className="text-destructive">*</span></Label>
           <div className="border-muted-foreground/30 flex w-full items-center justify-center gap-2 rounded-full border p-1">
             <div className={`w-full rounded-full p-2 text-center cursor-pointer ${form.gender === 'M' ? 'from-primary to-lilac bg-gradient-to-r text-white' : ''}`} onClick={() => set('gender', 'M')}>Male</div>
             <div className={`w-full rounded-full p-2 text-center cursor-pointer ${form.gender === 'F' ? 'from-lilac to-primary bg-gradient-to-r text-white' : ''}`} onClick={() => set('gender', 'F')}>Female</div>
@@ -274,12 +274,12 @@ export default function CtplPersonalInfoForm() {
       {/* Email + Phone */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-primary">Email Address <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Email Address <span className="text-destructive">*</span></Label>
           <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="johndoe@example.com" className={`h-12 ${errors.email ? 'border-destructive' : ''}`} />
           {err('email')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">Phone Number <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Phone Number <span className="text-destructive">*</span></Label>
           <div className={`flex h-12 items-center overflow-hidden rounded-md border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${errors.mobileNumber ? 'border-destructive' : ''}`}>
             <span className="border-r px-3 text-sm text-gray-500">+63</span>
             <Input value={form.mobileNumber} onChange={e => set('mobileNumber', e.target.value)} placeholder="9123456789" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
@@ -291,12 +291,12 @@ export default function CtplPersonalInfoForm() {
       {/* Gender + DOB */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-primary">Date of Birth <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Date of Birth <span className="text-destructive">*</span></Label>
           <Input type="date" value={form.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)} className={`h-12 ${errors.dateOfBirth ? 'border-destructive' : ''}`} />
           {err('dateOfBirth')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">ID Type <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">ID Type <span className="text-destructive">*</span></Label>
           <Select value={form.idType} onValueChange={v => set('idType', v)}>
             <SelectTrigger className="h-12 w-full"><SelectValue placeholder="Select ID Type" /></SelectTrigger>
             <SelectContent>{ID_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
@@ -306,7 +306,7 @@ export default function CtplPersonalInfoForm() {
 
       {/* ID Number */}
       <div className="space-y-1.5">
-        <Label className="text-primary">ID Number <span className="text-red-500">*</span></Label>
+        <Label className="text-primary">ID Number <span className="text-destructive">*</span></Label>
         <Input value={form.idNumber} onChange={e => set('idNumber', e.target.value)} placeholder="Enter ID Number" className={`h-12 ${errors.idNumber ? 'border-destructive' : ''}`} />
         {err('idNumber')}
       </div>
@@ -314,7 +314,7 @@ export default function CtplPersonalInfoForm() {
       {/* Province + City + ZIP */}
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-1.5">
-          <Label className="text-primary">Province <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Province <span className="text-destructive">*</span></Label>
           <Select value={selectedProvinceCode} onValueChange={v => {
             const prov = provinces.find(p => p.code === v)
             setSelectedProvinceCode(v)
@@ -329,7 +329,7 @@ export default function CtplPersonalInfoForm() {
           {err('province')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">City / Municipality <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">City / Municipality <span className="text-destructive">*</span></Label>
           <Select value={selectedCityCode} onValueChange={v => {
             const city = availableCities.find(c => c.cityCode === v)
             const zip = getZipCodeByCityCode(v)
@@ -343,7 +343,7 @@ export default function CtplPersonalInfoForm() {
           {err('city')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">ZIP Code <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">ZIP Code <span className="text-destructive">*</span></Label>
           <Input value={form.zipCode} onChange={e => set('zipCode', e.target.value)} placeholder="Enter ZIP Code" className={`h-12 ${errors.zipCode ? 'border-destructive' : ''}`} />
           {err('zipCode')}
         </div>
@@ -352,7 +352,7 @@ export default function CtplPersonalInfoForm() {
       {/* Address */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-primary">House Address <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">House Address <span className="text-destructive">*</span></Label>
           <Input value={form.addressLine1} onChange={e => set('addressLine1', e.target.value)} placeholder="Enter full address" className={`h-12 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
           {err('addressLine1')}
         </div>
