@@ -148,7 +148,7 @@ export default function VehicleRegistration() {
   }
 
   const sel = (key: string) =>
-    `w-full rounded-md border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${errors[key] ? 'border-red-400' : 'border-input'}`
+    `w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${errors[key] ? 'border-red-400' : 'border-input'}`
 
   const inputCls = (key: string) =>
     errors[key] ? 'border-red-400' : ''
@@ -177,6 +177,7 @@ export default function VehicleRegistration() {
               </div>
               <div>
                 <Label className="mb-2 font-semibold">Date of Registration</Label>
+                <p className="text-muted-foreground mb-1 text-xs">&nbsp;</p>
                 <DateTimePicker variant="date" value={dateOfRegistration ?? undefined} onChange={(date) => setDateOfRegistration(date ?? null)} disabled={(date) => date > new Date()} />
               </div>
             </div>
@@ -187,19 +188,19 @@ export default function VehicleRegistration() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <Label className="font-semibold">MV File Number <span className="text-red-500">*</span></Label>
+                  <Label className="font-semibold">MV File Number <span className="text-destructive">*</span></Label>
                   <span className="text-muted-foreground text-xs">Format: 034-035567</span>
                 </div>
                 <Input value={mvFileNumber} onChange={e => { setMvFileNumber(e.target.value); clr('mvFileNumber') }} placeholder="e.g. 034-035567" autoComplete="off" className={inputCls('mvFileNumber')} />
-                {errors.mvFileNumber && <p className="mt-1 text-xs text-red-500">{errors.mvFileNumber}</p>}
+                {errors.mvFileNumber && <p className="mt-1 text-xs text-destructive">{errors.mvFileNumber}</p>}
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <Label className="font-semibold">Plate Number <span className="text-red-500">*</span></Label>
+                  <Label className="font-semibold">Plate Number <span className="text-destructive">*</span></Label>
                   <span className="text-muted-foreground text-xs">Format: ABC 1234 or ABC123</span>
                 </div>
                 <Input value={plateNumber} onChange={e => { setPlateNumber(e.target.value); clr('plateNumber') }} placeholder="e.g. ABC 1234" autoComplete="off" className={inputCls('plateNumber')} />
-                {errors.plateNumber && <p className="mt-1 text-xs text-red-500">{errors.plateNumber}</p>}
+                {errors.plateNumber && <p className="mt-1 text-xs text-destructive">{errors.plateNumber}</p>}
               </div>
             </div>
 
@@ -207,19 +208,19 @@ export default function VehicleRegistration() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <Label className="font-semibold">Engine Number <span className="text-red-500">*</span></Label>
+                  <Label className="font-semibold">Engine Number <span className="text-destructive">*</span></Label>
                   <span className="text-muted-foreground text-xs">Format: 2NG-W7V659-321</span>
                 </div>
                 <Input value={engineNumber} onChange={e => { setEngineNumber(e.target.value); clr('engineNumber') }} placeholder="e.g. 2NG-W7V659-321" autoComplete="off" className={inputCls('engineNumber')} />
-                {errors.engineNumber && <p className="mt-1 text-xs text-red-500">{errors.engineNumber}</p>}
+                {errors.engineNumber && <p className="mt-1 text-xs text-destructive">{errors.engineNumber}</p>}
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <Label className="font-semibold">Chassis Number <span className="text-red-500">*</span></Label>
+                  <Label className="font-semibold">Chassis Number <span className="text-destructive">*</span></Label>
                   <span className="text-muted-foreground text-xs">Format: CHS-W746564B9-321</span>
                 </div>
                 <Input value={chassisNumber} onChange={e => { setChassisNumber(e.target.value); clr('chassisNumber') }} placeholder="e.g. CHS-W7V659-321" autoComplete="off" className={inputCls('chassisNumber')} />
-                {errors.chassisNumber && <p className="mt-1 text-xs text-red-500">{errors.chassisNumber}</p>}
+                {errors.chassisNumber && <p className="mt-1 text-xs text-destructive">{errors.chassisNumber}</p>}
               </div>
             </div>
 
@@ -228,61 +229,61 @@ export default function VehicleRegistration() {
             {/* Cascading dropdowns */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div>
-                <Label className="mb-2 block font-semibold">Make <span className="text-red-500">*</span></Label>
+                <Label className="mb-2 block font-semibold">Make <span className="text-destructive">*</span></Label>
                 <select value={selectedMake} disabled={loadingField === 'make'} className={sel('make')}
                   onChange={e => { const v = e.target.value; setSelectedMake(v); setSelectedModel(''); setSelectedBodyType(''); setSelectedYear(''); setSelectedSubModel(''); setSelectedUsage(''); clr('make'); if (v) fetchModels(v) }}>
                   <option value="">{loadingField === 'make' ? 'Loading...' : 'Select Make'}</option>
                   {makeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                 </select>
-                {errors.make && <p className="mt-1 text-xs text-red-500">{errors.make}</p>}
+                {errors.make && <p className="mt-1 text-xs text-destructive">{errors.make}</p>}
               </div>
               <div>
-                <Label className="mb-2 block font-semibold">Model <span className="text-red-500">*</span></Label>
+                <Label className="mb-2 block font-semibold">Model <span className="text-destructive">*</span></Label>
                 <select value={selectedModel} disabled={!selectedMake || loadingField === 'model'} className={sel('model')}
                   onChange={e => { const v = e.target.value; setSelectedModel(v); setSelectedBodyType(''); setSelectedYear(''); setSelectedSubModel(''); setSelectedUsage(''); clr('model'); if (v) fetchBodyTypes(selectedMake, v) }}>
                   <option value="">{loadingField === 'model' ? 'Loading...' : 'Select Model'}</option>
                   {modelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                 </select>
-                {errors.model && <p className="mt-1 text-xs text-red-500">{errors.model}</p>}
+                {errors.model && <p className="mt-1 text-xs text-destructive">{errors.model}</p>}
               </div>
               <div>
-                <Label className="mb-2 block font-semibold">Body Type <span className="text-red-500">*</span></Label>
+                <Label className="mb-2 block font-semibold">Body Type <span className="text-destructive">*</span></Label>
                 <select value={selectedBodyType} disabled={!selectedModel || loadingField === 'bodyType'} className={sel('bodyType')}
                   onChange={e => { const v = e.target.value; setSelectedBodyType(v); setSelectedYear(''); setSelectedSubModel(''); setSelectedUsage(''); clr('bodyType'); if (v) fetchYears(selectedMake, selectedModel, v) }}>
                   <option value="">{loadingField === 'bodyType' ? 'Loading...' : 'Select Body Type'}</option>
                   {bodyTypeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                 </select>
-                {errors.bodyType && <p className="mt-1 text-xs text-red-500">{errors.bodyType}</p>}
+                {errors.bodyType && <p className="mt-1 text-xs text-destructive">{errors.bodyType}</p>}
               </div>
               <div>
-                <Label className="mb-2 block font-semibold">Model Year <span className="text-red-500">*</span></Label>
+                <Label className="mb-2 block font-semibold">Model Year <span className="text-destructive">*</span></Label>
                 <select value={selectedYear} disabled={!selectedBodyType || loadingField === 'year'} className={sel('year')}
                   onChange={e => { const v = e.target.value; setSelectedYear(v); setSelectedSubModel(''); setSelectedUsage(''); clr('year'); if (v) fetchSubModels(selectedMake, selectedModel, selectedBodyType, v) }}>
                   <option value="">{loadingField === 'year' ? 'Loading...' : 'Select Year'}</option>
                   {yearOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                 </select>
-                {errors.year && <p className="mt-1 text-xs text-red-500">{errors.year}</p>}
+                {errors.year && <p className="mt-1 text-xs text-destructive">{errors.year}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label className="mb-2 block font-semibold">Sub Model <span className="text-red-500">*</span></Label>
+                <Label className="mb-2 block font-semibold">Sub Model <span className="text-destructive">*</span></Label>
                 <select value={selectedSubModel} disabled={!selectedYear || loadingField === 'subModel'} className={sel('subModel')}
                   onChange={e => { const v = e.target.value; setSelectedSubModel(v); setSelectedUsage(''); clr('subModel'); if (v) fetchUsages(selectedMake, selectedModel, selectedBodyType, selectedYear, v) }}>
                   <option value="">{loadingField === 'subModel' ? 'Loading...' : 'Select Sub Model'}</option>
                   {subModelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                 </select>
-                {errors.subModel && <p className="mt-1 text-xs text-red-500">{errors.subModel}</p>}
+                {errors.subModel && <p className="mt-1 text-xs text-destructive">{errors.subModel}</p>}
               </div>
               <div>
-                <Label className="mb-2 block font-semibold">Vehicle Usage <span className="text-red-500">*</span></Label>
+                <Label className="mb-2 block font-semibold">Vehicle Usage <span className="text-destructive">*</span></Label>
                 <select value={selectedUsage} disabled={!selectedSubModel || loadingField === 'usage'} className={sel('usage')}
                   onChange={e => { setSelectedUsage(e.target.value); clr('usage') }}>
                   <option value="">{loadingField === 'usage' ? 'Loading...' : 'Select Usage'}</option>
                   {usageOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
                 </select>
-                {errors.usage && <p className="mt-1 text-xs text-red-500">{errors.usage}</p>}
+                {errors.usage && <p className="mt-1 text-xs text-destructive">{errors.usage}</p>}
               </div>
             </div>
           </div>
@@ -295,7 +296,7 @@ export default function VehicleRegistration() {
             className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4" />
           <Label className="cursor-pointer text-sm">I agree to the Terms & Conditions and Privacy Policy</Label>
         </div>
-        {errors.agreeToTerms && <p className="text-xs text-red-500">{errors.agreeToTerms}</p>}
+        {errors.agreeToTerms && <p className="text-xs text-destructive">{errors.agreeToTerms}</p>}
 
         <div className="flex items-center justify-between">
           <Button type="button" variant="outline" size="lg" className="rounded-full px-8" onClick={decreaseStep}>
