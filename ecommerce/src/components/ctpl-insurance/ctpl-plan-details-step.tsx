@@ -21,10 +21,6 @@ export default function CtplPlanDetailsStep() {
 
   const grossPremium = parseFloat(plan?.GrossPremium || plan?.BeforeVatPremium || '0')
   const duePremium = parseFloat(plan?.DuePremium || '0')
-  const vatAmount = parseFloat(plan?.VatAmount || '0')
-  const stampDuty = parseFloat(plan?.StampDuty || '0')
-  const lgtAmount = parseFloat(plan?.LGTAmount || '0')
-  const premiumTax = parseFloat(plan?.PremiumTaxAmt || '0')
   const totalPremium = duePremium > 0 ? duePremium : grossPremium
 
   return (
@@ -172,27 +168,6 @@ export default function CtplPlanDetailsStep() {
                 <p className="font-semibold uppercase text-gray-900">
                   {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
                 </p>
-              </div>
-
-              {/* Premium Breakdown */}
-              <div className="rounded-lg border border-gray-300 px-4 py-3 space-y-2">
-                <p className="text-sm text-gray-600">Premium Breakdown</p>
-                {[
-                  { label: 'Base Premium', value: grossPremium },
-                  { label: 'VAT', value: vatAmount },
-                  { label: 'Stamp Duty', value: stampDuty },
-                  { label: 'LGT', value: lgtAmount },
-                  { label: 'Premium Tax', value: premiumTax },
-                ].filter(r => r.value > 0).map(r => (
-                  <div key={r.label} className="flex justify-between text-sm">
-                    <span className="text-gray-500">{r.label}</span>
-                    <span className="font-medium text-gray-900">₱ {r.value.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between border-t border-gray-200 pt-2 text-sm font-bold">
-                  <span className="text-gray-800">Total</span>
-                  <span className="text-primary">₱ {totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
-                </div>
               </div>
 
               {/* About this premium — matches travel info note */}

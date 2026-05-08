@@ -231,7 +231,7 @@ export default function CtplReviewPage() {
           I hereby confirm that I have carefully read, reviewed and understand the said plans and limitations applicable to this product, including the General Exclusions, and I accept that I agree to all of the policy terms.
         </span>
       </label>
-      {agreeError && <p className="text-xs text-red-500">{agreeError}</p>}
+      {agreeError && <p className="text-xs text-destructive">{agreeError}</p>}
 
       {/* Actions */}
       <div className="flex items-center justify-between">
