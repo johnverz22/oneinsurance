@@ -291,8 +291,8 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   })
 
   return (
-    <Card className={cn('w-full rounded-2xl border-0 shadow-2xl bg-white', className)}>
-      <CardContent className="px-6 pt-6 pb-7 sm:px-8">
+    <Card className={cn('w-full rounded-md border shadow-lg backdrop-blur-sm bg-white lg:rounded-xl', className)}>
+      <CardContent className="px-4 pt-3 pb-6 sm:px-8">
         <div className="mb-5">
           <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
           <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
@@ -303,13 +303,13 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="insuredName">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Full Name <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Full Name <span className="text-destructive">*</span></Label>
                 <Input
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder="e.g. Juan dela Cruz"
-                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
               </div>
@@ -319,14 +319,14 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="email">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Email Address <span className="text-destructive">*</span></Label>
                 <Input
                   type="email"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder="e.g. juan@email.com"
-                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
               </div>
@@ -336,13 +336,13 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="mobile">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Phone Number <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Phone Number <span className="text-destructive">*</span></Label>
                 <Input
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   placeholder="e.g. 9171234567"
-                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
               </div>
@@ -355,13 +355,13 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="dateOfBirth">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Date of Birth <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Date of Birth <span className="text-destructive">*</span></Label>
                 <Input
                   type="date"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
               </div>
@@ -371,13 +371,13 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="effectiveDate">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Coverage Start Date <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Coverage Start Date <span className="text-destructive">*</span></Label>
                 <Input
                   type="date"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
               </div>
@@ -390,9 +390,9 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="genderCode">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Gender <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Gender <span className="text-destructive">*</span></Label>
                 <Select onValueChange={(v) => field.handleChange(v as 'M' | 'F')} value={field.state.value}>
-                  <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
+                  <SelectTrigger className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}>
                     <SelectValue placeholder="Select Gender" />
                   </SelectTrigger>
                   <SelectContent>
@@ -408,9 +408,9 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           <form.Field name="isSmoker">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Do you smoke? <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium text-primary">Do you smoke? <span className="text-destructive">*</span></Label>
                 <Select onValueChange={(v) => field.handleChange(v as 'Y' | 'N')} value={field.state.value}>
-                  <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
+                  <SelectTrigger className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}>
                     <SelectValue placeholder="Select Smoking Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -449,12 +449,12 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           </form.Field>
 
           <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
-            {([canSubmit, isSubmitting]) => (
+            {([, isSubmitting]) => (
               <Button
                 type="submit"
                 disabled={!!isSubmitting}
                 onClick={(e) => { e.preventDefault(); form.handleSubmit() }}
-                className="from-primary to-accent h-11 w-full rounded-full bg-gradient-to-r px-10 text-sm font-semibold text-white sm:w-auto"
+                className="bg-primary from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? 'Searching...' : 'Search Plans'}
               </Button>
