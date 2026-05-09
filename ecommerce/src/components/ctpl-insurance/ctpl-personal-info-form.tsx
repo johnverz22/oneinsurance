@@ -218,8 +218,8 @@ export default function CtplPersonalInfoForm() {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
-      <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
-        Your Information
+      <h2 className="text-2xl font-bold text-gray-900">
+        Personal Information
       </h2>
       <p className="text-sm text-gray-500">Upload your ID to automatically fill in the fields below.</p>
 
@@ -233,7 +233,7 @@ export default function CtplPersonalInfoForm() {
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="text-primary">First Name <span className="text-destructive">*</span></Label>
-          <Input value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="Enter first name" className={`h-12 ${errors.firstName ? 'border-destructive' : ''}`} />
+          <Input value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="e.g. Juan" className={`h-12 ${errors.firstName ? 'border-destructive' : ''}`} />
           {err('firstName')}
         </div>
         <div className="space-y-1.5">
@@ -241,11 +241,11 @@ export default function CtplPersonalInfoForm() {
             <Label className="text-primary">Middle Name</Label>
             <span className="text-primary text-xs">(Optional)</span>
           </div>
-          <Input value={form.middleName} onChange={e => set('middleName', e.target.value)} placeholder="Enter middle name" className="h-12" />
+          <Input value={form.middleName} onChange={e => set('middleName', e.target.value)} placeholder="e.g. Santos" className="h-12" />
         </div>
         <div className="space-y-1.5">
           <Label className="text-primary">Last Name <span className="text-destructive">*</span></Label>
-          <Input value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Enter last name" className={`h-12 ${errors.lastName ? 'border-destructive' : ''}`} />
+          <Input value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="e.g. dela Cruz" className={`h-12 ${errors.lastName ? 'border-destructive' : ''}`} />
           {err('lastName')}
         </div>
       </div>
@@ -275,14 +275,14 @@ export default function CtplPersonalInfoForm() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-primary">Email Address <span className="text-destructive">*</span></Label>
-          <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="johndoe@example.com" className={`h-12 ${errors.email ? 'border-destructive' : ''}`} />
+          <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="e.g. juan@email.com" className={`h-12 ${errors.email ? 'border-destructive' : ''}`} />
           {err('email')}
         </div>
         <div className="space-y-1.5">
           <Label className="text-primary">Phone Number <span className="text-destructive">*</span></Label>
           <div className={`flex h-12 items-center overflow-hidden rounded-md border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${errors.mobileNumber ? 'border-destructive' : ''}`}>
             <span className="border-r px-3 text-sm text-gray-500">+63</span>
-            <Input value={form.mobileNumber} onChange={e => set('mobileNumber', e.target.value)} placeholder="9123456789" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
+            <Input value={form.mobileNumber} onChange={e => set('mobileNumber', e.target.value)} placeholder="9171234567" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
           </div>
           {err('mobileNumber')}
         </div>
@@ -323,7 +323,7 @@ export default function CtplPersonalInfoForm() {
             set('city', '')
             set('zipCode', '')
           }}>
-            <SelectTrigger className={`h-12 w-full ${errors.province ? 'border-destructive' : ''}`}><SelectValue placeholder="Select province" /></SelectTrigger>
+            <SelectTrigger className={`h-12 w-full ${errors.province ? 'border-destructive' : ''}`}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>{provinces.map(p => <SelectItem key={p.code} value={p.code}>{p.province}</SelectItem>)}</SelectContent>
           </Select>
           {err('province')}
@@ -337,14 +337,14 @@ export default function CtplPersonalInfoForm() {
             set('city', city?.city ?? v)
             if (zip) set('zipCode', zip)
           }} disabled={!selectedProvinceCode}>
-            <SelectTrigger className={`h-12 w-full ${errors.city ? 'border-destructive' : ''}`}><SelectValue placeholder="Select city" /></SelectTrigger>
+            <SelectTrigger className={`h-12 w-full ${errors.city ? 'border-destructive' : ''}`}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>{availableCities.map(c => <SelectItem key={c.cityCode} value={c.cityCode}>{c.city}</SelectItem>)}</SelectContent>
           </Select>
           {err('city')}
         </div>
         <div className="space-y-1.5">
           <Label className="text-primary">ZIP Code <span className="text-destructive">*</span></Label>
-          <Input value={form.zipCode} onChange={e => set('zipCode', e.target.value)} placeholder="Enter ZIP Code" className={`h-12 ${errors.zipCode ? 'border-destructive' : ''}`} />
+          <Input value={form.zipCode} onChange={e => set('zipCode', e.target.value)} placeholder="e.g. 1000" className={`h-12 ${errors.zipCode ? 'border-destructive' : ''}`} />
           {err('zipCode')}
         </div>
       </div>
@@ -353,7 +353,7 @@ export default function CtplPersonalInfoForm() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-primary">House Address <span className="text-destructive">*</span></Label>
-          <Input value={form.addressLine1} onChange={e => set('addressLine1', e.target.value)} placeholder="Enter full address" className={`h-12 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
+          <Input value={form.addressLine1} onChange={e => set('addressLine1', e.target.value)} placeholder="e.g. House/Unit/Street" className={`h-12 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
           {err('addressLine1')}
         </div>
         <div className="space-y-1.5">
@@ -361,26 +361,25 @@ export default function CtplPersonalInfoForm() {
             <Label className="text-primary">Address 2</Label>
             <span className="text-primary text-xs">(Optional)</span>
           </div>
-          <Input value={form.addressLine2} onChange={e => set('addressLine2', e.target.value)} placeholder="Enter address line 2" className="h-12" />
+          <Input value={form.addressLine2} onChange={e => set('addressLine2', e.target.value)} placeholder="e.g. Brgy/Subdivision/Details" className="h-12" />
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="outline" className="rounded-full px-8" onClick={decreaseStep} disabled={isSubmitting}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" className="rounded-full px-8 text-gray-700 font-medium" onClick={decreaseStep} disabled={isSubmitting}>
           Back
         </Button>
         <Button
           size="lg"
-          className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
+          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
           onClick={handleNext}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Requesting Quote...
+              Requesting...
             </>
           ) : (
             'Request Full Quote'

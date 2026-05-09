@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { useHealthAvailStore } from '@/store/health-avail-store'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { COMPANIES } from '@/constants/companies'
@@ -32,8 +32,9 @@ export function HealthPlanDetailsStep() {
   return (
     <div className="space-y-6">
       {/* Plan Details Card */}
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h2 className="from-primary to-accent mb-6 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
+      <Card className="overflow-hidden shadow-none">
+        <CardContent className="p-6">
+        <h2 className="mb-6 text-2xl font-bold text-gray-900">
           Your Plan Details
         </h2>
 
@@ -47,10 +48,9 @@ export function HealthPlanDetailsStep() {
           <div>
             <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{providerName}</span>
             <h3 className="text-lg font-black uppercase text-gray-900">{item.planName}</h3>
-            <p className="text-sm text-gray-500">{item.tierSubtitle}</p>
           </div>
           <div className="ml-auto shrink-0">
-            <span className="rounded-full bg-[#F5A623] px-4 py-2 text-sm font-bold text-white">
+            <span className="rounded-full bg-orange-400 px-4 py-2 text-sm font-bold text-white">
               ₱ {item.premium.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
             </span>
           </div>
@@ -105,18 +105,18 @@ export function HealthPlanDetailsStep() {
             </ul>
           </>
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center justify-between">
-        <Button variant="outline" className="rounded-full px-8" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+        <Button variant="ghost" className="rounded-full px-8 text-gray-700" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>
+          Cancel
         </Button>
         <Button
-          className="from-primary to-accent rounded-full bg-gradient-to-r px-10 text-white"
+          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
           onClick={nextStep}
         >
-          Continue to Personal Information
+          Next
         </Button>
       </div>
     </div>

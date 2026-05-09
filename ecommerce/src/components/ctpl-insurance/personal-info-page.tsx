@@ -308,7 +308,7 @@ export default function PersonalInformationPage() {
                         onChange={(e) => field.handleChange(e.target.value)}
                         onBlur={field.handleBlur}
                         className="h-12"
-                        placeholder="Enter first name"
+                        placeholder="e.g. Juan"
                       />
                       <FieldInfo field={field} />
                     </div>
@@ -331,7 +331,7 @@ export default function PersonalInformationPage() {
                         onChange={(e) => field.handleChange(e.target.value)}
                         onBlur={field.handleBlur}
                         className="h-12"
-                        placeholder="Enter middle name"
+                        placeholder="e.g. Santos"
                       />
                       <FieldInfo field={field} />
                     </div>
@@ -348,7 +348,7 @@ export default function PersonalInformationPage() {
                         onChange={(e) => field.handleChange(e.target.value)}
                         onBlur={field.handleBlur}
                         className="h-12"
-                        placeholder="Enter last name"
+                        placeholder="e.g. dela Cruz"
                       />
                       <FieldInfo field={field} />
                     </div>
@@ -475,7 +475,7 @@ export default function PersonalInformationPage() {
                           onChange={(e) => field.handleChange(e.target.value)}
                           onBlur={field.handleBlur}
                           className="h-12"
-                          placeholder="johndoe@example.com"
+                          placeholder="e.g. juan@email.com"
                         />
                         <FieldInfo field={field} />
                       </div>
@@ -494,7 +494,7 @@ export default function PersonalInformationPage() {
                             onChange={(e) => field.handleChange(e.target.value)}
                             onBlur={field.handleBlur}
                             className="h-12"
-                            placeholder="9123456789"
+                            placeholder="9171234567"
                           />
                         </div>
 
@@ -532,7 +532,7 @@ export default function PersonalInformationPage() {
                           }}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select your province" />
+                            <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
                             {provinces.map((prov) => {
@@ -567,7 +567,7 @@ export default function PersonalInformationPage() {
                           disabled={form.getFieldValue('province').length === 0}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select your city/municipality" />
+                            <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent>
                             {citiesMunicipalities
@@ -600,7 +600,7 @@ export default function PersonalInformationPage() {
                           value={field.state.value ?? ''}
                           onChange={(e) => field.handleChange(e.target.value)}
                           className="h-12"
-                          placeholder="Enter ZIP Code"
+                          placeholder="e.g. 1000"
                         />
                       </div>
                     )}
@@ -616,7 +616,7 @@ export default function PersonalInformationPage() {
                           onChange={(e) => field.handleChange(e.target.value)}
                           onBlur={field.handleBlur}
                           className="h-12"
-                          placeholder="Enter full address line 1"
+                          placeholder="e.g. House/Unit/Street"
                         />
                         <FieldInfo field={field} />
                       </div>
@@ -639,7 +639,7 @@ export default function PersonalInformationPage() {
                           onChange={(e) => field.handleChange(e.target.value)}
                           onBlur={field.handleBlur}
                           className="h-12"
-                          placeholder="Enter full address line 2"
+                          placeholder="e.g. Brgy/Subdivision/Details"
                         />
                         <FieldInfo field={field} />
                       </div>
