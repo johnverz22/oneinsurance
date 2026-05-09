@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Download, CreditCard, Copy, CheckCircle } from 'lucide-react'
+import { Copy, CheckCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { useHealthAvailStore } from '@/store/health-avail-store'
@@ -86,16 +86,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {item && (
         <Card className="overflow-hidden shadow-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-2xl font-bold text-primary">Plan Details</h2>
-            <Button
-              onClick={handleDownloadPDF}
-              variant="default"
-              size="lg"
-              className="from-primary to-accent rounded-full bg-gradient-to-r font-semibold text-white"
-            >
-              <Download className="mr-2 h-5 w-5" />
-              Download Quote PDF
-            </Button>
+            <h2 className="text-2xl font-bold text-gray-900">Plan Details</h2>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-4">
@@ -109,7 +100,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
                 <h3 className="text-xl font-black uppercase text-gray-900">{item.planName}</h3>
               </div>
               <div className="ml-auto shrink-0">
-                <span className="rounded-full bg-[#F5A623] px-4 py-2 text-sm font-bold text-white">
+                <span className="rounded-full bg-orange-400 px-4 py-2 text-sm font-bold text-white">
                   ₱ {item.premium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -134,9 +125,9 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {/* Personal Information */}
       <Card className="overflow-hidden shadow-none">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-          <h2 className="text-2xl font-bold text-primary">Your Information</h2>
-          <CheckCircle className="text-primary" />
-        </CardHeader>
+            <h2 className="text-2xl font-bold text-gray-900">Your Information</h2>
+            <CheckCircle className="text-primary" />
+          </CardHeader>
         <CardContent className="space-y-1">
           {row('Full Name', `${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim())}
           {row('Email', personalInfo.email)}
@@ -152,37 +143,23 @@ export function HealthReviewPage({ personalInfo }: Props) {
       </Card>
 
       {/* Actions */}
-      <div className="flex w-full flex-col items-center gap-3 lg:flex-row lg:justify-between">
+      <div className="flex items-center justify-between">
         <Button
-          onClick={handleDownloadPDF}
-          variant="outline"
+          type="button"
           size="lg"
-          className="w-full rounded-full border-2 font-semibold lg:w-max lg:px-12"
+          variant="ghost"
+          className="rounded-full px-10 text-gray-700 font-medium"
+          onClick={prevStep}
         >
-          <Download className="mr-2 h-5 w-5" />
-          Download Quote PDF
+          Back
         </Button>
-
-        <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
-          <Button
-            type="button"
-            size="lg"
-            variant="outline"
-            className="w-full rounded-full px-12 font-semibold lg:w-max"
-            onClick={prevStep}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <Button
-            size="lg"
-            className="from-primary to-accent w-full rounded-full bg-gradient-to-r px-14 font-semibold text-white lg:w-max"
-            onClick={nextStep}
-          >
-            <CreditCard className="mr-2 h-4 w-4" />
-            Proceed to Payment
-          </Button>
-        </div>
+        <Button
+          size="lg"
+          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+          onClick={nextStep}
+        >
+          Next
+        </Button>
       </div>
     </div>
   )

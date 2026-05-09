@@ -2,6 +2,8 @@
 
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { COMPANIES } from '@/constants/companies'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Info } from 'lucide-react'
 
 export function HealthPremiumSummary() {
   const { items } = useHealthCartStore()
@@ -14,26 +16,46 @@ export function HealthPremiumSummary() {
   const providerName = provider?.companyName ?? item.provider
 
   return (
-    <div className="sticky top-6 rounded-2xl bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-center text-lg font-black text-gray-900">Total Premium</h3>
-      <p className="mb-6 text-center text-4xl font-black text-gray-900">
-        ₱{total.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-      </p>
+    <div className="sticky top-24 flex w-full flex-col space-y-6">
+      <Card className="bg-background overflow-hidden p-0 shadow-none">
+        <CardHeader className="pt-6 pb-4">
+          <h2 className="text-center text-2xl font-black text-gray-900 dark:text-gray-100">
+            Total Premium
+          </h2>
+          <p className="text-center text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
+            ₱{total.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+          </p>
+        </CardHeader>
 
-      <div className="space-y-3 rounded-xl border p-4 text-sm">
-        <div>
-          <p className="text-xs text-gray-400">Insurance Provider</p>
-          <p className="font-semibold text-gray-800">{providerName}</p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-400">Plan</p>
-          <p className="font-semibold text-gray-800">{item.planName}</p>
-        </div>
-      </div>
+        <CardContent className="space-y-4 px-6 pb-8">
+          {/* Insurance Provider — separate bordered box like travel */}
+          <div className="rounded-lg border border-gray-300 px-4 py-3">
+            <div className="text-sm text-gray-600 mb-1">Insurance Provider</div>
+            <div className="font-semibold text-gray-900 dark:text-gray-100">
+              {providerName}
+            </div>
+          </div>
 
-      <p className="mt-4 text-xs text-gray-400 text-center">
-        The total premium already includes the base insurance cost and applicable taxes as determined by the insurance provider.
-      </p>
+          {/* Plan — separate bordered box like travel */}
+          <div className="rounded-lg border border-gray-300 px-4 py-3">
+            <div className="text-sm text-gray-600 mb-1">Plan</div>
+            <div className="font-semibold text-gray-900 dark:text-gray-100 uppercase">
+              {item.planName}
+            </div>
+          </div>
+
+          {/* About this premium — with Info icon, left-aligned like travel */}
+          <div className="mt-6 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <Info className="h-4 w-4" />
+              About this premium
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              The total premium already includes the base insurance cost, applicable taxes and fees as determined by the insurance provider.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

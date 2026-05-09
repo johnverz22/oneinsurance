@@ -1,59 +1,59 @@
 'use client'
 
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
-import { Card, CardContent } from '@/components/ui/card'
-import { format, addYears } from 'date-fns'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Info } from 'lucide-react'
+import { COMPANIES } from '@/constants/companies'
 
 export default function CtplPremiumSummary() {
-  const { selectedVehicle } = useCtplInsuranceStateStore()
+  const { coverageOption, insuranceType } = useCtplInsuranceStateStore()
 
-  // Mock price based on vehicle type
-  const PRICES: Record<string, number> = {
-    PRIVATECAR: 599,
-    MOTORCYCLE: 290,
-    TPMB: 1150,
-    ACTC: 790,
-    LMT: 660,
-    HTPB: 1250,
-    PTB: 1100,
-  }
+  const plan = coverageOption?.selectedPlan as any
+  const carrier = COMPANIES.find(c => c.carrierCode === coverageOption?.carrierCode)
 
-  const price = PRICES[selectedVehicle?.code ?? 'PRIVATECAR'] ?? 599
-  const today = new Date()
-  const expiry = addYears(today, 1)
+  const duePremium = parseFloat(plan?.DuePremium || '0')
+  const grossPremium = parseFloat(plan?.GrossPremium || plan?.BeforeVatPremium || '0')
+  const totalPremium = duePremium > 0 ? duePremium : grossPremium
+
+  const providerName = carrier?.companyName || coverageOption?.carrierCode || '—'
+  const planName = plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode || '—'
 
   return (
-    <div className="lg:sticky lg:top-24 space-y-4">
-      <Card className="overflow-hidden shadow-sm">
-        <CardContent className="p-6 space-y-4">
-          <h3 className="text-xl font-bold text-gray-800 text-center">Total Premium</h3>
-          <div className="text-center">
-            <p className="text-sm text-gray-500">Total Payment</p>
-            <p className="text-4xl font-black text-gray-900">₱ {price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+    <div className="sticky top-24 flex w-full flex-col space-y-6">
+      <Card className="bg-background overflow-hidden p-0 shadow-none">
+        <CardHeader className="pt-6 pb-4">
+          <h2 className="text-center text-2xl font-black text-gray-900">
+            Total Premium
+          </h2>
+          <p className="text-center text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
+            {totalPremium > 0
+              ? `₱${totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
+              : '—'}
+          </p>
+        </CardHeader>
+
+        <CardContent className="space-y-4 px-6 pb-8">
+          {/* Insurance Provider */}
+          <div className="rounded-lg border border-gray-300 px-4 py-3">
+            <p className="mb-1 text-sm text-gray-600">Insurance Provider</p>
+            <p className="font-semibold text-gray-900">{providerName}</p>
           </div>
 
-          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
-            <p className="text-xs text-gray-400">Selected CTPL Plan</p>
-            <p className="font-bold text-gray-900">{selectedVehicle?.title ?? 'Private Cars'}</p>
-            <p className="text-xs text-gray-500">Ride Hailing Included</p>
-            <div className="flex justify-between pt-1">
-              <span className="text-sm text-gray-600">₱ {price.toLocaleString()}</span>
+          {/* Plan */}
+          <div className="rounded-lg border border-gray-300 px-4 py-3">
+            <p className="mb-1 text-sm text-gray-600">Plan</p>
+            <p className="font-semibold uppercase text-gray-900">{planName}</p>
+          </div>
+
+          {/* About this premium */}
+          <div className="mt-2 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Info className="h-4 w-4" />
+              About this premium
             </div>
-          </div>
-
-          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-            <p className="text-xs text-gray-400 mb-1">Policy Period</p>
-            <p className="text-sm font-semibold text-gray-800">
-              {format(today, 'MMMM d, yyyy')} – {format(expiry, 'MMMM d, yyyy')}
+            <p className="text-sm leading-relaxed text-gray-600">
+              The total premium already includes the base insurance cost, applicable taxes and fees as determined by the insurance provider.
             </p>
-          </div>
-
-          <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 p-3">
-            <input
-              placeholder="Get a Promo Code"
-              className="flex-1 bg-transparent text-sm outline-none text-gray-600 placeholder:text-gray-400"
-            />
-            <button className="text-sm font-semibold text-orange-500 hover:text-orange-600">Apply</button>
           </div>
         </CardContent>
       </Card>
