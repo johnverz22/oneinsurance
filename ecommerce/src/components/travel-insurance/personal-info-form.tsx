@@ -481,7 +481,7 @@ export function PersonalInfoForm() {
                                               ? 'border-destructive'
                                               : ''
                                           }`}
-                                          placeholder="Enter first name"
+                                          placeholder="e.g. Juan"
                                         />
                                         <FieldInfo field={nameField} />
                                       </div>
@@ -512,7 +512,7 @@ export function PersonalInfoForm() {
                                         }
                                         onBlur={middleNameField.handleBlur}
                                         className="h-12"
-                                        placeholder="Enter middle name"
+                                        placeholder="e.g. Santos"
                                       />
                                       <FieldInfo field={middleNameField} />
                                     </div>
@@ -542,7 +542,7 @@ export function PersonalInfoForm() {
                                               ? 'border-destructive'
                                               : ''
                                           }`}
-                                          placeholder="Enter last name"
+                                          placeholder="e.g. dela Cruz"
                                         />
                                         <FieldInfo field={lastNameField} />
                                       </div>
@@ -690,7 +690,7 @@ export function PersonalInfoForm() {
                                               ? 'border-destructive'
                                               : ''
                                           }`}
-                                          placeholder="johndoe@example.com"
+                                          placeholder="e.g. juan@email.com"
                                         />
                                         <FieldInfo field={emailField} />
                                       </div>
@@ -722,7 +722,7 @@ export function PersonalInfoForm() {
                                                 ? 'border-destructive'
                                                 : ''
                                             }`}
-                                            placeholder="9123456789"
+                                            placeholder="9171234567"
                                           />
                                         </div>
 
@@ -829,7 +829,7 @@ export function PersonalInfoForm() {
                                           <SelectTrigger
                                             className={`h-12 w-full ${haveError && 'border-destructive'}`}
                                           >
-                                            <SelectValue placeholder="Select your province" />
+                                            <SelectValue placeholder="Select" />
                                           </SelectTrigger>
                                           <SelectContent>
                                             {provinces.map((prov) => {
@@ -882,7 +882,7 @@ export function PersonalInfoForm() {
                                           <SelectTrigger
                                             className={`h-12 w-full ${haveError && 'border-destructive'}`}
                                           >
-                                            <SelectValue placeholder="Select your city/municipality" />
+                                            <SelectValue placeholder="Select" />
                                           </SelectTrigger>
                                           <SelectContent>
                                             {citiesMunicipalities
@@ -926,7 +926,7 @@ export function PersonalInfoForm() {
                                             )
                                           }
                                           className={`h-12 ${haveError && 'border-destructive'}`}
-                                          placeholder="Enter ZIP Code"
+                                          placeholder="e.g. 1000"
                                         />
                                         <FieldInfo field={zipField} />
                                       </div>
@@ -951,7 +951,7 @@ export function PersonalInfoForm() {
                                           }
                                           onBlur={l1Field.handleBlur}
                                           className={`h-12 ${haveError && 'border-destructive'}`}
-                                          placeholder="Enter full address line 1"
+                                          placeholder="e.g. House/Unit/Street"
                                         />
                                         <FieldInfo field={l1Field} />
                                       </div>
@@ -975,7 +975,7 @@ export function PersonalInfoForm() {
                                           }
                                           onBlur={l2Field.handleBlur}
                                           className={`h-12 ${haveError && 'border-destructive'}`}
-                                          placeholder="Enter full address line 2"
+                                          placeholder="e.g. Brgy/Subdivision/Details"
                                           maxLength={45}
                                         />
                                         <FieldInfo field={l2Field} />

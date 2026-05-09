@@ -291,7 +291,7 @@ export default function VehicleRegistration() {
       </Card>
 
       <div className="bg-card border-muted-foreground/20 flex w-full flex-col gap-4 rounded-md border px-6 py-5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4">
           <Checkbox checked={agreeToTerms} onCheckedChange={(v) => { setAgreeToTerms(!!v); clr('agreeToTerms') }}
             className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4" />
           <Label className="cursor-pointer text-sm">I agree to the Terms & Conditions and Privacy Policy</Label>
@@ -299,14 +299,13 @@ export default function VehicleRegistration() {
         {errors.agreeToTerms && <p className="text-xs text-destructive">{errors.agreeToTerms}</p>}
 
         <div className="flex items-center justify-between">
-          <Button type="button" variant="outline" size="lg" className="rounded-full px-8" onClick={decreaseStep}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+          <Button type="button" variant="ghost" size="lg" className="rounded-full px-8 text-gray-700 font-medium" onClick={decreaseStep}>
             Back
           </Button>
           <Button type="button" size="lg"
-            className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
+            className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
             onClick={handleSubmit}>
-            Continue to Personal Information
+            Next
           </Button>
         </div>
       </div>

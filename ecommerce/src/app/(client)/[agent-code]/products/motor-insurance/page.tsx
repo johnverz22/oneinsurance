@@ -331,9 +331,14 @@ function CtplInsurance() {
                   insuranceType === 'CTPL' ? 'bg-primary text-white shadow-md' : 'text-foreground hover:text-primary'
                 }`}
               >
-                <span className="flex items-center justify-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  CTPL Insurance
+                <span className="flex flex-col items-center justify-center gap-0.5">
+                  <span className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    CTPL Insurance
+                  </span>
+                  <span className={`text-xs font-normal ${insuranceType === 'CTPL' ? 'text-white/80' : 'text-gray-400'}`}>
+                    Required by law for all vehicles
+                  </span>
                 </span>
               </button>
               <button
@@ -342,9 +347,14 @@ function CtplInsurance() {
                   insuranceType === 'COMPREHENSIVE' ? 'bg-primary text-white shadow-md' : 'text-foreground hover:text-primary'
                 }`}
               >
-                <span className="flex items-center justify-center gap-2">
-                  <Car className="h-4 w-4" />
-                  Comprehensive
+                <span className="flex flex-col items-center justify-center gap-0.5">
+                  <span className="flex items-center gap-2">
+                    <Car className="h-4 w-4" />
+                    Comprehensive
+                  </span>
+                  <span className={`text-xs font-normal ${insuranceType === 'COMPREHENSIVE' ? 'text-white/80' : 'text-gray-400'}`}>
+                    Complete vehicle protection
+                  </span>
                 </span>
               </button>
             </div>

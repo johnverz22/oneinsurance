@@ -2,6 +2,29 @@ import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-hand
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
+const MAX_RETRIES = 3
+const RETRY_DELAY_MS = 800
+
+async function fetchWithRetry(url: string, headers: Record<string, string>, retries = MAX_RETRIES): Promise<any> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await axios.get(url, { headers, timeout: 15000 })
+      return response.data
+    } catch (err: any) {
+      const isSocketHangUp = err.message?.includes('socket hang up') || err.code === 'ECONNRESET'
+      const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout')
+      const isRetryable = isSocketHangUp || isTimeout || err.response?.status >= 500
+
+      if (isRetryable && attempt < retries) {
+        console.log(`Comprehensive cache fetch attempt ${attempt} failed (${err.message}), retrying in ${RETRY_DELAY_MS * attempt}ms...`)
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS * attempt))
+        continue
+      }
+      throw err
+    }
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -11,18 +34,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Cache key is required' }, { status: 400 })
     }
 
-    // Same endpoint as travel/health — the cache key is universal
     const url = `${process.env.BASE_URL}/quote/compare/${cacheKey}`
     console.log('Comprehensive Load Quote by Cache URL:', url)
 
-    const response = await axios.get(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
-      },
-    })
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+    }
 
-    return NextResponse.json(response.data, { status: 200 })
+    const data = await fetchWithRetry(url, headers)
+    return NextResponse.json(data, { status: 200 })
   } catch (error: any) {
     console.error('Error loading comprehensive quote by cache:', error.response?.data || error.message)
     if (axios.isAxiosError(error)) return handleServerSideAxiosError(error)
