@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useParams } from 'next/navigation'
 import { useHealthAvailStore } from '@/store/health-avail-store'
@@ -207,7 +207,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
-      <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
+      <h2 className="text-2xl font-bold text-gray-900">
         Personal Information
       </h2>
 
@@ -225,7 +225,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="text-primary">First Name <span className="text-red-500">*</span></Label>
-          <Input id="hpi-firstName" value={data.firstName} onChange={e => set('firstName', e.target.value)} placeholder="Enter first name" className={`h-12 ${errors.firstName ? 'border-destructive' : ''}`} />
+          <Input id="hpi-firstName" value={data.firstName} onChange={e => set('firstName', e.target.value)} placeholder="e.g. Juan" className={`h-12 ${errors.firstName ? 'border-destructive' : ''}`} />
           {err('firstName')}
         </div>
         <div className="space-y-1.5">
@@ -233,11 +233,11 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
             <Label className="text-primary">Middle Name</Label>
             <span className="text-primary text-xs">(Optional)</span>
           </div>
-          <Input value={data.middleName} onChange={e => set('middleName', e.target.value)} placeholder="Enter middle name" className="h-12" />
+          <Input value={data.middleName} onChange={e => set('middleName', e.target.value)} placeholder="e.g. Santos" className="h-12" />
         </div>
         <div className="space-y-1.5">
           <Label className="text-primary">Last Name <span className="text-red-500">*</span></Label>
-          <Input id="hpi-lastName" value={data.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Enter last name" className={`h-12 ${errors.lastName ? 'border-destructive' : ''}`} />
+          <Input id="hpi-lastName" value={data.lastName} onChange={e => set('lastName', e.target.value)} placeholder="e.g. dela Cruz" className={`h-12 ${errors.lastName ? 'border-destructive' : ''}`} />
           {err('lastName')}
         </div>
       </div>
@@ -282,7 +282,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
         </div>
         <div className="space-y-1.5">
           <Label className="text-primary">Email <span className="text-red-500">*</span></Label>
-          <Input id="hpi-email" type="email" value={data.email} onChange={e => set('email', e.target.value)} placeholder="johndoe@example.com" className={`h-12 ${errors.email ? 'border-destructive' : ''}`} />
+          <Input id="hpi-email" type="email" value={data.email} onChange={e => set('email', e.target.value)} placeholder="e.g. juan@email.com" className={`h-12 ${errors.email ? 'border-destructive' : ''}`} />
           {err('email')}
         </div>
       </div>
@@ -293,7 +293,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
           <Label className="text-primary">Mobile Number <span className="text-red-500">*</span></Label>
           <div className={`flex h-12 items-center overflow-hidden rounded-md border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${errors.phone ? 'border-destructive' : ''}`}>
             <span className="border-r px-3 text-sm text-gray-500">+63</span>
-            <Input id="hpi-phone" value={data.phone} onChange={e => set('phone', e.target.value)} placeholder="9123456789" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
+            <Input id="hpi-phone" value={data.phone} onChange={e => set('phone', e.target.value)} placeholder="9171234567" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
           </div>
           {err('phone')}
         </div>
@@ -333,7 +333,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
             }}
           >
             <SelectTrigger id="hpi-province" className={`h-12 w-full ${errors.province ? 'border-destructive' : ''}`}>
-              <SelectValue placeholder="Select your province" />
+              <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
               {provinces.map(p => <SelectItem key={p.code} value={p.code}>{p.province}</SelectItem>)}
@@ -354,7 +354,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
             disabled={!selectedProvinceCode}
           >
             <SelectTrigger id="hpi-city" className={`h-12 w-full ${errors.city ? 'border-destructive' : ''}`}>
-              <SelectValue placeholder="Select your city/municipality" />
+              <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
               {availableCities.map(c => <SelectItem key={c.cityCode} value={c.cityCode}>{c.city}</SelectItem>)}
@@ -364,7 +364,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
         </div>
         <div className="space-y-1.5">
           <Label className="text-primary">ZIP Code <span className="text-red-500">*</span></Label>
-          <Input id="hpi-postCode" value={data.postCode} onChange={e => set('postCode', e.target.value)} placeholder="Enter ZIP Code" className={`h-12 ${errors.postCode ? 'border-destructive' : ''}`} />
+          <Input id="hpi-postCode" value={data.postCode} onChange={e => set('postCode', e.target.value)} placeholder="e.g. 1000" className={`h-12 ${errors.postCode ? 'border-destructive' : ''}`} />
           {err('postCode')}
         </div>
       </div>
@@ -373,7 +373,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-primary">Address Line 1 <span className="text-red-500">*</span></Label>
-          <Input id="hpi-addressLine1" value={data.addressLine1} onChange={e => set('addressLine1', e.target.value)} placeholder="Enter full address line 1" className={`h-12 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
+          <Input id="hpi-addressLine1" value={data.addressLine1} onChange={e => set('addressLine1', e.target.value)} placeholder="e.g. House/Unit/Street" className={`h-12 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
           {err('addressLine1')}
         </div>
         <div className="space-y-1.5">
@@ -381,7 +381,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
             <Label className="text-primary">Address Line 2</Label>
             <span className="text-primary text-xs">(Optional)</span>
           </div>
-          <Input value={data.addressLine2} onChange={e => set('addressLine2', e.target.value)} placeholder="Enter full address line 2" className="h-12" />
+          <Input value={data.addressLine2} onChange={e => set('addressLine2', e.target.value)} placeholder="e.g. Brgy/Subdivision/Details" className="h-12" />
         </div>
       </div>
 
@@ -425,19 +425,18 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="outline" className="rounded-full px-8" onClick={prevStep} disabled={isRequesting}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" className="rounded-full px-8 text-gray-700" onClick={prevStep} disabled={isRequesting}>
           Back
         </Button>
         <Button
           size="lg"
-          className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
+          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
           onClick={handleRequestFullQuote}
           disabled={isRequesting}
         >
           {isRequesting ? (
             <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Requesting...</span>
-          ) : 'Request Full Quote'}
+          ) : 'Next'}
         </Button>
       </div>
     </div>
