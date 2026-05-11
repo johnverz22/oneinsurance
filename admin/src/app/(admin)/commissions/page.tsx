@@ -1,25 +1,17 @@
 'use client'
 
-import { useGetProducts } from '@/app/data/queries/products'
-import { Input } from '@/components/ui/input'
-import { PageHeader } from '@/components/ui/page-header'
-import { Product } from '@/types/products'
-import { ScrollArea } from '@radix-ui/react-scroll-area'
-import { Search } from 'lucide-react'
 import { useState } from 'react'
 import ProductCommisionConfiguration from './product-configuration'
-import { cn } from '@/lib/utils'
 import { useGetCommissionConfiguration } from '@/app/data/queries/commission'
 import { CommissionConfig } from '@/types/commission'
 
 export default function CommissionsPage() {
   const [selectedCommissionConfig, setSelectedCommissionConfig] = useState<CommissionConfig | null>(null)
-  const [perPage, setPerPage] = useState(15)
-  const [page, setPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
-  const {data: commissions, isLoading, isError, refetch} = useGetCommissionConfiguration(perPage, page);
+  const [perPage] = useState(15)
+  const [page] = useState(1)
+  const { data: commissions, isLoading, isError, refetch } = useGetCommissionConfiguration(perPage, page)
 
-  // Filter commissions based on search query
   const filteredCommissions = commissions?.data.data.filter((commission) => {
     const searchLower = searchQuery.toLowerCase()
     return (
@@ -30,89 +22,80 @@ export default function CommissionsPage() {
   }) || []
 
   return (
-    <>
-      <PageHeader
-        title="Commissions"
-        subTitle="Configure commission percentages for agents, overriders, and admin splits per product"
-      />
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        {/* Product list */}
-        <div className="col-span-1 space-y-4">
-          <div className="space-y-2">
-            <div>
-              <p className="text-xl font-bold">Select Product</p>
-              <p className="text-base font-light">
-                Choose a product to configure commissions
-              </p>
-            </div>
+    <div className="flex h-[calc(100vh-64px)] flex-col overflow-hidden bg-[#F5F6FA]">
+      {/* Page title */}
+      <div className="flex-shrink-0 border-b border-gray-200 bg-white px-6 py-4">
+        <h1 className="text-xl font-bold text-gray-900">Commissions</h1>
+        <p className="text-sm text-gray-500">
+          Configure commission percentages for agents, overriders, and admin splits per product
+        </p>
+      </div>
 
-            <div className="flex h-8 items-center rounded-full border-1 border-gray-800 px-2">
-              <Search className="h-4 w-4 text-gray-500" />
+      {/* 3-col body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* LEFT — product list */}
+        <div className="flex w-64 flex-shrink-0 flex-col border-r border-gray-200 bg-white">
+          <div className="border-b border-gray-100 px-4 py-3">
+            <p className="text-sm font-bold text-gray-900">Select Product</p>
+            <p className="mb-2 text-xs text-gray-500">Choose a product to configure commissions</p>
+            <div className="relative">
+              <svg
+                className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"
+              >
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              </svg>
               <input
                 type="text"
                 placeholder="Search products"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="ml-2 h-full w-full border-0 bg-transparent outline-none placeholder:font-light"
+                className="w-full rounded-md border border-gray-300 bg-gray-50 py-1.5 pl-7 pr-3 text-xs outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
               />
             </div>
           </div>
-          <div>
-            <ScrollArea className="h-[calc(100vh-250px)]">
-              <div className="space-y-3 pr-2">
-                {isLoading && <p className="text-center text-gray-500">Loading products...</p>}
-                {isError && <p className="text-center text-red-500">Error loading products.</p>}
-                {!isLoading && !isError && filteredCommissions.length === 0 && (
-                  <p className="text-center text-gray-500">
-                    {searchQuery ? 'No products found matching your search.' : 'No products available.'}
-                  </p>
-                )}
-                {filteredCommissions.map((commission) => (
-                  <div
-                    key={commission.id}
-                    className={cn(
-                      'cursor-pointer rounded-xl border-2 border-gray-300 bg-white p-4 transition-all duration-200 hover:border-blue-400 hover:shadow-md',
-                      {
-                        'border-blue-500 bg-blue-50 shadow-md':
-                          selectedCommissionConfig?.id === commission.id,
-                      }
-                    )}
-                    onClick={() => setSelectedCommissionConfig(commission)}
-                  >
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-base font-bold text-gray-900">
-                          {commission.product.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {commission.product.description || 'No description'}
-                        </p>
-                      </div>
 
-                      <div className="flex items-center justify-between rounded-lg bg-gray-100 px-3 py-2">
-                        <span className="text-xs font-semibold text-gray-700">
-                          Base Commission:
-                        </span>
-                        <span className="text-sm font-bold text-blue-600">
-                          {commission.base_commission}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+          <div className="flex-1 overflow-y-auto">
+            {isLoading && <p className="p-4 text-center text-xs text-gray-500">Loading products...</p>}
+            {isError && <p className="p-4 text-center text-xs text-red-500">Error loading products.</p>}
+            {!isLoading && !isError && filteredCommissions.length === 0 && (
+              <p className="p-4 text-center text-xs text-gray-500">
+                {searchQuery ? 'No products found.' : 'No products available.'}
+              </p>
+            )}
+            {filteredCommissions.map((commission) => {
+              const active = selectedCommissionConfig?.id === commission.id
+              return (
+                <div
+                  key={commission.id}
+                  onClick={() => setSelectedCommissionConfig(commission)}
+                  className={`cursor-pointer border-b border-gray-100 px-4 py-3 transition-all ${
+                    active ? 'border-l-[3px] border-l-green-600 bg-green-50' : 'border-l-[3px] border-l-transparent hover:bg-gray-50'
+                  }`}
+                >
+                  <p className={`text-xs font-semibold leading-snug ${active ? 'text-green-800' : 'text-gray-700'}`}>
+                    {commission.product.name}
+                  </p>
+                  <p className="mt-0.5 line-clamp-2 text-[11px] text-gray-400">
+                    {commission.product.description || 'No description'}
+                  </p>
+                  <p className="mt-1 text-[11px] font-bold text-blue-600">
+                    Base Commission: {Number(commission.base_commission).toFixed(2)}%
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {/* Product Commission configuration */}
-        <div className="col-span-2 min-h-screen rounded-2xl border-2 p-6">
-          <ProductCommisionConfiguration 
-            selectedCommissionConfig={selectedCommissionConfig} 
+        {/* CENTER + RIGHT */}
+        <div className="flex flex-1 overflow-hidden">
+          <ProductCommisionConfiguration
+            selectedCommissionConfig={selectedCommissionConfig}
             onUpdateSuccess={() => refetch()}
           />
         </div>
       </div>
-    </>
+    </div>
   )
 }

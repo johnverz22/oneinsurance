@@ -1,95 +1,267 @@
+'use client'
+
 import { useUpdateCommissionConfiguration } from '@/app/data/mutations/commission'
-import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import {
-  CommissionConfig,
-  CommissionConfigUpdateRequest,
-} from '@/types/commission'
-import { Product } from '@/types/products'
-import { Value } from '@radix-ui/react-select'
+import { CommissionConfig, CommissionConfigUpdateRequest } from '@/types/commission'
 import { FieldApi, useForm } from '@tanstack/react-form'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import z from 'zod'
-import { Calendar } from 'lucide-react'
 import { getVatOptionFromCheckboxes, getCheckboxesFromVatOption } from '@/utils/vat-options-mapper'
 
-interface ProductCommisionConfigurationProps {
-  selectedCommissionConfig: CommissionConfig | null
-  onUpdateSuccess?: () => void
+// ─── Design tokens (mirrors first code) ───────────────────────────────────────
+const C = {
+  green: '#1D9E75',
+  greenDark: '#0F6E56',
+  greenLight: '#E8F7F2',
+  greenBorder: '#A8DFD0',
+  blue: '#2563EB',
+  blueLight: '#EFF6FF',
+  blueBorder: '#BFDBFE',
+  blueMid: '#1E40AF',
+  white: '#FFFFFF',
+  bg: '#F5F6FA',
+  border: '#E5E7EB',
+  borderLight: '#F3F4F6',
+  text: '#1A1A2E',
+  textMid: '#374151',
+  textMuted: '#6B7280',
+  textFaint: '#9CA3AF',
+  red: '#DC2626',
+  purple: '#7C3AED',
+  purpleLight: '#F5F0FC',
+  purpleBorder: '#DDD6FE',
 }
 
+const baseInput: React.CSSProperties = {
+  padding: '7px 10px',
+  fontSize: 13,
+  border: `1px solid #D1D5DB`,
+  borderRadius: 6,
+  background: '#FFFFFF',
+  color: '#1A1A2E',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+// ─── Reusable small components ─────────────────────────────────────────────────
+
+function NumInput({
+  value,
+  onChange,
+  suffix = '%',
+  min = 0,
+  max = 100,
+  step = 1,
+  width = 80,
+  disabled = false,
+}: {
+  value: number
+  onChange: (v: number) => void
+  suffix?: string
+  min?: number
+  max?: number
+  step?: number
+  width?: number
+  disabled?: boolean
+}) {
+  return (
+    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', width }}>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        style={{
+          ...baseInput,
+          width: '100%',
+          paddingRight: suffix ? 26 : 10,
+          opacity: disabled ? 0.5 : 1,
+          cursor: disabled ? 'not-allowed' : 'auto',
+        }}
+      />
+      {suffix && (
+        <span style={{ position: 'absolute', right: 8, fontSize: 11, color: C.textFaint, pointerEvents: 'none' }}>
+          {suffix}
+        </span>
+      )}
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <span style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        {label}
+      </span>
+      {children}
+    </div>
+  )
+}
+
+function CommCard({
+  title,
+  scheme,
+  rows,
+}: {
+  title: string
+  scheme: 'green' | 'blue' | 'purple'
+  rows: { label: string; sub?: string; value: number; onChange: (v: number) => void }[]
+}) {
+  const bg = scheme === 'green' ? C.greenLight : scheme === 'blue' ? C.blueLight : C.purpleLight
+  const border = scheme === 'green' ? C.greenBorder : scheme === 'blue' ? C.blueBorder : C.purpleBorder
+  const titleCol = scheme === 'green' ? C.greenDark : scheme === 'blue' ? C.blueMid : C.purple
+  return (
+    <div style={{ flex: 1, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ background: bg, padding: '9px 14px', borderBottom: `1px solid ${border}` }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: titleCol, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          {title}
+        </span>
+      </div>
+      <div style={{ background: C.white, padding: '4px 14px 10px' }}>
+        {rows.map((row, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 0',
+              borderBottom: i < rows.length - 1 ? `1px solid ${C.borderLight}` : 'none',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 13, color: C.textMid, fontWeight: 500 }}>{row.label}</div>
+              {row.sub && <div style={{ fontSize: 11, color: C.textFaint, marginTop: 1 }}>{row.sub}</div>}
+            </div>
+            <NumInput value={row.value} onChange={row.onChange} width={76} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SimSubBlock({
+  title,
+  scheme,
+  rows,
+}: {
+  title: string
+  scheme: 'green' | 'blue' | 'purple'
+  rows: { label: string; value: string }[]
+}) {
+  const titleCol = scheme === 'green' ? C.green : scheme === 'blue' ? C.blue : C.purple
+  return (
+    <div style={{ margin: '5px 0', padding: '8px 10px', background: 'rgba(255,255,255,0.65)', borderRadius: 6 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: titleCol, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 5 }}>
+        {title}
+      </div>
+      {rows.map((r, i) => (
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0 2px 8px' }}>
+          <span style={{ fontSize: 11, color: C.textMuted }}>{r.label}</span>
+          <span style={{ fontSize: 11, color: C.textMid, fontWeight: 500 }}>{r.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SimRow({
+  label,
+  tag,
+  tagScheme,
+  value,
+  sign,
+  strikethrough,
+}: {
+  label: string
+  tag?: string
+  tagScheme?: 'green' | 'blue' | 'purple'
+  value: string
+  sign?: '+' | '-'
+  strikethrough?: boolean
+}) {
+  const tagBg = tagScheme === 'green' ? '#D1FAE5' : tagScheme === 'blue' ? '#DBEAFE' : '#EDE9FE'
+  const tagCol = tagScheme === 'green' ? C.greenDark : tagScheme === 'blue' ? C.blueMid : C.purple
+  const valCol = sign === '+' ? C.green : sign === '-' ? C.red : C.textMid
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0' }}>
+      <span style={{ fontSize: 12, color: C.textMid, display: 'flex', alignItems: 'center', gap: 5 }}>
+        {label}
+        {tag && (
+          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: tagBg, color: tagCol, fontWeight: 700 }}>
+            {tag}
+          </span>
+        )}
+      </span>
+      <span style={{ fontSize: 12, color: valCol, fontWeight: 600, textDecoration: strikethrough ? 'line-through' : 'none' }}>
+        {sign === '+' ? '+ ' : sign === '-' ? '- ' : ''}{value}
+      </span>
+    </div>
+  )
+}
+
+function SimTotal({ label, value, scheme }: { label: string; value: string; scheme: 'green' | 'blue' }) {
+  const bg = scheme === 'green' ? C.greenLight : C.blueLight
+  const col = scheme === 'green' ? C.greenDark : C.blueMid
+  const border = scheme === 'green' ? C.greenBorder : C.blueBorder
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 8,
+        padding: '8px 12px',
+        borderRadius: 8,
+        background: bg,
+        border: `1px solid ${border}`,
+      }}
+    >
+      <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{label}</span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: col }}>₱ {value}</span>
+    </div>
+  )
+}
+
+// ─── Schema & types ───────────────────────────────────────────────────────────
+
 const commisionConfigurationSchema = z.object({
-  base_commission: z
-    .number()
-    .min(0, 'Base commission must be at least 0%')
-    .max(100, 'Base commission cannot exceed 100%'),
-  agent_commission: z
-    .number()
-    .min(0, 'Agent commission must be at least 0%')
-    .max(100, 'Agent commission cannot exceed 100%'),
-  agent_overrider_commission: z
-    .number()
-    .min(0, 'Agent overrider commission must be at least 0%')
-    .max(100, 'Agent overrider commission cannot exceed 100%'),
-  agent_admin_commission: z
-    .number()
-    .min(0, 'Agent Admin commission must be at least 0%')
-    .max(100, 'Agent Admin commission cannot exceed 100%'),
-  agent_admin_overrider_commission: z
-    .number()
-    .min(0, 'Agent Admin overrider commission must be at least 0%')
-    .max(100, 'Agent Admin overrider commission cannot exceed 100%'),
-  referral_commission: z
-    .number()
-    .min(0, 'Referral commission must be at least 0%')
-    .max(100, 'Referral commission cannot exceed 100%'),
-  referral_overrider_commission: z
-    .number()
-    .min(0, 'Referral overrider commission must be at least 0%')
-    .max(100, 'Referral overrider commission cannot exceed 100%'),
-  referral_admin_commission: z
-    .number()
-    .min(0, 'Referral Admin commission must be at least 0%')
-    .max(100, 'Referral Admin commission cannot exceed 100%'),
-  referral_admin_overrider_commission: z
-    .number()
-    .min(0, 'Referral Admin overrider commission must be at least 0%')
-    .max(100, 'Referral Admin overrider commission cannot exceed 100%'),
-  vat: z
-    .number()
-    .min(0, 'VAT must be at least 0%')
-    .max(100, 'VAT cannot exceed 100%'),
-  witholding_tax: z
-    .number()
-    .min(0, 'Withholding tax must be at least 0%')
-    .max(100, 'Withholding tax cannot exceed 100%'),
+  base_commission: z.number().min(0).max(100),
+  agent_commission: z.number().min(0).max(100),
+  agent_overrider_commission: z.number().min(0).max(100),
+  agent_admin_commission: z.number().min(0).max(100),
+  agent_admin_overrider_commission: z.number().min(0).max(100),
+  referral_commission: z.number().min(0).max(100),
+  referral_overrider_commission: z.number().min(0).max(100),
+  referral_admin_commission: z.number().min(0).max(100),
+  referral_admin_overrider_commission: z.number().min(0).max(100),
+  vat: z.number().min(0).max(100),
+  witholding_tax: z.number().min(0).max(100),
   isWithVAT: z.boolean(),
   returnVAT: z.boolean(),
   voidVAT: z.boolean(),
   applyGrossVAT: z.boolean(),
   grossVATRate: z.number().min(0).max(100),
-  effectivity_date: z.string().min(1, 'Effectivity date is required'),
+  effectivity_date: z.string().min(1),
 })
-type CommisionConfigurationFormData = z.infer<
-  typeof commisionConfigurationSchema
->
+type FormData = z.infer<typeof commisionConfigurationSchema>
 
-function mapFormDataToCommissionConfigUpdateRequest(
-  formData: CommisionConfigurationFormData
-): CommissionConfigUpdateRequest {
-  // Determine vatOptions based on checkbox states
+function mapFormDataToUpdateRequest(formData: FormData): CommissionConfigUpdateRequest {
   const vatOptions = getVatOptionFromCheckboxes({
     isWithVAT: formData.isWithVAT,
     returnVAT: formData.returnVAT,
     voidVAT: formData.voidVAT,
     applyGrossVAT: formData.applyGrossVAT,
   })
-
   return {
     base_commission: formData.base_commission,
     agent_commission: formData.agent_commission,
@@ -104,109 +276,122 @@ function mapFormDataToCommissionConfigUpdateRequest(
     witholding_tax: formData.witholding_tax,
     gross_vat: formData.grossVATRate,
     isWithVAT: formData.isWithVAT,
-    vatOptions: vatOptions,
+    vatOptions,
     effectivity_date: formData.effectivity_date,
     status: 'active',
   } satisfies CommissionConfigUpdateRequest
 }
 
-export default function ProductCommisionConfiguration({
-  selectedCommissionConfig,
-  onUpdateSuccess,
-}: ProductCommisionConfigurationProps) {
-  const { mutateAsync: updateConfingCommission } =
-    useUpdateCommissionConfiguration()
-  const [saleAmount, setSaleAmount] = useState<number>(1000)
-  
+// ─── VAT mode helpers ─────────────────────────────────────────────────────────
+
+type VatMode = 'deduct' | 'return' | 'void' | 'gross' | 'none'
+
+function getVatMode(values: Pick<FormData, 'isWithVAT' | 'returnVAT' | 'voidVAT' | 'applyGrossVAT'>): VatMode {
+  if (values.isWithVAT) return 'deduct'
+  if (values.returnVAT) return 'return'
+  if (values.voidVAT) return 'void'
+  if (values.applyGrossVAT) return 'gross'
+  return 'none'
+}
+
+function calcNet(
+  grossComm: number,
+  vatMode: VatMode,
+  vatPct: number,
+  whtPct: number,
+  grossVATRate: number
+): { vatAmt: number; whtAmt: number; net: number } {
+  const vat = vatPct / 100
+  const wht = whtPct / 100
+  if (vatMode === 'deduct') {
+    const vatAmt = grossComm * vat
+    const whtAmt = grossComm * wht
+    return { vatAmt, whtAmt, net: grossComm - vatAmt - whtAmt }
+  }
+  if (vatMode === 'return') {
+    const vatAmt = grossComm * vat
+    const whtAmt = grossComm * wht
+    return { vatAmt, whtAmt, net: grossComm + vatAmt - whtAmt }
+  }
+  if (vatMode === 'void') {
+    const vatAmt = grossComm * vat
+    const whtAmt = grossComm * wht
+    return { vatAmt, whtAmt, net: grossComm - whtAmt }
+  }
+  if (vatMode === 'gross' && grossVATRate > 0) {
+    // grossVATRate is stored as the factor directly (e.g. 1.12), not as a percentage
+    const factor = grossVATRate
+    const base = grossComm / factor          // net-of-VAT base
+    const vatAmt = base * vat                // VAT = (gross / factor) * vat%
+    const whtAmt = (grossComm - vatAmt) * wht // WHT = (gross - VAT) * wht%
+    return { vatAmt, whtAmt, net: grossComm - whtAmt }
+  }
+  // none
+  const vatAmt = grossComm * vat
+  const whtAmt = grossComm * wht
+  return { vatAmt, whtAmt, net: grossComm - whtAmt }
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface Props {
+  selectedCommissionConfig: CommissionConfig | null
+  onUpdateSuccess?: () => void
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+const TABS = [
+  { id: 'base', label: 'Base & Tax' },
+  { id: 'agent', label: 'Agent-based Sales' },
+  { id: 'referral', label: 'Referral-based Sales' },
+]
+
+export default function ProductCommisionConfiguration({ selectedCommissionConfig, onUpdateSuccess }: Props) {
+  const { mutateAsync: updateCommission } = useUpdateCommissionConfiguration()
+  const [activeTab, setActiveTab] = useState('base')
+  const [saved, setSaved] = useState(false)
+  const [grossPremium, setGrossPremium] = useState(1000)
+
   const form = useForm({
     defaultValues: {
       base_commission: Number(selectedCommissionConfig?.base_commission) ?? 30,
       agent_commission: Number(selectedCommissionConfig?.agent_commission) ?? 15,
-      agent_overrider_commission:
-        Number(selectedCommissionConfig?.agent_overrider_commission || selectedCommissionConfig?.agent_overriders_commission) ?? 10,
+      agent_overrider_commission: Number(selectedCommissionConfig?.agent_overrider_commission || selectedCommissionConfig?.agent_overriders_commission) ?? 10,
       agent_admin_commission: Number(selectedCommissionConfig?.agent_admin_commission || selectedCommissionConfig?.ifrc_admin) ?? 15,
-      agent_admin_overrider_commission:
-        Number(selectedCommissionConfig?.agent_admin_overrider_commission || selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
+      agent_admin_overrider_commission: Number(selectedCommissionConfig?.agent_admin_overrider_commission || selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
       referral_commission: Number(selectedCommissionConfig?.referral_commission || selectedCommissionConfig?.ifrc_digitech) ?? 25,
       referral_overrider_commission: Number(selectedCommissionConfig?.referral_overrider_commission || selectedCommissionConfig?.digitech_referral) ?? 5,
-      referral_admin_commission:
-        Number(selectedCommissionConfig?.referral_admin_commission || selectedCommissionConfig?.digitech_overriders) ?? 10,
+      referral_admin_commission: Number(selectedCommissionConfig?.referral_admin_commission || selectedCommissionConfig?.digitech_overriders) ?? 10,
       referral_admin_overrider_commission: Number(selectedCommissionConfig?.referral_admin_overrider_commission || selectedCommissionConfig?.ifrc_admin) ?? 25,
       vat: Number(selectedCommissionConfig?.vat) ?? 0,
       witholding_tax: Number(selectedCommissionConfig?.witholding_tax) ?? 0,
       ...getCheckboxesFromVatOption(selectedCommissionConfig?.vatOptions),
       grossVATRate: Number(selectedCommissionConfig?.gross_vat) ?? 0,
-      effectivity_date: selectedCommissionConfig?.effectivity_date 
-        ? selectedCommissionConfig.effectivity_date.split('T')[0] 
+      effectivity_date: selectedCommissionConfig?.effectivity_date
+        ? selectedCommissionConfig.effectivity_date.split('T')[0]
         : new Date().toISOString().split('T')[0],
     },
-    validators: {
-      onChange: commisionConfigurationSchema,
-    },
+    validators: { onChange: commisionConfigurationSchema },
     onSubmit: async ({ value }) => {
       try {
-        const updateRequestData =
-          mapFormDataToCommissionConfigUpdateRequest(value)
-        const response = await updateConfingCommission({
-          data: updateRequestData,
+        const response = await updateCommission({
+          data: mapFormDataToUpdateRequest(value),
           commissionConfigId: selectedCommissionConfig!.id,
         })
-
         if (response?.success) {
           toast.success(response.message || 'Commission configuration updated successfully!')
+          setSaved(true)
           onUpdateSuccess?.()
         } else {
           toast.error(response?.message || 'Failed to update commission configuration.')
         }
-      } catch (error) {
-        console.error('Form submission error:', error)
+      } catch {
         toast.error('An error occurred while saving the configuration.')
       }
     },
   })
 
-  // Automatic calculation functions
-  const handleAgentCommissionChange = (value: number) => {
-    const baseCommission = form.getFieldValue('base_commission')
-    const newAdminCommission = Math.max(0, baseCommission - value)
-    form.setFieldValue('agent_commission', value)
-    form.setFieldValue('agent_admin_commission', newAdminCommission)
-  }
-
-  const handleAgentAdminCommissionChange = (value: number) => {
-    const baseCommission = form.getFieldValue('base_commission')
-    const newAgentCommission = Math.max(0, baseCommission - value)
-    form.setFieldValue('agent_admin_commission', value)
-    form.setFieldValue('agent_commission', newAgentCommission)
-  }
-
-  const handleReferralCommissionChange = (value: number) => {
-    const baseCommission = form.getFieldValue('base_commission')
-    const newReferralAdminCommission = Math.max(0, baseCommission - value)
-    form.setFieldValue('referral_commission', value)
-    form.setFieldValue('referral_admin_commission', newReferralAdminCommission)
-  }
-
-  const handleReferralAdminCommissionChange = (value: number) => {
-    const baseCommission = form.getFieldValue('base_commission')
-    const newReferralCommission = Math.max(0, baseCommission - value)
-    form.setFieldValue('referral_admin_commission', value)
-    form.setFieldValue('referral_commission', newReferralCommission)
-  }
-
-  const handleBaseCommissionChange = (value: number) => {
-    const currentAgentCommission = form.getFieldValue('agent_commission')
-    const currentReferralCommission = form.getFieldValue('referral_commission')
-    
-    // Update base commission
-    form.setFieldValue('base_commission', value)
-    
-    // Auto-adjust admin commissions to maintain the split
-    form.setFieldValue('agent_admin_commission', Math.max(0, value - currentAgentCommission))
-    form.setFieldValue('referral_admin_commission', Math.max(0, value - currentReferralCommission))
-  }
-
-  // Reset form when selectedCommissionConfig changes
   React.useEffect(() => {
     if (selectedCommissionConfig) {
       form.reset({
@@ -227,1025 +412,387 @@ export default function ProductCommisionConfiguration({
           ? selectedCommissionConfig.effectivity_date.split('T')[0]
           : new Date().toISOString().split('T')[0],
       })
+      setSaved(false)
     }
   }, [selectedCommissionConfig?.id])
 
+  // ── Interdependent field helpers ──────────────────────────────────────────
+  const handleAgentCommissionChange = (v: number) => {
+    form.setFieldValue('agent_commission', v)
+    form.setFieldValue('agent_admin_commission', Math.max(0, form.getFieldValue('base_commission') - v))
+    setSaved(false)
+  }
+  const handleAgentAdminCommissionChange = (v: number) => {
+    form.setFieldValue('agent_admin_commission', v)
+    form.setFieldValue('agent_commission', Math.max(0, form.getFieldValue('base_commission') - v))
+    setSaved(false)
+  }
+  const handleReferralCommissionChange = (v: number) => {
+    form.setFieldValue('referral_commission', v)
+    form.setFieldValue('referral_admin_commission', Math.max(0, form.getFieldValue('base_commission') - v))
+    setSaved(false)
+  }
+  const handleReferralAdminCommissionChange = (v: number) => {
+    form.setFieldValue('referral_admin_commission', v)
+    form.setFieldValue('referral_commission', Math.max(0, form.getFieldValue('base_commission') - v))
+    setSaved(false)
+  }
+  const handleBaseCommissionChange = (v: number) => {
+    const agentComm = form.getFieldValue('agent_commission')
+    const refComm = form.getFieldValue('referral_commission')
+    form.setFieldValue('base_commission', v)
+    form.setFieldValue('agent_admin_commission', Math.max(0, v - agentComm))
+    form.setFieldValue('referral_admin_commission', Math.max(0, v - refComm))
+    setSaved(false)
+  }
+
+  const setVatExclusive = (key: 'isWithVAT' | 'returnVAT' | 'voidVAT' | 'applyGrossVAT', val: boolean) => {
+    form.setFieldValue('isWithVAT', false)
+    form.setFieldValue('returnVAT', false)
+    form.setFieldValue('voidVAT', false)
+    form.setFieldValue('applyGrossVAT', false)
+    form.setFieldValue(key, val)
+    setSaved(false)
+  }
+
+  if (!selectedCommissionConfig) {
+    return (
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: C.textMuted,
+          fontSize: 14,
+        }}
+      >
+        Select a product to configure commissions
+      </div>
+    )
+  }
+
   return (
-    <div>
-      {!selectedCommissionConfig ? (
-        <div className="text-center">
-          Select a product to configure commissions
-        </div>
-      ) : (
-        <div className="space-y-10">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              void form.handleSubmit()
-            }}
-          >
-            <div className="space-y-10">
-              {/* Header */}
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xl font-bold">
-                    {selectedCommissionConfig?.product.name}
-                  </p>
-                  <p className="text-base font-light">
-                    Overall commission percentage for this product
-                  </p>
-                </div>
+    <form
+      style={{ display: 'flex', flex: 1, overflow: 'hidden' }}
+      onSubmit={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        void form.handleSubmit()
+      }}
+    >
+      {/* ── CENTER — tab config ─────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-                <div className="grid grid-cols-2 gap-6">
-                  {/* Base Commission */}
-                  <form.Field
-                    name="base_commission"
-                    children={(field) => {
-                      return (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-gray-700">
-                            Base Commission
-                          </Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              name={field.name}
-                              id={field.name}
-                              onChange={(e) => {
-                                const commissionRate = Number(e.target.value)
-                                handleBaseCommissionChange(commissionRate)
-                              }}
-                              onBlur={field.handleBlur}
-                              value={field.state.value.toString()}
-                              className="h-10 w-24 text-right font-semibold"
-                            />
-                            <span className="text-sm text-gray-600">
-                              % of total net sale amount
-                            </span>
-                          </div>
-                          <FieldInfo field={field} />
-                        </div>
-                      )
-                    }}
-                  />
-
-                  {/* Effectivity Date */}
-                  <form.Field
-                    name="effectivity_date"
-                    children={(field) => {
-                      return (
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-gray-700">
-                            Effectivity Date
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              type="date"
-                              name={field.name}
-                              id={field.name}
-                              onChange={(e) => {
-                                field.handleChange(e.target.value)
-                              }}
-                              onBlur={field.handleBlur}
-                              value={field.state.value}
-                              className="h-10 w-full cursor-pointer font-medium [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                            />
-                            <Calendar className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                          </div>
-                          <FieldInfo field={field} />
-                        </div>
-                      )
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Tax Configuration Card */}
-              <div className="rounded-lg border-2 border-gray-300 bg-gray-50 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Tax Configuration</h3>
-                
-                <div className="grid grid-cols-2 gap-6">
-                  {/* VAT */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-gray-700">
-                      Value-Added Tax (VAT)
-                    </Label>
-                    <form.Field
-                      name="vat"
-                      children={(field) => {
-                        return (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Input
-                                type="number"
-                                name={field.name}
-                                id={field.name}
-                                onChange={(e) => {
-                                  field.handleChange(Number(e.target.value))
-                                }}
-                                onBlur={field.handleBlur}
-                                value={field.state.value.toString()}
-                                className="h-10 w-24 text-right font-semibold"
-                                step="0.01"
-                              />
-                              <span className="text-sm text-gray-600">%</span>
-                            </div>
-                            <FieldInfo field={field} />
-                          </div>
-                        )
-                      }}
-                    />
-                  </div>
-
-                  {/* Withholding Tax */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-gray-700">
-                      Withholding Tax (WHT)
-                    </Label>
-                    <form.Field
-                      name="witholding_tax"
-                      children={(field) => {
-                        return (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Input
-                                type="number"
-                                name={field.name}
-                                id={field.name}
-                                onChange={(e) => {
-                                  field.handleChange(Number(e.target.value))
-                                }}
-                                onBlur={field.handleBlur}
-                                value={field.state.value.toString()}
-                                className="h-10 w-24 text-right font-semibold"
-                                step="0.01"
-                              />
-                              <span className="text-sm text-gray-600">%</span>
-                            </div>
-                            <FieldInfo field={field} />
-                          </div>
-                        )
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* VAT Options */}
-                <div className="mt-6 space-y-3">
-                  <form.Field
-                    name="isWithVAT"
-                    children={(field) => {
-                      return (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id="deduct-vat"
-                            checked={field.state.value}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                field.handleChange(true)
-                                form.setFieldValue('returnVAT', false)
-                                form.setFieldValue('voidVAT', false)
-                                form.setFieldValue('applyGrossVAT', false)
-                              } else {
-                                field.handleChange(false)
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor="deduct-vat"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Deduct VAT
-                          </label>
-                        </div>
-                      )
-                    }}
-                  />
-
-                  <form.Field
-                    name="returnVAT"
-                    children={(field) => {
-                      return (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id="return-vat"
-                            checked={field.state.value}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                field.handleChange(true)
-                                form.setFieldValue('isWithVAT', false)
-                                form.setFieldValue('voidVAT', false)
-                                form.setFieldValue('applyGrossVAT', false)
-                              } else {
-                                field.handleChange(false)
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor="return-vat"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Return VAT
-                          </label>
-                        </div>
-                      )
-                    }}
-                  />
-
-                  <form.Field
-                    name="voidVAT"
-                    children={(field) => {
-                      return (
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            id="void"
-                            checked={field.state.value}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                field.handleChange(true)
-                                form.setFieldValue('isWithVAT', false)
-                                form.setFieldValue('returnVAT', false)
-                                form.setFieldValue('applyGrossVAT', false)
-                              } else {
-                                field.handleChange(false)
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor="void"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Void
-                          </label>
-                        </div>
-                      )
-                    }}
-                  />
-
-                  <div className="space-y-2">
-                    <form.Field
-                      name="applyGrossVAT"
-                      children={(field) => {
-                        return (
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="apply-gross-vat"
-                              checked={field.state.value}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  field.handleChange(true)
-                                  form.setFieldValue('isWithVAT', false)
-                                  form.setFieldValue('returnVAT', false)
-                                  form.setFieldValue('voidVAT', false)
-                                } else {
-                                  field.handleChange(false)
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor="apply-gross-vat"
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              Apply gross VAT
-                            </label>
-                          </div>
-                        )
-                      }}
-                    />
-                    <form.Field
-                      name="applyGrossVAT"
-                      children={(applyGrossVATField) => (
-                        <form.Field
-                          name="grossVATRate"
-                          children={(field) => {
-                            return (
-                              <div className="ml-6">
-                                <Label className="text-sm text-gray-600">VAT factor (%)</Label>
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  className="mt-1 h-10 w-48"
-                                  step="0.01"
-                                  value={field.state.value.toString()}
-                                  onChange={(e) => field.handleChange(Number(e.target.value))}
-                                  disabled={!applyGrossVATField.state.value}
-                                />
-                              </div>
-                            )
-                          }}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Commission Configuration fields*/}
-              <div className="grid items-start gap-6 md:grid-cols-2">
-                {/* Agent-based sales */}
-                <div className="rounded-lg border-2 border-blue-300 bg-blue-50/30 p-6 shadow-sm">
-                  <div className="mb-6 text-center">
-                    <h3 className="text-lg font-bold text-blue-900">
-                      Agent-based Sales
-                    </h3>
-                    <p className="text-sm text-blue-700">
-                      Commission distribution when sale is made by an Agent
-                    </p>
-                  </div>
-                  
-                  {/* Validation error for agent commission */}
-                  <form.Field
-                    name="agent_commission"
-                    children={(field) => (
-                      <div className="mb-4">
-                        <FieldInfo field={field} />
-                      </div>
-                    )}
-                  />
-
-                  <div className="space-y-4">
-                    {/* Agent Group */}
-                    <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
-                      <p className="mb-3 text-sm font-semibold text-blue-900">
-                        Agent Commission
-                      </p>
-                      <div className="space-y-3">
-                        {/* agent */}
-                        <form.Field
-                          name="agent_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
-                                <Label className="font-semibold text-black">
-                                  Agent
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      handleAgentCommissionChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-9 w-20 text-right text-black"
-                                  />
-                                  <span className="text-muted-foreground">%</span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        />
-                        {/* agent overrider */}
-                        <form.Field
-                          name="agent_overrider_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-gray-900">
-                                  Overrider
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-gray-900"
-                                  />
-                                  <span className="text-muted-foreground text-sm">%</span>
-                                </div>
-                              </div>
-                              <FieldInfo field={field} />
-                            </div>
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Admin Group */}
-                    <div className="rounded-lg border border-purple-200 bg-white p-4 shadow-sm">
-                      <p className="mb-3 text-sm font-semibold text-purple-900">
-                        Admin Commission
-                      </p>
-                      <div className="space-y-3">
-                        {/* IFRC admin for Agent-based */}
-                        <form.Field
-                          name="agent_admin_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
-                                <Label className="font-semibold text-black">
-                                  Admin
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      handleAgentAdminCommissionChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-9 w-20 text-right text-black"
-                                  />
-                                  <span className="text-muted-foreground">%</span>
-                                </div>
-                              </div>
-                              <FieldInfo field={field} />
-                            </div>
-                          )}
-                        />
-                        {/* IFRC admin overrider for Agent-based */}
-                        <form.Field
-                          name="agent_admin_overrider_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-gray-900">
-                                  Overrider
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-gray-900"
-                                  />
-                                  <span className="text-muted-foreground text-sm">%</span>
-                                </div>
-                              </div>
-                              <FieldInfo field={field} />
-                            </div>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Referral-based sales */}
-                <div className="rounded-lg border-2 border-green-300 bg-green-50/30 p-6 shadow-sm">
-                  <div className="mb-6 text-center">
-                    <h3 className="text-lg font-bold text-green-900">
-                      Referral-based Sales
-                    </h3>
-                    <p className="text-sm text-green-700">
-                      Commission distribution when sale is made by a Referral
-                    </p>
-                  </div>
-                  
-                  {/* Validation error for referral commission */}
-                  <form.Field
-                    name="referral_commission"
-                    children={(field) => (
-                      <div className="mb-4">
-                        <FieldInfo field={field} />
-                      </div>
-                    )}
-                  />
-
-                  <div className="space-y-4">
-                    {/* Referral Group */}
-                    <div className="rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
-                      <p className="mb-3 text-sm font-semibold text-blue-900">
-                        Referral Commission
-                      </p>
-                      <div className="space-y-3">
-                        {/* Referral */}
-                        <form.Field
-                          name="referral_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-4 py-2">
-                                <Label className="font-semibold text-black">
-                                  Referral
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      handleReferralCommissionChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-9 w-20 text-right text-black"
-                                  />
-                                  <span className="text-muted-foreground">%</span>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        />
-                        {/* Referral overrider */}
-                        <form.Field
-                          name="referral_overrider_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-gray-900">
-                                  Overrider
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-gray-900"
-                                  />
-                                  <span className="text-muted-foreground text-sm">%</span>
-                                </div>
-                              </div>
-                              <FieldInfo field={field} />
-                            </div>
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Admin Group */}
-                    <div className="rounded-lg border border-purple-200 bg-white p-4 shadow-sm">
-                      <p className="mb-3 text-sm font-semibold text-purple-900">
-                        Admin Commission
-                      </p>
-                      <div className="space-y-3">
-                        {/* Admin for Referral-based */}
-                        <form.Field
-                          name="referral_admin_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-4 py-2">
-                                <Label className="font-semibold text-black">
-                                  Admin
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      handleReferralAdminCommissionChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-9 w-20 text-right text-black"
-                                  />
-                                  <span className="text-muted-foreground">%</span>
-                                </div>
-                              </div>
-                              <FieldInfo field={field} />
-                            </div>
-                          )}
-                        />
-                        {/* Admin overrider for Referral-based */}
-                        <form.Field
-                          name="referral_admin_overrider_commission"
-                          children={(field) => (
-                            <div>
-                              <div className="ml-4 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-3 py-1.5">
-                                <Label className="text-sm font-medium text-gray-900">
-                                  Overrider
-                                </Label>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="number"
-                                    name={field.name}
-                                    id={field.name}
-                                    onChange={(e) =>
-                                      field.handleChange(Number(e.target.value))
-                                    }
-                                    onBlur={field.handleBlur}
-                                    value={field.state.value.toString()}
-                                    className="h-8 w-16 text-right text-gray-900"
-                                  />
-                                  <span className="text-muted-foreground text-sm">%</span>
-                                </div>
-                              </div>
-                              <FieldInfo field={field} />
-                            </div>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Save Button - moved inside form */}
-            <div className="mt-6 flex justify-end gap-2">
-              {/* Temporarily hidden
-              <Button
-                variant={'outline'}
-                className="rounded-full"
-                onClick={(e) => {
-                  e.preventDefault()
-                  toast.info('Feature under development')
+        {/* product name + tabs */}
+        <div style={{ padding: '14px 22px 0', background: C.white, borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{selectedCommissionConfig.product.name}</div>
+          <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2, marginBottom: 10 }}>
+            Overall commission percentage for this product
+          </div>
+          <div style={{ display: 'flex' }}>
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                style={{
+                  padding: '8px 18px',
+                  fontSize: 12,
+                  fontWeight: activeTab === t.id ? 600 : 400,
+                  color: activeTab === t.id ? C.green : C.textMuted,
+                  background: 'none',
+                  border: 'none',
+                  borderBottom: `2px solid ${activeTab === t.id ? C.green : 'transparent'}`,
+                  cursor: 'pointer',
+                  marginBottom: -1,
+                  transition: 'all 0.15s',
                 }}
               >
-                Reset to Default
-              </Button>
-              <Button
-                variant={'outline'}
-                className="rounded-full"
-                onClick={(e) => {
-                  e.preventDefault()
-                  toast.info('Feature under development')
-                }}
-              >
-                Apply to all Products
-              </Button>
-              */}
-              <Button
-                type="submit"
-                className="rounded-full bg-blue-600 text-white hover:bg-blue-700"
-                onClick={() => {}}
-              >
-                Save Configuration
-              </Button>
-            </div>
-
-            {/* Form submission status */}
-            <form.Subscribe
-              selector={(state) => [state.isSubmitting]}
-              children={([isSubmitting]) => {
-                return (
-                  <>
-                    {isSubmitting && (
-                      <div className="mt-2 text-blue-600 font-semibold">Saving configuration...</div>
-                    )}
-                  </>
-                )
-              }}
-            />
-          </form>
-          <div className="space-y-4">
-            <div className="space-y-3">
-              <p className="text-xl font-bold">Commission Simulator</p>
-              <p className="text-base font-light">
-                Preview how commissions will be distributed based on net premium.
-              </p>
-              <div className="flex items-center gap-4">
-                <Label className="font-semibold">Net Premium:</Label>
-                <div className="flex items-center">
-                  <Input
-                    type="number"
-                    value={saleAmount}
-                    onChange={(e) => setSaleAmount(Number(e.target.value) || 0)}
-                    className="h-10 w-40 text-right"
-                    min={0}
-                    step={100}
-                  />
-                </div>
-              </div>
-            </div>
-            <form.Subscribe>
-              {(field) => {
-                const baseCommissionTotal =
-                  (field.values.base_commission / 100) * saleAmount
-                
-                // Agent-based calculations
-                // Step 1: Calculate gross commission for Agent only
-                const agentGrossCommission = saleAmount * (field.values.agent_commission / 100)
-                
-                // Step 2: Apply VAT logic based on selected option
-                let agentVatAmount = 0
-                let agentWhtAmount = 0
-                let agentNetCommission = 0
-                let agentGrossAfterVatFactor = agentGrossCommission
-                
-                if (field.values.isWithVAT) {
-                  // DEDUCT VAT: net = (gross - VAT) - WHT
-                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
-                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
-                  agentNetCommission = (agentGrossCommission - agentVatAmount) - agentWhtAmount
-                } else if (field.values.voidVAT) {
-                  // VOID: net = gross - WHT (VAT is voided/ignored)
-                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
-                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
-                  agentNetCommission = agentGrossCommission - agentWhtAmount
-                } else if (field.values.returnVAT) {
-                  // RETURN VAT: net = (gross + VAT) - WHT
-                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
-                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
-                  agentNetCommission = (agentGrossCommission + agentVatAmount) - agentWhtAmount
-                } else if (field.values.applyGrossVAT && field.values.grossVATRate > 0) {
-                  // APPLY GROSS VAT (from diagram):
-                  // 1. Extract VAT: vatAmount = (gross / vatFactor) * vat%
-                  //    vatFactor is stored as e.g. 1.12 (not a percentage), use directly
-                  // 2. WHT on net-of-VAT: whtAmount = (gross - vatAmount) * wht%
-                  // 3. Net = gross - whtAmount
-                  const vatFactor = field.values.grossVATRate  // e.g. 1.12, used directly
-                  agentGrossAfterVatFactor = agentGrossCommission / vatFactor
-                  agentVatAmount = agentGrossAfterVatFactor * (field.values.vat / 100)
-                  agentWhtAmount = (agentGrossCommission - agentVatAmount) * (field.values.witholding_tax / 100)
-                  agentNetCommission = agentGrossCommission - agentWhtAmount
-                } else {
-                  // No VAT option selected: net = gross - WHT
-                  agentVatAmount = agentGrossCommission * (field.values.vat / 100)
-                  agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
-                  agentNetCommission = agentGrossCommission - agentWhtAmount
-                }
-                
-                // Calculate overrider (simple percentage, no VAT/WHT)
-                const agentOverriderTotal = agentGrossCommission * (field.values.agent_overrider_commission / 100)
-                
-                // Calculate Admin commission (simple percentage, no VAT/WHT)
-                const agentAdminCommissionTotal = saleAmount * (field.values.agent_admin_commission / 100)
-                const agentAdminOverriderTotal = agentAdminCommissionTotal * (field.values.agent_admin_overrider_commission / 100)
-                
-                // Total Agent Net Commission = only the Agent net commission (not including admin)
-                const totalAgentNetCommission = agentNetCommission
-                
-                // Display values
-                const agentCommissionTotal = agentGrossCommission
-
-                // Referral-based calculations
-                // Step 1: Calculate gross commission for Referral only
-                const referralGrossCommission = saleAmount * (field.values.referral_commission / 100)
-                
-                // Step 2: Apply VAT logic based on selected option
-                let referralVatAmount = 0
-                let referralWhtAmount = 0
-                let referralNetCommission = 0
-                let referralGrossAfterVatFactor = referralGrossCommission
-                
-                if (field.values.isWithVAT) {
-                  // DEDUCT VAT: net = (gross - VAT) - WHT
-                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
-                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
-                  referralNetCommission = (referralGrossCommission - referralVatAmount) - referralWhtAmount
-                } else if (field.values.voidVAT) {
-                  // VOID: net = gross - WHT (VAT is voided/ignored)
-                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
-                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
-                  referralNetCommission = referralGrossCommission - referralWhtAmount
-                } else if (field.values.returnVAT) {
-                  // RETURN VAT: net = (gross + VAT) - WHT
-                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
-                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
-                  referralNetCommission = (referralGrossCommission + referralVatAmount) - referralWhtAmount
-                } else if (field.values.applyGrossVAT && field.values.grossVATRate > 0) {
-                  // APPLY GROSS VAT (from diagram):
-                  // 1. Extract VAT: vatAmount = (gross / vatFactor) * vat%
-                  //    vatFactor is stored as e.g. 1.12 (not a percentage), use directly
-                  // 2. WHT on net-of-VAT: whtAmount = (gross - vatAmount) * wht%
-                  // 3. Net = gross - whtAmount
-                  const vatFactor = field.values.grossVATRate  // e.g. 1.12, used directly
-                  referralGrossAfterVatFactor = referralGrossCommission / vatFactor
-                  referralVatAmount = referralGrossAfterVatFactor * (field.values.vat / 100)
-                  referralWhtAmount = (referralGrossCommission - referralVatAmount) * (field.values.witholding_tax / 100)
-                  referralNetCommission = referralGrossCommission - referralWhtAmount
-                } else {
-                  // No VAT option selected: net = gross - WHT
-                  referralVatAmount = referralGrossCommission * (field.values.vat / 100)
-                  referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
-                  referralNetCommission = referralGrossCommission - referralWhtAmount
-                }
-                
-                // Calculate overrider (simple percentage, no VAT/WHT)
-                const referralOverriderTotal = referralGrossCommission * (field.values.referral_overrider_commission / 100)
-                
-                // Calculate Admin commission (simple percentage, no VAT/WHT)
-                const referralAdminCommissionTotal = saleAmount * (field.values.referral_admin_commission / 100)
-                const referralAdminOverriderTotal = referralAdminCommissionTotal * (field.values.referral_admin_overrider_commission / 100)
-                
-                // Total Referral Net Commission = only the Referral net commission (not including admin)
-                const totalReferralNetCommission = referralNetCommission
-                
-                // Display values
-                const referralCommissionTotal = referralGrossCommission
-                
-                return (
-                  <div className="space-y-4">
-                    
-                    <div className="grid items-start gap-6 md:grid-cols-2">
-                      {/* Agent-based Distribution */}
-                      <div className="rounded-lg border-2 border-blue-300 bg-blue-50/30 p-6 shadow-sm">
-                        <div className="mb-4 text-center">
-                          <h4 className="text-base font-bold text-blue-900 mb-3">Agent-based Distribution</h4>
-                        </div>
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-gray-600">Base Commission Rate ({field.values.base_commission}%)</p>
-                            <p className="text-base font-bold">{baseCommissionTotal.toFixed(2)}</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          {/* Agent Group */}
-                          <div className="rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
-                            <p className="mb-2 text-xs font-semibold text-blue-900">
-                              Agent Commission
-                            </p>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-3 py-2 text-[#437AEE]">
-                                <p className="text-sm font-semibold">Agent ({field.values.agent_commission}%)</p>
-                                <p className="font-bold">
-                                  {agentCommissionTotal.toFixed(2)}
-                                </p>
-                              </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
-                                <p className="text-xs">Overrider ({field.values.agent_overrider_commission}%)</p>
-                                <p className="text-sm font-semibold">
-                                  {agentOverriderTotal.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Admin Group */}
-                          <div className="rounded-lg border border-purple-200 bg-white p-3 shadow-sm">
-                            <p className="mb-2 text-xs font-semibold text-purple-900">
-                              Admin Commission
-                            </p>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-3 py-2 text-[#9636EA]">
-                                <p className="text-sm font-semibold">Admin ({field.values.agent_admin_commission}%)</p>
-                                <p className="font-bold">
-                                  {agentAdminCommissionTotal.toFixed(2)}
-                                </p>
-                              </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
-                                <p className="text-xs">Overrider ({field.values.agent_admin_overrider_commission}%)</p>
-                                <p className="text-sm font-semibold">
-                                  {agentAdminOverriderTotal.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* VAT and Withholding Tax */}
-                          <div className="space-y-1 border-t pt-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <div className="flex items-center gap-2">
-                                <span>Value-Added Tax ({field.values.vat}%)</span>
-                                {field.values.vat > 0 && field.values.isWithVAT && (
-                                  <Badge variant="default" className="bg-green-600 text-white text-xs">
-                                    Deduct VAT
-                                  </Badge>
-                                )}
-                                {field.values.vat > 0 && field.values.returnVAT && (
-                                  <Badge variant="default" className="bg-blue-600 text-white text-xs">
-                                    Return VAT
-                                  </Badge>
-                                )}
-                                {field.values.vat > 0 && field.values.voidVAT && (
-                                  <Badge variant="default" className="bg-gray-600 text-white text-xs">
-                                    Void
-                                  </Badge>
-                                )}
-                                {field.values.applyGrossVAT && field.values.grossVATRate > 0 && (
-                                  <Badge variant="default" className="bg-purple-600 text-white text-xs">
-                                    Gross VAT ({field.values.grossVATRate}%)
-                                  </Badge>
-                                )}
-                              </div>
-                              <span className={field.values.voidVAT ? 'line-through' : ''}>
-                                {field.values.isWithVAT ? '-' : '+'} {Math.abs(agentVatAmount).toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span>Withholding Tax ({field.values.witholding_tax}%)</span>
-                              <span>- {agentWhtAmount.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex justify-between border-t-2 border-blue-400 pt-3">
-                          <p className="font-semibold text-blue-900">Agent Net Commission</p>
-                          <p className="font-bold text-blue-900">
-                            ₱ {totalAgentNetCommission.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Referral-based Distribution */}
-                      <div className="rounded-lg border-2 border-green-300 bg-green-50/30 p-6 shadow-sm">
-                        <div className="mb-4 text-center">
-                          <h4 className="text-base font-bold text-green-900 mb-3">Referral-based Distribution</h4>
-                        </div>
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-gray-600">Base Commission Rate ({field.values.base_commission}%)</p>
-                            <p className="text-base font-bold">{baseCommissionTotal.toFixed(2)}</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          {/* Referral Group */}
-                          <div className="rounded-lg border border-blue-200 bg-white p-3 shadow-sm">
-                            <p className="mb-2 text-xs font-semibold text-blue-900">
-                              Referral Commission
-                            </p>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between rounded-lg bg-[#EFF6FF] px-3 py-2 text-[#437AEE]">
-                                <p className="text-sm font-semibold">Referral ({field.values.referral_commission}%)</p>
-                                <p className="font-bold">
-                                  {referralCommissionTotal.toFixed(2)}
-                                </p>
-                              </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
-                                <p className="text-xs">Overrider ({field.values.referral_overrider_commission}%)</p>
-                                <p className="text-sm font-semibold">
-                                  {referralOverriderTotal.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Admin Group */}
-                          <div className="rounded-lg border border-purple-200 bg-white p-3 shadow-sm">
-                            <p className="mb-2 text-xs font-semibold text-purple-900">
-                              Admin Commission
-                            </p>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between rounded-lg bg-[#F5F0FC] px-3 py-2 text-[#9636EA]">
-                                <p className="text-sm font-semibold">Admin ({field.values.referral_admin_commission}%)</p>
-                                <p className="font-bold">
-                                  {referralAdminCommissionTotal.toFixed(2)}
-                                </p>
-                              </div>
-                              <div className="ml-3 flex items-center justify-between rounded-lg bg-[#F3F4F6] px-2 py-1.5 text-gray-900">
-                                <p className="text-xs">Overrider ({field.values.referral_admin_overrider_commission}%)</p>
-                                <p className="text-sm font-semibold">
-                                  {referralAdminOverriderTotal.toFixed(2)}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* VAT and Withholding Tax */}
-                          <div className="space-y-1 border-t pt-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <div className="flex items-center gap-2">
-                                <span>Value-Added Tax ({field.values.vat}%)</span>
-                                {field.values.vat > 0 && field.values.isWithVAT && (
-                                  <Badge variant="default" className="bg-green-600 text-white text-xs">
-                                    Deduct VAT
-                                  </Badge>
-                                )}
-                                {field.values.vat > 0 && field.values.returnVAT && (
-                                  <Badge variant="default" className="bg-blue-600 text-white text-xs">
-                                    Return VAT
-                                  </Badge>
-                                )}
-                                {field.values.vat > 0 && field.values.voidVAT && (
-                                  <Badge variant="default" className="bg-gray-600 text-white text-xs">
-                                    Void
-                                  </Badge>
-                                )}
-                                {field.values.applyGrossVAT && field.values.grossVATRate > 0 && (
-                                  <Badge variant="default" className="bg-purple-600 text-white text-xs">
-                                    Gross VAT ({field.values.grossVATRate}%)
-                                  </Badge>
-                                )}
-                              </div>
-                              <span className={field.values.voidVAT ? 'line-through' : ''}>
-                                {field.values.isWithVAT ? '-' : '+'} {Math.abs(referralVatAmount).toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span>Withholding Tax ({field.values.witholding_tax}%)</span>
-                              <span>- {referralWhtAmount.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex justify-between border-t-2 border-green-400 pt-3">
-                          <p className="font-semibold text-green-900">Referral Net Commission</p>
-                          <p className="font-bold text-green-900">
-                            ₱ {totalReferralNetCommission.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              }}
-            </form.Subscribe>
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* tab body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px' }}>
+          <form.Subscribe>
+            {(state) => {
+              const v = state.values
+
+              // ── Base & Tax tab ────────────────────────────────────────────
+              if (activeTab === 'base') return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {/* Base commission + date */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 10, padding: '16px 18px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                      <Field label="Base Commission">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <NumInput value={v.base_commission} onChange={handleBaseCommissionChange} width={90} />
+                          <span style={{ fontSize: 12, color: C.textMuted }}>% of total net sale amount</span>
+                        </div>
+                      </Field>
+                      <Field label="Effectivity Date">
+                        <input
+                          type="date"
+                          value={v.effectivity_date}
+                          onChange={(e) => { form.setFieldValue('effectivity_date', e.target.value); setSaved(false) }}
+                          style={{ ...baseInput, width: 'auto' }}
+                        />
+                      </Field>
+                    </div>
+                  </div>
+
+                  {/* Tax config */}
+                  <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ padding: '11px 18px', borderBottom: `1px solid ${C.borderLight}`, background: C.bg }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.textMid }}>Tax Configuration</span>
+                    </div>
+                    <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                        <Field label="Value-Added Tax (VAT)">
+                          <NumInput value={v.vat} onChange={(val) => { form.setFieldValue('vat', val); setSaved(false) }} width={90} />
+                        </Field>
+                        <Field label="Withholding Tax (WHT)">
+                          <NumInput value={v.witholding_tax} onChange={(val) => { form.setFieldValue('witholding_tax', val); setSaved(false) }} width={90} />
+                        </Field>
+                      </div>
+
+                      {/* VAT mode radios */}
+                      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                        {([
+                          ['isWithVAT', 'Deduct VAT'],
+                          ['returnVAT', 'Return VAT'],
+                          ['voidVAT', 'Void'],
+                          ['applyGrossVAT', 'Apply gross VAT'],
+                        ] as const).map(([key, lbl]) => (
+                          <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: C.textMid, cursor: 'pointer' }}>
+                            <input
+                              type="radio"
+                              name="vatMode"
+                              checked={v[key]}
+                              onChange={() => setVatExclusive(key, true)}
+                              style={{ accentColor: C.green }}
+                            />
+                            {lbl}
+                          </label>
+                        ))}
+                      </div>
+
+                      {v.applyGrossVAT && (
+                        <Field label="VAT factor (gross %)">
+                          <NumInput
+                            value={v.grossVATRate}
+                            onChange={(val) => { form.setFieldValue('grossVATRate', val); setSaved(false) }}
+                            suffix=""
+                            min={0}
+                            step={0.01}
+                            width={90}
+                          />
+                        </Field>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+
+              // ── Agent tab ─────────────────────────────────────────────────
+              if (activeTab === 'agent') return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ fontSize: 12, color: C.textMuted }}>Commission distribution when sale is made by an Agent</div>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <CommCard
+                      title="Agent Commission"
+                      scheme="blue"
+                      rows={[
+                        { label: 'Agent', value: v.agent_commission, onChange: handleAgentCommissionChange },
+                        { label: 'Overrider', sub: '% of agent commission', value: v.agent_overrider_commission, onChange: (val) => { form.setFieldValue('agent_overrider_commission', val); setSaved(false) } },
+                      ]}
+                    />
+                    <CommCard
+                      title="Admin Commission"
+                      scheme="purple"
+                      rows={[
+                        { label: 'Admin', value: v.agent_admin_commission, onChange: handleAgentAdminCommissionChange },
+                        { label: 'Overrider', sub: '% of admin commission', value: v.agent_admin_overrider_commission, onChange: (val) => { form.setFieldValue('agent_admin_overrider_commission', val); setSaved(false) } },
+                      ]}
+                    />
+                  </div>
+                </div>
+              )
+
+              // ── Referral tab ──────────────────────────────────────────────
+              if (activeTab === 'referral') return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ fontSize: 12, color: C.textMuted }}>Commission distribution when sale is made by a Referral</div>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <CommCard
+                      title="Referral Commission"
+                      scheme="green"
+                      rows={[
+                        { label: 'Referral', value: v.referral_commission, onChange: handleReferralCommissionChange },
+                        { label: 'Overrider', sub: '% of referral commission', value: v.referral_overrider_commission, onChange: (val) => { form.setFieldValue('referral_overrider_commission', val); setSaved(false) } },
+                      ]}
+                    />
+                    <CommCard
+                      title="Admin Commission"
+                      scheme="purple"
+                      rows={[
+                        { label: 'Admin', value: v.referral_admin_commission, onChange: handleReferralAdminCommissionChange },
+                        { label: 'Overrider', sub: '% of admin commission', value: v.referral_admin_overrider_commission, onChange: (val) => { form.setFieldValue('referral_admin_overrider_commission', val); setSaved(false) } },
+                      ]}
+                    />
+                  </div>
+                </div>
+              )
+
+              return null
+            }}
+          </form.Subscribe>
+
+          {/* Save button */}
+          <div style={{ marginTop: 24 }}>
+            <button
+              type="submit"
+              style={{
+                padding: '9px 26px',
+                fontSize: 13,
+                fontWeight: 600,
+                background: saved ? C.greenLight : C.green,
+                color: saved ? C.greenDark : '#fff',
+                border: `1px solid ${saved ? C.greenBorder : C.green}`,
+                borderRadius: 8,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+              }}
+            >
+              {saved ? '✓ Configuration Saved' : 'Save Configuration'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── RIGHT — simulator ───────────────────────────────────────────────── */}
+      <div
+        style={{
+          width: 284,
+          background: C.white,
+          borderLeft: `1px solid ${C.border}`,
+          display: 'flex',
+          flexDirection: 'column',
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${C.borderLight}` }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Commission Simulator</div>
+          <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>
+            Preview how commissions will be distributed based on net premium.
+          </div>
+        </div>
+
+        <div style={{ padding: '10px 14px', borderBottom: `1px solid ${C.borderLight}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: C.textMid, fontWeight: 500, whiteSpace: 'nowrap' }}>Net Premium:</span>
+          <NumInput value={grossPremium} onChange={setGrossPremium} suffix="" min={1} width={90} />
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <form.Subscribe>
+            {(state) => {
+              const v = state.values
+              const f = (n: number) => Math.abs(n).toFixed(2)
+              const vatMode = getVatMode(v)
+              const base = v.base_commission
+              const bAmt = grossPremium * (base / 100)
+
+              // Agent
+              const aC = grossPremium * (v.agent_commission / 100)
+              const aO = aC * (v.agent_overrider_commission / 100)
+              const aA = grossPremium * (v.agent_admin_commission / 100)
+              const aAO = aA * (v.agent_admin_overrider_commission / 100)
+              const { vatAmt: aV, whtAmt: aW, net: aN } = calcNet(aC, vatMode, v.vat, v.witholding_tax, v.grossVATRate)
+
+              // Referral
+              const rC = grossPremium * (v.referral_commission / 100)
+              const rO = rC * (v.referral_overrider_commission / 100)
+              const rA = grossPremium * (v.referral_admin_commission / 100)
+              const rAO = rA * (v.referral_admin_overrider_commission / 100)
+              const { vatAmt: rV, whtAmt: rW, net: rN } = calcNet(rC, vatMode, v.vat, v.witholding_tax, v.grossVATRate)
+
+              const vatLabel = vatMode === 'deduct'
+                ? `Deduct VAT (${v.vat}%)`
+                : vatMode === 'return'
+                ? `Return VAT (${v.vat}%)`
+                : vatMode === 'void'
+                ? `Void VAT (${v.vat}%)`
+                : vatMode === 'gross'
+                ? `Gross VAT (${v.grossVATRate}%)`
+                : `VAT (${v.vat}%)`
+
+              const vatSign = vatMode === 'return' ? '+' : vatMode === 'deduct' ? '-' : undefined
+
+              return (
+                <>
+                  {/* Agent block — blue */}
+                  <div style={{ background: C.blueLight, border: `1px solid ${C.blueBorder}`, borderRadius: 10, padding: '12px 14px' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.blueMid, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, paddingBottom: 7, borderBottom: `1px solid ${C.blueBorder}` }}>
+                      Agent-based Distribution
+                    </div>
+                    <SimRow label="Base Commission Rate" tag={`${base}%`} tagScheme="blue" value={f(bAmt)} />
+                    <SimSubBlock scheme="blue" title="Agent Commission" rows={[
+                      { label: `Agent (${v.agent_commission}%)`, value: f(aC) },
+                      { label: `Overrider (${v.agent_overrider_commission}%)`, value: f(aO) },
+                    ]} />
+                    <SimSubBlock scheme="purple" title="Admin Commission" rows={[
+                      { label: `Admin (${v.agent_admin_commission}%)`, value: f(aA) },
+                      { label: `Overrider (${v.agent_admin_overrider_commission}%)`, value: f(aAO) },
+                    ]} />
+                    <div style={{ marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.blueBorder}` }}>
+                      <SimRow
+                        label={vatLabel}
+                        tagScheme="blue"
+                        value={f(aV)}
+                        sign={vatSign}
+                        strikethrough={vatMode === 'void'}
+                      />
+                      <SimRow label={`Withholding Tax (${v.witholding_tax}%)`} value={f(aW)} sign="-" />
+                    </div>
+                    <SimTotal label="Agent Net Commission" value={f(aN)} scheme="blue" />
+                  </div>
+
+                  {/* Referral block — green */}
+                  <div style={{ background: C.greenLight, border: `1px solid ${C.greenBorder}`, borderRadius: 10, padding: '12px 14px' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.greenDark, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, paddingBottom: 7, borderBottom: `1px solid ${C.greenBorder}` }}>
+                      Referral-based Distribution
+                    </div>
+                    <SimRow label="Base Commission Rate" tag={`${base}%`} tagScheme="green" value={f(bAmt)} />
+                    <SimSubBlock scheme="green" title="Referral Commission" rows={[
+                      { label: `Referral (${v.referral_commission}%)`, value: f(rC) },
+                      { label: `Overrider (${v.referral_overrider_commission}%)`, value: f(rO) },
+                    ]} />
+                    <SimSubBlock scheme="purple" title="Admin Commission" rows={[
+                      { label: `Admin (${v.referral_admin_commission}%)`, value: f(rA) },
+                      { label: `Overrider (${v.referral_admin_overrider_commission}%)`, value: f(rAO) },
+                    ]} />
+                    <div style={{ marginTop: 6, paddingTop: 6, borderTop: `1px solid ${C.greenBorder}` }}>
+                      <SimRow
+                        label={vatLabel}
+                        tagScheme="green"
+                        value={f(rV)}
+                        sign={vatSign}
+                        strikethrough={vatMode === 'void'}
+                      />
+                      <SimRow label={`Withholding Tax (${v.witholding_tax}%)`} value={f(rW)} sign="-" />
+                    </div>
+                    <SimTotal label="Referral Net Commission" value={f(rN)} scheme="green" />
+                  </div>
+                </>
+              )
+            }}
+          </form.Subscribe>
+        </div>
+      </div>
+    </form>
   )
 }
