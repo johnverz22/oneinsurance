@@ -85,6 +85,7 @@ export default function CtplPersonalInfoForm() {
     if (!form.dateOfBirth) e.dateOfBirth = 'Date of birth is required'
     if (!form.idNumber.trim()) e.idNumber = 'ID number is required'
     if (!form.addressLine1.trim()) e.addressLine1 = 'Address is required'
+    if (!form.addressLine2.trim()) e.addressLine2 = 'Address 2 is required'
     if (!form.province.trim()) e.province = 'Province is required'
     if (!form.city.trim()) e.city = 'City is required'
     if (!form.zipCode.trim()) e.zipCode = 'ZIP code is required'
@@ -357,11 +358,9 @@ export default function CtplPersonalInfoForm() {
           {err('addressLine1')}
         </div>
         <div className="space-y-1.5">
-          <div className="flex justify-between">
-            <Label className="text-primary">Address 2</Label>
-            <span className="text-primary text-xs">(Optional)</span>
-          </div>
-          <Input value={form.addressLine2} onChange={e => set('addressLine2', e.target.value)} placeholder="e.g. Brgy/Subdivision/Details" className="h-12" />
+          <Label className="text-primary">Address 2 <span className="text-destructive">*</span></Label>
+          <Input value={form.addressLine2} onChange={e => set('addressLine2', e.target.value)} placeholder="e.g. Brgy/Subdivision/Details" className={`h-12 ${errors.addressLine2 ? 'border-destructive' : ''}`} />
+          {err('addressLine2')}
         </div>
       </div>
 
