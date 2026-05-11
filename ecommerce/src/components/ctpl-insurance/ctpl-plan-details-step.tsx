@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { ArrowLeft, CheckCircle, Car, Info } from 'lucide-react'
+import { CheckCircle, Car, Info } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { useParams, useRouter } from 'next/navigation'
 import { COMPANIES } from '@/constants/companies'
@@ -29,10 +29,11 @@ export default function CtplPlanDetailsStep() {
       {/* LEFT — 3/5 width, matches travel */}
       <div className="lg:w-3/5 space-y-4">
 
-        {/* Plan Details card */}
+        {/* Your Plan Details card */}
         <Card className="bg-background overflow-hidden shadow-none">
-          <CardHeader className="pb-2 pt-6">
-            <h2 className="text-xl font-black text-gray-900">Plan Details</h2>
+          <CardHeader className="flex items-center justify-between -space-y-2 pb-2 pt-6">
+            <h2 className="text-primary text-2xl font-bold">Your Plan Details</h2>
+            <CheckCircle className="text-primary" />
           </CardHeader>
           <CardContent className="space-y-5 px-6 pb-6">
             {/* Carrier row — logo left, name+badge right */}
@@ -73,6 +74,9 @@ export default function CtplPlanDetailsStep() {
         {/* Benefits card — matches travel plan card with two-column internal layout */}
         {plan?.MainBenefits?.length > 0 && (
           <Card className="bg-background overflow-hidden shadow-none">
+            <CardHeader className="pb-2 pt-6">
+              <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
+            </CardHeader>
             <CardContent className="px-6 py-6">
               <div className="flex gap-6">
                 {/* Left: carrier logo + plan name (like travel) */}
@@ -124,12 +128,11 @@ export default function CtplPlanDetailsStep() {
         {/* Buttons — Cancel left, Next right — exactly like travel */}
         <div className="flex items-center justify-between pt-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="lg"
-            className="rounded-full px-10 font-semibold"
+            className="rounded-full px-10 font-medium text-gray-700"
             onClick={() => router.push(`/${agentCode}/products/motor-insurance`)}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
             Cancel
           </Button>
           <Button

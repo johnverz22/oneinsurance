@@ -323,38 +323,53 @@ function CtplInsurance() {
             <h2 className="text-2xl font-black text-gray-900">Choose Your Insurance Type</h2>
             <p className="text-sm text-gray-500 mt-1">Select the coverage that fits your needs</p>
 
-            {/* Pill-style toggle — matches travel's trip type toggle */}
-            <div className="mt-5 border-muted-foreground/30 flex w-full rounded-full border bg-gray-100 p-1">
+            {/* Bigger card-style toggle — taller with icon, title, description, select button */}
+            <div className="mt-5 grid grid-cols-2 gap-4">
               <button
                 onClick={() => selectType('CTPL')}
-                className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-all sm:px-6 sm:py-2 ${
-                  insuranceType === 'CTPL' ? 'bg-primary text-white shadow-md' : 'text-foreground hover:text-primary'
+                className={`group relative flex flex-col items-center gap-3 rounded-2xl border-2 p-8 transition-all text-center ${
+                  insuranceType === 'CTPL'
+                    ? 'border-primary bg-primary/5 shadow-md'
+                    : 'border-gray-200 bg-gray-50 hover:border-primary/40 hover:bg-gray-100'
                 }`}
               >
-                <span className="flex flex-col items-center justify-center gap-0.5">
-                  <span className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    CTPL Insurance
-                  </span>
-                  <span className={`text-xs font-normal ${insuranceType === 'CTPL' ? 'text-white/80' : 'text-gray-400'}`}>
-                    Required by law for all vehicles
-                  </span>
+                <div className={`flex h-14 w-14 items-center justify-center rounded-full ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
+                  <Shield className={`h-7 w-7 ${insuranceType === 'CTPL' ? 'text-primary' : 'text-blue-400'}`} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">CTPL Insurance</h3>
+                  <p className="mt-0.5 text-sm text-gray-500">Required by law for all vehicles</p>
+                </div>
+                <span className={`mt-2 rounded-full border px-5 py-1.5 text-sm font-medium transition-all ${
+                  insuranceType === 'CTPL'
+                    ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
+                    : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
+                }`}>
+                  {insuranceType === 'CTPL' ? 'Selected ✓' : 'Select CTPL'}
                 </span>
               </button>
+
               <button
                 onClick={() => selectType('COMPREHENSIVE')}
-                className={`flex-1 rounded-full px-4 py-3 text-sm font-medium transition-all sm:px-6 sm:py-2 ${
-                  insuranceType === 'COMPREHENSIVE' ? 'bg-primary text-white shadow-md' : 'text-foreground hover:text-primary'
+                className={`group relative flex flex-col items-center gap-3 rounded-2xl border-2 p-8 transition-all text-center ${
+                  insuranceType === 'COMPREHENSIVE'
+                    ? 'border-primary bg-primary/5 shadow-md'
+                    : 'border-gray-200 bg-gray-50 hover:border-primary/40 hover:bg-gray-100'
                 }`}
               >
-                <span className="flex flex-col items-center justify-center gap-0.5">
-                  <span className="flex items-center gap-2">
-                    <Car className="h-4 w-4" />
-                    Comprehensive
-                  </span>
-                  <span className={`text-xs font-normal ${insuranceType === 'COMPREHENSIVE' ? 'text-white/80' : 'text-gray-400'}`}>
-                    Complete vehicle protection
-                  </span>
+                <div className={`flex h-14 w-14 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
+                  <Car className={`h-7 w-7 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-green-400'}`} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">Comprehensive</h3>
+                  <p className="mt-0.5 text-sm text-gray-500">Complete vehicle protection</p>
+                </div>
+                <span className={`mt-2 rounded-full border px-5 py-1.5 text-sm font-medium transition-all ${
+                  insuranceType === 'COMPREHENSIVE'
+                    ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
+                    : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
+                }`}>
+                  {insuranceType === 'COMPREHENSIVE' ? 'Selected ✓' : 'Select Comprehensive'}
                 </span>
               </button>
             </div>

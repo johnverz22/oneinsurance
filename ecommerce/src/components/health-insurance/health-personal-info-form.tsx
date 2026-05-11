@@ -72,6 +72,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
   const [frontIdFile, setFrontIdFile] = useState<File | null>(null)
   const [backIdFile, setBackIdFile] = useState<File | null>(null)
   const [selectedProvinceCode, setSelectedProvinceCode] = useState('')
+  const [selectedCityCode, setSelectedCityCode] = useState('')
 
   const set = (field: keyof PersonalInfoData, value: string) => {
     onChange({ ...data, [field]: value })
@@ -323,13 +324,14 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
         <div className="space-y-1.5">
           <Label className="text-primary">State / Province <span className="text-red-500">*</span></Label>
           <Select
-            value={data.province}
+            value={selectedProvinceCode}
             onValueChange={v => {
               const prov = provinces.find(p => p.code === v)
               setSelectedProvinceCode(v)
-              set('province', prov?.province ?? v)
-              set('city', '')
-              set('postCode', '')
+              setSelectedCityCode('')
+              // Single onChange call to avoid stale closure issues
+              onChange({ ...data, province: prov?.province ?? v, city: '', postCode: '' })
+              onErrorsChange({ ...errors, province: '', city: '' })
             }}
           >
             <SelectTrigger id="hpi-province" className={`h-12 w-full ${errors.province ? 'border-destructive' : ''}`}>
@@ -344,12 +346,14 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
         <div className="space-y-1.5">
           <Label className="text-primary">City / Municipality <span className="text-red-500">*</span></Label>
           <Select
-            value={data.city}
+            value={selectedCityCode}
             onValueChange={v => {
               const city = availableCities.find(c => c.cityCode === v)
               const zip = getZipCodeByCityCode(v)
-              set('city', city?.city ?? v)
-              if (zip) set('postCode', zip)
+              setSelectedCityCode(v)
+              // Single onChange call to avoid stale closure issues
+              onChange({ ...data, city: city?.city ?? v, postCode: zip || data.postCode })
+              onErrorsChange({ ...errors, city: '' })
             }}
             disabled={!selectedProvinceCode}
           >
@@ -436,7 +440,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
         >
           {isRequesting ? (
             <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Requesting...</span>
-          ) : 'Next'}
+          ) : 'Request Full Quote'}
         </Button>
       </div>
     </div>
