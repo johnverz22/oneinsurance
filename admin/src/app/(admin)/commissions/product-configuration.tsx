@@ -902,10 +902,10 @@ export default function ProductCommisionConfiguration({
             <div className="space-y-3">
               <p className="text-xl font-bold">Commission Simulator</p>
               <p className="text-base font-light">
-                Preview how commissions will be distributed based on gross premium.
+                Preview how commissions will be distributed based on net premium.
               </p>
               <div className="flex items-center gap-4">
-                <Label className="font-semibold">Gross Premium:</Label>
+                <Label className="font-semibold">Net Premium:</Label>
                 <div className="flex items-center">
                   <Input
                     type="number"
@@ -949,15 +949,15 @@ export default function ProductCommisionConfiguration({
                   agentWhtAmount = agentGrossCommission * (field.values.witholding_tax / 100)
                   agentNetCommission = (agentGrossCommission + agentVatAmount) - agentWhtAmount
                 } else if (field.values.applyGrossVAT && field.values.grossVATRate > 0) {
-                  // APPLY GROSS VAT: 
-                  // 1. grossAfterVatFactor = gross / vatFactor
-                  // 2. VAT = grossAfterVatFactor * vat%
-                  // 3. WHT = grossAfterVatFactor * wht%
-                  // 4. net = gross - WHT
-                  const vatFactor = 1 + (field.values.grossVATRate / 100)
+                  // APPLY GROSS VAT (from diagram):
+                  // 1. Extract VAT: vatAmount = (gross / vatFactor) * vat%
+                  //    vatFactor is stored as e.g. 1.12 (not a percentage), use directly
+                  // 2. WHT on net-of-VAT: whtAmount = (gross - vatAmount) * wht%
+                  // 3. Net = gross - whtAmount
+                  const vatFactor = field.values.grossVATRate  // e.g. 1.12, used directly
                   agentGrossAfterVatFactor = agentGrossCommission / vatFactor
                   agentVatAmount = agentGrossAfterVatFactor * (field.values.vat / 100)
-                  agentWhtAmount = agentGrossAfterVatFactor * (field.values.witholding_tax / 100)
+                  agentWhtAmount = (agentGrossCommission - agentVatAmount) * (field.values.witholding_tax / 100)
                   agentNetCommission = agentGrossCommission - agentWhtAmount
                 } else {
                   // No VAT option selected: net = gross - WHT
@@ -1005,15 +1005,15 @@ export default function ProductCommisionConfiguration({
                   referralWhtAmount = referralGrossCommission * (field.values.witholding_tax / 100)
                   referralNetCommission = (referralGrossCommission + referralVatAmount) - referralWhtAmount
                 } else if (field.values.applyGrossVAT && field.values.grossVATRate > 0) {
-                  // APPLY GROSS VAT: 
-                  // 1. grossAfterVatFactor = gross / vatFactor
-                  // 2. VAT = grossAfterVatFactor * vat%
-                  // 3. WHT = grossAfterVatFactor * wht%
-                  // 4. net = gross - WHT
-                  const vatFactor = 1 + (field.values.grossVATRate / 100)
+                  // APPLY GROSS VAT (from diagram):
+                  // 1. Extract VAT: vatAmount = (gross / vatFactor) * vat%
+                  //    vatFactor is stored as e.g. 1.12 (not a percentage), use directly
+                  // 2. WHT on net-of-VAT: whtAmount = (gross - vatAmount) * wht%
+                  // 3. Net = gross - whtAmount
+                  const vatFactor = field.values.grossVATRate  // e.g. 1.12, used directly
                   referralGrossAfterVatFactor = referralGrossCommission / vatFactor
                   referralVatAmount = referralGrossAfterVatFactor * (field.values.vat / 100)
-                  referralWhtAmount = referralGrossAfterVatFactor * (field.values.witholding_tax / 100)
+                  referralWhtAmount = (referralGrossCommission - referralVatAmount) * (field.values.witholding_tax / 100)
                   referralNetCommission = referralGrossCommission - referralWhtAmount
                 } else {
                   // No VAT option selected: net = gross - WHT
