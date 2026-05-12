@@ -12,27 +12,32 @@ import { toast } from 'sonner'
 import z from 'zod'
 import { getVatOptionFromCheckboxes, getCheckboxesFromVatOption } from '@/utils/vat-options-mapper'
 
-// ─── Design tokens (mirrors first code) ───────────────────────────────────────
+// ─── Design tokens — use CSS variables to match the system exactly ────────────
 const C = {
-  green: '#1D9E75',
-  greenDark: '#0F6E56',
-  greenLight: '#E8F7F2',
-  greenBorder: '#A8DFD0',
+  // Use var(--primary) so it matches the system's exact primary color
+  green: 'var(--primary)',
+  greenDark: 'color-mix(in oklch, var(--primary) 70%, black)',
+  greenLight: 'color-mix(in oklch, var(--primary) 12%, white)',
+  greenBorder: 'color-mix(in oklch, var(--primary) 35%, white)',
+  // Blues
   blue: '#2563EB',
   blueLight: '#EFF6FF',
   blueBorder: '#BFDBFE',
   blueMid: '#1E40AF',
+  // Neutrals
   white: '#FFFFFF',
-  bg: '#F5F6FA',
+  bg: '#F9FAFB',
   border: '#E5E7EB',
   borderLight: '#F3F4F6',
-  text: '#1A1A2E',
+  text: '#111827',
   textMid: '#374151',
   textMuted: '#6B7280',
   textFaint: '#9CA3AF',
+  // Destructive
   red: '#DC2626',
+  // Purple
   purple: '#7C3AED',
-  purpleLight: '#F5F0FC',
+  purpleLight: '#F5F3FF',
   purpleBorder: '#DDD6FE',
 }
 
@@ -120,7 +125,7 @@ function CommCard({
 }) {
   const bg = scheme === 'green' ? C.greenLight : scheme === 'blue' ? C.blueLight : C.purpleLight
   const border = scheme === 'green' ? C.greenBorder : scheme === 'blue' ? C.blueBorder : C.purpleBorder
-  const titleCol = scheme === 'green' ? C.greenDark : scheme === 'blue' ? C.blueMid : C.purple
+  const titleCol = scheme === 'green' ? C.green : scheme === 'blue' ? C.blueMid : C.purple
   return (
     <div style={{ flex: 1, border: `1px solid ${border}`, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ background: bg, padding: '9px 14px', borderBottom: `1px solid ${border}` }}>
@@ -192,8 +197,8 @@ function SimRow({
   sign?: '+' | '-'
   strikethrough?: boolean
 }) {
-  const tagBg = tagScheme === 'green' ? '#D1FAE5' : tagScheme === 'blue' ? '#DBEAFE' : '#EDE9FE'
-  const tagCol = tagScheme === 'green' ? C.greenDark : tagScheme === 'blue' ? C.blueMid : C.purple
+  const tagBg = tagScheme === 'green' ? C.greenLight : tagScheme === 'blue' ? '#DBEAFE' : '#EDE9FE'
+  const tagCol = tagScheme === 'green' ? C.green : tagScheme === 'blue' ? C.blueMid : C.purple
   const valCol = sign === '+' ? C.green : sign === '-' ? C.red : C.textMid
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 0' }}>
@@ -214,7 +219,7 @@ function SimRow({
 
 function SimTotal({ label, value, scheme }: { label: string; value: string; scheme: 'green' | 'blue' }) {
   const bg = scheme === 'green' ? C.greenLight : C.blueLight
-  const col = scheme === 'green' ? C.greenDark : C.blueMid
+  const col = scheme === 'green' ? C.green : C.blueMid
   const border = scheme === 'green' ? C.greenBorder : C.blueBorder
   return (
     <div
