@@ -4,6 +4,7 @@ import { useUpdateCommissionConfiguration } from '@/app/data/mutations/commissio
 import { FieldInfo } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { CommissionConfig, CommissionConfigUpdateRequest } from '@/types/commission'
 import { FieldApi, useForm } from '@tanstack/react-form'
 import React, { useState, useCallback } from 'react'
@@ -68,11 +69,13 @@ function NumInput({
   width?: number
   disabled?: boolean
 }) {
+  // Guard against NaN/undefined/null — always render a valid number
+  const safeValue = isNaN(value) || value == null ? 0 : value
   return (
     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', width }}>
       <input
         type="number"
-        value={value}
+        value={safeValue}
         min={min}
         max={max}
         step={step}
@@ -355,19 +358,19 @@ export default function ProductCommisionConfiguration({ selectedCommissionConfig
 
   const form = useForm({
     defaultValues: {
-      base_commission: Number(selectedCommissionConfig?.base_commission) ?? 30,
-      agent_commission: Number(selectedCommissionConfig?.agent_commission) ?? 15,
-      agent_overrider_commission: Number(selectedCommissionConfig?.agent_overrider_commission || selectedCommissionConfig?.agent_overriders_commission) ?? 10,
-      agent_admin_commission: Number(selectedCommissionConfig?.agent_admin_commission || selectedCommissionConfig?.ifrc_admin) ?? 15,
-      agent_admin_overrider_commission: Number(selectedCommissionConfig?.agent_admin_overrider_commission || selectedCommissionConfig?.ifrc_overrider_commission) ?? 10,
-      referral_commission: Number(selectedCommissionConfig?.referral_commission || selectedCommissionConfig?.ifrc_digitech) ?? 25,
-      referral_overrider_commission: Number(selectedCommissionConfig?.referral_overrider_commission || selectedCommissionConfig?.digitech_referral) ?? 5,
-      referral_admin_commission: Number(selectedCommissionConfig?.referral_admin_commission || selectedCommissionConfig?.digitech_overriders) ?? 10,
-      referral_admin_overrider_commission: Number(selectedCommissionConfig?.referral_admin_overrider_commission || selectedCommissionConfig?.ifrc_admin) ?? 25,
-      vat: Number(selectedCommissionConfig?.vat) ?? 0,
-      witholding_tax: Number(selectedCommissionConfig?.witholding_tax) ?? 0,
+      base_commission: Number(selectedCommissionConfig?.base_commission) || 0,
+      agent_commission: Number(selectedCommissionConfig?.agent_commission) || 0,
+      agent_overrider_commission: Number(selectedCommissionConfig?.agent_overrider_commission || selectedCommissionConfig?.agent_overriders_commission) || 0,
+      agent_admin_commission: Number(selectedCommissionConfig?.agent_admin_commission || selectedCommissionConfig?.ifrc_admin) || 0,
+      agent_admin_overrider_commission: Number(selectedCommissionConfig?.agent_admin_overrider_commission || selectedCommissionConfig?.ifrc_overrider_commission) || 0,
+      referral_commission: Number(selectedCommissionConfig?.referral_commission || selectedCommissionConfig?.ifrc_digitech) || 0,
+      referral_overrider_commission: Number(selectedCommissionConfig?.referral_overrider_commission || selectedCommissionConfig?.digitech_referral) || 0,
+      referral_admin_commission: Number(selectedCommissionConfig?.referral_admin_commission || selectedCommissionConfig?.digitech_overriders) || 0,
+      referral_admin_overrider_commission: Number(selectedCommissionConfig?.referral_admin_overrider_commission || selectedCommissionConfig?.ifrc_admin) || 0,
+      vat: Number(selectedCommissionConfig?.vat) || 0,
+      witholding_tax: Number(selectedCommissionConfig?.witholding_tax) || 0,
       ...getCheckboxesFromVatOption(selectedCommissionConfig?.vatOptions),
-      grossVATRate: Number(selectedCommissionConfig?.gross_vat) ?? 0,
+      grossVATRate: Number(selectedCommissionConfig?.gross_vat) || 0,
       effectivity_date: selectedCommissionConfig?.effectivity_date
         ? selectedCommissionConfig.effectivity_date.split('T')[0]
         : new Date().toISOString().split('T')[0],
@@ -395,19 +398,19 @@ export default function ProductCommisionConfiguration({ selectedCommissionConfig
   React.useEffect(() => {
     if (selectedCommissionConfig) {
       form.reset({
-        base_commission: Number(selectedCommissionConfig.base_commission),
-        agent_commission: Number(selectedCommissionConfig.agent_commission),
-        agent_overrider_commission: Number(selectedCommissionConfig.agent_overrider_commission || selectedCommissionConfig.agent_overriders_commission),
-        agent_admin_commission: Number(selectedCommissionConfig.agent_admin_commission || selectedCommissionConfig.ifrc_admin),
-        agent_admin_overrider_commission: Number(selectedCommissionConfig.agent_admin_overrider_commission || selectedCommissionConfig.ifrc_overrider_commission),
-        referral_commission: Number(selectedCommissionConfig.referral_commission || selectedCommissionConfig.ifrc_digitech),
-        referral_overrider_commission: Number(selectedCommissionConfig.referral_overrider_commission || selectedCommissionConfig.digitech_referral),
-        referral_admin_commission: Number(selectedCommissionConfig.referral_admin_commission || selectedCommissionConfig.digitech_overriders),
-        referral_admin_overrider_commission: Number(selectedCommissionConfig.referral_admin_overrider_commission || selectedCommissionConfig.ifrc_admin),
-        vat: Number(selectedCommissionConfig.vat) ?? 0,
-        witholding_tax: Number(selectedCommissionConfig.witholding_tax) ?? 0,
+        base_commission: Number(selectedCommissionConfig.base_commission) || 0,
+        agent_commission: Number(selectedCommissionConfig.agent_commission) || 0,
+        agent_overrider_commission: Number(selectedCommissionConfig.agent_overrider_commission || selectedCommissionConfig.agent_overriders_commission) || 0,
+        agent_admin_commission: Number(selectedCommissionConfig.agent_admin_commission || selectedCommissionConfig.ifrc_admin) || 0,
+        agent_admin_overrider_commission: Number(selectedCommissionConfig.agent_admin_overrider_commission || selectedCommissionConfig.ifrc_overrider_commission) || 0,
+        referral_commission: Number(selectedCommissionConfig.referral_commission || selectedCommissionConfig.ifrc_digitech) || 0,
+        referral_overrider_commission: Number(selectedCommissionConfig.referral_overrider_commission || selectedCommissionConfig.digitech_referral) || 0,
+        referral_admin_commission: Number(selectedCommissionConfig.referral_admin_commission || selectedCommissionConfig.digitech_overriders) || 0,
+        referral_admin_overrider_commission: Number(selectedCommissionConfig.referral_admin_overrider_commission || selectedCommissionConfig.ifrc_admin) || 0,
+        vat: Number(selectedCommissionConfig.vat) || 0,
+        witholding_tax: Number(selectedCommissionConfig.witholding_tax) || 0,
         ...getCheckboxesFromVatOption(selectedCommissionConfig.vatOptions),
-        grossVATRate: Number(selectedCommissionConfig.gross_vat) ?? 0,
+        grossVATRate: Number(selectedCommissionConfig.gross_vat) || 0,
         effectivity_date: selectedCommissionConfig.effectivity_date
           ? selectedCommissionConfig.effectivity_date.split('T')[0]
           : new Date().toISOString().split('T')[0],
@@ -498,7 +501,7 @@ export default function ProductCommisionConfiguration({ selectedCommissionConfig
                 onClick={() => setActiveTab(t.id)}
                 style={{
                   padding: '8px 18px',
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: activeTab === t.id ? 600 : 400,
                   color: activeTab === t.id ? C.green : C.textMuted,
                   background: 'none',
@@ -507,6 +510,7 @@ export default function ProductCommisionConfiguration({ selectedCommissionConfig
                   cursor: 'pointer',
                   marginBottom: -1,
                   transition: 'all 0.15s',
+                  fontFamily: 'inherit',
                 }}
               >
                 {t.label}
@@ -653,23 +657,12 @@ export default function ProductCommisionConfiguration({ selectedCommissionConfig
 
           {/* Save button */}
           <div style={{ marginTop: 24 }}>
-            <button
+            <Button
               type="submit"
-              style={{
-                padding: '9px 26px',
-                fontSize: 13,
-                fontWeight: 600,
-                background: saved ? C.greenLight : C.green,
-                color: saved ? C.greenDark : '#fff',
-                border: `1px solid ${saved ? C.greenBorder : C.green}`,
-                borderRadius: 8,
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                fontFamily: 'inherit',
-              }}
+              className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
             >
               {saved ? '✓ Configuration Saved' : 'Save Configuration'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
