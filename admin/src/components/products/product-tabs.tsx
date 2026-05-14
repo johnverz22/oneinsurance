@@ -251,8 +251,8 @@ export default function ProductTabs() {
               onClick={() => setActiveTab('lob')}
               className={`relative rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'lob'
-                  ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-10 border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
+                  ? 'z-30 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-10 border-gray-200 bg-white text-gray-500 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               Line of Business
@@ -262,8 +262,8 @@ export default function ProductTabs() {
               onClick={() => setActiveTab('products')}
               className={`relative -ml-[1px] rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'products'
-                  ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
+                  ? 'z-30 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-20 border-gray-200 bg-white text-gray-500 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               Products
@@ -273,8 +273,8 @@ export default function ProductTabs() {
               onClick={() => setActiveTab('agents')}
               className={`relative -ml-[1px] rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'agents'
-                  ? 'z-30 border-gray-200 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
+                  ? 'z-30 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-20 border-gray-200 bg-white text-gray-500 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               Agents

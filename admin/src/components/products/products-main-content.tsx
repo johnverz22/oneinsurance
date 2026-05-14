@@ -1,10 +1,18 @@
 import { useGetProducts } from '@/app/data/queries/products'
-import { ChevronDown, ChevronRight, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../ui/button'
 import { ProductAssignment } from '@/types/products'
 import CreateProductDialog from './create-product-dialog'
 import ProductDetailsDialog from './product-details-dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 interface ProductsMainContentProps {
   productAssignments: ProductAssignment[]
@@ -65,59 +73,60 @@ export default function ProductsMainContent({
         </div>
       </div>
 
-      {/* Cards Grid Container */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((assignment) => (
-            <div
-              key={assignment.product.id}
-              onClick={() => handleProductClick(assignment)}
-              className="flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-5"
-            >
-              <div className="mb-1 flex items-start justify-between gap-2">
-                <h3 className="line-clamp-2 text-base font-bold sm:text-lg">
-                  {assignment.product.name}
-                </h3>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
-                    assignment.product.status.toLowerCase() === 'active'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-orange-100 text-orange-600'
-                  }`}
+      {/* Data Table */}
+      <div className="rounded-xl border bg-white overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold text-gray-700">Product Name</TableHead>
+              <TableHead className="font-semibold text-gray-700">Provider</TableHead>
+              <TableHead className="font-semibold text-gray-700">Line of Business</TableHead>
+              <TableHead className="font-semibold text-gray-700">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((assignment) => (
+                <TableRow
+                  key={assignment.product.id}
+                  onClick={() => handleProductClick(assignment)}
+                  className="cursor-pointer hover:bg-gray-50"
                 >
-                  {assignment.product.status.toUpperCase()}
-                </span>
-              </div>
-
-              <p className="mb-4 truncate text-xs text-gray-600 sm:mb-5 sm:text-sm">
-                {assignment.product.provider.name}
-              </p>
-
-              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
-                <span className="text-muted-foreground text-xs font-semibold whitespace-nowrap sm:text-sm">
-                  Line of Business:
-                </span>
-                {assignment.product.line_of_business ? (
-                  <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                    {assignment.product.line_of_business.name}
-                  </span>
-                ) : (
-                  <span className="text-xs text-gray-400 italic sm:text-sm">
-                    No LOB assigned
-                  </span>
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-gray-500">
-              {searchQuery
-                ? 'No products found matching your search'
-                : 'No products available'}
-            </p>
-          </div>
-        )}
+                  <TableCell className="font-semibold text-gray-900">
+                    {assignment.product.name}
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">
+                    {assignment.product.provider.name}
+                  </TableCell>
+                  <TableCell>
+                    {assignment.product.line_of_business ? (
+                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                        {assignment.product.line_of_business.name}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400 italic">No LOB assigned</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      assignment.product.status.toLowerCase() === 'active'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-orange-100 text-orange-600'
+                    }`}>
+                      {assignment.product.status.toUpperCase()}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="py-12 text-center text-gray-500">
+                  {searchQuery ? 'No products found matching your search' : 'No products available'}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <ProductDetailsDialog
