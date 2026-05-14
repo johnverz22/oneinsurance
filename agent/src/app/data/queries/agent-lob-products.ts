@@ -22,6 +22,28 @@ type LOBProduct = {
     commission_rate: string
     status: string
   }
+  commission_configurations?: Array<{
+    id: number
+    product_id: number
+    base_commission: string
+    agent_commission: string
+    agent_overrider_commission: string
+    agent_admin_commission: string
+    agent_admin_overrider_commission: string
+    referral_commission: string
+    referral_overrider_commission: string
+    referral_admin_commission: string
+    referral_admin_overrider_commission: string
+    vat: string
+    witholding_tax: string
+    gross_vat: string
+    vatOptions: string
+    effectivity_date: string
+    status: string
+    created_at: string
+    updated_at: string
+    deleted_at: string | null
+  }>
   provider?: {
     id: number
     name: string
@@ -81,10 +103,16 @@ export function useGetAgentLOBProducts() {
           return response.data.data.data.map(product => {
             // Extract commission rate from either direct field or nested agent_product
             const commissionRate = product.agent_product?.commission_rate || product.commission_rate || '0'
-            
+
+            // Extract agent commission from commission_configurations (most recent active config)
+            const activeConfig = product.commission_configurations?.find(c => c.status === 'active')
+              ?? product.commission_configurations?.[0]
+            const agentCommission = activeConfig?.agent_commission ?? null
+
             return {
               ...product,
               commission_rate: commissionRate,
+              agentCommission,
               lobName: product.line_of_business?.name || agentLOB.line_of_business?.name,
               lobSlug: product.line_of_business?.slug || agentLOB.line_of_business?.slug,
               providerName: product.provider?.name,

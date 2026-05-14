@@ -12,6 +12,7 @@ export type Referral = BaseType & {
 export type Product = BaseType & {
   code: string
   commissionRate: number
+  agentCommission?: string | null
   name?: string
   providerName?: string
   lobName?: string
