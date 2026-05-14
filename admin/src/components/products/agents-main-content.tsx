@@ -26,6 +26,14 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from '@/components/ui/alert-dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -295,106 +303,90 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
 
       {isSearchMode && (
         <div className="text-muted-foreground mb-4 text-sm">
-          Showing search results for "{searchQuery}" - Found{' '}
+          Showing search results for "{searchQuery}" — Found{' '}
           {agentProductAssignments.length} result(s)
         </div>
       )}
 
-      {/* Agents Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {isDataLoading ? (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-gray-500">{isSearching ? 'Searching...' : 'Loading agents...'}</p>
-          </div>
-        ) : agentProductAssignments.length > 0 ? (
-          agentProductAssignments.map((agentAssignment) => (
-          <div
-            key={agentAssignment.agent.id}
-            onClick={() => handleAgentClick(agentAssignment)}
-            className="flex h-full cursor-pointer flex-col rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-6"
-          >
-            {/* Header: Name + Status */}
-            <div className="mb-1 flex items-start justify-between gap-2">
-              <h3 className="line-clamp-2 text-base font-bold sm:text-lg">
-                {agentAssignment.agent.first_name}{' '}
-                {agentAssignment.agent.middle_name ?? ''}{' '}
-                {agentAssignment.agent.last_name}
-              </h3>
-              <span
-                className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
-                  agentAssignment.agent.status === 'active'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-red-50 text-red-500'
-                }`}
-              >
-                {agentAssignment.agent.status.toUpperCase()}
-              </span>
-            </div>
-
-            {/* Email */}
-            <p className="mb-3 truncate text-xs font-normal text-gray-400 sm:text-sm">
-              {agentAssignment.agent.email}
-            </p>
-
-            {/* Role / Location / Commission Row */}
-            {/* <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-              <span className="font-semibold">
-                {agentAssignment.agent.role}
-              </span>
-              <span className="hidden sm:inline">•</span>
-              <span>{agentAssignment.agent.address}</span>
-              <span className="hidden sm:inline">•</span>
-              <span>
-                Commission: {agentAssignment.products[0]?.commission_rate}%
-              </span>
-            </div> */}
-
-            {/* Assigned Products Section */}
-            <div className="mt-auto flex flex-col items-start gap-2 sm:flex-row sm:gap-3">
-              <span className="text-xs font-medium whitespace-nowrap sm:text-sm">
-                Lines of Business:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {(() => {
-                  const agentLobAssignments =
-                    agentLobs?.data?.data?.filter(
-                      (lob) => lob.agent_id === agentAssignment.agent.id
-                    ) || []
-                  return agentLobAssignments.length > 0 ? (
-                    <>
-                      {agentLobAssignments.slice(0, 2).map((lob) => (
-                        <span
-                          key={lob.id}
-                          className="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-600 sm:px-3"
-                        >
-                          {lob.line_of_business.name}
-                        </span>
-                      ))}
-                      {agentLobAssignments.length > 2 && (
-                        <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 sm:px-3">
-                          +{agentLobAssignments.length - 2} more
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-xs text-gray-400 italic">
-                      No assignments
-                    </span>
-                  )
-                })()}
-              </div>
-            </div>
-          </div>
-        ))
-        ) : (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-gray-500">
-              {searchQuery
-                ? 'No agents found matching your search'
-                : 'No agents available'}
-            </p>
-          </div>
-        )}
+      {/* Agents Data Table */}
+      <div className="rounded-xl border bg-white overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold text-gray-700">Agent</TableHead>
+              <TableHead className="font-semibold text-gray-700">Email</TableHead>
+              <TableHead className="font-semibold text-gray-700">Lines of Business</TableHead>
+              <TableHead className="font-semibold text-gray-700">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isDataLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="py-12 text-center text-gray-500">
+                  {isSearching ? 'Searching...' : 'Loading agents...'}
+                </TableCell>
+              </TableRow>
+            ) : agentProductAssignments.length > 0 ? (
+              agentProductAssignments.map((agentAssignment) => {
+                const agentLobAssignments = agentLobs?.data?.data?.filter(
+                  (lob) => lob.agent_id === agentAssignment.agent.id
+                ) || []
+                return (
+                  <TableRow
+                    key={agentAssignment.agent.id}
+                    onClick={() => handleAgentClick(agentAssignment)}
+                    className="cursor-pointer hover:bg-gray-50"
+                  >
+                    <TableCell className="font-mono text-sm text-gray-600">
+                      AGT{String(agentAssignment.agent.id).padStart(4, '0')}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500">
+                      {agentAssignment.agent.email}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1.5">
+                        {agentLobAssignments.length > 0 ? (
+                          <>
+                            {agentLobAssignments.slice(0, 3).map((lob) => (
+                              <span
+                                key={lob.id}
+                                className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-600"
+                              >
+                                {lob.line_of_business.name}
+                              </span>
+                            ))}
+                            {agentLobAssignments.length > 3 && (
+                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                                +{agentLobAssignments.length - 3} more
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">No assignments</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        agentAssignment.agent.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-50 text-red-500'
+                      }`}>
+                        {agentAssignment.agent.status.toUpperCase()}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="py-12 text-center text-gray-500">
+                  {searchQuery ? 'No agents found matching your search' : 'No agents available'}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Agent Details Dialog */}
