@@ -41,10 +41,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Pencil, Trash2, Search } from 'lucide-react'
-import { StatusBadge } from '@/components/line-of-business/line-of-business-data-table'
+import { Plus, Pencil, Trash2, Search, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -203,7 +210,7 @@ export default function LobMainContent() {
           </div>
           <button
             onClick={handleCreateClick}
-            className="flex w-full items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+            className="flex w-full items-center justify-center rounded-full border border-transparent from-primary to-lilac bg-gradient-to-r px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none sm:w-auto"
           >
             <Plus className="mr-2 h-5 w-5" />
             Add New LOB
@@ -211,59 +218,95 @@ export default function LobMainContent() {
         </div>
       </div>
 
-      {/* Cards Grid Container */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {isLoading ? (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-gray-500">Loading...</p>
-          </div>
-        ) : error ? (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-red-500 text-lg mb-2">Error loading line of business</p>
-            <p className="text-gray-500 text-sm">{error.message || 'Please try refreshing the page'}</p>
-          </div>
-        ) : lineOfBusinessList.length > 0 ? (
-          lineOfBusinessList.map((lob) => (
-            <div
-              key={lob.id}
-              onClick={() => handleRowClick(lob)}
-              className="flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-shadow duration-200 hover:shadow-md sm:rounded-2xl sm:p-5"
-            >
-              <div className="mb-1 flex items-start justify-between gap-2">
-                <h3 className="line-clamp-2 text-base font-bold sm:text-lg">
-                  {lob.name}
-                </h3>
-                <span
-                  className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold sm:px-3 ${
-                    lob.status.toLowerCase() === 'active'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-orange-100 text-orange-600'
-                  }`}
-                >
-                  {lob.status.toUpperCase()}
-                </span>
-              </div>
-
-              <p className="mb-3 line-clamp-2 text-xs text-gray-600 sm:mb-4 sm:text-sm">
-                {lob.description}
-              </p>
-
-              <div className="flex items-center justify-between text-xs sm:text-sm">
-                <span className="text-muted-foreground">
-                  Created: {new Date(lob.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full py-12 text-center">
-            <p className="text-gray-500">
-              {nameSearch
-                ? 'No line of business found matching your search'
-                : 'No line of business available'}
-            </p>
-          </div>
-        )}
+      {/* Data Table */}
+      <div className="rounded-xl border bg-white overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold text-gray-700">Name</TableHead>
+              <TableHead className="font-semibold text-gray-700">Slug</TableHead>
+              <TableHead className="font-semibold text-gray-700 max-w-xs">Description</TableHead>
+              <TableHead className="font-semibold text-gray-700">Status</TableHead>
+              <TableHead className="font-semibold text-gray-700">Created</TableHead>
+              <TableHead className="font-semibold text-gray-700 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="py-12 text-center text-gray-500">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={6} className="py-12 text-center">
+                  <p className="text-red-500 font-medium">Error loading line of business</p>
+                  <p className="text-gray-500 text-sm mt-1">{error.message || 'Please try refreshing the page'}</p>
+                </TableCell>
+              </TableRow>
+            ) : lineOfBusinessList.length > 0 ? (
+              lineOfBusinessList.map((lob) => (
+                <TableRow key={lob.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(lob)}>
+                  <TableCell className="font-semibold text-gray-900">{lob.name}</TableCell>
+                  <TableCell className="text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
+                  <TableCell className="max-w-xs">
+                    <p className="text-sm text-gray-600 line-clamp-2">{lob.description || '—'}</p>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      lob.status.toLowerCase() === 'active'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-orange-100 text-orange-600'
+                    }`}>
+                      {lob.status.toUpperCase()}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-500">
+                    {new Date(lob.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                        onClick={() => handleRowClick(lob)}
+                        title="View details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
+                        onClick={() => handleEditClick(lob)}
+                        title="Edit"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
+                        onClick={() => handleDeleteClick(lob)}
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="py-12 text-center text-gray-500">
+                  {nameSearch ? 'No line of business found matching your search' : 'No line of business available'}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination */}
