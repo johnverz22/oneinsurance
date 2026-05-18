@@ -338,8 +338,8 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                     className="cursor-pointer hover:bg-gray-50"
                   >
                     <TableCell className="font-mono text-sm text-gray-600">
-                      {agentAssignment.agent.agent_code_used
-                        ? agentAssignment.agent.agent_code_used.toUpperCase()
+                      {agentAssignment.agent.settings?.code
+                        ? agentAssignment.agent.settings.code.toUpperCase()
                         : '-'}
                     </TableCell>
                     <TableCell className="text-sm text-gray-500">
@@ -429,8 +429,8 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                     <div>
                       <Label className="text-xs text-gray-500">Agent ID</Label>
                       <div className="text-sm font-medium sm:text-base">
-                        {selectedAgent.agent.agent_code_used
-                          ? selectedAgent.agent.agent_code_used.toUpperCase()
+                        {selectedAgent.agent.settings?.code
+                          ? selectedAgent.agent.settings.code.toUpperCase()
                           : '-'}
                       </div>
                     </div>
