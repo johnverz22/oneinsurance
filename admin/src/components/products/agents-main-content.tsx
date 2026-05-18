@@ -37,7 +37,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Search } from 'lucide-react'
+import { Plus, Trash2, Search, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -317,12 +317,13 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
               <TableHead className="font-semibold text-gray-700">Email</TableHead>
               <TableHead className="font-semibold text-gray-700">Lines of Business</TableHead>
               <TableHead className="font-semibold text-gray-700">Status</TableHead>
+              <TableHead className="font-semibold text-gray-700">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isDataLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={5} className="py-12 text-center text-gray-500">
                   {isSearching ? 'Searching...' : 'Loading agents...'}
                 </TableCell>
               </TableRow>
@@ -334,8 +335,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                 return (
                   <TableRow
                     key={agentAssignment.agent.id}
-                    onClick={() => handleAgentClick(agentAssignment)}
-                    className="cursor-pointer hover:bg-gray-50"
+                    className="hover:bg-gray-50"
                   >
                     <TableCell className="font-mono text-sm text-gray-600">
                       {agentAssignment.agent.settings?.code
@@ -377,12 +377,21 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                         {agentAssignment.agent.status.toUpperCase()}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      <button
+                        onClick={() => handleAgentClick(agentAssignment)}
+                        className="inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                        title="Manage agent"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    </TableCell>
                   </TableRow>
                 )
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={5} className="py-12 text-center text-gray-500">
                   {searchQuery ? 'No agents found matching your search' : 'No agents available'}
                 </TableCell>
               </TableRow>
@@ -545,7 +554,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
           <AlertDialogFooter className="border-t px-4 py-4 sm:px-6">
             <AlertDialogCancel
               onClick={() => setIsDetailsOpen(false)}
-              className="w-full rounded-full bg-green-600 text-white hover:bg-green-700 hover:text-white sm:w-auto"
+              className="w-full rounded-full from-primary to-lilac bg-gradient-to-r text-white hover:opacity-90 hover:text-white sm:w-auto"
             >
               Close
             </AlertDialogCancel>
