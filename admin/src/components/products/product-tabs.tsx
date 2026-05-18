@@ -246,13 +246,13 @@ export default function ProductTabs() {
         {/* Top Navigation & Actions Bar */}
         <div className="mb-0 flex flex-col-reverse justify-between gap-3 sm:gap-4 md:flex-row md:items-end md:gap-0">
           {/* Tabs */}
-          <div className="flex items-end gap-1">
+          <div className="flex items-end">
             <button
               onClick={() => setActiveTab('lob')}
-              className={`relative rounded-t-xl border px-4 py-2.5 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative px-5 py-2.5 text-sm font-semibold transition-colors rounded-t-xl sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-lg ${
                 activeTab === 'lob'
-                  ? 'z-30 border-b-white border-gray-200 bg-white text-gray-900 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-b-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-10 border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300'
+                  ? 'bg-white border border-b-white border-gray-300 text-gray-900 z-20 -mb-px'
+                  : 'bg-white border border-gray-200 text-gray-400 hover:text-gray-600 z-10'
               }`}
             >
               Line of Business
@@ -260,10 +260,10 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('products')}
-              className={`relative rounded-t-xl border px-4 py-2.5 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative px-5 py-2.5 text-sm font-semibold transition-colors rounded-t-xl sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-lg ${
                 activeTab === 'products'
-                  ? 'z-30 border-b-white border-gray-200 bg-white text-gray-900 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-b-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300'
+                  ? 'bg-white border border-b-white border-gray-300 text-gray-900 z-20 -mb-px'
+                  : 'bg-white border border-gray-200 text-gray-400 hover:text-gray-600 z-10'
               }`}
             >
               Products
@@ -271,10 +271,10 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('agents')}
-              className={`relative rounded-t-xl border px-4 py-2.5 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative px-5 py-2.5 text-sm font-semibold transition-colors rounded-t-xl sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-lg ${
                 activeTab === 'agents'
-                  ? 'z-30 border-b-white border-gray-200 bg-white text-gray-900 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-b-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300'
+                  ? 'bg-white border border-b-white border-gray-300 text-gray-900 z-20 -mb-px'
+                  : 'bg-white border border-gray-200 text-gray-400 hover:text-gray-600 z-10'
               }`}
             >
               Agents
@@ -299,7 +299,7 @@ export default function ProductTabs() {
 
         {/* Pagination for Products */}
         {activeTab === 'products' && products?.data && (
-          <div className="mt-4 flex flex-col items-center justify-between gap-3 rounded-b-2xl border border-t-0 bg-white px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:rounded-b-3xl sm:px-6 sm:py-4 dark:bg-gray-900">
+          <div className="mt-4 flex flex-col items-center justify-between gap-3 px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:px-6 sm:py-4">
             <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
               Showing {products.data.data.length} of {products.data.total}{' '}
               products
@@ -332,7 +332,7 @@ export default function ProductTabs() {
                           onClick={() => setProductsPage(pageNum)}
                           className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
                             pageNum === products.data.current_page
-                              ? 'border-green-500 bg-green-500 text-white'
+                              ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
                               : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                           }`}
                         >
@@ -347,7 +347,7 @@ export default function ProductTabs() {
                       onClick={() => setProductsPage(pageNum)}
                       className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
                         pageNum === products.data.current_page
-                          ? 'border-green-500 bg-green-500 text-white'
+                          ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
                           : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                       }`}
                     >
@@ -374,7 +374,7 @@ export default function ProductTabs() {
 
         {/* Pagination for Agents */}
         {activeTab === 'agents' && !isAgentsSearchMode && agentsData?.data && (
-          <div className="mt-4 flex flex-col items-center justify-between gap-3 rounded-b-2xl border border-t-0 bg-white px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:rounded-b-3xl sm:px-6 sm:py-4 dark:bg-gray-900">
+          <div className="mt-4 flex flex-col items-center justify-between gap-3 px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:px-6 sm:py-4">
             <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
               Showing {agentsData.data.data.length} of{' '}
               {agentsData.data.total} agents
@@ -410,7 +410,7 @@ export default function ProductTabs() {
                           onClick={() => setAgentsPage(pageNum)}
                           className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
                             pageNum === agentsData.data.current_page
-                              ? 'border-green-500 bg-green-500 text-white'
+                              ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
                               : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                           }`}
                         >
@@ -425,7 +425,7 @@ export default function ProductTabs() {
                       onClick={() => setAgentsPage(pageNum)}
                       className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
                         pageNum === agentsData.data.current_page
-                          ? 'border-green-500 bg-green-500 text-white'
+                          ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
                           : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
                       }`}
                     >
