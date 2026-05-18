@@ -246,13 +246,13 @@ export default function ProductTabs() {
         {/* Top Navigation & Actions Bar */}
         <div className="mb-0 flex flex-col-reverse justify-between gap-3 sm:gap-4 md:flex-row md:items-end md:gap-0">
           {/* Tabs */}
-          <div className="flex items-end">
+          <div className="flex items-end gap-1">
             <button
               onClick={() => setActiveTab('lob')}
-              className={`relative rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative rounded-t-xl border px-4 py-2.5 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'lob'
-                  ? 'z-30 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-10 border-gray-200 bg-white text-gray-500 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'z-30 border-b-white border-gray-200 bg-white text-gray-900 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-b-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-10 border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300'
               }`}
             >
               Line of Business
@@ -260,10 +260,10 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('products')}
-              className={`relative -ml-[1px] rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative rounded-t-xl border px-4 py-2.5 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'products'
-                  ? 'z-30 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 border-gray-200 bg-white text-gray-500 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'z-30 border-b-white border-gray-200 bg-white text-gray-900 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-b-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-20 border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300'
               }`}
             >
               Products
@@ -271,10 +271,10 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('agents')}
-              className={`relative -ml-[1px] rounded-t-xl border-x border-t px-4 py-2 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
+              className={`relative rounded-t-xl border px-4 py-2.5 text-sm font-semibold transition-all sm:rounded-t-2xl sm:px-6 sm:py-3 sm:text-base md:px-8 md:text-lg ${
                 activeTab === 'agents'
-                  ? 'z-30 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
-                  : 'z-20 border-gray-200 bg-white text-gray-500 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'z-30 border-b-white border-gray-200 bg-white text-gray-900 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-b-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-white'
+                  : 'z-20 border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-300'
               }`}
             >
               Agents
