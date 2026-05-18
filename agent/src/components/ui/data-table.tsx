@@ -438,76 +438,70 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
   return (
     <div className="w-full space-y-6 py-2.5">
-      <div className="border-muted-foreground/30 flex flex-col justify-between gap-4 border-b pt-2.5 pb-4 lg:flex-row lg:items-center">
-        <div className="space-y-1.5">
-          <h3 className="text-base font-bold md:text-lg lg:text-xl">
-            {header}
-          </h3>
-          <p className="text-muted-foreground font-light">{description}</p>
-        </div>
+      {/* ── Header bar: title left, search + actions right ── */}
+      <div className="rounded-xl border bg-white shadow-sm">
+        <div className="flex flex-col justify-between gap-4 px-5 py-4 lg:flex-row lg:items-center">
+          <div className="space-y-0.5">
+            <h3 className="text-lg font-bold text-gray-900">
+              {header}
+            </h3>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
 
-        <div className="flex items-center gap-4">
-          {searchKey && (
-            <div className="relative flex-1 lg:w-md">
-              {!isServerSide && (
-                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              )}
-              <Input
-                placeholder={filterPlaceholder}
-                value={isServerSide ? pendingSearch : globalFilter}
-                onChange={(e) => handleSearchInputChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && isServerSide) {
-                    handleSearchApply()
-                  }
-                }}
-                className={cn('pl-4', { 'pl-9': !isServerSide })}
-              />
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {searchKey && (
+              <div className="relative flex-1 lg:w-80">
+                {!isServerSide && (
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                )}
+                <Input
+                  placeholder={filterPlaceholder}
+                  value={isServerSide ? pendingSearch : globalFilter}
+                  onChange={(e) => handleSearchInputChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && isServerSide) {
+                      handleSearchApply()
+                    }
+                  }}
+                  className={cn('rounded-full h-10', { 'pl-9': !isServerSide })}
+                />
+              </div>
+            )}
 
-          {searchKey && isServerSide && (
-            <div className="flex gap-1.5">
-              <Button
-                onClick={handleSearchApply}
-                disabled={isLoading}
-                size="lg"
-                className="h-11 w-11"
-              >
-                <Search />
-              </Button>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.8, x: -10 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-              >
+            {searchKey && isServerSide && (
+              <div className="flex gap-1.5">
+                <Button
+                  onClick={handleSearchApply}
+                  disabled={isLoading}
+                  size="sm"
+                  className="h-10 w-10 rounded-full from-primary to-lilac bg-gradient-to-r text-white"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
                 <Button
                   onClick={handleSearchClear}
                   disabled={isLoading || pendingSearch === ''}
                   variant="outline"
-                  size="lg"
-                  className="h-11 w-11"
+                  size="sm"
+                  className="h-10 w-10 rounded-full"
                 >
                   <X className="h-4 w-4" />
                 </Button>
-              </motion.div>
-            </div>
-          )}
+              </div>
+            )}
 
-          {enableColumnVisibility && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-full">
-                  Columns <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    return (
+            {enableColumnVisibility && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="rounded-full">
+                    Columns <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => (
                       <DropdownMenuCheckboxItem
                         key={column.id}
                         className="capitalize"
@@ -518,72 +512,76 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                       >
                         {column.id}
                       </DropdownMenuCheckboxItem>
-                    )
-                  })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {enableExport && (
-            <Button
-              onClick={() => exportToCSV(data)}
-              className="gap-2 rounded-full"
-            >
-              <ArrowUpRight />
-              Export
-            </Button>
-          )}
-
-          {customAction}
-        </div>
-      </div>
-
-      <div className="bg-background rounded-ld">
-        {isLoading ? (
-          <div className="grid gap-2 md:grid-cols-2">
-            {[1, 2].map((id) => (
-              <Card key={id}>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="bg-primary h-6 w-[50%] rounded-full" />
-                    <Skeleton className="bg-primary h-6 w-[10%] rounded-full" />
-                  </div>
-                  <Skeleton className="bg-primary mt-4 h-4 w-[30%] rounded-full" />
-                  <Skeleton className="bg-primary mt-4 h-6 w-[40%] rounded-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : props.renderMode === 'list' ? (
-          <>
-            {total > 0 ? (
-              <div
-                className={cn(
-                  'grid gap-3',
-                  `lg:grid-cols-${props.numColumns}`,
-                  props.containerClassName
-                )}
-              >
-                {table.getRowModel().rows.map((row) => {
-                  return <div key={row.id}>{props.contentRenderer(row)}</div>
-                })}
-              </div>
-            ) : (
-              <div className="flex h-40 w-full items-center justify-center">
-                No results found.
-              </div>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-          </>
-        ) : (
-          <Table>
-            <TableHeader className="bg-muted-foreground/5 border-t">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
+
+            {enableExport && (
+              <Button
+                onClick={() => exportToCSV(data)}
+                className="gap-2 rounded-full"
+              >
+                <ArrowUpRight />
+                Export
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Custom action (filters etc.) */}
+        {customAction && (
+          <div className="border-t px-5 py-4">
+            {customAction}
+          </div>
+        )}
+
+        {/* ── Table ── */}
+        <div className="overflow-hidden rounded-b-xl">
+          {isLoading ? (
+            <div className="grid gap-2 p-4 md:grid-cols-2">
+              {[1, 2].map((id) => (
+                <Card key={id}>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="bg-primary h-6 w-[50%] rounded-full" />
+                      <Skeleton className="bg-primary h-6 w-[10%] rounded-full" />
+                    </div>
+                    <Skeleton className="bg-primary mt-4 h-4 w-[30%] rounded-full" />
+                    <Skeleton className="bg-primary mt-4 h-6 w-[40%] rounded-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : props.renderMode === 'list' ? (
+            <>
+              {total > 0 ? (
+                <div
+                  className={cn(
+                    'grid gap-3 p-4',
+                    `lg:grid-cols-${props.numColumns}`,
+                    props.containerClassName
+                  )}
+                >
+                  {table.getRowModel().rows.map((row) => (
+                    <div key={row.id}>{props.contentRenderer(row)}</div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-40 w-full items-center justify-center text-muted-foreground">
+                  No results found.
+                </div>
+              )}
+            </>
+          ) : (
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+                    {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className="py-4 text-base font-bold"
+                        className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600"
                       >
                         {header.isPlaceholder
                           ? null
@@ -592,138 +590,147 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                               header.getContext()
                             )}
                       </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody className="border-b">
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row, index) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    onClick={() => onRowClick?.(row.original)}
-                    className={cn(
-                      'bg-background h-16',
-                      { 'cursor-pointer': onRowClick },
-                      {
-                        'bg-gray-100 dark:bg-gray-900':
-                          alternateColors && index % 2 === 1,
-                      }
-                    )}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
                     ))}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={tableColumns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between px-2">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {enableRowSelection && (
-            <>
-              {table.getFilteredSelectedRowModel().rows.length} of{' '}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row, index) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                      onClick={() => onRowClick?.(row.original)}
+                      className={cn(
+                        'border-b border-gray-100 transition-colors',
+                        { 'cursor-pointer hover:bg-primary/5': onRowClick },
+                        {
+                          'bg-gray-50/60': alternateColors && index % 2 === 1,
+                          'bg-white': !alternateColors || index % 2 === 0,
+                        }
+                      )}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="py-3.5">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={tableColumns.length}
+                      className="h-24 text-center text-muted-foreground"
+                    >
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           )}
         </div>
 
-        <div className="flex w-full flex-col items-center justify-between gap-6 md:flex-row">
-          {total > 0 && (
-            <div className="text-muted-foreground text-sm">
-              Showing {firstIndex}-{lastIndex} of {total}
+        {/* ── Pagination ── */}
+        {total > 0 && (
+          <div className="flex flex-col items-center justify-between gap-4 border-t px-5 py-3 md:flex-row">
+            <div className="text-sm text-muted-foreground">
+              Showing {firstIndex}–{lastIndex} of {total} results
             </div>
-          )}
 
-          {total > 0 && (
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-medium">Rows per page</p>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value))
-                }}
-              >
-                <SelectTrigger className="h-8 w-[70px] !rounded-md">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                    className="!rounded-md"
-                  />
-                </SelectTrigger>
-                <SelectContent side="top" className="rounded">
-                  {paginationOptions.map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-gray-600">Rows</p>
+                <Select
+                  value={`${table.getState().pagination.pageSize}`}
+                  onValueChange={(value) => table.setPageSize(Number(value))}
+                >
+                  <SelectTrigger className="h-8 w-[70px] rounded-md text-sm">
+                    <SelectValue placeholder={table.getState().pagination.pageSize} />
+                  </SelectTrigger>
+                  <SelectContent side="top">
+                    {paginationOptions.map((ps) => (
+                      <SelectItem key={ps} value={`${ps}`}>{ps}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 !rounded-md p-0"
+                  className="h-8 w-8 rounded-md p-0"
+                  onClick={() => table.setPageIndex(0)}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  {'<<'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 rounded-md p-0"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
                 >
-                  <ChevronLeft />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
 
-                <div className="flex items-center gap-1">
-                  {Array.from(
-                    { length: table.getPageCount() },
-                    (_, i) => i
-                  ).map((pageIdx) => (
+                {Array.from({ length: Math.min(table.getPageCount(), 7) }, (_, i) => {
+                  const pageCount = table.getPageCount()
+                  const current = table.getState().pagination.pageIndex
+                  let pageIdx: number
+                  if (pageCount <= 7) {
+                    pageIdx = i
+                  } else if (current < 4) {
+                    pageIdx = i < 5 ? i : i === 5 ? -1 : pageCount - 1
+                  } else if (current > pageCount - 5) {
+                    pageIdx = i === 0 ? 0 : i === 1 ? -1 : pageCount - 7 + i
+                  } else {
+                    pageIdx = i === 0 ? 0 : i === 1 ? -1 : i === 5 ? -1 : i === 6 ? pageCount - 1 : current - 2 + (i - 2)
+                  }
+                  if (pageIdx === -1) return <span key={i} className="px-1 text-gray-400">…</span>
+                  return (
                     <Button
                       key={pageIdx}
-                      variant={
-                        table.getState().pagination.pageIndex === pageIdx
-                          ? 'default'
-                          : 'outline'
-                      }
+                      variant={table.getState().pagination.pageIndex === pageIdx ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => table.setPageIndex(pageIdx)}
-                      className="h-8 w-8 !rounded-md p-0"
+                      className={cn('h-8 w-8 rounded-md p-0 text-sm', {
+                        'from-primary to-lilac bg-gradient-to-r text-white border-transparent': table.getState().pagination.pageIndex === pageIdx
+                      })}
                     >
                       {pageIdx + 1}
                     </Button>
-                  ))}
-                </div>
+                  )
+                })}
 
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 !rounded-md p-0"
+                  className="h-8 w-8 rounded-md p-0"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
                 >
-                  <ChevronRight />
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 rounded-md p-0"
+                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                  disabled={!table.getCanNextPage()}
+                >
+                  {'>>'}
                 </Button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )
