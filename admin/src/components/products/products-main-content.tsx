@@ -100,7 +100,7 @@ export default function ProductsMainContent({
                   </TableCell>
                   <TableCell>
                     {assignment.product.line_of_business ? (
-                      <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                      <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
                         {assignment.product.line_of_business.name}
                       </span>
                     ) : (

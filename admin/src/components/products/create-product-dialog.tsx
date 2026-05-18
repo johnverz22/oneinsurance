@@ -179,7 +179,7 @@ export default function CreateProductDialog({
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <button className="flex w-full items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto">
+        <button className="flex w-full items-center justify-center rounded-full border border-transparent from-primary to-lilac bg-gradient-to-r px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none sm:w-auto">
           <Plus className="mr-2 h-5 w-5" />
           Add New Product
         </button>

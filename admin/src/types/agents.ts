@@ -28,6 +28,7 @@ export const AgentSchema = z.object({
   is_super_admin: z.number().optional(),
   birth_date: z.string().nullable().optional(),
   agent_code: z.string().nullable().optional(),
+  agent_code_used: z.string().nullable().optional(),
   code: z.string().nullable().optional(),
   profile_photo_url: z.string().nullable().optional(),
   referral_code: z.string().nullable().optional(),
