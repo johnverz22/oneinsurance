@@ -313,7 +313,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold text-gray-700">Agent</TableHead>
+              <TableHead className="font-semibold text-gray-700">Agent Code</TableHead>
               <TableHead className="font-semibold text-gray-700">Email</TableHead>
               <TableHead className="font-semibold text-gray-700">Lines of Business</TableHead>
               <TableHead className="font-semibold text-gray-700">Status</TableHead>
