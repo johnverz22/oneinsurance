@@ -338,7 +338,9 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                     className="cursor-pointer hover:bg-gray-50"
                   >
                     <TableCell className="font-mono text-sm text-gray-600">
-                      AGT{String(agentAssignment.agent.id).padStart(4, '0')}
+                      {agentAssignment.agent.agent_code_used
+                        ? agentAssignment.agent.agent_code_used.toUpperCase()
+                        : '-'}
                     </TableCell>
                     <TableCell className="text-sm text-gray-500">
                       {agentAssignment.agent.email}
@@ -350,7 +352,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                             {agentLobAssignments.slice(0, 3).map((lob) => (
                               <span
                                 key={lob.id}
-                                className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-600"
+                                className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700"
                               >
                                 {lob.line_of_business.name}
                               </span>
@@ -427,7 +429,9 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                     <div>
                       <Label className="text-xs text-gray-500">Agent ID</Label>
                       <div className="text-sm font-medium sm:text-base">
-                        AGT{String(selectedAgent.agent.id).padStart(3, '0')}
+                        {selectedAgent.agent.agent_code_used
+                          ? selectedAgent.agent.agent_code_used.toUpperCase()
+                          : '-'}
                       </div>
                     </div>
                     <div>
