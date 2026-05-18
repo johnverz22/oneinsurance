@@ -46,7 +46,7 @@ export default function ProductsMainContent({
   })
 
   return (
-    <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-4 shadow-sm sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
+    <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-4 sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
       {/* Section Header */}
       <div className="mb-6 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-4 md:flex-row md:items-start">
         <div>
