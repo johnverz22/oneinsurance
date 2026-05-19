@@ -244,15 +244,15 @@ export default function ProductTabs() {
     <div className="mt-2 min-h-screen sm:mt-4">
       <div>
         {/* Top Navigation & Actions Bar */}
-        <div className="mb-0 flex flex-col-reverse justify-between gap-3 sm:gap-4 md:flex-row md:items-end md:gap-0">
+        <div className="mb-6 flex flex-col-reverse justify-between gap-3 sm:gap-4 md:flex-row md:items-center md:gap-0">
           {/* Tabs */}
-          <div className="flex items-end">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('lob')}
-              className={`relative px-5 py-2.5 text-sm font-semibold transition-colors rounded-t-xl sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-lg ${
+              className={`px-4 py-1.5 text-sm font-semibold rounded-full border transition-colors ${
                 activeTab === 'lob'
-                  ? 'bg-white border border-b-white border-gray-300 text-gray-900 z-20 -mb-px'
-                  : 'bg-white border border-gray-200 text-gray-400 hover:text-gray-600 z-10'
+                  ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
+                  : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
               }`}
             >
               Line of Business
@@ -260,10 +260,10 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('products')}
-              className={`relative px-5 py-2.5 text-sm font-semibold transition-colors rounded-t-xl sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-lg ${
+              className={`px-4 py-1.5 text-sm font-semibold rounded-full border transition-colors ${
                 activeTab === 'products'
-                  ? 'bg-white border border-b-white border-gray-300 text-gray-900 z-20 -mb-px'
-                  : 'bg-white border border-gray-200 text-gray-400 hover:text-gray-600 z-10'
+                  ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
+                  : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
               }`}
             >
               Products
@@ -271,10 +271,10 @@ export default function ProductTabs() {
 
             <button
               onClick={() => setActiveTab('agents')}
-              className={`relative px-5 py-2.5 text-sm font-semibold transition-colors rounded-t-xl sm:px-7 sm:py-3 sm:text-base md:px-9 md:text-lg ${
+              className={`px-4 py-1.5 text-sm font-semibold rounded-full border transition-colors ${
                 activeTab === 'agents'
-                  ? 'bg-white border border-b-white border-gray-300 text-gray-900 z-20 -mb-px'
-                  : 'bg-white border border-gray-200 text-gray-400 hover:text-gray-600 z-10'
+                  ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
+                  : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
               }`}
             >
               Agents
