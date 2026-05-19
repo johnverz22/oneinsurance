@@ -107,7 +107,8 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
   
   // Determine which data to display
   const displayData = isSearchMode ? searchResults : agentsData
-  const isDataLoading = isSearchMode ? isSearching : isFetching || agentsLoading
+  // Only show loading spinner when there's no data yet (not on background refetches)
+  const isDataLoading = isSearchMode ? isSearching : agentsLoading && !agentsData
   
 
   const { data: agentLobs, refetch: refetchAgentLobs } = useGetAllAgentLineOfBusiness({
@@ -276,26 +277,26 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
   }
 
   return (
-    <div className="relative z-10 -mt-[1px] min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-4 sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-[600px]">
-      <div className="mb-6 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-4 md:flex-row md:items-start">
-        <div>
-          <h2 className="text-lg font-bold sm:text-xl">Agents & Teams</h2>
-          <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-            Manage product assignments across your agents and teams to
-            streamline operations.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative w-full sm:w-64 md:w-80">
+    <div className="relative z-10 min-h-screen">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Agents & Teams</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Manage product assignments across your agents and teams to
+              streamline operations.
+            </p>
+          </div>
+          <div className="relative w-full sm:w-56">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
+              <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
               type="text"
               placeholder="Search agents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
+              className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none"
             />
           </div>
         </div>
@@ -309,18 +310,18 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
       )}
 
       {/* Agents Data Table */}
-      <div className="rounded-xl border bg-white overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold text-gray-700">Agent Code</TableHead>
-              <TableHead className="font-semibold text-gray-700">Email</TableHead>
-              <TableHead className="font-semibold text-gray-700">Lines of Business</TableHead>
-              <TableHead className="font-semibold text-gray-700">Status</TableHead>
-              <TableHead className="font-semibold text-gray-700">Actions</TableHead>
+            <TableRow className="bg-slate-50 border-b border-slate-200">
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Agent Code</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Email</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Lines of Business</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Status</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500 text-right w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="divide-y divide-slate-100">
             {isDataLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-12 text-center text-gray-500">
@@ -335,17 +336,17 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                 return (
                   <TableRow
                     key={agentAssignment.agent.id}
-                    className="hover:bg-gray-50"
+                    className="hover:bg-slate-50/50 transition-colors"
                   >
-                    <TableCell className="font-mono text-sm text-gray-600">
+                    <TableCell className="px-6 py-4 font-mono font-medium text-slate-900">
                       {agentAssignment.agent.settings?.code
                         ? agentAssignment.agent.settings.code.toUpperCase()
                         : '-'}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                    <TableCell className="px-6 py-4 text-sm text-gray-600">
                       {agentAssignment.agent.email}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-6 py-4">
                       <div className="flex flex-wrap gap-1.5">
                         {agentLobAssignments.length > 0 ? (
                           <>
@@ -368,7 +369,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         agentAssignment.agent.status === 'active'
                           ? 'bg-green-100 text-green-700'
@@ -377,10 +378,10 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                         {agentAssignment.agent.status.toUpperCase()}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleAgentClick(agentAssignment)}
-                        className="inline-flex items-center justify-center rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
                         title="Manage agent"
                       >
                         <Pencil className="h-4 w-4" />

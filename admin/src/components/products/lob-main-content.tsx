@@ -185,53 +185,55 @@ export default function LobMainContent() {
   }
 
   return (
-    <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-t-0 p-4 sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
+    <div className="relative z-10 min-h-screen">
       {/* Section Header */}
-      <div className="mb-6 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-4 md:flex-row md:items-start">
-        <div>
-          <h2 className="text-lg font-bold sm:text-xl">Line of Business</h2>
-          <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-            Manage and organize all lines of business for easy assignment and
-            monitoring.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative w-full sm:w-64 md:w-80">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search line of business..."
-              value={nameSearch}
-              onChange={(e) => setNameSearch(e.target.value)}
-              className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
-            />
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Line of Business</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Manage and organize all lines of business for easy assignment and
+              monitoring.
+            </p>
           </div>
-          <button
-            onClick={handleCreateClick}
-            className="flex w-full items-center justify-center rounded-full border border-transparent from-primary to-lilac bg-gradient-to-r px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none sm:w-auto"
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Add New LOB
-          </button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-56">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search line of business..."
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none"
+              />
+            </div>
+            <button
+              onClick={handleCreateClick}
+              className="flex items-center justify-center rounded-full border border-transparent from-primary to-lilac bg-gradient-to-r px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none whitespace-nowrap"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add New LOB
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Data Table */}
-      <div className="rounded-xl border bg-white overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold text-gray-700">Name</TableHead>
-              <TableHead className="font-semibold text-gray-700">Slug</TableHead>
-              <TableHead className="font-semibold text-gray-700 max-w-xs">Description</TableHead>
-              <TableHead className="font-semibold text-gray-700">Status</TableHead>
-              <TableHead className="font-semibold text-gray-700">Created</TableHead>
-              <TableHead className="font-semibold text-gray-700 text-right">Actions</TableHead>
+            <TableRow className="bg-slate-50 border-b border-slate-200">
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Name</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Slug</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500 max-w-xs">Description</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Status</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500">Created</TableHead>
+              <TableHead className="px-6 py-4 font-medium text-slate-500 text-right w-28">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="divide-y divide-slate-100">
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-12 text-center text-gray-500">
@@ -247,13 +249,13 @@ export default function LobMainContent() {
               </TableRow>
             ) : lineOfBusinessList.length > 0 ? (
               lineOfBusinessList.map((lob) => (
-                <TableRow key={lob.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleRowClick(lob)}>
-                  <TableCell className="font-semibold text-gray-900">{lob.name}</TableCell>
-                  <TableCell className="text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
-                  <TableCell className="max-w-xs">
+                <TableRow key={lob.id} className="hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => handleRowClick(lob)}>
+                  <TableCell className="px-6 py-4 font-semibold text-slate-900">{lob.name}</TableCell>
+                  <TableCell className="px-6 py-4 text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
+                  <TableCell className="px-6 py-4 max-w-xs">
                     <p className="text-sm text-gray-600 line-clamp-2">{lob.description || '—'}</p>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-6 py-4">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       lob.status.toLowerCase() === 'active'
                         ? 'bg-green-100 text-green-700'
@@ -262,38 +264,32 @@ export default function LobMainContent() {
                       {lob.status.toUpperCase()}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-500">
+                  <TableCell className="px-6 py-4 text-sm text-gray-500">
                     {new Date(lob.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                      <button
+                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-primary hover:bg-green-50"
                         onClick={() => handleRowClick(lob)}
                         title="View details"
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
+                      </button>
+                      <button
+                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
                         onClick={() => handleEditClick(lob)}
                         title="Edit"
                       >
                         <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-red-600"
+                      </button>
+                      <button
+                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-red-600 hover:bg-red-50"
                         onClick={() => handleDeleteClick(lob)}
                         title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>
