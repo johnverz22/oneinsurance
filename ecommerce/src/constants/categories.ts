@@ -1,5 +1,6 @@
 import { Category } from '@/types/category'
 import { Activity, Bed, Plane, ShieldPlus } from 'lucide-react'
+// Note: Activity, Bed, ShieldPlus used in ALL_CATEGORIES below
 
 export const CATEGORIES = [
   {
@@ -17,8 +18,8 @@ during these uncertain times.`,
   {
     id: 'health',
     title: 'Health Insurance',
-    link: '/products/health-insurance',
-    checkoutLink: '/products/health-insurance',
+    link: '/coming-soon',
+    checkoutLink: '/coming-soon',
     description: `Get reliable health insurance that covers major illnesses, medical emergencies, and essential care—so you're protected when it matters most.`,
     overview: 'Your Health, Our Priority',
     icon: Activity,
@@ -26,8 +27,8 @@ during these uncertain times.`,
   {
     id: 'ctgl',
     title: 'Comprehensive Third-Party Liability Insurance',
-    link: '/products/motor-insurance',
-    checkoutLink: '/products/motor-insurance',
+    link: '/coming-soon',
+    checkoutLink: '/coming-soon',
     description: `Get comprehensive CTPL insurance that protects you from third-party liabilities and keeps you compliant with Philippine law.`,
     overview: 'Drive with Confidence, Stay Protected',
     icon: Plane,
