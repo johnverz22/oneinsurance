@@ -135,7 +135,7 @@ export const TabNavigation = ({ tabs }: { tabs: Tab[] }) => {
 
             <span
               className={cn('relative block font-medium', {
-                'text-blue-600': pathname === tab.value,
+                'text-[#B8960C]': pathname === tab.value,
               })}
             >
               {tab.label}
