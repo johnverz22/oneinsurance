@@ -51,3 +51,25 @@ export function useGetCompletedTransactions(page: number = 1, perPage: number = 
     enabled: !!accessToken,
   })
 }
+
+export function useGetAllCompletedTransactions() {
+  const { accessToken } = useAgentAuthStore()
+
+  return useQuery({
+    queryKey: ['allCompletedTransactions'],
+    queryFn: async () => {
+      const response = await axios.get<TransactionsResponse>(
+        `/api/transactions/completed?page=1&per_page=9999`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      )
+
+      return response.data
+    },
+    enabled: !!accessToken,
+    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+  })
+}
