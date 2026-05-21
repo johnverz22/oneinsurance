@@ -22,7 +22,7 @@ import { useGetAgentStatistics } from '@/app/data/queries/statistics'
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 const STAT_COLORS = [
   { bar: 'bg-primary', icon: 'text-primary bg-primary/10' },
-  { bar: 'bg-blue-500', icon: 'text-blue-600 bg-blue-50' },
+  { bar: 'bg-[#B8960C]', icon: 'text-[#B8960C] bg-[#B8960C]/10' },
   { bar: 'bg-amber-500', icon: 'text-amber-600 bg-amber-50' },
   { bar: 'bg-violet-500', icon: 'text-violet-600 bg-violet-50' },
 ]

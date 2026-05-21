@@ -1,13 +1,43 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { DataTable } from '@/components/ui/data-table'
 import { PaymentHistory } from '@/types/agent/payments'
-import {
-  usePaymentsHistory,
-  usePaymentSummary,
-} from '@/app/data/queries/payments'
+import { usePaymentsHistory, usePaymentSummary } from '@/app/data/queries/payments'
+import { cn } from '@/lib/utils'
+import { ShoppingCart, DollarSign, TrendingUp, Receipt, Percent } from 'lucide-react'
+
+// ─── Stat Card (same style as My Sales / Policy) ─────────────────────────────
+const STAT_COLORS = [
+  { bar: 'bg-[#B8960C]', icon: 'text-[#B8960C] bg-[#B8960C]/10' },
+  { bar: 'bg-primary',   icon: 'text-primary bg-primary/10' },
+  { bar: 'bg-emerald-500', icon: 'text-emerald-600 bg-emerald-50' },
+  { bar: 'bg-amber-500', icon: 'text-amber-600 bg-amber-50' },
+  { bar: 'bg-violet-500', icon: 'text-violet-600 bg-violet-50' },
+]
+
+const StatCard = ({
+  title, value, subtitle, icon: Icon, colorIdx,
+}: {
+  title: string; value: string; subtitle?: string; icon: React.ElementType; colorIdx: number
+}) => {
+  const c = STAT_COLORS[colorIdx]
+  return (
+    <Card className="overflow-hidden border shadow-sm">
+      <div className={cn('h-1.5 w-full', c.bar)} />
+      <CardContent className="p-4">
+        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center mb-3', c.icon)}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{title}</p>
+        <p className="text-xl font-bold text-foreground">{value}</p>
+        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+      </CardContent>
+    </Card>
+  )
+}
 
 const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
   {
@@ -230,12 +260,9 @@ const PaymentsPage = () => {
     <div className="relative mx-auto space-y-6 overflow-hidden">
       {/* Summary Cards */}
       {isPaymentSummaryLoading ? (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
-            </Card>
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
           ))}
         </div>
       ) : paymentSummaryError ? (
@@ -244,37 +271,12 @@ const PaymentsPage = () => {
           <p className="text-sm text-muted-foreground">{paymentSummaryError.message}</p>
         </div>
       ) : isPaymentSummaryFetched && paymentSummary ? (
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-5">
-          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Cases</h4>
-            <p className="text-sm font-semibold text-blue-500 lg:text-base">
-              {paymentSummary.total_cases || '0'}
-            </p>
-          </Card>
-          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">Sales</h4>
-            <p className="text-sm font-semibold text-green-500 lg:text-base">
-              ₱{paymentSummary.total_net_premium || '0.00'}
-            </p>
-          </Card>
-          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">My Commissions</h4>
-            <p className="text-sm font-semibold lg:text-base">
-              ₱{paymentSummary.total_net_commission || '0.00'}
-            </p>
-          </Card>
-          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">VAT</h4>
-            <p className="text-sm font-semibold text-orange-500 lg:text-base">
-              ₱{paymentSummary.total_vat_amount || '0.00'}
-            </p>
-          </Card>
-          <Card className="flex flex-col items-center gap-1.5 rounded-3xl px-6 py-2.5 text-center shadow-2xs lg:px-12 lg:py-5">
-            <h4 className="font-bold">WHT</h4>
-            <p className="text-muted-foreground text-sm font-semibold lg:text-base">
-              ₱{paymentSummary.total_withholding_tax || '0.00'}
-            </p>
-          </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard title="Cases" value={String(paymentSummary.total_cases || '0')} subtitle="Total transactions" icon={ShoppingCart} colorIdx={0} />
+          <StatCard title="Sales" value={`₱${paymentSummary.total_net_premium || '0.00'}`} subtitle="Net premium total" icon={DollarSign} colorIdx={1} />
+          <StatCard title="My Commissions" value={`₱${paymentSummary.total_net_commission || '0.00'}`} subtitle="Net commission earned" icon={TrendingUp} colorIdx={2} />
+          <StatCard title="VAT" value={`₱${paymentSummary.total_vat_amount || '0.00'}`} subtitle="Value added tax" icon={Receipt} colorIdx={3} />
+          <StatCard title="WHT" value={`₱${paymentSummary.total_withholding_tax || '0.00'}`} subtitle="Withholding tax" icon={Percent} colorIdx={4} />
         </div>
       ) : null}
 
