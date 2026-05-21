@@ -538,7 +538,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
         </div>
       </div>
 
-      <div className="bg-background rounded-ld">
+      <div className="rounded-md border overflow-hidden">
         {isLoading ? (
           <div className="grid gap-2 md:grid-cols-2">
             {[1, 2].map((id) => (
@@ -576,14 +576,14 @@ export function DataTable<TData extends Record<string, any>, TValue>({
           </>
         ) : (
           <Table>
-            <TableHeader className="bg-muted-foreground/5 border-t">
+            <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
                   {headerGroup.headers.map((header) => {
                     return (
                       <TableHead
                         key={header.id}
-                        className="py-4 text-base font-bold"
+                        className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600"
                       >
                         {header.isPlaceholder
                           ? null
@@ -605,11 +605,11 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                     data-state={row.getIsSelected() && 'selected'}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
-                      'bg-background h-16',
+                      'h-16',
                       { 'cursor-pointer': onRowClick },
                       {
-                        'bg-gray-100 dark:bg-gray-900':
-                          alternateColors && index % 2 === 1,
+                        'bg-white': !alternateColors || index % 2 === 0,
+                        'bg-gray-100 dark:bg-gray-900': alternateColors && index % 2 === 1,
                       }
                     )}
                   >
@@ -638,93 +638,101 @@ export function DataTable<TData extends Record<string, any>, TValue>({
         )}
       </div>
 
-      <div className="flex items-center justify-between px-2">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {enableRowSelection && (
-            <>
-              {table.getFilteredSelectedRowModel().rows.length} of{' '}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </>
-          )}
-        </div>
+      {total > 0 && (
+        <div className="flex flex-col items-center justify-between gap-4 border-t px-5 py-3 md:flex-row">
+          <div className="text-sm text-muted-foreground">
+            Showing {firstIndex}–{lastIndex} of {total} results
+          </div>
 
-        <div className="flex w-full flex-col items-center justify-between gap-6 md:flex-row">
-          {total > 0 && (
-            <div className="text-muted-foreground text-sm">
-              Showing {firstIndex}-{lastIndex} of {total}
-            </div>
-          )}
-
-          {total > 0 && (
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium">Rows per page</p>
+              <p className="text-sm font-medium text-gray-600">Rows</p>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value))
-                }}
+                onValueChange={(value) => table.setPageSize(Number(value))}
               >
-                <SelectTrigger className="h-8 w-[70px] !rounded-md">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                    className="!rounded-md"
-                  />
+                <SelectTrigger className="h-8 w-[70px] rounded-md text-sm">
+                  <SelectValue placeholder={table.getState().pagination.pageSize} />
                 </SelectTrigger>
-                <SelectContent side="top" className="rounded">
-                  {paginationOptions.map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
+                <SelectContent side="top">
+                  {paginationOptions.map((ps) => (
+                    <SelectItem key={ps} value={`${ps}`}>{ps}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 !rounded-md p-0"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <ChevronLeft />
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {Array.from(
-                    { length: table.getPageCount() },
-                    (_, i) => i
-                  ).map((pageIdx) => (
-                    <Button
-                      key={pageIdx}
-                      variant={
-                        table.getState().pagination.pageIndex === pageIdx
-                          ? 'default'
-                          : 'outline'
-                      }
-                      size="sm"
-                      onClick={() => table.setPageIndex(pageIdx)}
-                      className="h-8 w-8 !rounded-md p-0"
-                    >
-                      {pageIdx + 1}
-                    </Button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 !rounded-md p-0"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <ChevronRight />
-                </Button>
-              </div>
             </div>
-          )}
+
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-md p-0"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                {'<<'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-md p-0"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {Array.from({ length: Math.min(table.getPageCount(), 7) }, (_, i) => {
+                const pageCount = table.getPageCount()
+                const current = table.getState().pagination.pageIndex
+                let pageIdx: number
+                if (pageCount <= 7) {
+                  pageIdx = i
+                } else if (current < 4) {
+                  pageIdx = i < 5 ? i : i === 5 ? -1 : pageCount - 1
+                } else if (current > pageCount - 5) {
+                  pageIdx = i === 0 ? 0 : i === 1 ? -1 : pageCount - 7 + i
+                } else {
+                  pageIdx = i === 0 ? 0 : i === 1 ? -1 : i === 5 ? -1 : i === 6 ? pageCount - 1 : current - 2 + (i - 2)
+                }
+                if (pageIdx === -1) return <span key={i} className="px-1 text-gray-400">…</span>
+                return (
+                  <Button
+                    key={pageIdx}
+                    variant={table.getState().pagination.pageIndex === pageIdx ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => table.setPageIndex(pageIdx)}
+                    className={cn('h-8 w-8 rounded-md p-0 text-sm', {
+                      'from-primary to-accent bg-gradient-to-r text-white border-transparent': table.getState().pagination.pageIndex === pageIdx
+                    })}
+                  >
+                    {pageIdx + 1}
+                  </Button>
+                )
+              })}
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-md p-0"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-md p-0"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                {'>>'}
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -230,17 +230,17 @@ export function AllTransactionsDataTable({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Policy No</TableHead>
-              <TableHead>Certificate No</TableHead>
-              <TableHead>Policy Holder</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Coverage Period</TableHead>
-              <TableHead className="text-right">Premium</TableHead>
-              <TableHead>Currency</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy No</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Certificate No</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy Holder</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Product</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Plan</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Coverage Period</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right">Premium</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Currency</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -299,7 +299,7 @@ export function AllTransactionsDataTable({
                           transaction.id,
                           transaction.merchant_transaction_id
                         )}
-                        className="text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer"
+                        className="text-[#B8960C] hover:text-[#B8960C]/80 hover:underline font-medium cursor-pointer"
                       >
                         View
                       </button>

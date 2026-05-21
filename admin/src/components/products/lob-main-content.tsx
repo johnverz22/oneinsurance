@@ -51,9 +51,11 @@ import {
 } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Pencil, Trash2, Search, Eye } from 'lucide-react'
+import React from 'react'
+import { Plus, Pencil, Trash2, Search, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
 
 export default function LobMainContent() {
   const queryClient = useQueryClient()
@@ -221,19 +223,19 @@ export default function LobMainContent() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b border-slate-200">
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Name</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Slug</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500 max-w-xs">Description</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Status</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Created</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500 text-right w-28">Actions</TableHead>
+            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Name</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Slug</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 max-w-xs">Description</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Created</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right w-28">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-slate-100">
+          <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-12 text-center text-gray-500">
@@ -248,14 +250,14 @@ export default function LobMainContent() {
                 </TableCell>
               </TableRow>
             ) : lineOfBusinessList.length > 0 ? (
-              lineOfBusinessList.map((lob) => (
-                <TableRow key={lob.id} className="hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => handleRowClick(lob)}>
-                  <TableCell className="px-6 py-4 font-semibold text-slate-900">{lob.name}</TableCell>
-                  <TableCell className="px-6 py-4 text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
-                  <TableCell className="px-6 py-4 max-w-xs">
+              lineOfBusinessList.map((lob, index) => (
+                <TableRow key={lob.id} className={cn('cursor-pointer', index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white')} onClick={() => handleRowClick(lob)}>
+                  <TableCell className="font-semibold text-slate-900">{lob.name}</TableCell>
+                  <TableCell className="text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
+                  <TableCell className="max-w-xs">
                     <p className="text-sm text-gray-600 line-clamp-2">{lob.description || '—'}</p>
                   </TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell>
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       lob.status.toLowerCase() === 'active'
                         ? 'bg-green-100 text-green-700'
@@ -264,10 +266,10 @@ export default function LobMainContent() {
                       {lob.status.toUpperCase()}
                     </span>
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-sm text-gray-500">
+                  <TableCell className="text-sm text-gray-500">
                     {new Date(lob.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
+                  <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                       <button
                         className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-primary hover:bg-green-50"
@@ -277,7 +279,7 @@ export default function LobMainContent() {
                         <Eye className="h-4 w-4" />
                       </button>
                       <button
-                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-[#B8960C] hover:bg-[#B8960C]/10"
                         onClick={() => handleEditClick(lob)}
                         title="Edit"
                       >
@@ -306,69 +308,33 @@ export default function LobMainContent() {
       </div>
 
       {/* Pagination */}
-      {lobData?.data && lobData.data.last_page > 1 && (
-        <div className="mt-6 flex items-center justify-between border-t pt-4">
-          <div className="text-sm text-gray-600">
-            Showing {lobData.data.from || 0} to {lobData.data.to || 0} of{' '}
-            {lobData.data.total || 0} results
+      {lobData?.data && lobData.data.total > 0 && (
+        <div className="flex w-full flex-col items-center justify-between gap-6 md:flex-row px-2 py-3">
+          <div className="text-muted-foreground text-sm">
+            Showing {lobData.data.from || 0}–{lobData.data.to || 0} of {lobData.data.total || 0}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="rounded-full"
-            >
-              Previous
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: lobData.data.last_page }, (_, i) => i + 1)
-                .filter((page) => {
-                  const current = currentPage
-                  return (
-                    page === 1 ||
-                    page === lobData.data.last_page ||
-                    (page >= current - 1 && page <= current + 1)
-                  )
-                })
-                .map((page, index, array) => (
-                  <>
-                    {index > 0 && array[index - 1] !== page - 1 && (
-                      <span key={`ellipsis-${page}`} className="px-2">
-                        ...
-                      </span>
-                    )}
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className={`h-8 w-8 rounded-full p-0 ${
-                        currentPage === page
-                          ? 'bg-green-600 hover:bg-green-700'
-                          : ''
-                      }`}
-                    >
-                      {page}
-                    </Button>
-                  </>
-                ))}
+          {lobData.data.last_page > 1 && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8 w-8 rounded-md p-0" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: lobData.data.last_page }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === lobData.data.last_page || (p >= currentPage - 1 && p <= currentPage + 1))
+                  .map((p, idx, arr) => (
+                    <React.Fragment key={p}>
+                      {idx > 0 && arr[idx - 1] !== p - 1 && <span className="px-1 text-muted-foreground">...</span>}
+                      <Button key={p} variant={currentPage === p ? 'default' : 'outline'} size="sm" onClick={() => setCurrentPage(p)} className="h-8 w-8 rounded-md p-0">
+                        {p}
+                      </Button>
+                    </React.Fragment>
+                  ))}
+              </div>
+              <Button variant="outline" size="sm" className="h-8 w-8 rounded-md p-0" onClick={() => setCurrentPage(p => Math.min(lobData.data.last_page, p + 1))} disabled={currentPage === lobData.data.last_page}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setCurrentPage((prev) =>
-                  Math.min(lobData.data.last_page, prev + 1)
-                )
-              }
-              disabled={currentPage === lobData.data.last_page}
-              className="rounded-full"
-            >
-              Next
-            </Button>
-          </div>
+          )}
         </div>
       )}
 

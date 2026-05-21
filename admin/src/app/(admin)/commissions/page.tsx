@@ -79,7 +79,7 @@ export default function CommissionsPage() {
                   <p className="mt-0.5 line-clamp-2 text-[11px] text-gray-400">
                     {commission.product.description || 'No description'}
                   </p>
-                  <p className="mt-1 text-[11px] font-bold text-blue-600">
+                  <p className="mt-1 text-[11px] font-bold text-[#B8960C]">
                     Base Commission: {Number(commission.base_commission).toFixed(2)}%
                   </p>
                 </div>
