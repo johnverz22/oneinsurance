@@ -400,7 +400,7 @@ export default function PolicyDetailsPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg rounded-t-3xl">
+      <div className="bg-gradient-to-r from-[#B8960C] to-[#8B6914] text-white shadow-lg rounded-t-3xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
@@ -968,14 +968,14 @@ export default function PolicyDetailsPage() {
 
             {/* Commission Card */}
             <Card className="border shadow-sm overflow-hidden">
-              <div className="bg-blue-50 border-b p-4">
+              <div className="bg-[#FEF9E7] border-b p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
-                  <h3 className="font-semibold text-blue-900">Commission</h3>
+                  <DollarSign className="h-5 w-5 text-[#B8960C]" />
+                  <h3 className="font-semibold text-[#8B6914]">Commission</h3>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-blue-700 mb-1">Net Commission</p>
-                  <p className="text-3xl font-bold text-blue-900">
+                  <p className="text-sm text-[#B8960C] mb-1">Net Commission</p>
+                  <p className="text-3xl font-bold text-[#8B6914]">
                     {policyData.commission_log?.agent_commission 
                       ? `₱${Number(policyData.commission_log.agent_commission).toLocaleString()}`
                       : '₱0.00'
