@@ -20,7 +20,7 @@ export const ProfileOverview = () => {
     useGetAgentStatistics()
 
   const STYLES = {
-    NUMBER_OF_SALES: 'text-blue-500',
+    NUMBER_OF_SALES: 'text-[#B8960C]',
     NET_COMMISSION: 'text-green-600',
   } as Record<Amount, string>
 
@@ -43,7 +43,7 @@ export const ProfileOverview = () => {
             <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
               {user?.name}
             </h2>
-            <div className="flex items-center gap-1.5 text-blue-500">
+            <div className="flex items-center gap-1.5 text-[#B8960C]">
               <p>Senior Agent </p>
               <Dot />
               <p>Metro Manila</p>
