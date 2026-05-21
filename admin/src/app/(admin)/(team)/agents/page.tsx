@@ -240,7 +240,7 @@ export default function AgentsPage() {
               e.stopPropagation()
               router.push(`/agents/${row.original.id}/policies`)
             }}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            className="text-[#B8960C] hover:text-[#B8960C]/80 hover:bg-[#B8960C]/10"
           >
             View Transactions
           </Button>

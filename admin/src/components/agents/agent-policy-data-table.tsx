@@ -272,17 +272,17 @@ export function AgentPolicyDataTable({
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="font-bold">Policy No</TableHead>
-              <TableHead className="font-bold">Certificate No</TableHead>
-              <TableHead className="font-bold">Policy Holder</TableHead>
-              <TableHead className="font-bold">Product</TableHead>
-              <TableHead className="font-bold">Plan</TableHead>
-              <TableHead className="font-bold">Coverage Period</TableHead>
-              <TableHead className="font-bold">Premium</TableHead>
-              <TableHead className="font-bold">Currency</TableHead>
-              <TableHead className="font-bold">Status</TableHead>
-              <TableHead className="text-right font-bold">Action</TableHead>
+            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy No</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Certificate No</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy Holder</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Product</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Plan</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Coverage Period</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Premium</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Currency</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -359,7 +359,7 @@ export function AgentPolicyDataTable({
                   <TableCell className="text-right">
                     <button
                       onClick={() => handleViewPolicy(transaction.id, transaction.merchant_transaction_id)}
-                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer"
+                      className="text-[#B8960C] hover:text-[#B8960C]/80 hover:underline font-medium cursor-pointer"
                     >
                       View
                     </button>
