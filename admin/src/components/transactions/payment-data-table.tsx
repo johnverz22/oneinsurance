@@ -204,12 +204,12 @@ export function PaymentDataTable<TData extends Record<string, any>, TValue>({
         </div>
 
         <Table>
-          <TableHeader className="border-y-2">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow key={headerGroup.id} className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="py-4 font-bold">
+                    <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

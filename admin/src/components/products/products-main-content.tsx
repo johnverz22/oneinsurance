@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 
 interface ProductsMainContentProps {
   productAssignments: ProductAssignment[]
@@ -76,33 +77,33 @@ export default function ProductsMainContent({
       </div>
 
       {/* Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b border-slate-200">
-              <TableHead className="px-6 py-4 w-12 font-medium text-slate-500">#</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Product Name</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Provider</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Line of Business</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Status</TableHead>
+            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 w-12">#</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Product Name</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Provider</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Line of Business</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-slate-100">
+          <TableBody>
             {filteredProducts.length > 0 ? (
               filteredProducts.map((assignment, index) => (
                 <TableRow
                   key={assignment.product.id}
                   onClick={() => handleProductClick(assignment)}
-                  className="cursor-pointer hover:bg-slate-50/50 transition-colors"
+                  className={cn('cursor-pointer', index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white')}
                 >
-                  <TableCell className="px-6 py-4 text-gray-400 text-sm font-mono">{index + 1}</TableCell>
-                  <TableCell className="px-6 py-4 font-semibold text-slate-900">
+                  <TableCell className="text-gray-400 text-sm font-mono">{index + 1}</TableCell>
+                  <TableCell className="font-semibold text-slate-900">
                     {assignment.product.name}
                   </TableCell>
-                  <TableCell className="px-6 py-4 text-sm text-gray-600">
+                  <TableCell className="text-sm text-gray-600">
                     {assignment.product.provider.name}
                   </TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell>
                     {assignment.product.line_of_business ? (
                       <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
                         {assignment.product.line_of_business.name}
@@ -111,7 +112,7 @@ export default function ProductsMainContent({
                       <span className="text-xs text-gray-400 italic">No LOB assigned</span>
                     )}
                   </TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell>
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       assignment.product.status.toLowerCase() === 'active'
                         ? 'bg-green-100 text-green-700'
