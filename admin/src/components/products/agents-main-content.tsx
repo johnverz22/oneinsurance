@@ -40,6 +40,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Trash2, Search, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
 
 interface AgentWithLobs {
   agent: AgentProductAssignment['agent']
@@ -310,18 +311,18 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
       )}
 
       {/* Agents Data Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b border-slate-200">
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Agent Code</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Email</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Lines of Business</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500">Status</TableHead>
-              <TableHead className="px-6 py-4 font-medium text-slate-500 text-right w-24">Actions</TableHead>
+            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Agent Code</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Email</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Lines of Business</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-slate-100">
+          <TableBody>
             {isDataLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-12 text-center text-gray-500">
@@ -329,24 +330,24 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                 </TableCell>
               </TableRow>
             ) : agentProductAssignments.length > 0 ? (
-              agentProductAssignments.map((agentAssignment) => {
+              agentProductAssignments.map((agentAssignment, index) => {
                 const agentLobAssignments = agentLobs?.data?.data?.filter(
                   (lob) => lob.agent_id === agentAssignment.agent.id
                 ) || []
                 return (
                   <TableRow
                     key={agentAssignment.agent.id}
-                    className="hover:bg-slate-50/50 transition-colors"
+                    className={cn(index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white')}
                   >
-                    <TableCell className="px-6 py-4 font-mono font-medium text-slate-900">
+                    <TableCell className="font-mono font-medium text-slate-900">
                       {agentAssignment.agent.settings?.code
                         ? agentAssignment.agent.settings.code.toUpperCase()
                         : '-'}
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-sm text-gray-600">
+                    <TableCell className="text-sm text-gray-600">
                       {agentAssignment.agent.email}
                     </TableCell>
-                    <TableCell className="px-6 py-4">
+                    <TableCell>
                       <div className="flex flex-wrap gap-1.5">
                         {agentLobAssignments.length > 0 ? (
                           <>
@@ -369,7 +370,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="px-6 py-4">
+                    <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         agentAssignment.agent.status === 'active'
                           ? 'bg-green-100 text-green-700'
@@ -378,10 +379,10 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                         {agentAssignment.agent.status.toUpperCase()}
                       </span>
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-right">
+                    <TableCell className="text-right">
                       <button
                         onClick={() => handleAgentClick(agentAssignment)}
-                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                        className="p-1.5 rounded-md transition-colors text-gray-400 hover:text-[#B8960C] hover:bg-[#B8960C]/10"
                         title="Manage agent"
                       >
                         <Pencil className="h-4 w-4" />

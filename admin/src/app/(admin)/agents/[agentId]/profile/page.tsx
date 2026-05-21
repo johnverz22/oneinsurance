@@ -165,7 +165,7 @@ export default function AgentProfilePage({ params }: AgentProfilePageProps) {
               <h2 className="text-lg font-bold md:text-xl lg:text-2xl">
                 {agent.name || `${agent.first_name || ''} ${agent.middle_name || ''} ${agent.last_name || ''}`.trim()}
               </h2>
-              <div className="flex items-center gap-1.5 text-blue-500">
+              <div className="flex items-center gap-1.5 text-[#B8960C]">
                 <p>Senior Agent</p>
                 <Dot />
                 <p>Metro Manila</p>

@@ -19,11 +19,11 @@ const C = {
   greenDark: 'color-mix(in oklch, var(--primary) 70%, black)',
   greenLight: 'color-mix(in oklch, var(--primary) 12%, white)',
   greenBorder: 'color-mix(in oklch, var(--primary) 35%, white)',
-  // Blues
-  blue: '#2563EB',
-  blueLight: '#EFF6FF',
-  blueBorder: '#BFDBFE',
-  blueMid: '#1E40AF',
+  // Blues (changed to gold)
+  blue: '#B8960C',
+  blueLight: '#FEF9E7',
+  blueBorder: '#F0D060',
+  blueMid: '#B8960C',
   // Neutrals
   white: '#FFFFFF',
   bg: '#F9FAFB',

@@ -432,7 +432,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg rounded-t-3xl">
+      <div className="bg-gradient-to-r from-[#B8960C] to-[#8B6914] text-white shadow-lg rounded-t-3xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
@@ -455,10 +455,10 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
                     <span className="ml-1">{policyData.status}</span>
                   </Badge>
                 </div>
-                <p className="text-blue-100 text-sm sm:text-base">
+                <p className="text-white/80 text-sm sm:text-base">
                   {policyDetails?.ProductName || 'Travel Insurance'}
                 </p>
-                <p className="text-blue-200/80 text-xs sm:text-sm mt-1">
+                <p className="text-white/60 text-xs sm:text-sm mt-1">
                   Agent: {agent?.name ? toTitleCase(agent.name) : 'N/A'} • {policyData.agent_code_used?.toUpperCase()}
                 </p>
               </div>
@@ -477,7 +477,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
               <Button 
                 size="sm" 
                 onClick={handlePrintPolicy}
-                className="bg-white text-blue-700 hover:bg-blue-50"
+                className="bg-white text-[#B8960C] hover:bg-[#FEF9E7]"
               >
                 <Printer className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Print</span>
@@ -493,8 +493,8 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
           <Card className="border shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-[#FEF9E7] rounded-lg">
+                  <DollarSign className="h-5 w-5 text-[#B8960C]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground mb-1">Premium</p>
@@ -1006,14 +1006,14 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
 
             {/* Commission Card */}
             <Card className="border shadow-sm overflow-hidden">
-              <div className="bg-blue-50 border-b p-4">
+              <div className="bg-[#FEF9E7] border-b p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <DollarSign className="h-5 w-5 text-blue-600" />
-                  <h3 className="font-semibold text-blue-900">Commission</h3>
+                  <DollarSign className="h-5 w-5 text-[#B8960C]" />
+                  <h3 className="font-semibold text-[#8B6914]">Commission</h3>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-blue-700 mb-1">Net Commission</p>
-                  <p className="text-3xl font-bold text-blue-900">
+                  <p className="text-sm text-[#B8960C] mb-1">Net Commission</p>
+                  <p className="text-3xl font-bold text-[#8B6914]">
                     {policyData.commission_log?.agent_commission 
                       ? `₱${Number(policyData.commission_log.agent_commission).toLocaleString()}`
                       : '₱0.00'
