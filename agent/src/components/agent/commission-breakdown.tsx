@@ -105,9 +105,9 @@ const CommissionBreakdownDialog = ({
           </div>
 
           {/* Net Commission */}
-          <div className="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-950">
+          <div className="mt-4 rounded-lg bg-[#FEF9E7] p-4">
             <p className="text-muted-foreground mb-1 text-sm">Net Commission</p>
-            <p className="text-3xl font-bold text-blue-600">
+            <p className="text-3xl font-bold text-[#B8960C]">
               {formatPHPAmount(commission.netCommission)}
             </p>
             <p className="text-muted-foreground mt-2 text-xs">
