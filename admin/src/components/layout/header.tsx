@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Bell, User } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/toggle'
 import {
@@ -60,6 +61,7 @@ export const Header = ({
 
   const { isMobile } = useSidebar()
   const isSingIn = isAuthenticated
+  const pathname = usePathname()
 
   const handleLogout = async () => {
     try {
@@ -119,7 +121,13 @@ export const Header = ({
                       <NavigationMenuItem key={index}>
                         {isList ? (
                           <>
-                            <NavigationMenuTrigger>
+                            <NavigationMenuTrigger
+                              className={cn(
+                                navigation.items?.some((item) => pathname.startsWith(item.link))
+                                  ? 'text-primary font-semibold border-b-2 border-primary rounded-none'
+                                  : ''
+                              )}
+                            >
                               {navigation.label}
                             </NavigationMenuTrigger>
                             {navigation.items && (
@@ -142,7 +150,12 @@ export const Header = ({
                         ) : (
                           <NavigationMenuLink
                             asChild
-                            className={navigationMenuTriggerStyle()}
+                            className={cn(
+                              navigationMenuTriggerStyle(),
+                              pathname.startsWith(navigation.link ?? '___')
+                                ? 'text-primary font-semibold border-b-2 border-primary rounded-none bg-transparent hover:bg-transparent'
+                                : ''
+                            )}
                           >
                             <Link href={navigation.link ?? '/'}>
                               {navigation.label}

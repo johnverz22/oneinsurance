@@ -1,345 +1,238 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { ColumnDef } from '@tanstack/react-table'
 import { useGetAllTransactions } from '@/app/data/queries/transactions'
-import { 
-  Search, 
-  X,
-  Calendar,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
+import { Calendar, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { format } from 'date-fns'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { DataTable } from '@/components/ui/data-table'
+import { StatusBadge } from '@/components/ui/design-system'
+import { PolicyBadge, GoldActionLink } from '@/components/ui/design-system'
+import { cn } from '@/lib/utils'
 
 interface AllTransactionsDataTableProps {
   onPageChange: (page: number) => void
   currentPage: number
 }
 
-const getStatusColor = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case 'completed':
-      return 'bg-green-100 text-green-800 hover:bg-green-200'
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-    case 'failed':
-      return 'bg-red-100 text-red-800 hover:bg-red-200'
-    case 'cancelled':
-      return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-    default:
-      return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-  }
-}
-
 export function AllTransactionsDataTable({
   onPageChange,
   currentPage,
 }: AllTransactionsDataTableProps) {
-  const [searchKeyword, setSearchKeyword] = useState('')
   const [fromDate, setFromDate] = useState<Date | undefined>()
   const [toDate, setToDate] = useState<Date | undefined>()
-  const [filteredData, setFilteredData] = useState<any[]>([])
-  const [isSearchMode, setIsSearchMode] = useState(false)
+  const [appliedFrom, setAppliedFrom] = useState<Date | undefined>()
+  const [appliedTo, setAppliedTo] = useState<Date | undefined>()
   const router = useRouter()
 
-  const {
-    data: transactionsResponse,
-    isLoading,
-    error,
-  } = useGetAllTransactions(currentPage)
+  const { data: transactionsResponse, isLoading, error } = useGetAllTransactions(currentPage)
 
-  const transactions = transactionsResponse?.data?.data || []
+  const allTransactions = transactionsResponse?.data?.data || []
+
+  // Client-side date filter
+  const displayData = React.useMemo(() => {
+    if (!appliedFrom && !appliedTo) return allTransactions
+    return allTransactions.filter((t: any) => {
+      const dateField = t.transaction_date || t.created_at
+      if (!dateField) return false
+      const d = new Date(dateField)
+      if (appliedFrom && d < appliedFrom) return false
+      if (appliedTo && d > appliedTo) return false
+      return true
+    })
+  }, [allTransactions, appliedFrom, appliedTo])
 
   const handleViewPolicy = (agentId: number, transactionId: number, merchantTxId?: string) => {
-    const url = merchantTxId 
+    const url = merchantTxId
       ? `/agents/${agentId}/policies/${transactionId}?merchant_transaction_id=${merchantTxId}`
       : `/agents/${agentId}/policies/${transactionId}`
     router.push(url)
   }
 
-  const handleSearchSubmit = () => {
-    if (searchKeyword.trim()) {
-      const filtered = transactions.filter((transaction: any) => {
-        const searchTerm = searchKeyword.toLowerCase()
-        
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: 'policy_number',
+      header: 'Policy No',
+      cell: ({ row }) => <PolicyBadge value={row.original.policy_number} />,
+    },
+    {
+      accessorKey: 'certificate_number',
+      header: 'Certificate No',
+      cell: ({ row }) => <span className="text-sm">{row.original.certificate_number || 'N/A'}</span>,
+    },
+    {
+      accessorKey: 'policy_holder',
+      header: 'Policy Holder',
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.policy_holder || row.original.customer_name || 'N/A'}</span>
+      ),
+    },
+    {
+      accessorKey: 'product_name',
+      header: 'Product',
+      cell: ({ row }) => <span className="text-sm">{row.original.product_name || 'N/A'}</span>,
+    },
+    {
+      accessorKey: 'plan_name',
+      header: 'Plan',
+      cell: ({ row }) => (
+        <span className="text-sm max-w-[200px] truncate block">{row.original.plan_name || 'N/A'}</span>
+      ),
+    },
+    {
+      accessorKey: 'coverage_period',
+      header: 'Coverage Period',
+      cell: ({ row }) => {
+        const t = row.original
+        const policyDetails = typeof t.policy_details === 'string'
+          ? (() => { try { return JSON.parse(t.policy_details) } catch { return null } })()
+          : t.policy_details
+        const effectiveDate = policyDetails?.EffectiveDate
+          ? new Date(policyDetails.EffectiveDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+          : 'N/A'
+        const expiryDate = policyDetails?.ExpiryDate
+          ? new Date(policyDetails.ExpiryDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+          : 'N/A'
+        const travelDays = policyDetails?.TravelDays || ''
         return (
-          transaction.policy_number?.toLowerCase().includes(searchTerm) ||
-          transaction.certificate_number?.toLowerCase().includes(searchTerm) ||
-          transaction.policy_holder?.toLowerCase().includes(searchTerm) ||
-          transaction.agent_code_used?.toLowerCase().includes(searchTerm)
+          <div className="text-sm">
+            <p>{effectiveDate} – {expiryDate}</p>
+            {travelDays && <p className="text-xs text-muted-foreground">{travelDays} Days</p>}
+          </div>
         )
-      })
-      
-      setFilteredData(filtered)
-      setIsSearchMode(true)
-    }
-  }
+      },
+    },
+    {
+      accessorKey: 'amount',
+      header: 'Premium',
+      cell: ({ row }) => (
+        <span className="font-semibold text-right block">
+          {row.original.amount ? Number(row.original.amount).toFixed(2) : 'N/A'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'currency',
+      header: 'Currency',
+      cell: ({ row }) => <span className="text-sm">{row.original.currency || 'N/A'}</span>,
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    },
+    {
+      id: 'action',
+      header: 'Action',
+      cell: ({ row }) => (
+        <GoldActionLink
+          onClick={() => handleViewPolicy(
+            row.original.agent_id,
+            row.original.id,
+            row.original.merchant_transaction_id
+          )}
+        >
+          View
+        </GoldActionLink>
+      ),
+    },
+  ]
 
-  const handleClearSearchClick = () => {
-    setSearchKeyword('')
-    setFilteredData([])
-    setIsSearchMode(false)
-  }
-
-  const handleDateFilter = () => {
-    if (fromDate && toDate) {
-      const filtered = transactions.filter((transaction: any) => {
-        const dateField = transaction.transaction_date || transaction.created_at
-        if (!dateField) return false
-        const transactionDate = new Date(dateField)
-        return transactionDate >= fromDate && transactionDate <= toDate
-      })
-      setFilteredData(filtered)
-      setIsSearchMode(true)
-    }
-  }
-
-  const clearDateFilter = () => {
-    setFromDate(undefined)
-    setToDate(undefined)
-    setFilteredData([])
-    setIsSearchMode(false)
-  }
-
-  const displayData = isSearchMode ? filteredData : transactions
-  const totalPages = isSearchMode ? 1 : (transactionsResponse?.data?.last_page || 1)
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <Skeleton className="h-10 flex-1" />
-          <Skeleton className="h-10 w-[300px]" />
-        </div>
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-500">Error loading transactions</p>
-      </div>
-    )
-  }
+  const paginatedResponse = transactionsResponse?.data
+    ? {
+        current_page: transactionsResponse.data.current_page,
+        data: displayData,
+        first_page_url: '',
+        from: transactionsResponse.data.from,
+        last_page: transactionsResponse.data.last_page,
+        last_page_url: '',
+        links: [],
+        next_page_url: null,
+        path: '',
+        per_page: transactionsResponse.data.per_page,
+        prev_page_url: null,
+        to: transactionsResponse.data.to,
+        total: transactionsResponse.data.total,
+      }
+    : null
 
   return (
     <div className="space-y-4">
-      {/* Search and Filter Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Search by policy number, certificate, policy holder, or agent code..."
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearchSubmit()
-                }
-              }}
-              className="pl-10"
-            />
-          </div>
-          <Button onClick={handleSearchSubmit} size="sm">
-            Search
+      {/* Date Filter */}
+      <div className="flex flex-wrap items-center gap-3 p-3 bg-card rounded-xl border shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">From:</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 text-sm">
+                <Calendar className="mr-2 h-4 w-4 text-gray-400" />
+                {fromDate ? format(fromDate, 'MMM dd, yyyy') : 'Select date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent mode="single" selected={fromDate} onSelect={setFromDate} />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">To:</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 text-sm">
+                <Calendar className="mr-2 h-4 w-4 text-gray-400" />
+                {toDate ? format(toDate, 'MMM dd, yyyy') : 'Select date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent mode="single" selected={toDate} onSelect={setToDate} />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <Button
+          size="sm"
+          className="h-9 from-primary to-accent bg-gradient-to-r text-white"
+          disabled={!fromDate || !toDate}
+          onClick={() => { setAppliedFrom(fromDate); setAppliedTo(toDate) }}
+        >
+          Apply Filter
+        </Button>
+        {(appliedFrom || appliedTo) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 text-muted-foreground hover:text-destructive"
+            onClick={() => { setFromDate(undefined); setToDate(undefined); setAppliedFrom(undefined); setAppliedTo(undefined) }}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Clear
           </Button>
-          {isSearchMode && (
-            <Button
-              onClick={handleClearSearchClick}
-              variant="outline"
-              size="sm"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Clear
-            </Button>
-          )}
-        </div>
-
-        {/* Date Filter */}
-        <div className="flex gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                {fromDate ? format(fromDate, 'MMM dd, yyyy') : 'From Date'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <CalendarComponent
-                mode="single"
-                selected={fromDate}
-                onSelect={setFromDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                {toDate ? format(toDate, 'MMM dd, yyyy') : 'To Date'}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <CalendarComponent
-                mode="single"
-                selected={toDate}
-                onSelect={setToDate}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          {(fromDate || toDate) && (
-            <>
-              <Button onClick={handleDateFilter} size="sm">
-                Filter
-              </Button>
-              <Button onClick={clearDateFilter} variant="outline" size="sm">
-                <X className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-        </div>
+        )}
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy No</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Certificate No</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy Holder</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Product</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Plan</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Coverage Period</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right">Premium</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Currency</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {displayData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-gray-500">
-                  No transactions found
-                </TableCell>
-              </TableRow>
-            ) : (
-              displayData.map((transaction: any) => {
-                const policyDetails = typeof transaction.policy_details === 'string' 
-                  ? JSON.parse(transaction.policy_details) 
-                  : transaction.policy_details
-
-                const effectiveDate = policyDetails?.EffectiveDate 
-                  ? new Date(policyDetails.EffectiveDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
-                  : 'N/A'
-                
-                const expiryDate = policyDetails?.ExpiryDate 
-                  ? new Date(policyDetails.ExpiryDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
-                  : 'N/A'
-
-                const travelDays = policyDetails?.TravelDays || 'N/A'
-
-                return (
-                  <TableRow key={transaction.id}>
-                    <TableCell className="font-medium">
-                      {transaction.policy_number || 'N/A'}
-                    </TableCell>
-                    <TableCell>{transaction.certificate_number || 'N/A'}</TableCell>
-                    <TableCell>{transaction.policy_holder || transaction.customer_name || 'N/A'}</TableCell>
-                    <TableCell>{transaction.product_name || 'N/A'}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {transaction.plan_name || 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {effectiveDate} - {expiryDate}
-                        <div className="text-xs text-gray-500">{travelDays} Days</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {transaction.amount ? Number(transaction.amount).toFixed(2) : 'N/A'}
-                    </TableCell>
-                    <TableCell>{transaction.currency || 'N/A'}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(transaction.status)}>
-                        {transaction.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <button
-                        onClick={() => handleViewPolicy(
-                          transaction.agent_id,
-                          transaction.id,
-                          transaction.merchant_transaction_id
-                        )}
-                        className="text-[#B8960C] hover:text-[#B8960C]/80 hover:underline font-medium cursor-pointer"
-                      >
-                        View
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {!isSearchMode && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-500">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <DataTable
+        header="All Transactions"
+        description="View and manage all policy transactions across all agents."
+        columns={columns}
+        data={displayData}
+        renderMode="table"
+        searchKey={['policy_number', 'policy_holder', 'product_name']}
+        searchPlaceholder="policy number, policy holder, or product"
+        isLoading={isLoading}
+        alternateColors
+        pagination={
+          paginatedResponse
+            ? {
+                enabled: true,
+                paginatedResponse,
+                onPaginationChange: (page) => onPageChange(page),
+              }
+            : { enabled: false }
+        }
+      />
     </div>
   )
 }

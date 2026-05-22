@@ -132,21 +132,16 @@ export function ReportDataTable<TData extends Record<string, any>, TValue>({
 
   return (
     <div className="w-full">
-      <div className="rounded-lg border">
-        {/* Overview Header */}
-        <div className="border-b p-6">
-          <h2 className="text-xl font-semibold">Overview</h2>
-        </div>
-
+      <div className="rounded-md border overflow-hidden">
         {/* Table */}
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50 border-y">
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id} className="py-4 font-semibold">
+                      <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -192,49 +187,92 @@ export function ReportDataTable<TData extends Record<string, any>, TValue>({
 
         {/* Pagination */}
         {enablePagination && data.length > 0 && (
-          <div className="flex items-center justify-between border-t px-6 py-4">
-            <div className="text-sm text-gray-600">
-              Showing {startRecord} of {totalRecords} Agent Overview
+          <div className="flex flex-col items-center justify-between gap-4 border-t px-5 py-3 md:flex-row">
+            <div className="text-sm text-muted-foreground">
+              Showing {startRecord}–{endRecord} of {totalRecords} results
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {/* << first */}
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage <= 1}
+              >
+                {'<<'}
+              </Button>
+              {/* < prev */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0"
                 onClick={handlePreviousPage}
                 disabled={
                   isServerSidePagination
                     ? currentPage <= 1
                     : !table.getCanPreviousPage()
                 }
-                className="h-8 w-8"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'default' : 'outline'}
-                    size="icon"
-                    onClick={() => handlePageChange(page)}
-                    className="h-8 w-8"
-                  >
-                    {page}
-                  </Button>
+
+              {/* Page numbers with ellipsis */}
+              {(() => {
+                const pages: (number | -1)[] = []
+                if (totalPages <= 7) {
+                  for (let i = 1; i <= totalPages; i++) pages.push(i)
+                } else if (currentPage < 5) {
+                  pages.push(1, 2, 3, 4, 5, -1, totalPages)
+                } else if (currentPage > totalPages - 4) {
+                  pages.push(1, -1, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages)
+                } else {
+                  pages.push(1, -1, currentPage - 1, currentPage, currentPage + 1, -1, totalPages)
+                }
+                return pages.map((p, i) =>
+                  p === -1 ? (
+                    <span key={`ellipsis-${i}`} className="px-1 text-gray-400">…</span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handlePageChange(p)}
+                      className={`h-8 w-8 rounded-full p-0 text-sm ${
+                        currentPage === p
+                          ? 'from-primary to-accent bg-gradient-to-r text-white border-transparent'
+                          : ''
+                      }`}
+                    >
+                      {p}
+                    </Button>
+                  )
                 )
-              )}
+              })()}
+
+              {/* > next */}
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0"
                 onClick={handleNextPage}
                 disabled={
                   isServerSidePagination
                     ? currentPage >= totalPages
                     : !table.getCanNextPage()
                 }
-                className="h-8 w-8"
               >
                 <ChevronRight className="h-4 w-4" />
+              </Button>
+              {/* >> last */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage >= totalPages}
+              >
+                {'>>'}
               </Button>
             </div>
           </div>
