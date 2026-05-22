@@ -196,20 +196,14 @@ export function PaymentDataTable<TData extends Record<string, any>, TValue>({
 
   return (
     <div className="w-full space-y-4">
-      <div className="bg-background rounded-4xl border-1 p-5">
-        <div className="mb-4">
-          <span className="text-xl font-bold tracking-wide">
-            Payment Transaction
-          </span>
-        </div>
-
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+              <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50 border-y">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">
+                    <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -229,7 +223,7 @@ export function PaymentDataTable<TData extends Record<string, any>, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={() => onRowClick?.(row.original)}
-                  className={cn('h-16 border-0', {
+                  className={cn('h-12 border-0', {
                     'cursor-pointer': onRowClick,
                   })}
                 >
@@ -257,61 +251,99 @@ export function PaymentDataTable<TData extends Record<string, any>, TValue>({
         </Table>
       </div>
 
-      {enablePagination && (
-        <div className="flex items-center justify-between px-2">
-          <div className="text-muted-foreground flex-1 text-sm">
-            {enableRowSelection && (
-              <>
-                {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                {table.getFilteredRowModel().rows.length} row(s) selected.
-              </>
-            )}
+      {enablePagination && table.getFilteredRowModel().rows.length > 0 && (
+        <div className="flex flex-col items-center justify-between gap-4 border-t px-5 py-3 md:flex-row">
+          <div className="text-sm text-muted-foreground">
+            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–
+            {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of{' '}
+            {table.getFilteredRowModel().rows.length} payments
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
+              <p className="text-sm font-medium text-gray-600">Rows</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value) => table.setPageSize(Number(value))}
+              >
+                <SelectTrigger className="h-8 w-[70px] rounded-md text-sm">
+                  <SelectValue placeholder={table.getState().pagination.pageSize} />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[5, 10, 15, 30, 50].map((ps) => (
+                    <SelectItem key={ps} value={`${ps}`}>{ps}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 rounded-full p-0"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                {'<<'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                Previous
+                <ChevronLeft className="h-4 w-4" />
               </Button>
 
-              <div className="flex items-center gap-1">
-                {Array.from({ length: table.getPageCount() }, (_, i) => i).map(
-                  (pageIndex) => (
-                    <Button
-                      key={pageIndex}
-                      variant={
-                        table.getState().pagination.pageIndex === pageIndex
-                          ? 'default'
-                          : 'outline'
-                      }
-                      size="sm"
-                      onClick={() => table.setPageIndex(pageIndex)}
-                      className="h-8 w-8 p-0"
-                    >
-                      {pageIndex + 1}
-                    </Button>
-                  )
-                )}
-              </div>
+              {Array.from({ length: Math.min(table.getPageCount(), 7) }, (_, i) => {
+                const pageCount = table.getPageCount()
+                const current = table.getState().pagination.pageIndex
+                let pageIdx: number
+                if (pageCount <= 7) {
+                  pageIdx = i
+                } else if (current < 4) {
+                  pageIdx = i < 5 ? i : i === 5 ? -1 : pageCount - 1
+                } else if (current > pageCount - 5) {
+                  pageIdx = i === 0 ? 0 : i === 1 ? -1 : pageCount - 7 + i
+                } else {
+                  pageIdx = i === 0 ? 0 : i === 1 ? -1 : i === 5 ? -1 : i === 6 ? pageCount - 1 : current - 2 + (i - 2)
+                }
+                if (pageIdx === -1) return <span key={i} className="px-1 text-gray-400">…</span>
+                return (
+                  <Button
+                    key={pageIdx}
+                    variant={table.getState().pagination.pageIndex === pageIdx ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => table.setPageIndex(pageIdx)}
+                    className={cn('h-8 w-8 rounded-full p-0 text-sm', {
+                      'from-primary to-accent bg-gradient-to-r text-white border-transparent': table.getState().pagination.pageIndex === pageIdx
+                    })}
+                  >
+                    {pageIdx + 1}
+                  </Button>
+                )
+              })}
 
               <Button
                 variant="outline"
                 size="sm"
+                className="h-8 w-8 rounded-full p-0"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                Next
+                <ChevronRight className="h-4 w-4" />
               </Button>
-            </div>
-
-            <div className="text-muted-foreground text-sm">
-              Page {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount()}
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                {'>>'}
+              </Button>
             </div>
           </div>
         </div>

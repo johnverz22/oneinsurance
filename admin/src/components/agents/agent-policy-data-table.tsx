@@ -9,8 +9,7 @@ import {
   Search, 
   X,
   Calendar,
-  ChevronLeft,
-  ChevronRight
+  Eye,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -25,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PaginationBar } from '@/components/ui/design-system'
 
 interface AgentPolicyDataTableProps {
   agentId: number
@@ -272,17 +272,17 @@ export function AgentPolicyDataTable({
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy No</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Certificate No</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Policy Holder</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Product</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Plan</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Coverage Period</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Premium</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Currency</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right">Action</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50 border-y">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Policy No</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Certificate No</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Policy Holder</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Product</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Plan</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Coverage Period</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Premium</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Currency</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -359,9 +359,10 @@ export function AgentPolicyDataTable({
                   <TableCell className="text-right">
                     <button
                       onClick={() => handleViewPolicy(transaction.id, transaction.merchant_transaction_id)}
-                      className="text-[#B8960C] hover:text-[#B8960C]/80 hover:underline font-medium cursor-pointer"
+                      className="p-1.5 rounded-md text-gray-400 hover:text-[#B8960C] hover:bg-[#B8960C]/10 transition-colors"
+                      title="View Policy"
                     >
-                      View
+                      <Eye className="h-4 w-4" />
                     </button>
                   </TableCell>
                 </TableRow>
@@ -379,60 +380,14 @@ export function AgentPolicyDataTable({
 
       {/* Pagination */}
       {!isSearchMode && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Showing {transactionsResponse?.data?.from || 0} to{' '}
-            {transactionsResponse?.data?.to || 0} of{' '}
-            {transactionsResponse?.data?.total || 0} results
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            
-            <div className="flex gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((pageNum) => {
-                  return (
-                    pageNum === 1 ||
-                    pageNum === totalPages ||
-                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                  )
-                })
-                .map((pageNum, index, array) => (
-                  <React.Fragment key={pageNum}>
-                    {index > 0 && array[index - 1] !== pageNum - 1 && (
-                      <span className="px-2 py-1 text-sm">...</span>
-                    )}
-                    <Button
-                      variant={currentPage === pageNum ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => onPageChange(pageNum)}
-                      className="w-8 h-8 p-0"
-                    >
-                      {pageNum}
-                    </Button>
-                  </React.Fragment>
-                ))}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <PaginationBar
+          currentPage={currentPage}
+          lastPage={totalPages}
+          total={transactionsResponse?.data?.total || 0}
+          from={transactionsResponse?.data?.from}
+          to={transactionsResponse?.data?.to}
+          onPageChange={onPageChange}
+        />
       )}
     </div>
   )

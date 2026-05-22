@@ -51,11 +51,11 @@ import {
 } from '@/components/ui/table'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import React from 'react'
 import { Plus, Pencil, Trash2, Search, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { PaginationBar } from '@/components/ui/design-system'
 
 export default function LobMainContent() {
   const queryClient = useQueryClient()
@@ -226,13 +226,13 @@ export default function LobMainContent() {
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Name</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Slug</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 max-w-xs">Description</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Created</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right w-28">Actions</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50 border-y">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Name</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Slug</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground max-w-xs">Description</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Created</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground text-right w-28">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -251,7 +251,7 @@ export default function LobMainContent() {
               </TableRow>
             ) : lineOfBusinessList.length > 0 ? (
               lineOfBusinessList.map((lob, index) => (
-                <TableRow key={lob.id} className={cn('cursor-pointer', index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white')} onClick={() => handleRowClick(lob)}>
+                <TableRow key={lob.id} className={cn('cursor-pointer', index % 2 === 1 ? 'bg-muted/30' : '')} onClick={() => handleRowClick(lob)}>
                   <TableCell className="font-semibold text-slate-900">{lob.name}</TableCell>
                   <TableCell className="text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
                   <TableCell className="max-w-xs">
@@ -309,33 +309,14 @@ export default function LobMainContent() {
 
       {/* Pagination */}
       {lobData?.data && lobData.data.total > 0 && (
-        <div className="flex w-full flex-col items-center justify-between gap-6 md:flex-row px-2 py-3">
-          <div className="text-muted-foreground text-sm">
-            Showing {lobData.data.from || 0}–{lobData.data.to || 0} of {lobData.data.total || 0}
-          </div>
-          {lobData.data.last_page > 1 && (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8 w-8 rounded-md p-0" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: lobData.data.last_page }, (_, i) => i + 1)
-                  .filter(p => p === 1 || p === lobData.data.last_page || (p >= currentPage - 1 && p <= currentPage + 1))
-                  .map((p, idx, arr) => (
-                    <React.Fragment key={p}>
-                      {idx > 0 && arr[idx - 1] !== p - 1 && <span className="px-1 text-muted-foreground">...</span>}
-                      <Button key={p} variant={currentPage === p ? 'default' : 'outline'} size="sm" onClick={() => setCurrentPage(p)} className="h-8 w-8 rounded-md p-0">
-                        {p}
-                      </Button>
-                    </React.Fragment>
-                  ))}
-              </div>
-              <Button variant="outline" size="sm" className="h-8 w-8 rounded-md p-0" onClick={() => setCurrentPage(p => Math.min(lobData.data.last_page, p + 1))} disabled={currentPage === lobData.data.last_page}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
+        <PaginationBar
+          currentPage={currentPage}
+          lastPage={lobData.data.last_page}
+          total={lobData.data.total}
+          from={lobData.data.from ?? undefined}
+          to={lobData.data.to ?? undefined}
+          onPageChange={setCurrentPage}
+        />
       )}
 
       {/* Create Dialog */}

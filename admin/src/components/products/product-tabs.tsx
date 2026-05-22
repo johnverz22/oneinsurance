@@ -9,6 +9,7 @@ import AssignProductDialog from './assign-product-dialog'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { PillTabs, PaginationBar } from '@/components/ui/design-system'
 import {
   Product,
   ProductAssignment,
@@ -22,6 +23,12 @@ import {
 import { useGetProducts } from '@/app/data/queries/products'
 import { useGetAgentProducts, useGetAgents } from '@/app/data/queries/agents'
 import { useQueryClient } from '@tanstack/react-query'
+
+const PRODUCT_TABS = [
+  { id: 'lob',      label: 'Line of Business' },
+  { id: 'products', label: 'Products' },
+  { id: 'agents',   label: 'Agents' },
+]
 
 function combineProductArrays(
   agentCommissions: AgentProduct[],
@@ -246,40 +253,11 @@ export default function ProductTabs() {
         {/* Top Navigation & Actions Bar */}
         <div className="mb-6 flex flex-col-reverse justify-between gap-3 sm:gap-4 md:flex-row md:items-center md:gap-0">
           {/* Tabs */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('lob')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-full border transition-colors ${
-                activeTab === 'lob'
-                  ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
-                  : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
-              }`}
-            >
-              Line of Business
-            </button>
-
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-full border transition-colors ${
-                activeTab === 'products'
-                  ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
-                  : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
-              }`}
-            >
-              Products
-            </button>
-
-            <button
-              onClick={() => setActiveTab('agents')}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-full border transition-colors ${
-                activeTab === 'agents'
-                  ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
-                  : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
-              }`}
-            >
-              Agents
-            </button>
-          </div>
+          <PillTabs
+            tabs={PRODUCT_TABS}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+          />
         </div>
 
         {activeTab === 'lob' ? (
@@ -298,157 +276,27 @@ export default function ProductTabs() {
         )}
 
         {/* Pagination for Products */}
-        {activeTab === 'products' && products?.data && (
-          <div className="mt-4 flex flex-col items-center justify-between gap-3 px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:px-6 sm:py-4">
-            <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
-              Showing {products.data.data.length} of {products.data.total}{' '}
-              products
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <button
-                onClick={() => setProductsPage((p) => Math.max(1, p - 1))}
-                disabled={products.data.current_page === 1}
-                className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8 sm:text-base dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                ‹
-              </button>
-              {Array.from({ length: products.data.last_page }, (_, i) => i + 1)
-                .filter((pageNum) => {
-                  const current = products.data.current_page
-                  return (
-                    pageNum === 1 ||
-                    pageNum === products.data.last_page ||
-                    (pageNum >= current - 1 && pageNum <= current + 1)
-                  )
-                })
-                .map((pageNum, idx, arr) => {
-                  if (idx > 0 && pageNum - arr[idx - 1] > 1) {
-                    return (
-                      <React.Fragment key={`ellipsis-${pageNum}`}>
-                        <span className="px-1 text-xs text-gray-400 sm:px-2 sm:text-sm">
-                          ...
-                        </span>
-                        <button
-                          onClick={() => setProductsPage(pageNum)}
-                          className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
-                            pageNum === products.data.current_page
-                              ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
-                              : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      </React.Fragment>
-                    )
-                  }
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setProductsPage(pageNum)}
-                      className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
-                        pageNum === products.data.current_page
-                          ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
-                          : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  )
-                })}
-              <button
-                onClick={() =>
-                  setProductsPage((p) =>
-                    Math.min(products.data.last_page, p + 1)
-                  )
-                }
-                disabled={
-                  products.data.current_page === products.data.last_page
-                }
-                className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8 sm:text-base dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                ›
-              </button>
-            </div>
-          </div>
+        {activeTab === 'products' && products?.data && products.data.last_page > 1 && (
+          <PaginationBar
+            currentPage={products.data.current_page}
+            lastPage={products.data.last_page}
+            total={products.data.total}
+            from={products.data.from ?? undefined}
+            to={products.data.to ?? undefined}
+            onPageChange={setProductsPage}
+          />
         )}
 
         {/* Pagination for Agents */}
-        {activeTab === 'agents' && !isAgentsSearchMode && agentsData?.data && (
-          <div className="mt-4 flex flex-col items-center justify-between gap-3 px-4 py-3 sm:mt-6 sm:flex-row sm:gap-0 sm:px-6 sm:py-4">
-            <div className="text-xs text-gray-600 sm:text-sm dark:text-gray-400">
-              Showing {agentsData.data.data.length} of{' '}
-              {agentsData.data.total} agents
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <button
-                onClick={() => setAgentsPage((p) => Math.max(1, p - 1))}
-                disabled={agentsData.data.current_page === 1}
-                className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8 sm:text-base dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                ‹
-              </button>
-              {Array.from(
-                { length: agentsData.data.last_page },
-                (_, i) => i + 1
-              )
-                .filter((pageNum) => {
-                  const current = agentsData.data.current_page
-                  return (
-                    pageNum === 1 ||
-                    pageNum === agentsData.data.last_page ||
-                    (pageNum >= current - 1 && pageNum <= current + 1)
-                  )
-                })
-                .map((pageNum, idx, arr) => {
-                  if (idx > 0 && pageNum - arr[idx - 1] > 1) {
-                    return (
-                      <React.Fragment key={`ellipsis-${pageNum}`}>
-                        <span className="px-1 text-xs text-gray-400 sm:px-2 sm:text-sm">
-                          ...
-                        </span>
-                        <button
-                          onClick={() => setAgentsPage(pageNum)}
-                          className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
-                            pageNum === agentsData.data.current_page
-                              ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
-                              : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      </React.Fragment>
-                    )
-                  }
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setAgentsPage(pageNum)}
-                      className={`flex h-7 w-7 items-center justify-center rounded border text-xs sm:h-8 sm:w-8 sm:text-sm ${
-                        pageNum === agentsData.data.current_page
-                          ? 'border-transparent from-primary to-lilac bg-gradient-to-r text-white'
-                          : 'border-gray-300 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  )
-                })}
-              <button
-                onClick={() =>
-                  setAgentsPage((p) =>
-                    Math.min(agentsData.data.last_page, p + 1)
-                  )
-                }
-                disabled={
-                  agentsData.data.current_page ===
-                  agentsData.data.last_page
-                }
-                className="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:w-8 sm:text-base dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
-              >
-                ›
-              </button>
-            </div>
-          </div>
+        {activeTab === 'agents' && !isAgentsSearchMode && agentsData?.data && agentsData.data.last_page > 1 && (
+          <PaginationBar
+            currentPage={agentsData.data.current_page}
+            lastPage={agentsData.data.last_page}
+            total={agentsData.data.total}
+            from={agentsData.data.from ?? undefined}
+            to={agentsData.data.to ?? undefined}
+            onPageChange={setAgentsPage}
+          />
         )}
       </div>
     </div>
