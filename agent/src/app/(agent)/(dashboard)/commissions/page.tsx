@@ -260,9 +260,9 @@ const PaymentsPage = () => {
     <div className="relative mx-auto space-y-6 overflow-hidden">
       {/* Summary Cards */}
       {isPaymentSummaryLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+            <Skeleton key={i} className="h-[72px] w-full rounded-xl" />
           ))}
         </div>
       ) : paymentSummaryError ? (
@@ -271,7 +271,7 @@ const PaymentsPage = () => {
           <p className="text-sm text-muted-foreground">{paymentSummaryError.message}</p>
         </div>
       ) : isPaymentSummaryFetched && paymentSummary ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl">
           <StatCard title="Cases" value={String(paymentSummary.total_cases || '0')} subtitle="Total transactions" icon={ShoppingCart} colorIdx={0} />
           <StatCard title="Sales" value={`₱${paymentSummary.total_net_premium || '0.00'}`} subtitle="Net premium total" icon={DollarSign} colorIdx={1} />
           <StatCard title="My Commissions" value={`₱${paymentSummary.total_net_commission || '0.00'}`} subtitle="Net commission earned" icon={TrendingUp} colorIdx={2} />
@@ -281,7 +281,7 @@ const PaymentsPage = () => {
       ) : null}
 
       {/* Commission History */}
-      <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
+      <div>
         {isPaymentHistoryLoading ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Loading commission history...</p>

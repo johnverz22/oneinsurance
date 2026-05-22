@@ -398,7 +398,7 @@ export default function PolicyDetailsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-[#B8960C] to-[#8B6914] text-white shadow-lg rounded-t-3xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -906,7 +906,7 @@ export default function PolicyDetailsPage() {
                 <div className="space-y-3 text-sm">
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Transaction Reference</p>
-                    <p className="font-mono text-xs font-medium bg-slate-100 p-2 rounded break-all">
+                    <p className="font-mono text-xs font-medium bg-muted p-2 rounded break-all">
                       {policyData.merchant_transaction_id || 'N/A'}
                     </p>
                   </div>
@@ -938,7 +938,7 @@ export default function PolicyDetailsPage() {
 
                 <Separator />
 
-                <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payor Details</p>
                   <p className="font-semibold">
                     {customer 
