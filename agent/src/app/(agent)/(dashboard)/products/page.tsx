@@ -86,7 +86,7 @@ const MyProductsPage = () => {
   }, [lobProducts])
 
   return (
-    <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
+    <div>
       <DataTable<Product, unknown>
         header="Assigned Products"
         description="Products you're authorized to sell"
