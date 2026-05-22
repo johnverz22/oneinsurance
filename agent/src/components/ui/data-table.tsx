@@ -439,10 +439,10 @@ export function DataTable<TData extends Record<string, any>, TValue>({
   return (
     <div className="w-full space-y-6 py-2.5">
       {/* ── Header bar: title left, search + actions right ── */}
-      <div className="rounded-xl border bg-white shadow-sm">
+      <div className="rounded-xl border bg-card shadow-sm">
         <div className="flex flex-col justify-between gap-4 px-5 py-4 lg:flex-row lg:items-center">
           <div className="space-y-0.5">
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold">
               {header}
             </h3>
             <p className="text-sm text-muted-foreground">{description}</p>
@@ -531,7 +531,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
         {/* Custom action (filters etc.) */}
         {customAction && (
-          <div className="border-t px-5 py-4">
+          <div className="px-5 py-3">
             {customAction}
           </div>
         )}
@@ -577,11 +577,11 @@ export function DataTable<TData extends Record<string, any>, TValue>({
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
+                  <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50 border-y">
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600"
+                        className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground"
                       >
                         {header.isPlaceholder
                           ? null
@@ -602,16 +602,16 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                       data-state={row.getIsSelected() && 'selected'}
                       onClick={() => onRowClick?.(row.original)}
                       className={cn(
-                        'border-b border-gray-100 transition-colors',
+                        'border-b border-gray-100 dark:border-gray-800 transition-colors',
                         { 'cursor-pointer hover:bg-primary/5': onRowClick },
                         {
-                          'bg-gray-50/60': alternateColors && index % 2 === 1,
-                          'bg-white': !alternateColors || index % 2 === 0,
+                          'bg-muted/30': alternateColors && index % 2 === 1,
+                          '': !alternateColors || index % 2 === 0,
                         }
                       )}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="py-3.5">
+                        <TableCell key={cell.id} className="py-2">
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -664,7 +664,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 rounded-md p-0"
+                  className="h-8 w-8 rounded-full p-0"
                   onClick={() => table.setPageIndex(0)}
                   disabled={!table.getCanPreviousPage()}
                 >
@@ -673,7 +673,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 rounded-md p-0"
+                  className="h-8 w-8 rounded-full p-0"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
                 >
@@ -700,7 +700,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                       variant={table.getState().pagination.pageIndex === pageIdx ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => table.setPageIndex(pageIdx)}
-                      className={cn('h-8 w-8 rounded-md p-0 text-sm', {
+                      className={cn('h-8 w-8 rounded-full p-0 text-sm', {
                         'from-primary to-lilac bg-gradient-to-r text-white border-transparent': table.getState().pagination.pageIndex === pageIdx
                       })}
                     >
@@ -712,7 +712,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 rounded-md p-0"
+                  className="h-8 w-8 rounded-full p-0"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
                 >
@@ -721,7 +721,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 w-8 rounded-md p-0"
+                  className="h-8 w-8 rounded-full p-0"
                   onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                   disabled={!table.getCanNextPage()}
                 >

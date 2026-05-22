@@ -6,10 +6,8 @@ import { useGetCompletedTransactions, useGetAllCompletedTransactions } from '@/a
 import { Transaction } from '@/types/agent/transactions'
 import { DataTable } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
-import { Calendar, X, Filter, FileText, DollarSign, CheckCircle, Layers } from 'lucide-react'
+import { Calendar, X, Filter, FileText, DollarSign, CheckCircle, Layers, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { format, subDays, startOfMonth, endOfMonth, startOfYear } from 'date-fns'
@@ -17,34 +15,10 @@ import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-// ─── Stat Card (same style as My Sales) ──────────────────────────────────────
-const STAT_COLORS = [
-  { bar: 'bg-primary', icon: 'text-primary bg-primary/10' },
-  { bar: 'bg-[#B8960C]', icon: 'text-[#B8960C] bg-[#B8960C]/10' },
-  { bar: 'bg-emerald-500', icon: 'text-emerald-600 bg-emerald-50' },
-  { bar: 'bg-violet-500', icon: 'text-violet-600 bg-violet-50' },
-]
-
-const StatCard = ({
-  title, value, subtitle, icon: Icon, colorIdx,
-}: {
-  title: string; value: string; subtitle?: string; icon: React.ElementType; colorIdx: number
-}) => {
-  const c = STAT_COLORS[colorIdx]
-  return (
-    <Card className="overflow-hidden border shadow-sm">
-      <div className={cn('h-1.5 w-full', c.bar)} />
-      <CardContent className="p-4">
-        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center mb-3', c.icon)}>
-          <Icon className="w-4 h-4" />
-        </div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{title}</p>
-        <p className="text-xl font-bold text-foreground">{value}</p>
-        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-      </CardContent>
-    </Card>
-  )
-}
+// ─── Design System ────────────────────────────────────────────────────────────
+import { StatCard, StatCardSkeleton, StatCardsGrid } from '@/components/ui/design-system'
+import { StatusBadge } from '@/components/ui/design-system'
+import { PolicyBadge, GoldActionLink } from '@/components/ui/design-system'
 
 // ─── Quick Filters ────────────────────────────────────────────────────────────
 const QUICK_FILTERS = [
@@ -61,17 +35,9 @@ const policyColumns: ColumnDef<Transaction>[] = [
   {
     accessorKey: 'policy_number',
     header: 'Policy No.',
-    cell: ({ row }) => {
-      const policyNumber = row.original.policy_number
-      if (policyNumber && policyNumber.trim() !== '') {
-        return (
-          <span className="font-mono text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-md font-semibold border border-primary/20">
-            {policyNumber}
-          </span>
-        )
-      }
-      return <p className="font-medium text-muted-foreground">N/A</p>
-    },
+    cell: ({ row }) => (
+      <PolicyBadge value={row.original.policy_number} />
+    ),
   },
   {
     accessorKey: 'certificate_no',
@@ -109,12 +75,7 @@ const policyColumns: ColumnDef<Transaction>[] = [
           <p className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">
             {paymentId && paymentId.trim() !== '' ? paymentId : 'N/A'}
           </p>
-          {status && (
-            <span className={cn('inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold', cfg.className)}>
-              <span className={cn('w-1.5 h-1.5 rounded-full', cfg.dotClass)} />
-              {status.toUpperCase()}
-            </span>
-          )}
+          {status && <StatusBadge status={status} />}
         </div>
       )
     },
@@ -174,13 +135,13 @@ const policyColumns: ColumnDef<Transaction>[] = [
       const router = useRouter()
       return (
         <div className="text-right">
-          <Button
+          <button
             onClick={() => router.push(`/policies/${row.original.id}`)}
-            variant="link"
-            className="text-[#B8960C] hover:text-[#B8960C]/80"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-[#B8960C] hover:bg-[#B8960C]/10 transition-colors"
+            title="View Policy"
           >
-            View
-          </Button>
+            <Eye className="h-4 w-4" />
+          </button>
         </div>
       )
     },
@@ -291,9 +252,9 @@ export default function PoliciesPage() {
     <div className="relative mx-auto w-full space-y-6">
 
       {/* ── Stat Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl">
         {isLoading || isLoadingAll ? (
-          [...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
+          [...Array(4)].map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
           <>
             <StatCard title="Total Policies" value={String(totalPolicies)} subtitle="In selected period" icon={FileText} colorIdx={0} />
@@ -311,7 +272,6 @@ export default function PoliciesPage() {
         data={displayData?.data?.data ?? []}
         columns={policyColumns}
         renderMode="table"
-        searchKey={['policy_number', 'policy_holder', 'merchant_transaction_id']}
         searchPlaceholder="policy number, policy holder, or payment ID"
         isLoading={isLoading}
         alternateColors
@@ -321,71 +281,44 @@ export default function PoliciesPage() {
             : { enabled: false }
         }
         customAction={
-          <div className="space-y-3">
-            {/* Quick filter pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-1">
-                <Filter className="w-3.5 h-3.5" />
-                <span className="font-medium">Quick:</span>
-              </div>
-              {QUICK_FILTERS.map((f) => (
-                <Button
-                  key={f.id}
-                  variant={activeQuickFilter === f.id ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => handleQuickDateFilter(f.id)}
-                  className={cn(
-                    'h-7 text-xs rounded-full',
-                    activeQuickFilter === f.id
-                      ? 'from-primary to-lilac bg-gradient-to-r text-white border-transparent'
-                      : 'border-gray-200 hover:border-primary/40 hover:text-primary'
-                  )}
-                >
-                  {f.label}
-                </Button>
-              ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium whitespace-nowrap">From:</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn('w-[140px] justify-start text-left font-normal text-sm h-9', !fromDate && 'text-muted-foreground')}>
+                    <Calendar className="mr-2 h-4 w-4 text-gray-400" />
+                    {fromDate ? format(fromDate, 'MMM dd, yyyy') : 'Select date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent mode="single" selected={fromDate} onSelect={(d) => { setFromDate(d); setActiveQuickFilter(null) }} />
+                </PopoverContent>
+              </Popover>
             </div>
-
-            {/* Date range */}
-            <div className="flex flex-wrap items-center gap-3 p-3 bg-white rounded-xl border shadow-sm">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium whitespace-nowrap">From:</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn('w-[140px] justify-start text-left font-normal text-sm h-9', !fromDate && 'text-muted-foreground')}>
-                      <Calendar className="mr-2 h-4 w-4 text-gray-400" />
-                      {fromDate ? format(fromDate, 'MMM dd, yyyy') : 'Select date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent mode="single" selected={fromDate} onSelect={(d) => { setFromDate(d); setActiveQuickFilter(null) }} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium whitespace-nowrap">To:</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn('w-[140px] justify-start text-left font-normal text-sm h-9', !toDate && 'text-muted-foreground')}>
-                      <Calendar className="mr-2 h-4 w-4 text-gray-400" />
-                      {toDate ? format(toDate, 'MMM dd, yyyy') : 'Select date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent mode="single" selected={toDate} onSelect={(d) => { setToDate(d); setActiveQuickFilter(null) }} />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <Button onClick={handleDateFilter} disabled={!fromDate || !toDate} size="sm" className="h-9 from-primary to-lilac bg-gradient-to-r text-white">
-                Apply Filter
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium whitespace-nowrap">To:</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn('w-[140px] justify-start text-left font-normal text-sm h-9', !toDate && 'text-muted-foreground')}>
+                    <Calendar className="mr-2 h-4 w-4 text-gray-400" />
+                    {toDate ? format(toDate, 'MMM dd, yyyy') : 'Select date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent mode="single" selected={toDate} onSelect={(d) => { setToDate(d); setActiveQuickFilter(null) }} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <Button onClick={handleDateFilter} disabled={!fromDate || !toDate} size="sm" className="h-9">
+              Apply Filter
+            </Button>
+            {hasActiveFilters && (
+              <Button onClick={handleClearFilters} variant="ghost" size="sm" className="h-9 text-muted-foreground hover:text-destructive hover:bg-red-50">
+                <X className="h-4 w-4 mr-1" />
+                Clear
               </Button>
-              {hasActiveFilters && (
-                <Button onClick={handleClearFilters} variant="ghost" size="sm" className="h-9 text-muted-foreground hover:text-destructive hover:bg-red-50">
-                  <X className="h-4 w-4 mr-1" />
-                  Clear All
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         }
       />

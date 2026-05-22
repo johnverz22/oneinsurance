@@ -78,7 +78,24 @@ export default function DashboardLayout({
 
   return (
     <div className="relative h-full w-full space-y-6">
-      <ProfileOverview />
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Welcome back, {user?.name?.split(' ')[0] || 'Agent'}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Manage your sales, products, commissions, and policies from your dashboard.
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 dark:bg-green-900/30 px-3 py-1 text-xs font-medium text-green-700 dark:text-green-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+            Active
+          </span>
+          <span className="text-xs">{user?.role || 'Agent'}</span>
+        </div>
+      </div>
       <TabNavigation tabs={TABS} />
       {children}
     </div>

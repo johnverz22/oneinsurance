@@ -97,7 +97,7 @@ export default function ReferralsPage() {
 
   return (
     <div className="relative mx-auto space-y-6 overflow-hidden">
-      <div className="border-muted-foreground/20 rounded-xl border px-8 py-3.5">
+      <div>
         {(isReferralLoading || isLOBsLoading) ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <p className="text-muted-foreground text-lg mb-2">Loading referral links...</p>
