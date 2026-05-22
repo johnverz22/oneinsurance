@@ -190,7 +190,7 @@ export function TransactionDataTable({
               transactions.map((transaction, index) => (
                 <TableRow
                   key={transaction.id}
-                  className={cn('h-16', {
+                  className={cn('h-11', {
                     'bg-gray-50 dark:bg-gray-900': index % 2 === 1,
                   })}
                 >
