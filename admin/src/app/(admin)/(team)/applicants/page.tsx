@@ -22,6 +22,7 @@ import {
 import { AxiosError } from 'axios'
 import { useUpdateApplicantStatus } from '@/app/data/mutations/applicant'
 import { exportToCSV } from '@/utils/export-to-csv'
+import { PaginationBar } from '@/components/ui/design-system'
 import {
   useSendInvitation,
   useResendInvitation,
@@ -327,9 +328,9 @@ export default function ApplicantsPage() {
       )}
 
       {/* Main Content */}
-      <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-l border-r border-b p-4 shadow-sm sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
+      <div>
         {/* Section Header */}
-        <div className="mb-6 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-4 md:flex-row md:items-start">
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-start">
           <div>
             <h2 className="text-lg font-bold sm:text-xl">Applicant Management</h2>
             <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
@@ -339,20 +340,20 @@ export default function ApplicantsPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-64 md:w-80">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
+                <Search className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
               </div>
               <input
                 type="text"
                 placeholder="Search applicants..."
                 value={searchKey}
                 onChange={(e) => setSearchKey(e.target.value)}
-                className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
+                className="block w-full rounded-full border border-input bg-card py-2 pr-10 pl-9 text-sm leading-5 placeholder-muted-foreground shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
               />
             </div>
             {searchKey && (
               <button
                 onClick={() => setSearchKey('')}
-                className="flex w-full items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+                className="flex w-full items-center justify-center rounded-full border border-input bg-card px-6 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
               >
                 <X className="mr-2 h-4 w-4" />
                 Clear
@@ -360,7 +361,7 @@ export default function ApplicantsPage() {
             )}
             <button
               onClick={handleExportToCSV}
-              className="flex w-full items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+              className="flex w-full items-center justify-center rounded-full border border-input bg-card px-6 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
             >
               <Download className="mr-2 h-4 w-4" />
               Export
@@ -368,12 +369,13 @@ export default function ApplicantsPage() {
           </div>
         </div>
 
+        <div className="rounded-md border overflow-hidden">
         {authChecking || isDataLoading ? (
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-2 p-4">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="bg-background flex items-center gap-4 rounded-md border p-3"
+                className="bg-card flex items-center gap-4 rounded-md border p-3"
               >
                 <div className="h-10 w-10">
                   <Skeleton className="h-10 w-10 rounded-full" />
@@ -391,7 +393,7 @@ export default function ApplicantsPage() {
         ) : (
           <div>
             {searchKey && (
-              <div className="text-muted-foreground mb-4 text-sm">
+              <div className="text-muted-foreground mb-4 px-4 text-sm">
                 Showing search results for "{searchKey}" - Found {filteredApplicants.length} result(s)
               </div>
             )}
@@ -419,80 +421,18 @@ export default function ApplicantsPage() {
 
             {/* Pagination */}
             {applicantsData?.data && applicantsData.data.last_page > 1 && (
-              <div className="mt-6 flex items-center justify-between border-t pt-4">
-                <div className="text-sm text-gray-600">
-                  Showing {applicantsData.data.from || 0} to{' '}
-                  {applicantsData.data.to || 0} of{' '}
-                  {applicantsData.data.total || 0} results
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                    disabled={applicantsData.data.current_page === 1}
-                    className="rounded-full"
-                  >
-                    Previous
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from(
-                      { length: applicantsData.data.last_page },
-                      (_, i) => i + 1
-                    )
-                      .filter((pageNum) => {
-                        const current = applicantsData.data.current_page
-                        return (
-                          pageNum === 1 ||
-                          pageNum === applicantsData.data.last_page ||
-                          (pageNum >= current - 1 && pageNum <= current + 1)
-                        )
-                      })
-                      .map((pageNum, index, array) => (
-                        <React.Fragment key={pageNum}>
-                          {index > 0 && array[index - 1] !== pageNum - 1 && (
-                            <span className="px-2">...</span>
-                          )}
-                          <Button
-                            variant={
-                              applicantsData.data.current_page === pageNum
-                                ? 'default'
-                                : 'outline'
-                            }
-                            size="sm"
-                            onClick={() => setPage(pageNum)}
-                            className={`h-8 w-8 rounded-full p-0 ${
-                              applicantsData.data.current_page === pageNum
-                                ? 'bg-green-600 hover:bg-green-700'
-                                : ''
-                            }`}
-                          >
-                            {pageNum}
-                          </Button>
-                        </React.Fragment>
-                      ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setPage((prev) =>
-                        Math.min(applicantsData.data.last_page, prev + 1)
-                      )
-                    }
-                    disabled={
-                      applicantsData.data.current_page ===
-                      applicantsData.data.last_page
-                    }
-                    className="rounded-full"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
+              <PaginationBar
+                currentPage={applicantsData.data.current_page}
+                lastPage={applicantsData.data.last_page}
+                total={applicantsData.data.total}
+                from={applicantsData.data.from ?? undefined}
+                to={applicantsData.data.to ?? undefined}
+                onPageChange={setPage}
+              />
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Approve Confirmation Dialog */}

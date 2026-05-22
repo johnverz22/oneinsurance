@@ -17,37 +17,37 @@ const C = {
   // Use var(--primary) so it matches the system's exact primary color
   green: 'var(--primary)',
   greenDark: 'color-mix(in oklch, var(--primary) 70%, black)',
-  greenLight: 'color-mix(in oklch, var(--primary) 12%, white)',
-  greenBorder: 'color-mix(in oklch, var(--primary) 35%, white)',
+  greenLight: 'oklch(from var(--primary) l c h / 0.1)',
+  greenBorder: 'oklch(from var(--primary) l c h / 0.3)',
   // Blues (changed to gold)
   blue: '#B8960C',
-  blueLight: '#FEF9E7',
-  blueBorder: '#F0D060',
+  blueLight: 'rgba(184, 150, 12, 0.08)',
+  blueBorder: 'rgba(184, 150, 12, 0.3)',
   blueMid: '#B8960C',
-  // Neutrals
-  white: '#FFFFFF',
-  bg: '#F9FAFB',
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
-  text: '#111827',
-  textMid: '#374151',
-  textMuted: '#6B7280',
-  textFaint: '#9CA3AF',
+  // Neutrals — theme-aware via CSS variables
+  white: 'hsl(var(--card))',
+  bg: 'hsl(var(--muted))',
+  border: 'hsl(var(--border))',
+  borderLight: 'hsl(var(--border))',
+  text: 'hsl(var(--foreground))',
+  textMid: 'hsl(var(--foreground))',
+  textMuted: 'hsl(var(--muted-foreground))',
+  textFaint: 'hsl(var(--muted-foreground))',
   // Destructive
   red: '#DC2626',
   // Purple
   purple: '#7C3AED',
-  purpleLight: '#F5F3FF',
-  purpleBorder: '#DDD6FE',
+  purpleLight: 'rgba(124, 58, 237, 0.08)',
+  purpleBorder: 'rgba(124, 58, 237, 0.3)',
 }
 
 const baseInput: React.CSSProperties = {
   padding: '7px 10px',
   fontSize: 13,
-  border: `1px solid #D1D5DB`,
+  border: `1px solid hsl(var(--input))`,
   borderRadius: 6,
-  background: '#FFFFFF',
-  color: '#1A1A2E',
+  background: 'hsl(var(--card))',
+  color: 'hsl(var(--foreground))',
   outline: 'none',
   fontFamily: 'inherit',
   boxSizing: 'border-box',
@@ -197,7 +197,7 @@ function SimRow({
   sign?: '+' | '-'
   strikethrough?: boolean
 }) {
-  const tagBg = tagScheme === 'green' ? C.greenLight : tagScheme === 'blue' ? '#DBEAFE' : '#EDE9FE'
+  const tagBg = tagScheme === 'green' ? C.greenLight : tagScheme === 'blue' ? 'rgba(184, 150, 12, 0.15)' : 'rgba(124, 58, 237, 0.12)'
   const tagCol = tagScheme === 'green' ? C.green : tagScheme === 'blue' ? C.blueMid : C.purple
   const valCol = sign === '+' ? C.green : sign === '-' ? C.red : C.textMid
   return (
@@ -232,10 +232,11 @@ function SimTotal({ label, value, scheme }: { label: string; value: string; sche
         borderRadius: 8,
         background: bg,
         border: `1px solid ${border}`,
+        gap: 8,
       }}
     >
       <span style={{ fontSize: 12, fontWeight: 600, color: col }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 700, color: col }}>₱ {value}</span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: col, whiteSpace: 'nowrap' }}>₱{value}</span>
     </div>
   )
 }

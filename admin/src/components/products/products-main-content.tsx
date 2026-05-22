@@ -80,12 +80,12 @@ export default function ProductsMainContent({
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 w-12">#</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Product Name</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Provider</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Line of Business</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50 border-y">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground w-12">#</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Product Name</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Provider</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Line of Business</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -94,7 +94,7 @@ export default function ProductsMainContent({
                 <TableRow
                   key={assignment.product.id}
                   onClick={() => handleProductClick(assignment)}
-                  className={cn('cursor-pointer', index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white')}
+                  className={cn('cursor-pointer', index % 2 === 1 ? 'bg-muted/30' : '')}
                 >
                   <TableCell className="text-gray-400 text-sm font-mono">{index + 1}</TableCell>
                   <TableCell className="font-semibold text-slate-900">

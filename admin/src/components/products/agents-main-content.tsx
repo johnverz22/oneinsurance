@@ -314,12 +314,12 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200">
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Agent Code</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Email</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Lines of Business</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">Status</TableHead>
-              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600 text-right w-24">Actions</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50 border-y">
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Agent Code</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Email</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Lines of Business</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">Status</TableHead>
+              <TableHead className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground text-right w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -337,7 +337,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                 return (
                   <TableRow
                     key={agentAssignment.agent.id}
-                    className={cn(index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white')}
+                    className={cn(index % 2 === 1 ? 'bg-muted/30' : '')}
                   >
                     <TableCell className="font-mono font-medium text-slate-900">
                       {agentAssignment.agent.settings?.code
