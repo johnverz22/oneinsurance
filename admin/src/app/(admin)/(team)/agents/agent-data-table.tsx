@@ -206,11 +206,11 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow
               key={headerGroup.id}
-              className="bg-gray-50 hover:bg-gray-50 border-y border-gray-200"
+              className="bg-muted/50 hover:bg-muted/50 border-y"
             >
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-gray-600">
+                  <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -231,9 +231,9 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
                 data-state={row.getIsSelected() && 'selected'}
                 onClick={() => onRowClick?.(row.original)}
                 className={cn(
-                  'h-16 border-b',
-                  index % 2 === 1 ? 'bg-gray-100 dark:bg-gray-900' : 'bg-white',
-                  { 'cursor-pointer hover:bg-gray-50': onRowClick }
+                  'h-12 border-b',
+                  index % 2 === 1 ? 'bg-muted/30' : '',
+                  { 'cursor-pointer hover:bg-muted/50': onRowClick }
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
@@ -269,7 +269,7 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 rounded-md p-0"
+              className="h-8 w-8 rounded-full p-0"
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
@@ -278,7 +278,7 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 rounded-md p-0"
+              className="h-8 w-8 rounded-full p-0"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
@@ -305,7 +305,7 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
                   variant={table.getState().pagination.pageIndex === pageIdx ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => table.setPageIndex(pageIdx)}
-                  className={cn('h-8 w-8 rounded-md p-0 text-sm', {
+                  className={cn('h-8 w-8 rounded-full p-0 text-sm', {
                     'from-primary to-accent bg-gradient-to-r text-white border-transparent': table.getState().pagination.pageIndex === pageIdx
                   })}
                 >
@@ -317,7 +317,7 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 rounded-md p-0"
+              className="h-8 w-8 rounded-full p-0"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
@@ -326,7 +326,7 @@ export function AgentDataTable<TData extends Record<string, any>, TValue>({
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-8 rounded-md p-0"
+              className="h-8 w-8 rounded-full p-0"
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >

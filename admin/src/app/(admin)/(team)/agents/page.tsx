@@ -47,6 +47,7 @@ import { removeLocalStorage } from '@/utils/remove-session-storage'
 import { AgentDataTable, AgentDataTableAction } from './agent-data-table'
 import { exportToCSV } from '@/utils/export-to-csv'
 import { Badge } from '@/components/ui/badge'
+import { PaginationBar } from '@/components/ui/design-system'
 
 export default function AgentsPage() {
   const router = useRouter()
@@ -232,19 +233,54 @@ export default function AgentsPage() {
       {
         id: 'actions',
         header: 'Actions',
-        cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              router.push(`/agents/${row.original.id}/policies`)
-            }}
-            className="text-[#B8960C] hover:text-[#B8960C]/80 hover:bg-[#B8960C]/10"
-          >
-            View Transactions
-          </Button>
-        ),
+        cell: ({ row }) => {
+          const agent = row.original
+          return (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/agents/${agent.id}/policies`)
+                }}
+                className="p-1.5 rounded-md text-gray-400 hover:text-[#B8960C] hover:bg-[#B8960C]/10 transition-colors"
+                title="View Transactions"
+              >
+                <ArrowUpRight className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  router.push(`/agents/${agent.id}/profile`)
+                }}
+                className="p-1.5 rounded-md text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                title="View Profile"
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedToView(agent)
+                  setIsDetailsOpen(true)
+                }}
+                className="p-1.5 rounded-md text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                title="View Documents"
+              >
+                <Search className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteClick(agent)
+                }}
+                className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Deactivate"
+              >
+                <Trash className="h-4 w-4" />
+              </button>
+            </div>
+          )
+        },
       },
     ],
     [router]
@@ -598,9 +634,9 @@ export default function AgentsPage() {
   return (
     <div className="min-h-screen">
       {/* Main Content */}
-      <div className="relative z-10 min-h-[400px] rounded-tl-none rounded-tr-3xl rounded-b-3xl border border-l border-r border-b p-4 shadow-sm sm:min-h-[500px] sm:p-6 md:p-8 lg:min-h-screen">
+      <div>
         {/* Section Header */}
-        <div className="mb-6 flex flex-col justify-between gap-3 sm:mb-8 sm:gap-4 md:flex-row md:items-start">
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-start">
           <div>
             <h2 className="text-lg font-bold sm:text-xl">Agent Management</h2>
             <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
@@ -610,7 +646,7 @@ export default function AgentsPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-64 md:w-80">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-gray-400 sm:h-5 sm:w-5" />
+                <Search className="h-4 w-4 text-muted-foreground sm:h-5 sm:w-5" />
               </div>
               <input
                 type="text"
@@ -622,13 +658,13 @@ export default function AgentsPage() {
                     handleSearchButtonClick()
                   }
                 }}
-                className="block w-full rounded-full border border-gray-300 bg-white py-2 pr-10 pl-9 text-sm leading-5 placeholder-gray-400 shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
+                className="block w-full rounded-full border border-input bg-card py-2 pr-10 pl-9 text-sm leading-5 placeholder-muted-foreground shadow-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 focus:outline-none sm:py-2.5 sm:pl-10"
               />
             </div>
             {isSearchMode && (
               <button
                 onClick={handleClearSearch}
-                className="flex w-full items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+                className="flex w-full items-center justify-center rounded-full border border-input bg-card px-6 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
               >
                 <X className="mr-2 h-4 w-4" />
                 Clear
@@ -636,7 +672,7 @@ export default function AgentsPage() {
             )}
             <button
               onClick={handleExportToCSV}
-              className="flex w-full items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
+              className="flex w-full items-center justify-center rounded-full border border-input bg-card px-6 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none sm:w-auto"
             >
               <Download className="mr-2 h-4 w-4" />
               Export
@@ -644,12 +680,14 @@ export default function AgentsPage() {
           </div>
         </div>
 
+        <div className="rounded-md border overflow-hidden">
+
         {authChecking || isDataLoading ? (
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-2 p-4">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="bg-background flex items-center gap-4 rounded-md border p-3"
+                className="bg-card flex items-center gap-4 rounded-md border p-3"
               >
                 <div className="h-10 w-10">
                   <Skeleton className="h-10 w-10 rounded-full" />
@@ -667,7 +705,7 @@ export default function AgentsPage() {
         ) : (
           <div>
             {isSearchMode && (
-              <div className="text-muted-foreground mb-4 text-sm">
+              <div className="text-muted-foreground mb-4 px-4 text-sm">
                 Showing search results for "{searchKey}" - Found{' '}
                 {displayData?.data?.data?.length || 0} result(s)
               </div>
@@ -679,7 +717,6 @@ export default function AgentsPage() {
                 columns={columns}
                 data={isSearchMode ? (displayData?.data?.data ?? []) : agentsOnly}
                 onRowClick={(row) => handleRowClick(row)}
-                getRowActions={getActionsForAgent}
                 enableColumnVisibility={false}
                 enablePagination={false}
                 pageSize={1000}
@@ -695,83 +732,19 @@ export default function AgentsPage() {
             )}
 
             {/* Pagination */}
-            {!isSearchMode && displayData?.data && displayData.data.total > 0 && (
-              <div className="mt-6 flex items-center justify-between border-t pt-4">
-                <div className="text-sm text-gray-600">
-                  Showing {displayData.data.from || 0} to{' '}
-                  {displayData.data.to || 0} of{' '}
-                  {displayData.data.total || 0} results
-                </div>
-                {displayData.data.last_page > 1 && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                      disabled={displayData.data.current_page === 1}
-                      className="rounded-full"
-                    >
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from(
-                        { length: displayData.data.last_page },
-                        (_, i) => i + 1
-                      )
-                        .filter((pageNum) => {
-                          const current = displayData.data.current_page
-                          return (
-                            pageNum === 1 ||
-                            pageNum === displayData.data.last_page ||
-                            (pageNum >= current - 1 && pageNum <= current + 1)
-                          )
-                        })
-                        .map((pageNum, index, array) => (
-                          <React.Fragment key={pageNum}>
-                            {index > 0 && array[index - 1] !== pageNum - 1 && (
-                              <span className="px-2">...</span>
-                            )}
-                            <Button
-                              variant={
-                                displayData.data.current_page === pageNum
-                                  ? 'default'
-                                  : 'outline'
-                              }
-                              size="sm"
-                              onClick={() => setPage(pageNum)}
-                              className={`h-8 w-8 rounded-full p-0 ${
-                                displayData.data.current_page === pageNum
-                                  ? 'bg-green-600 hover:bg-green-700'
-                                  : ''
-                              }`}
-                            >
-                              {pageNum}
-                            </Button>
-                          </React.Fragment>
-                        ))}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setPage((prev) =>
-                          Math.min(displayData.data.last_page, prev + 1)
-                        )
-                      }
-                      disabled={
-                        displayData.data.current_page ===
-                        displayData.data.last_page
-                      }
-                      className="rounded-full"
-                    >
-                      Next
-                    </Button>
-                  </div>
-                )}
-              </div>
+            {!isSearchMode && displayData?.data && displayData.data.total > 0 && displayData.data.last_page > 1 && (
+              <PaginationBar
+                currentPage={displayData.data.current_page}
+                lastPage={displayData.data.last_page}
+                total={displayData.data.total}
+                from={displayData.data.from ?? undefined}
+                to={displayData.data.to ?? undefined}
+                onPageChange={setPage}
+              />
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Delete confirmation dialog */}

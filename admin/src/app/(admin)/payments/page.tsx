@@ -438,131 +438,91 @@ export default function TransactionsPage() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex justify-between">
-              <div className="flex flex-1 items-end gap-2">
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Search by proposal number, policy ID, transaction ID..."
-                    className="max-w-md rounded-full"
-                  />
-                  <Button className="from-primary to-lilac rounded-full bg-gradient-to-r text-white">
-                    Search
-                  </Button>
-                </div>
-                <div>
-                  <Select
-                    value={selectedStatus}
-                    onValueChange={setSelectedStatus}
-                  >
-                    <SelectTrigger className="w-[180px] rounded-full">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="dateFrom"
-                    className="text-muted-foreground text-xs font-medium"
-                  >
-                    Date From
-                  </Label>
-                  <DateTimePicker
-                    variant="date"
-                    mode="single"
-                    value={dateFrom}
-                    onChange={(date) => setDateFrom(date)}
-                    disabled={(date) => {
-                      const today = new Date()
-                      today.setHours(23, 59, 59, 999)
-
-                      // Disable future dates
-                      if (date > today) return true
-
-                      // Disable dates after dateTo if dateTo is set
-                      if (dateTo && date > dateTo) return true
-
-                      return false
-                    }}
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label
-                    htmlFor="dateTo"
-                    className="text-muted-foreground text-xs font-medium"
-                  >
-                    Date To
-                  </Label>
-                  <DateTimePicker
-                    variant="date"
-                    mode="single"
-                    value={dateTo}
-                    onChange={(date) => setDateTo(date)}
-                    disabled={(date) => {
-                      const today = new Date()
-                      today.setHours(23, 59, 59, 999)
-
-                      // Disable future dates
-                      if (date > today) return true
-
-                      // Disable dates before dateFrom if dateFrom is set
-                      if (dateFrom && date < dateFrom) return true
-
-                      return false
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  className="from-primary to-lilac rounded-full bg-gradient-to-r text-white"
-                  onClick={() => setIsProcessPaymentOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Process Payment
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={handleGeneratePayout}
-                  disabled={generatePayoutMutation.isPending}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {generatePayoutMutation.isPending
-                    ? 'Generating...'
-                    : 'Generate Payout'}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={handleUploadCSVClick}
-                  disabled={uploadPayoutCsvMutation.isPending}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {uploadPayoutCsvMutation.isPending
-                    ? 'Uploading...'
-                    : 'Upload Payout CSV'}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="hidden"
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <Select
+                value={selectedStatus}
+                onValueChange={setSelectedStatus}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="w-[140px]">
+                <DateTimePicker
+                  variant="date"
+                  mode="single"
+                  value={dateFrom}
+                  onChange={(date) => setDateFrom(date)}
+                  disabled={(date) => {
+                    const today = new Date()
+                    today.setHours(23, 59, 59, 999)
+                    if (date > today) return true
+                    if (dateTo && date > dateTo) return true
+                    return false
+                  }}
                 />
-                <Button
-                  variant="outline"
-                  className="rounded-full"
-                  onClick={handleExportToCSV}
-                  disabled={isExporting}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  {isExporting ? 'Exporting...' : 'Export to CSV'}
-                </Button>
               </div>
+              <span className="text-xs text-muted-foreground">to</span>
+              <div className="w-[140px]">
+                <DateTimePicker
+                  variant="date"
+                  mode="single"
+                  value={dateTo}
+                  onChange={(date) => setDateTo(date)}
+                  disabled={(date) => {
+                    const today = new Date()
+                    today.setHours(23, 59, 59, 999)
+                    if (date > today) return true
+                    if (dateFrom && date < dateFrom) return true
+                    return false
+                  }}
+                />
+              </div>
+              <Button
+                onClick={() => setIsProcessPaymentOpen(true)}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Process Payment
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleGeneratePayout}
+                disabled={generatePayoutMutation.isPending}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                {generatePayoutMutation.isPending
+                  ? 'Generating...'
+                  : 'Generate Payout'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleUploadCSVClick}
+                disabled={uploadPayoutCsvMutation.isPending}
+              >
+                <Upload className="mr-1 h-4 w-4" />
+                {uploadPayoutCsvMutation.isPending
+                  ? 'Uploading...'
+                  : 'Upload Payout CSV'}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                onClick={handleExportToCSV}
+                disabled={isExporting}
+              >
+                <Download className="mr-1 h-4 w-4" />
+                {isExporting ? 'Exporting...' : 'Export to CSV'}
+              </Button>
             </div>
 
             <PayoutDataTable

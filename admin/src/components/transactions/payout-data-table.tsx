@@ -249,16 +249,13 @@ export function PayoutDataTable({
   })
 
   return (
-    <div className="rounded-lg border bg-white">
-      <div className="p-6">
-        <h2 className="text-lg font-semibold">Payment Transaction</h2>
-      </div>
+    <div className="rounded-md border overflow-hidden">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="bg-muted/50 hover:bg-muted/50 border-y">
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead key={header.id} className="py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -286,6 +283,7 @@ export function PayoutDataTable({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
+                className="h-12"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -303,11 +301,9 @@ export function PayoutDataTable({
           )}
         </TableBody>
       </Table>
-      <div className="border-t p-4">
-        <div className="text-muted-foreground flex items-center justify-between text-sm">
-          <div>
-            Showing {table.getRowModel().rows.length} of {data.length} payments
-          </div>
+      <div className="border-t px-5 py-3">
+        <div className="text-muted-foreground text-sm">
+          Showing {table.getRowModel().rows.length} of {data.length} payments
         </div>
       </div>
     </div>
