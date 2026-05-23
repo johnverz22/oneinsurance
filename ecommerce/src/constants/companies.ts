@@ -1,5 +1,18 @@
 import { InsuranceCompany } from '@/types/insurance-company'
 
+// Brand colors for each carrier (used in plan cards)
+export const CARRIER_BRAND_COLORS: Record<string, { bg: string; text: string; invertLogo: boolean; logoWhite?: string }> = {
+  MALAYAN: { bg: '#1B4B8F', text: '#ffffff', invertLogo: true },
+  OONAPH: { bg: '#5B2D8E', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/1 Oona-white.svg' },
+  PACIFIC: { bg: '#E8A838', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/pacific-cross-white.svg' },
+  STANDARD: { bg: '#1A5632', text: '#ffffff', invertLogo: true },
+  PIONEER: { bg: '#C41E3A', text: '#ffffff', invertLogo: true },
+  PARAMOUNT: { bg: '#003366', text: '#ffffff', invertLogo: true },
+  AXAPH: { bg: '#00008F', text: '#ffffff', invertLogo: true },
+  PHILCARE: { bg: '#0072BC', text: '#ffffff', invertLogo: true },
+  MAXICARE: { bg: '#E31837', text: '#ffffff', invertLogo: true },
+}
+
 export const COMPANIES = [
   {
     id: 'malayan-insurance',
