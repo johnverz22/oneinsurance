@@ -14,16 +14,21 @@ export function extractPlanBenefits(plan: InsurancePlan) {
 }
 
 export function extractUniqueCoverageNames(plan: InsurancePlan) {
-  if (!plan || !plan.MainBenefits) {
+  if (!plan) {
     return []
   }
 
-  const mainBenefits = (plan.MainBenefits || []).filter(
-    (benefit) => benefit.IsMainBenefit === 'Y' && benefit.CoverageName
-  )
+  // Use MainBenefits if available, otherwise fall back to AddonBenefits
+  const sourceBenefits = (plan.MainBenefits && plan.MainBenefits.length > 0)
+    ? plan.MainBenefits
+    : (plan.AddonBenefits || [])
+
+  if (sourceBenefits.length === 0) {
+    return []
+  }
 
   // Group by CoverageName
-  const groupedByCoverage = (plan.MainBenefits || []).reduce(
+  const groupedByCoverage = sourceBenefits.reduce(
     (acc, benefit) => {
       const coverageName = benefit.CoverageName!
 
@@ -37,7 +42,7 @@ export function extractUniqueCoverageNames(plan: InsurancePlan) {
       acc[coverageName].push(benefit)
       return acc
     },
-    {} as Record<string, typeof mainBenefits>
+    {} as Record<string, typeof sourceBenefits>
   )
 
   // Get one representative benefit per coverage group
@@ -119,13 +124,20 @@ export function groupPlanBenefits(plan: InsurancePlan) {
 }
 
 export function groupBenefits(plan: InsurancePlan) {
-  if (!plan || !plan.MainBenefits) {
+  if (!plan) {
     return []
   }
 
-  const mainBenefits = plan.MainBenefits || []
+  // Use MainBenefits if available, otherwise fall back to AddonBenefits
+  const benefits = (plan.MainBenefits && plan.MainBenefits.length > 0)
+    ? plan.MainBenefits
+    : (plan.AddonBenefits || [])
 
-  const benefits = mainBenefits.reduce(
+  if (benefits.length === 0) {
+    return []
+  }
+
+  const grouped = benefits.reduce(
     (grp, benefit) => {
       const coverageName = benefit.CoverageName || benefit.SubCoverageName
 
@@ -142,7 +154,7 @@ export function groupBenefits(plan: InsurancePlan) {
     {} as Record<string, InsuranceBenefit[]>
   )
 
-  return Object.entries(benefits)
+  return Object.entries(grouped)
     .map(([coverageName, benefits]) => ({
       coverageName,
       benefits,

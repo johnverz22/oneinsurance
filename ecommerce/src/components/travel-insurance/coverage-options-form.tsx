@@ -20,6 +20,7 @@ import { getEcho } from '@/lib/echo'
 import axios from 'axios'
 import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
 import { storePlanName } from '@/utils/custom-fields-storage'
+import { COMPANIES } from '@/constants/companies'
 
 function ServerConnectionIssue() {
   return (
@@ -119,8 +120,8 @@ export function CoverageOptionsForm() {
 
   // Configuration constants
   const CONCURRENCY_LIMIT = 5
-  const REQUEST_TIMEOUT = 10000 // 10 seconds
-  const ALL_PROVIDERS_TIMEOUT = 10000 // 10 seconds max wait for all providers
+  const REQUEST_TIMEOUT = 15000 // 15 seconds per request
+  const ALL_PROVIDERS_TIMEOUT = 30000 // 30 seconds max wait for all providers
 
   // Helper function: Fetch plan with timeout
   const fetchPlanWithTimeout = async (
@@ -193,6 +194,7 @@ export function CoverageOptionsForm() {
 
   // Helper: check plans and finalize loading state
   const finalizeLoading = () => {
+    console.log(`🏁 finalizeLoading called — received: ${receivedProvidersRef.current}, expected: ${expectedProvidersRef.current}`)
     const currentPlans = useTravelInsuranceStore.getState().insurancePlans
     const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
     if (!hasAnyPlans) {
@@ -204,14 +206,19 @@ export function CoverageOptionsForm() {
       console.log('✅ Plans available - clearing any error state')
       setIsError(false)
     }
-    // Stop everything — close WebSocket and clear timeout
-    closeEchoConnection()
+    // Clear timeout
     if (allProvidersTimeoutRef.current) {
       clearTimeout(allProvidersTimeoutRef.current)
       allProvidersTimeoutRef.current = null
     }
     isProcessing.current = false
     setIsLoading(false)
+
+    // Keep WebSocket open for a grace period to catch late-arriving providers
+    setTimeout(() => {
+      closeEchoConnection()
+      console.log('🔌 WebSocket connection closed after grace period')
+    }, 15000)
   }
 
   useEffect(() => {
@@ -339,21 +346,21 @@ export function CoverageOptionsForm() {
             const count = e['total_providers'] ?? 2
             expectedProvidersRef.current = count
             setExpectedProviders(count)
-            console.log(`📋 Expected providers set to: ${count}`)
+            console.log(`📋 Expected providers set to: ${count} (raw value from event: ${e['total_providers']})`)
 
-            // Hard timeout fallback — if not all providers respond within 30s, finalize anyway
+            // Hard timeout fallback — if not all providers respond within timeout, finalize anyway
             if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
             allProvidersTimeoutRef.current = setTimeout(() => {
               console.log(`⏰ Timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
               finalizeLoading()
             }, ALL_PROVIDERS_TIMEOUT)
           } else {
-            // After first provider responded, shorten the timeout to 8s for remaining providers
+            // After first provider responded, keep waiting for remaining providers
             if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
             allProvidersTimeoutRef.current = setTimeout(() => {
               console.log(`⏰ Short timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
               finalizeLoading()
-            }, 8000)
+            }, 20000)
           }
           
           processQueue()
@@ -395,9 +402,17 @@ export function CoverageOptionsForm() {
 
   const [searchFilter, setSearchFilter] = useState('')
   const debouncedSearchFilter = useDebounce(searchFilter, 300)
+  const [sortBy, setSortBy] = useState<'lowest' | 'highest'>('lowest')
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([])
 
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchFilter(event.target.value)
+  }
+
+  const toggleProvider = (code: string) => {
+    setSelectedProviders((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    )
   }
 
   const allTravelPlans = useMemo(() => {
@@ -418,8 +433,43 @@ export function CoverageOptionsForm() {
           plan.CarrierCode.toLowerCase().includes(lowerFilter) ||
           plan.Plan.CarrierPlanDesc.toLowerCase().includes(lowerFilter)
       )
-      .slice()
-  }, [insurancePlans?.data, debouncedSearchFilter])
+      .filter((plan: any) =>
+        selectedProviders.length === 0 || selectedProviders.includes(plan.CarrierCode)
+      )
+      .sort((a: any, b: any) => {
+        if (sortBy === 'lowest') {
+          return Number(a.Plan.DuePremium) - Number(b.Plan.DuePremium)
+        }
+        // highest sum insured — use the max Silimit from MainBenefits or AddonBenefits
+        const getMaxSi = (plan: any) => {
+          const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
+          return Math.max(0, ...allBenefits.map((b: any) => Number(b.Silimit || 0)))
+        }
+        return getMaxSi(b.Plan) - getMaxSi(a.Plan)
+      })
+  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders])
+
+  // Get available providers from loaded plans
+  const availableProviders = useMemo(() => {
+    if (!insurancePlans?.data) return []
+    return Array.from(new Set(insurancePlans.data.map((d: any) => d.CarrierCode))) as string[]
+  }, [insurancePlans?.data])
+
+  // Get available coverages from loaded plans
+  const availableCoverages = useMemo(() => {
+    if (!insurancePlans?.data) return []
+    const coverages = new Set<string>()
+    insurancePlans.data.forEach((provider: any) => {
+      provider.Plans.forEach((plan: any) => {
+        const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
+        allBenefits.forEach((b: any) => {
+          const name = b.CoverageName || b.SubCoverageName
+          if (name) coverages.add(name)
+        })
+      })
+    })
+    return Array.from(coverages).sort()
+  }, [insurancePlans?.data])
 
   const handleSelectPlan = (plan: InsurancePlan, carrierCode: string) => {
     if (!travelDetails.agreedToTerms) {
@@ -628,20 +678,94 @@ export function CoverageOptionsForm() {
             </div>
           </div>
         ) : (
-          <div className="relative grid h-full min-h-[60vh] w-full gap-3 pb-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            {allTravelPlans.map((item: any, index: number) => (
-              <TravelInsurancePlan
-                key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode}-${index}`}
-                plan={item.Plan}
-                carrierCode={item.CarrierCode}
-                selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
-                isAvailable={!isFormModified}
-                onSelectPlan={(plan, carrierCode) => {
-                  handleSelectPlan(plan, carrierCode)
-                  resetQuoteRefetchCount()
-                }}
-              />
-            ))}
+          <div className="relative flex min-h-[60vh] gap-6 pb-6">
+            {/* Left sidebar filters */}
+            <aside className="hidden w-[200px] shrink-0 lg:block">
+              <div className="sticky top-4 space-y-6">
+                {/* Sorted by */}
+                <div>
+                  <h4 className="text-foreground mb-2 text-sm font-bold">Sorted by</h4>
+                  <ul className="space-y-1.5">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setSortBy('lowest')}
+                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                        Lowest premium
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setSortBy('highest')}
+                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                        Highest sum insured
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* By providers */}
+                <div>
+                  <h4 className="text-foreground mb-2 text-sm font-bold">By providers</h4>
+                  <ul className="space-y-1.5">
+                    {availableProviders.map((code: string) => {
+                      const company = COMPANIES.find((c) => c.carrierCode === code)
+                      const isActive = selectedProviders.length === 0 || selectedProviders.includes(code)
+                      return (
+                        <li key={code}>
+                          <button
+                            type="button"
+                            onClick={() => toggleProvider(code)}
+                            className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                          >
+                            <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                            {company?.companyName || code}
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+
+                {/* By coverages */}
+                <div>
+                  <h4 className="text-foreground mb-2 text-sm font-bold">By coverages</h4>
+                  <ul className="max-h-[300px] space-y-1.5 overflow-y-auto">
+                    {availableCoverages.map((coverage: string) => (
+                      <li key={coverage} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-green-600" />
+                        <span className="line-clamp-2">{coverage}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </aside>
+
+            {/* Plan list */}
+            <div className="flex flex-1 flex-col gap-4">
+              <p className="text-muted-foreground text-sm">
+                We have {allTravelPlans.length} recommendation{allTravelPlans.length !== 1 ? 's' : ''} to explore.
+              </p>
+              {allTravelPlans.map((item: any, index: number) => (
+                <TravelInsurancePlan
+                  key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode}-${index}`}
+                  plan={item.Plan}
+                  carrierCode={item.CarrierCode}
+                  selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
+                  isAvailable={!isFormModified}
+                  onSelectPlan={(plan, carrierCode) => {
+                    handleSelectPlan(plan, carrierCode)
+                    resetQuoteRefetchCount()
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -674,8 +798,12 @@ function removeNullBenefitCodeItems(
     }
   })
 
+  // Keep plans that have either MainBenefits OR AddonBenefits
+  // Some providers (e.g. OONA) may return plans with only AddonBenefits
   cleanedResponse.data.Plans = cleanedResponse.data.Plans.filter(
-    (plan) => plan.MainBenefits && plan.MainBenefits.length > 0
+    (plan) =>
+      (plan.MainBenefits && plan.MainBenefits.length > 0) ||
+      (plan.AddonBenefits && plan.AddonBenefits.length > 0)
   )
 
   return cleanedResponse
