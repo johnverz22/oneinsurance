@@ -13,7 +13,7 @@ import { removeStorage } from '@/utils/remove-session-storage'
 import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 
 const CTPL_FAQS = [
   { question: 'What is CTPL Insurance?', answers: ['Compulsory Third Party Liability (CTPL) insurance is mandatory for all motor vehicle owners in the Philippines.'] },
@@ -53,6 +53,8 @@ function CtplInsurance() {
   const [subModelOptions, setSubModelOptions] = useState<{ code: string; label: string }[]>([])
   const [usageOptions, setUsageOptions] = useState<{ code: string; label: string }[]>([])
   const [loadingField, setLoadingField] = useState<string | null>(null)
+  const [motorSortBy, setMotorSortBy] = useState<'lowest' | 'highest'>('lowest')
+  const [motorSelectedProviders, setMotorSelectedProviders] = useState<string[]>([])
   const echoRef = useRef<any>(null)
   const channelRef = useRef<any>(null)
   const queueRef = useRef<string[]>([])
@@ -187,7 +189,7 @@ function CtplInsurance() {
       const endpoint = insuranceType === 'COMPREHENSIVE'
         ? `/api/motor-insurance/comprehensive/load-quote-by-cache?cacheKey=${cacheKey}`
         : `/api/motor-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
-      const res = await axios.get(endpoint, { timeout: 10000 })
+      const res = await axios.get(endpoint, { timeout: 15000 })
       const data = res.data
       if (!data.success || !data.data) return null
       const planData = data.data
@@ -212,7 +214,11 @@ function CtplInsurance() {
         if (newPlans.length > 0) {
           setPlans(prev => [...prev, ...newPlans])
           setIsLoadingPlans(false)
-          if (fallbackTimeoutRef.current) { clearTimeout(fallbackTimeoutRef.current); fallbackTimeoutRef.current = null }
+          // Reset timeout to wait for more providers (20s grace period)
+          if (fallbackTimeoutRef.current) { clearTimeout(fallbackTimeoutRef.current) }
+          fallbackTimeoutRef.current = setTimeout(() => {
+            closeEchoConnection()
+          }, 20000)
         }
       }
     }
@@ -562,55 +568,155 @@ function CtplInsurance() {
             )}
 
             {plans.length > 0 && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-8">
-                {plans.map((plan, index) => {
+              <div className="flex gap-6 pb-8">
+                {/* Left sidebar filters */}
+                <aside className="hidden w-[200px] shrink-0 lg:block">
+                  <div className="sticky top-4 space-y-6">
+                    <div>
+                      <h4 className="text-gray-900 mb-2 text-sm font-bold">Sorted by</h4>
+                      <ul className="space-y-1.5">
+                        <li>
+                          <button type="button" onClick={() => setMotorSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                            <span className={`h-2.5 w-2.5 rounded-full border ${motorSortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                            Lowest premium
+                          </button>
+                        </li>
+                        <li>
+                          <button type="button" onClick={() => setMotorSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                            <span className={`h-2.5 w-2.5 rounded-full border ${motorSortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                            Highest sum insured
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-gray-900 mb-2 text-sm font-bold">By providers</h4>
+                      <ul className="space-y-1.5">
+                        {Array.from(new Set(plans.map((p: any) => p.CarrierCode))).map((code: any) => {
+                          const company = COMPANIES.find((c) => c.carrierCode === code)
+                          const isActive = motorSelectedProviders.length === 0 || motorSelectedProviders.includes(code)
+                          return (
+                            <li key={code}>
+                              <button type="button" onClick={() => setMotorSelectedProviders(prev => prev.includes(code) ? prev.filter((c: string) => c !== code) : [...prev, code])} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                                <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                                {company?.companyName || code}
+                              </button>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+                </aside>
+
+                {/* Plan cards */}
+                <div className="flex flex-1 flex-col gap-4">
+                <p className="text-muted-foreground text-sm">
+                  We have {plans.length} recommendation{plans.length !== 1 ? 's' : ''} to explore.
+                </p>
+                {[...plans]
+                  .filter((plan: any) => motorSelectedProviders.length === 0 || motorSelectedProviders.includes(plan.CarrierCode))
+                  .sort((a: any, b: any) => {
+                    const pa = parseFloat(a.DuePremium) || parseFloat(a.GrossPremium) || 0
+                    const pb = parseFloat(b.DuePremium) || parseFloat(b.GrossPremium) || 0
+                    if (motorSortBy === 'lowest') return pa - pb
+                    const getMaxSi = (plan: any) => Math.max(0, ...(plan.MainBenefits || []).map((b: any) => Number(b.Silimit || 0)))
+                    return getMaxSi(b) - getMaxSi(a)
+                  })
+                  .map((plan, index) => {
                   const carrier = COMPANIES.find(c => c.carrierCode === plan.CarrierCode)
                   const premium = parseFloat(plan.DuePremium) || parseFloat(plan.GrossPremium) || parseFloat(plan.BeforeVatPremium) || Number(plan.Premium) || 0
                   const benefits = plan.MainBenefits || []
+                  const brandColor = CARRIER_BRAND_COLORS[plan.CarrierCode] || { bg: '#374151', invertLogo: false, logoWhite: undefined }
+
+                  // Top 3 benefits with amounts
+                  const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
+
                   return (
-                    <div key={index} className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md">
-                      {/* Logo top-left */}
-                      <div className="mb-2 flex items-center justify-start h-10">
-                        {carrier?.image
-                          ? <Image src={carrier.image} alt={carrier.companyName} width={100} height={40} className="object-contain object-left" />
-                          : <span className="text-xs font-semibold text-gray-500">{plan.CarrierCode}</span>
-                        }
+                    <div key={index} className="flex w-full overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-lg">
+                      {/* Left brand block */}
+                      <div
+                        className="flex w-[140px] shrink-0 flex-col items-center justify-center rounded-l-xl p-4 sm:w-[160px] md:w-[180px]"
+                        style={{ backgroundColor: brandColor.bg }}
+                      >
+                        {brandColor.logoWhite ? (
+                          <Image
+                            src={brandColor.logoWhite}
+                            alt={carrier?.companyName || plan.CarrierCode}
+                            className="h-auto w-[100px] object-contain sm:w-[120px]"
+                            width={120}
+                            height={80}
+                          />
+                        ) : carrier?.image && brandColor.invertLogo ? (
+                          <Image
+                            src={carrier.image}
+                            alt={carrier.companyName}
+                            className="h-auto w-[100px] object-contain brightness-0 invert sm:w-[120px]"
+                            width={120}
+                            height={80}
+                          />
+                        ) : (
+                          <span className="text-center text-lg font-bold uppercase leading-tight tracking-wide text-white sm:text-xl">
+                            {carrier?.companyName || plan.CarrierCode}
+                          </span>
+                        )}
                       </div>
-                      {/* Provider name small */}
-                      <p className="text-xs text-gray-500 mb-1">{carrier?.companyName || plan.CarrierCode}</p>
-                      {/* Plan name + price row */}
-                      <div className="flex items-start justify-between gap-2 mb-3">
-                        <h3 className="text-base font-black text-gray-900 leading-tight flex-1">
+
+                      {/* Middle content */}
+                      <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
+                        <h3 className="text-base font-bold uppercase tracking-wide text-gray-900 sm:text-lg">
                           {plan.CarrierProductName || plan.CarrierPlanDesc || plan.CarrierPlanCode}
                         </h3>
-                        <span className="shrink-0 rounded-full bg-orange-400 px-3 py-1 text-sm font-bold text-white">
-                          ₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                      </div>
-                      {/* Type badge */}
-                      <div className="mb-3">
-                        <span className="rounded-full bg-blue-50 px-3 py-0.5 text-xs font-semibold text-blue-700">
-                          {insuranceType === 'CTPL' ? 'CTPL' : 'Comprehensive'}
-                        </span>
-                      </div>
-                      {/* Benefits */}
-                      {benefits.length > 0 && (
-                        <div className="mb-4 space-y-1.5 flex-1">
-                          {benefits.slice(0, 5).map((benefit: any, i: number) => (
-                            <div key={i} className="flex items-start gap-2">
-                              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
-                              <span className="text-xs font-medium uppercase text-gray-700">{benefit.BenefitDesc}</span>
-                            </div>
-                          ))}
-                          {benefits.length > 5 && <p className="text-xs text-gray-400 italic">and many more...</p>}
+                        <div className="mt-1 mb-3">
+                          <span className="rounded-full bg-blue-50 px-3 py-0.5 text-xs font-semibold text-blue-700">
+                            {insuranceType === 'CTPL' ? 'CTPL' : 'Comprehensive'}
+                          </span>
                         </div>
-                      )}
-                      <Button className="bg-primary from-primary to-accent mt-auto h-12 w-full rounded-full bg-gradient-to-r via-90% text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50" onClick={() => handleBuyNow(plan)}>
-                        Get Started
-                      </Button>
+                        {benefitsWithAmounts.length > 0 ? (
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                            {benefitsWithAmounts.map((b: any, i: number) => (
+                              <div key={i} className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-gray-900">
+                                  {b.DefaultLimitDesc || `Php ${Number(b.Silimit).toLocaleString('en-PH')}`}
+                                </p>
+                                <p className="truncate text-xs text-gray-500">{b.BenefitDesc}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : benefits.length > 0 ? (
+                          <div className="space-y-1">
+                            {benefits.slice(0, 3).map((b: any, i: number) => (
+                              <div key={i} className="flex items-start gap-2">
+                                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
+                                <span className="text-xs font-medium text-gray-700">{b.BenefitDesc}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                        {benefits.length > 3 && (
+                          <p className="mt-2 text-xs text-gray-400">View more ›</p>
+                        )}
+                      </div>
+
+                      {/* Right price + button */}
+                      <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
+                        <span className="text-[10px] uppercase tracking-wide text-gray-400">PHP</span>
+                        <span className="text-xl font-black text-gray-900 sm:text-2xl">
+                          {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </span>
+                        <span className="mb-3 text-[10px] uppercase tracking-wide text-gray-400">Premium</span>
+                        <Button
+                          size="sm"
+                          className="w-full rounded-md bg-[#2E7D32] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1B5E20] sm:text-sm"
+                          onClick={() => handleBuyNow(plan)}
+                        >
+                          Apply Now
+                        </Button>
+                      </div>
                     </div>
                   )
                 })}
+                </div>
               </div>
             )}
           </div>

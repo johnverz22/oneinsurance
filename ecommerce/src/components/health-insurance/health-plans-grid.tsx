@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { useHealthAvailStore } from '@/store/health-avail-store'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 
 function getPremium(plan: any): number {
   return parseFloat(
@@ -49,19 +49,51 @@ function getProvider(plan: any) {
 
 export function HealthPlansGrid() {
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<'lowest' | 'highest'>('lowest')
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const params = useParams()
   const router = useRouter()
   const agentCode = params['agent-code'] as string
   const { compareQuotePlans, addItem, isLoadingPlans, plansError } = useHealthCartStore()
   const { setStep } = useHealthAvailStore()
 
+  const toggleProvider = (code: string) => {
+    setSelectedProviders((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    )
+  }
+
+  const availableProviders = useMemo(() => {
+    if (!compareQuotePlans.length) return [] as string[]
+    const providers = new Set<string>()
+    compareQuotePlans.forEach((plan) => {
+      const p = getProvider(plan)
+      if (p) providers.add(p.carrierCode)
+    })
+    return Array.from(providers)
+  }, [compareQuotePlans])
+
   const filtered = useMemo(() => {
     if (!compareQuotePlans.length) return []
-    return compareQuotePlans.filter((plan) =>
-      plan.CarrierPlanDesc?.toLowerCase().includes(search.toLowerCase()) ||
-      plan.CarrierProductName?.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [compareQuotePlans, search])
+    return compareQuotePlans
+      .filter((plan) =>
+        plan.CarrierPlanDesc?.toLowerCase().includes(search.toLowerCase()) ||
+        plan.CarrierProductName?.toLowerCase().includes(search.toLowerCase())
+      )
+      .filter((plan) => {
+        if (selectedProviders.length === 0) return true
+        const p = getProvider(plan)
+        return p ? selectedProviders.includes(p.carrierCode) : true
+      })
+      .sort((a, b) => {
+        if (sortBy === 'lowest') return getPremium(a) - getPremium(b)
+        const getMaxSi = (plan: any) => {
+          const benefits = plan.MainBenefits || []
+          return Math.max(0, ...benefits.map((b: any) => Number(b.Silimit || 0)))
+        }
+        return getMaxSi(b) - getMaxSi(a)
+      })
+  }, [compareQuotePlans, search, sortBy, selectedProviders])
 
   const handleGetStarted = (plan: typeof compareQuotePlans[0]) => {
     const provider = getProvider(plan)
@@ -192,117 +224,127 @@ export function HealthPlansGrid() {
           </Button>
         </div>
 
-        {/* Plans Grid — pixel-perfect match to travel insurance cards */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((plan) => {
-            const provider = getProvider(plan)
-            const logo = provider?.image ?? null
-            const carrierName = provider?.companyName ?? plan.CarrierProductName ?? plan.CarrierCode ?? ''
-            const premium = getPremium(plan)
-            const benefits: any[] = plan.MainBenefits ?? []
-
-            // Unique coverage names for checkmarks
-            const coverageGroups = [...new Set(
-              benefits.map((b: any) => b.CoverageName).filter(Boolean)
-            )] as string[]
-
-            // Fallback: use unique benefit descriptions if no coverage names
-            const checkmarkItems = coverageGroups.length > 0
-              ? coverageGroups.slice(0, 6)
-              : [...new Set(benefits.map((b: any) => b.BenefitDesc).filter(Boolean))].slice(0, 6) as string[]
-
-            // Benefits with amounts for the grid
-            const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc)
-            const amountItems = benefitsWithAmounts.slice(0, 4)
-
-            return (
-              <div key={plan.CarrierPlanCode} className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-
-                {/* Logo in bordered box — exactly like travel */}
-                <div className="mb-3 flex h-16 w-32 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
-                  {logo ? (
-                    <img
-                      src={logo}
-                      alt={carrierName}
-                      className="h-full w-full object-contain"
-                      onError={(e) => {
-                        const t = e.target as HTMLImageElement
-                        t.style.display = 'none'
-                      }}
-                    />
-                  ) : (
-                    <span className="text-xs font-semibold text-gray-400 text-center leading-tight">{carrierName}</span>
-                  )}
-                </div>
-
-                {/* Provider name badge — bordered pill like travel */}
-                <span className="mb-2 w-fit rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{carrierName}</span>
-
-                {/* Plan name + price — same layout as travel */}
-                <div className="mb-4 flex items-start justify-between gap-3">
-                  <h3 className="text-base font-black leading-snug text-gray-900 uppercase">
-                    {plan.CarrierPlanDesc}
-                  </h3>
-                  {premium > 0 && (
-                    <span className="shrink-0 rounded-full bg-orange-400 px-3 py-1.5 text-sm font-bold text-white whitespace-nowrap">
-                      ₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
-                    </span>
-                  )}
-                </div>
-
-                {/* Divider */}
-                {checkmarkItems.length > 0 && <hr className="mb-3 border-gray-100" />}
-
-                {/* Checkmarks — same style as travel */}
-                {checkmarkItems.length > 0 && (
-                  <ul className="mb-4 space-y-2.5">
-                    {checkmarkItems.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <svg className="text-primary mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-700">{item}</span>
+        {/* Plans list with sidebar — horizontal card layout */}
+        <div className="flex gap-6">
+          {/* Left sidebar filters */}
+          <aside className="hidden w-[200px] shrink-0 lg:block">
+            <div className="sticky top-4 space-y-6">
+              <div>
+                <h4 className="text-gray-900 mb-2 text-sm font-bold">Sorted by</h4>
+                <ul className="space-y-1.5">
+                  <li>
+                    <button type="button" onClick={() => setSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                      <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                      Lowest premium
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" onClick={() => setSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                      <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                      Highest sum insured
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-gray-900 mb-2 text-sm font-bold">By providers</h4>
+                <ul className="space-y-1.5">
+                  {availableProviders.map((code: string) => {
+                    const company = COMPANIES.find((c) => c.carrierCode === code)
+                    const isActive = selectedProviders.length === 0 || selectedProviders.includes(code)
+                    return (
+                      <li key={code}>
+                        <button type="button" onClick={() => toggleProvider(code)} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                          <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                          {company?.companyName || code}
+                        </button>
                       </li>
-                    ))}
-                  </ul>
-                )}
+                    )
+                  })}
+                </ul>
+              </div>
+            </div>
+          </aside>
 
-                {/* Benefit amounts grid — same as travel */}
-                {amountItems.length > 0 && (
-                  <>
-                    <hr className="mb-3 border-gray-100" />
-                    <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3">
-                      {amountItems.map((b: any, i: number) => (
-                        <div key={i}>
-                          <p className="text-sm font-bold text-gray-900">
-                            {b.DefaultLimitDesc || `Php ${Number(b.Silimit).toLocaleString()}`}
+          {/* Plan cards */}
+          <div className="flex flex-1 flex-col gap-4">
+            <p className="text-muted-foreground text-sm">
+              We have {filtered.length} recommendation{filtered.length !== 1 ? 's' : ''} to explore.
+            </p>
+            {filtered.map((plan) => {
+              const provider = getProvider(plan)
+              const logo = provider?.image ?? null
+              const carrierName = provider?.companyName ?? plan.CarrierProductName ?? plan.CarrierCode ?? ''
+              const premium = getPremium(plan)
+              const benefits: any[] = plan.MainBenefits ?? []
+              const brandColor = provider ? (CARRIER_BRAND_COLORS[provider.carrierCode] || { bg: '#374151', invertLogo: false, logoWhite: undefined }) : { bg: '#374151', invertLogo: false, logoWhite: undefined }
+              const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
+
+              return (
+                <div key={plan.CarrierPlanCode} className="flex w-full overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-lg">
+                  {/* Left brand block */}
+                  <div
+                    className="flex w-[140px] shrink-0 flex-col items-center justify-center rounded-l-xl p-4 sm:w-[160px] md:w-[180px]"
+                    style={{ backgroundColor: brandColor.bg }}
+                  >
+                    {brandColor.logoWhite ? (
+                      <img
+                        src={brandColor.logoWhite}
+                        alt={carrierName}
+                        className="h-auto w-[100px] object-contain sm:w-[120px]"
+                      />
+                    ) : logo && brandColor.invertLogo ? (
+                      <img
+                        src={logo}
+                        alt={carrierName}
+                        className="h-auto w-[100px] object-contain brightness-0 invert sm:w-[120px]"
+                      />
+                    ) : (
+                      <span className="text-center text-lg font-bold uppercase leading-tight tracking-wide text-white sm:text-xl">
+                        {carrierName}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Middle content */}
+                  <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
+                    <h3 className="text-base font-bold uppercase tracking-wide text-gray-900 sm:text-lg">
+                      {plan.CarrierPlanDesc}
+                    </h3>
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                      {benefitsWithAmounts.map((b: any, i: number) => (
+                        <div key={i} className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-gray-900">
+                            {b.DefaultLimitDesc || `Php ${Number(b.Silimit).toLocaleString('en-PH')}`}
                           </p>
-                          <p className="text-xs text-gray-500 leading-tight mt-0.5">{b.BenefitDesc}</p>
+                          <p className="truncate text-xs text-gray-500">{b.BenefitDesc}</p>
                         </div>
                       ))}
                     </div>
-                    {benefits.length > 4 && (
-                      <p className="mb-3 text-xs italic text-gray-400">and many more...</p>
+                    {benefits.length > 3 && (
+                      <p className="mt-2 text-xs text-gray-400">View more ›</p>
                     )}
-                  </>
-                )}
+                  </div>
 
-                {/* Spacer to push button to bottom */}
-                <div className="flex-1" />
-
-                {/* Divider before button */}
-                <hr className="mb-4 border-gray-100" />
-
-                {/* Get Started button — same as travel */}
-                <Button
-                  className="bg-primary from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
-                  onClick={() => handleGetStarted(plan)}
-                >
-                  Get Started
-                </Button>
-              </div>
-            )
-          })}
+                  {/* Right price + button */}
+                  <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
+                    <span className="text-[10px] uppercase tracking-wide text-gray-400">PHP</span>
+                    <span className="text-xl font-black text-gray-900 sm:text-2xl">
+                      {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                    <span className="mb-3 text-[10px] uppercase tracking-wide text-gray-400">Premium</span>
+                    <Button
+                      size="sm"
+                      className="w-full rounded-md bg-[#2E7D32] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1B5E20] sm:text-sm"
+                      onClick={() => handleGetStarted(plan)}
+                    >
+                      Apply Now
+                    </Button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {filtered.length === 0 && (
