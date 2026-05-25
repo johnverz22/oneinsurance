@@ -402,9 +402,16 @@ export function CoverageOptionsForm() {
 
   const [searchFilter, setSearchFilter] = useState('')
   const debouncedSearchFilter = useDebounce(searchFilter, 300)
-  const [sortBy, setSortBy] = useState<'lowest' | 'highest'>('lowest')
+  const [sortBy, setSortBy] = useState<'lowest' | 'highest' | 'addons' | 'discounts'>('lowest')
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
+  const [selectedCoverages, setSelectedCoverages] = useState<string[]>([])
+  const planListRef = useRef<HTMLDivElement>(null)
 
+  const scrollToPlans = () => {
+    setTimeout(() => {
+      planListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchFilter(event.target.value)
   }
@@ -413,6 +420,14 @@ export function CoverageOptionsForm() {
     setSelectedProviders((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     )
+    scrollToPlans()
+  }
+
+  const toggleCoverage = (coverage: string) => {
+    setSelectedCoverages((prev) =>
+      prev.includes(coverage) ? prev.filter((c) => c !== coverage) : [...prev, coverage]
+    )
+    scrollToPlans()
   }
 
   const allTravelPlans = useMemo(() => {
@@ -436,9 +451,40 @@ export function CoverageOptionsForm() {
       .filter((plan: any) =>
         selectedProviders.length === 0 || selectedProviders.includes(plan.CarrierCode)
       )
+      .filter((plan: any) => {
+        // Filter by selected coverages
+        if (selectedCoverages.length === 0) return true
+        const allBenefits = [...(plan.Plan.MainBenefits || []), ...(plan.Plan.AddonBenefits || [])]
+        const planCoverages = allBenefits.map((b: any) => b.CoverageName || b.SubCoverageName).filter(Boolean)
+        return selectedCoverages.some((c) => planCoverages.includes(c))
+      })
+      .filter((plan: any) => {
+        // Filter by add-ons: only show plans that actually have AddonBenefits with data
+        if (sortBy === 'addons') {
+          return plan.Plan.AddonBenefits && plan.Plan.AddonBenefits.length > 0
+        }
+        // Filter by discounts: only show plans that have a Discount field with a value > 0
+        if (sortBy === 'discounts') {
+          const discount = Number(plan.Plan.Discount || plan.Plan.DiscountAmount || 0)
+          return discount > 0
+        }
+        return true
+      })
       .sort((a: any, b: any) => {
         if (sortBy === 'lowest') {
           return Number(a.Plan.DuePremium) - Number(b.Plan.DuePremium)
+        }
+        if (sortBy === 'addons') {
+          // Among plans with add-ons, sort by number of add-ons descending
+          const aAddons = (a.Plan.AddonBenefits || []).length
+          const bAddons = (b.Plan.AddonBenefits || []).length
+          return bAddons - aAddons
+        }
+        if (sortBy === 'discounts') {
+          // Among discounted plans, sort by discount amount descending
+          const aDiscount = Number(a.Plan.Discount || a.Plan.DiscountAmount || 0)
+          const bDiscount = Number(b.Plan.Discount || b.Plan.DiscountAmount || 0)
+          return bDiscount - aDiscount
         }
         // highest sum insured — use the max Silimit from MainBenefits or AddonBenefits
         const getMaxSi = (plan: any) => {
@@ -447,7 +493,7 @@ export function CoverageOptionsForm() {
         }
         return getMaxSi(b.Plan) - getMaxSi(a.Plan)
       })
-  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders])
+  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages])
 
   // Get available providers from loaded plans
   const availableProviders = useMemo(() => {
@@ -646,13 +692,37 @@ export function CoverageOptionsForm() {
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
         {isLoading ? (
-          <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 py-16">
-            <svg className="text-primary h-12 w-12 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-            <p className="text-muted-foreground text-base">
-              We're searching for the best plans for you. This may take a moment...
+          <div className="flex flex-col gap-4 py-8">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex w-full overflow-hidden rounded-xl border">
+                <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[140px] rounded-none" />
+                <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
+                  <Skeleton className="h-5 w-[60%] mb-3" />
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                    <div>
+                      <Skeleton className="h-4 w-20 mb-1" />
+                      <Skeleton className="h-3 w-28" />
+                    </div>
+                    <div>
+                      <Skeleton className="h-4 w-20 mb-1" />
+                      <Skeleton className="h-3 w-28" />
+                    </div>
+                    <div>
+                      <Skeleton className="h-4 w-20 mb-1" />
+                      <Skeleton className="h-3 w-28" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-3 w-16 mt-2" />
+                </div>
+                <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4">
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-3 w-14 mb-3" />
+                  <Skeleton className="h-9 w-full rounded-md" />
+                </div>
+              </div>
+            ))}
+            <p className="text-muted-foreground text-center text-sm">
+              Searching for the best plans for you...
             </p>
           </div>
         ) : isError ? (
@@ -689,7 +759,7 @@ export function CoverageOptionsForm() {
                     <li>
                       <button
                         type="button"
-                        onClick={() => setSortBy('lowest')}
+                        onClick={() => { setSortBy('lowest'); scrollToPlans() }}
                         className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                       >
                         <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
@@ -699,11 +769,31 @@ export function CoverageOptionsForm() {
                     <li>
                       <button
                         type="button"
-                        onClick={() => setSortBy('highest')}
+                        onClick={() => { setSortBy('highest'); scrollToPlans() }}
                         className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                       >
                         <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                         Highest sum insured
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => { setSortBy('addons'); scrollToPlans() }}
+                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'addons' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                        With add-ons
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => { setSortBy('discounts'); scrollToPlans() }}
+                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'discounts' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                        With discounts
                       </button>
                     </li>
                   </ul>
@@ -735,20 +825,29 @@ export function CoverageOptionsForm() {
                 {/* By coverages */}
                 <div>
                   <h4 className="text-foreground mb-2 text-sm font-bold">By coverages</h4>
-                  <ul className="max-h-[300px] space-y-1.5 overflow-y-auto">
-                    {availableCoverages.map((coverage: string) => (
-                      <li key={coverage} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-green-600" />
-                        <span className="line-clamp-2">{coverage}</span>
-                      </li>
-                    ))}
+                  <ul className="space-y-1.5">
+                    {availableCoverages.map((coverage: string) => {
+                      const isActive = selectedCoverages.includes(coverage)
+                      return (
+                        <li key={coverage}>
+                          <button
+                            type="button"
+                            onClick={() => toggleCoverage(coverage)}
+                            className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                          >
+                            <span className={`h-2 w-2 shrink-0 rounded-full ${isActive ? 'bg-green-600' : 'bg-gray-300'}`} />
+                            <span className="line-clamp-2 text-left">{coverage}</span>
+                          </button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               </div>
             </aside>
 
             {/* Plan list */}
-            <div className="flex flex-1 flex-col gap-4">
+            <div ref={planListRef} className="flex flex-1 flex-col gap-4">
               <p className="text-muted-foreground text-sm">
                 We have {allTravelPlans.length} recommendation{allTravelPlans.length !== 1 ? 's' : ''} to explore.
               </p>

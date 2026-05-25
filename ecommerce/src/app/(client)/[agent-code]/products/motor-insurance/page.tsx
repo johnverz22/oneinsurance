@@ -14,6 +14,7 @@ import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const CTPL_FAQS = [
   { question: 'What is CTPL Insurance?', answers: ['Compulsory Third Party Liability (CTPL) insurance is mandatory for all motor vehicle owners in the Philippines.'] },
@@ -537,9 +538,28 @@ function CtplInsurance() {
             </div>
 
             {isLoadingPlans && (
-              <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 py-16">
-                <Loader2 className="text-primary h-12 w-12 animate-spin" />
-                <p className="text-muted-foreground text-base">We're searching for the best plans for you...</p>
+              <div className="flex flex-col gap-4 py-8">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex w-full overflow-hidden rounded-xl border">
+                    <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[140px] rounded-none" />
+                    <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
+                      <Skeleton className="h-5 w-[60%] mb-3" />
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                        <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
+                        <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
+                        <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
+                      </div>
+                    </div>
+                    <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4">
+                      <Skeleton className="h-8 w-20 mb-2" />
+                      <Skeleton className="h-3 w-14 mb-3" />
+                      <Skeleton className="h-9 w-full rounded-full" />
+                    </div>
+                  </div>
+                ))}
+                <p className="text-muted-foreground text-center text-sm">
+                  Searching for the best plans for you...
+                </p>
               </div>
             )}
 
@@ -573,16 +593,16 @@ function CtplInsurance() {
                 <aside className="hidden w-[200px] shrink-0 lg:block">
                   <div className="sticky top-4 space-y-6">
                     <div>
-                      <h4 className="text-gray-900 mb-2 text-sm font-bold">Sorted by</h4>
+                      <h4 className="text-foreground mb-2 text-sm font-bold">Sorted by</h4>
                       <ul className="space-y-1.5">
                         <li>
-                          <button type="button" onClick={() => setMotorSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                          <button type="button" onClick={() => setMotorSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                             <span className={`h-2.5 w-2.5 rounded-full border ${motorSortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                             Lowest premium
                           </button>
                         </li>
                         <li>
-                          <button type="button" onClick={() => setMotorSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                          <button type="button" onClick={() => setMotorSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                             <span className={`h-2.5 w-2.5 rounded-full border ${motorSortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                             Highest sum insured
                           </button>
@@ -590,14 +610,14 @@ function CtplInsurance() {
                       </ul>
                     </div>
                     <div>
-                      <h4 className="text-gray-900 mb-2 text-sm font-bold">By providers</h4>
+                      <h4 className="text-foreground mb-2 text-sm font-bold">By providers</h4>
                       <ul className="space-y-1.5">
                         {Array.from(new Set(plans.map((p: any) => p.CarrierCode))).map((code: any) => {
                           const company = COMPANIES.find((c) => c.carrierCode === code)
                           const isActive = motorSelectedProviders.length === 0 || motorSelectedProviders.includes(code)
                           return (
                             <li key={code}>
-                              <button type="button" onClick={() => setMotorSelectedProviders(prev => prev.includes(code) ? prev.filter((c: string) => c !== code) : [...prev, code])} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                              <button type="button" onClick={() => setMotorSelectedProviders(prev => prev.includes(code) ? prev.filter((c: string) => c !== code) : [...prev, code])} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                                 <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                                 {company?.companyName || code}
                               </button>
@@ -633,7 +653,7 @@ function CtplInsurance() {
                   const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
                   return (
-                    <div key={index} className="flex w-full overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-lg">
+                    <div key={index} className="bg-background flex w-full overflow-hidden rounded-xl border transition-all hover:shadow-lg">
                       {/* Left brand block */}
                       <div
                         className="flex w-[140px] shrink-0 flex-col items-center justify-center rounded-l-xl p-4 sm:w-[160px] md:w-[180px]"
@@ -664,11 +684,11 @@ function CtplInsurance() {
 
                       {/* Middle content */}
                       <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
-                        <h3 className="text-base font-bold uppercase tracking-wide text-gray-900 sm:text-lg">
+                        <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
                           {plan.CarrierProductName || plan.CarrierPlanDesc || plan.CarrierPlanCode}
                         </h3>
                         <div className="mt-1 mb-3">
-                          <span className="rounded-full bg-blue-50 px-3 py-0.5 text-xs font-semibold text-blue-700">
+                          <span className="rounded-full bg-blue-50 dark:bg-blue-900/30 px-3 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-400">
                             {insuranceType === 'CTPL' ? 'CTPL' : 'Comprehensive'}
                           </span>
                         </div>
@@ -676,10 +696,10 @@ function CtplInsurance() {
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
                             {benefitsWithAmounts.map((b: any, i: number) => (
                               <div key={i} className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-gray-900">
+                                <p className="text-foreground truncate text-sm font-semibold">
                                   {b.DefaultLimitDesc || `Php ${Number(b.Silimit).toLocaleString('en-PH')}`}
                                 </p>
-                                <p className="truncate text-xs text-gray-500">{b.BenefitDesc}</p>
+                                <p className="text-muted-foreground truncate text-xs">{b.BenefitDesc}</p>
                               </div>
                             ))}
                           </div>
@@ -688,26 +708,30 @@ function CtplInsurance() {
                             {benefits.slice(0, 3).map((b: any, i: number) => (
                               <div key={i} className="flex items-start gap-2">
                                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
-                                <span className="text-xs font-medium text-gray-700">{b.BenefitDesc}</span>
+                                <span className="text-foreground text-xs font-medium">{b.BenefitDesc}</span>
                               </div>
                             ))}
                           </div>
                         ) : null}
                         {benefits.length > 3 && (
-                          <p className="mt-2 text-xs text-gray-400">View more ›</p>
+                          <div className="mt-2 flex justify-center">
+                            <span className="text-foreground text-xs font-medium">View more ›</span>
+                          </div>
                         )}
                       </div>
 
                       {/* Right price + button */}
-                      <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
-                        <span className="text-[10px] uppercase tracking-wide text-gray-400">PHP</span>
-                        <span className="text-xl font-black text-gray-900 sm:text-2xl">
-                          {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                        <span className="mb-3 text-[10px] uppercase tracking-wide text-gray-400">Premium</span>
+                      <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[150px]">
+                        <div className="flex items-baseline gap-1 mb-1">
+                          <span className="text-foreground text-xs font-semibold">PHP</span>
+                          <span className="text-foreground text-xl font-black sm:text-2xl">
+                            {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          </span>
+                        </div>
+                        <span className="text-foreground mb-3 text-xs font-medium">Premium</span>
                         <Button
                           size="sm"
-                          className="w-full rounded-md bg-[#2E7D32] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1B5E20] sm:text-sm"
+                          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white shadow-lg hover:opacity-90 sm:text-sm"
                           onClick={() => handleBuyNow(plan)}
                         >
                           Apply Now

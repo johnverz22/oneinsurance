@@ -98,32 +98,36 @@ export function TravelInsurancePlan({
 
         {/* View more toggle */}
         {hasMore && (
-          <button
-            type="button"
-            onClick={() => setShowMore(!showMore)}
-            className="text-muted-foreground hover:text-foreground mt-2 flex items-center gap-1 text-xs font-medium transition-colors"
-          >
-            {showMore ? (
-              <>View less <ChevronUp className="h-3 w-3" /></>
-            ) : (
-              <>View more <ChevronDown className="h-3 w-3" /></>
-            )}
-          </button>
+          <div className="mt-2 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowMore(!showMore)}
+              className="text-foreground hover:text-primary flex items-center gap-1 text-xs font-medium transition-colors"
+            >
+              {showMore ? (
+                <>View less <ChevronUp className="h-3 w-3" /></>
+              ) : (
+                <>View more <ChevronDown className="h-3 w-3" /></>
+              )}
+            </button>
+          </div>
         )}
       </div>
 
       {/* Right price + button section */}
       <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
-        <span className="text-muted-foreground text-[10px] uppercase tracking-wide">PHP</span>
-        <span className="text-foreground text-xl font-black sm:text-2xl">
-          {Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-        </span>
-        <span className="text-muted-foreground mb-3 text-[10px] uppercase tracking-wide">Premium</span>
+        <div className="flex items-baseline gap-1 mb-1">
+          <span className="text-foreground text-xs font-semibold">PHP</span>
+          <span className="text-foreground text-xl font-black sm:text-2xl">
+            {Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </span>
+        </div>
+        <span className="text-foreground mb-3 text-xs font-medium">Premium</span>
 
         <Button
           type="button"
           size="sm"
-          className="w-full rounded-md bg-[#2E7D32] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1B5E20] sm:text-sm"
+          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white shadow-lg hover:opacity-90 sm:text-sm"
           disabled={!isAvailable}
           onClick={() => {
             onSelectPlan(plan, carrierCode)
