@@ -282,8 +282,8 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Agents & Teams</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 className="text-xl font-bold">Agents & Teams</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Manage product assignments across your agents and teams to
               streamline operations.
             </p>
@@ -325,7 +325,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
           <TableBody>
             {isDataLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
                   {isSearching ? 'Searching...' : 'Loading agents...'}
                 </TableCell>
               </TableRow>
@@ -339,12 +339,12 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                     key={agentAssignment.agent.id}
                     className={cn(index % 2 === 1 ? 'bg-muted/30' : '')}
                   >
-                    <TableCell className="font-mono font-medium text-slate-900">
+                    <TableCell className="font-mono font-medium">
                       {agentAssignment.agent.settings?.code
                         ? agentAssignment.agent.settings.code.toUpperCase()
                         : '-'}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">
+                    <TableCell className="text-sm text-muted-foreground">
                       {agentAssignment.agent.email}
                     </TableCell>
                     <TableCell>
@@ -366,7 +366,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
                             )}
                           </>
                         ) : (
-                          <span className="text-xs text-gray-400 italic">No assignments</span>
+                          <span className="text-xs text-muted-foreground italic">No assignments</span>
                         )}
                       </div>
                     </TableCell>
@@ -393,7 +393,7 @@ export default function AgentsMainContent({ page = 1, onPageReset, onSearchModeC
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
                   {searchQuery ? 'No agents found matching your search' : 'No agents available'}
                 </TableCell>
               </TableRow>
