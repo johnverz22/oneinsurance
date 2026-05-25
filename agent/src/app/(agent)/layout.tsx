@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useIsAgentAuthenticated } from '@/store/agent-auth-store'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ProfileOverview } from '@/components/agent/profile-overview'
-import { Tab, TabNavigation } from '@/components/ui/tab-navigation'
 import { SidebarInset } from '@/components/ui/sidebar'
 import { Header } from '@/components/layout/header'
+import { AGENT_NAVIGATIONS } from '@/constants/navigations'
 
 export default function AgentLayout({
   children,
@@ -41,12 +39,13 @@ export default function AgentLayout({
     <div className="flex h-full w-full">
       <Header
         isLoggedIn={isAuthenticated}
-        isNavigationVisible={false}
+        isNavigationVisible={true}
+        navigations={AGENT_NAVIGATIONS}
         contentContainerClassName="max-w-screen"
       />
 
       <SidebarInset>
-        <main className="bg-background max-w-app mx-auto h-full min-h-screen w-full p-4 pt-28 lg:px-8">
+        <main className="bg-background mx-auto h-full min-h-screen w-full p-4 pt-28 lg:px-8">
           {children}
         </main>
       </SidebarInset>

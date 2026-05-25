@@ -51,52 +51,12 @@ export const NAVIGATIONS = [
 
 export const AGENT_NAVIGATIONS = [
   { type: 'single', label: 'Dashboard', link: '/' },
-  { type: 'single', label: 'Transactions', link: '/transactions' },
-  {
-    type: 'multiple',
-    label: 'Clients',
-    items: [
-      {
-        title: 'Clients',
-        link: '/client-management',
-      },
-      {
-        title: 'Applications',
-        link: '/applications',
-      },
-      {
-        title: 'Quotations',
-        link: '/quotations',
-      },
-    ],
-  },
-  {
-    type: 'multiple',
-    label: 'Finance',
-    items: [
-      {
-        title: 'My Sales',
-        link: '/my-sales',
-      },
-      {
-        title: 'Overriders',
-        link: '/overriders',
-      },
-      {
-        title: 'Commissions',
-        link: '/commissions',
-      },
-      {
-        title: 'Reports',
-        link: '/reports',
-      },
-    ],
-  },
-
-  { type: 'single', label: 'Policies', link: '/product-management' },
+  { type: 'single', label: 'My Sales', link: '/my-sales' },
+  { type: 'single', label: 'Products', link: '/products' },
   { type: 'single', label: 'Referral Links', link: '/referrals' },
-  { type: 'single', label: 'Support', link: '/contact' },
-  { type: 'single', label: 'Settings', link: '/settings' },
+  { type: 'single', label: 'Commissions', link: '/commissions' },
+  { type: 'single', label: 'Policies', link: '/policies' },
+  { type: 'single', label: 'Transactions', link: '/transactions' },
 ] satisfies NavigationItem[]
 
 export const ADMIN_NAVIGATIONS = [
