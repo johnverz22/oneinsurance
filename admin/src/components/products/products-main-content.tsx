@@ -52,8 +52,8 @@ export default function ProductsMainContent({
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Insurance Products</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 className="text-xl font-bold">Insurance Products</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Manage and organize all available insurance products for easy
               assignment and monitoring.
             </p>
@@ -93,14 +93,13 @@ export default function ProductsMainContent({
               filteredProducts.map((assignment, index) => (
                 <TableRow
                   key={assignment.product.id}
-                  onClick={() => handleProductClick(assignment)}
-                  className={cn('cursor-pointer', index % 2 === 1 ? 'bg-muted/30' : '')}
+                  className={cn(index % 2 === 1 ? 'bg-muted/30' : '')}
                 >
-                  <TableCell className="text-gray-400 text-sm font-mono">{index + 1}</TableCell>
-                  <TableCell className="font-semibold text-slate-900">
+                  <TableCell className="text-muted-foreground text-sm font-mono">{index + 1}</TableCell>
+                  <TableCell className="font-semibold">
                     {assignment.product.name}
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600">
+                  <TableCell className="text-sm text-muted-foreground">
                     {assignment.product.provider.name}
                   </TableCell>
                   <TableCell>
@@ -109,7 +108,7 @@ export default function ProductsMainContent({
                         {assignment.product.line_of_business.name}
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-400 italic">No LOB assigned</span>
+                      <span className="text-xs text-muted-foreground italic">No LOB assigned</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -125,7 +124,7 @@ export default function ProductsMainContent({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
                   {searchQuery ? 'No products found matching your search' : 'No products available'}
                 </TableCell>
               </TableRow>
