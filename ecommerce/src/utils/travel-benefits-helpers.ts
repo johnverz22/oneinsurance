@@ -190,7 +190,7 @@ export function getHighlightedBenefits(
   })
 
   if (showAll) {
-    return { benefits: sorted, hasMore: false }
+    return { benefits: sorted, hasMore: parentBenefits.length > 4 }
   }
 
   const limited = sorted.slice(0, 4)
