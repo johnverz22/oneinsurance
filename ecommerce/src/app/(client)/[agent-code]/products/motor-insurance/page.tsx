@@ -653,10 +653,10 @@ function CtplInsurance() {
                   const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
                   return (
-                    <div key={index} className="bg-background flex w-full overflow-hidden rounded-xl border transition-all hover:shadow-lg">
+                    <div key={index} className="bg-background relative flex w-full rounded-xl border overflow-hidden transition-all hover:shadow-lg mb-3">
                       {/* Left brand block */}
                       <div
-                        className="flex w-[140px] shrink-0 flex-col items-center justify-center rounded-l-xl p-4 sm:w-[160px] md:w-[180px]"
+                        className="flex w-[140px] shrink-0 flex-col items-center justify-center p-4 sm:w-[160px] md:w-[180px]"
                         style={{ backgroundColor: brandColor.bg }}
                       >
                         {brandColor.logoWhite ? (
@@ -714,8 +714,10 @@ function CtplInsurance() {
                           </div>
                         ) : null}
                         {benefits.length > 3 && (
-                          <div className="mt-2 flex justify-center">
-                            <span className="text-foreground text-xs font-medium">View more ›</span>
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground shadow-sm">
+                              View more ›
+                            </span>
                           </div>
                         )}
                       </div>
@@ -728,10 +730,10 @@ function CtplInsurance() {
                             {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
                         </div>
-                        <span className="text-foreground mb-3 text-xs font-medium">Premium</span>
+                        <span className="text-primary mb-3 text-xs font-medium">Premium</span>
                         <Button
                           size="sm"
-                          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white shadow-lg hover:opacity-90 sm:text-sm"
+                          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
                           onClick={() => handleBuyNow(plan)}
                         >
                           Apply Now
