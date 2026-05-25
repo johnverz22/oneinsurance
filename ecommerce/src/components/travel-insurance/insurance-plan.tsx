@@ -38,16 +38,19 @@ export function TravelInsurancePlan({
   return (
     <div
       className={cn(
-        'bg-background relative flex w-full overflow-hidden rounded-xl border transition-all duration-200 hover:shadow-lg',
+        'relative mb-3',
+      )}
+    >
+      <div className={cn(
+        'bg-background flex w-full rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-lg',
         {
           'ring-primary shadow-lg ring-2': isSelected,
           'border-gray-200': !isSelected,
         }
-      )}
-    >
+      )}>
       {/* Left brand block */}
       <div
-        className="flex w-[140px] shrink-0 flex-col items-center justify-center rounded-l-xl p-4 sm:w-[160px] md:w-[180px]"
+        className="flex w-[140px] shrink-0 flex-col items-center justify-center p-4 sm:w-[160px] md:w-[180px]"
         style={{ backgroundColor: brandColors.bg }}
       >
         {brandColors.logoWhite ? (
@@ -84,34 +87,17 @@ export function TravelInsurancePlan({
         <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
           {benefits.slice(0, showMore ? benefits.length : 3).map((benefit, index) => (
             <div key={index} className="min-w-0">
-              <p className="text-foreground truncate text-sm font-semibold">
+              <p className="text-foreground text-sm font-semibold">
                 {benefit.Silimit
                   ? `${Number(benefit.Silimit).toLocaleString('en-PH')}`
                   : benefit.DefaultLimitDesc ?? benefit.LimitModeDesc}
               </p>
-              <p className="text-muted-foreground truncate text-xs">
+              <p className="text-muted-foreground text-xs">
                 {benefit.BenefitDesc}
               </p>
             </div>
           ))}
         </div>
-
-        {/* View more toggle */}
-        {hasMore && (
-          <div className="mt-2 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setShowMore(!showMore)}
-              className="text-foreground hover:text-primary flex items-center gap-1 text-xs font-medium transition-colors"
-            >
-              {showMore ? (
-                <>View less <ChevronUp className="h-3 w-3" /></>
-              ) : (
-                <>View more <ChevronDown className="h-3 w-3" /></>
-              )}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Right price + button section */}
@@ -122,12 +108,12 @@ export function TravelInsurancePlan({
             {Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
         </div>
-        <span className="text-foreground mb-3 text-xs font-medium">Premium</span>
+        <span className="text-primary mb-3 text-xs font-medium">Premium</span>
 
         <Button
           type="button"
           size="sm"
-          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white shadow-lg hover:opacity-90 sm:text-sm"
+          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
           disabled={!isAvailable}
           onClick={() => {
             onSelectPlan(plan, carrierCode)
@@ -136,6 +122,24 @@ export function TravelInsurancePlan({
           Apply Now
         </Button>
       </div>
+      </div>
+
+      {/* View more toggle — floating on bottom border */}
+      {hasMore && (
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+          <button
+            type="button"
+            onClick={() => setShowMore(!showMore)}
+            className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            {showMore ? (
+              <>View less <ChevronUp className="h-3 w-3" /></>
+            ) : (
+              <>View more <ChevronDown className="h-3 w-3" /></>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
