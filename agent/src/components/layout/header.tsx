@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Bell } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/toggle'
 import {
   NavigationMenu,
@@ -57,21 +59,22 @@ export const Header = ({
   const { mutateAsync: logoutAgent } = useLogoutAgent()
 
   const { isMobile } = useSidebar()
+  const pathname = usePathname()
 
   return (
     <header
       className={cn(
-        'bg-background fixed top-0 z-40 h-fit w-full px-4 py-8 lg:px-8',
+        'bg-background fixed top-0 z-40 h-20 w-full border-b px-4 py-4 lg:px-8',
         className
       )}
     >
       <div
         className={cn(
-          'max-w-app relative mx-auto flex h-full items-center justify-between',
+          'mx-auto flex h-full max-w-7xl items-center justify-between',
           contentContainerClassName
         )}
       >
-        <div className="flex w-full items-center">
+        <div className="flex items-center">
           <SidebarTrigger
             size="lg"
             variant="ghost"
@@ -83,7 +86,7 @@ export const Header = ({
           <Brand />
         </div>
 
-        <div className="flex h-full items-center gap-3">
+        <div className="flex h-full items-center gap-8">
           {isNavigationVisible && (
             <div
               className={cn('hidden items-center gap-8', {
@@ -99,7 +102,14 @@ export const Header = ({
                       <NavigationMenuItem key={index}>
                         {isList ? (
                           <>
-                            <NavigationMenuTrigger>
+                            <NavigationMenuTrigger
+                              className={cn(
+                                'hover:bg-transparent hover:text-primary hover:border-b-2 hover:border-primary hover:rounded-none',
+                                navigation.items?.some((item) => pathname.startsWith(item.link))
+                                  ? 'text-primary font-semibold border-b-2 border-primary rounded-none'
+                                  : ''
+                              )}
+                            >
                               {navigation.label}
                             </NavigationMenuTrigger>
                             {navigation.items && (
@@ -122,7 +132,13 @@ export const Header = ({
                         ) : (
                           <NavigationMenuLink
                             asChild
-                            className={navigationMenuTriggerStyle()}
+                            className={cn(
+                              navigationMenuTriggerStyle(),
+                              'hover:bg-transparent hover:text-primary hover:border-b-2 hover:border-primary hover:rounded-none',
+                              (navigation.link === '/' ? pathname === '/' : pathname.startsWith(navigation.link ?? '___'))
+                                ? 'text-primary font-semibold border-b-2 border-primary rounded-none bg-transparent hover:bg-transparent'
+                                : ''
+                            )}
                           >
                             <Link href={navigation.link ?? '/'}>
                               {navigation.label}
@@ -137,21 +153,28 @@ export const Header = ({
             </div>
           )}
 
+          <ThemeToggle />
+
+          <Button variant="secondary" size="icon" className="relative py-2">
+            <Bell className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
+          </Button>
+
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="ghost"
-                    className="text-primary hover:bg-foreground/10 dark:hover:bg-foreground/10 flex items-center gap-4 py-2"
+                    variant="secondary"
+                    className="flex items-center gap-2 py-2"
                   >
-                    <span className="hidden text-sm md:inline">
-                      Welcome, {user?.name}
-                    </span>
                     <Avatar>
                       {user?.profile_photo_url && <AvatarImage src={user.profile_photo_url} />}
                       <AvatarFallback>{getInitials()}</AvatarFallback>
                     </Avatar>
+                    <span className="hidden text-sm md:inline">
+                      {user?.name}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-40">
@@ -182,8 +205,6 @@ export const Header = ({
               <Link href="/sign-in">Login</Link>
             </Button>
           )}
-
-          <ThemeToggle />
         </div>
       </div>
     </header>
