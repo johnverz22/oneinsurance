@@ -600,10 +600,8 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && 'selected'}
-                      onClick={() => onRowClick?.(row.original)}
                       className={cn(
                         'border-b border-gray-100 dark:border-gray-800 transition-colors',
-                        { 'cursor-pointer hover:bg-primary/5': onRowClick },
                         {
                           'bg-muted/30': alternateColors && index % 2 === 1,
                           '': !alternateColors || index % 2 === 0,
@@ -644,7 +642,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
 
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-gray-600">Rows</p>
+                <p className="text-sm font-medium text-muted-foreground">Rows</p>
                 <Select
                   value={`${table.getState().pagination.pageSize}`}
                   onValueChange={(value) => table.setPageSize(Number(value))}
@@ -693,7 +691,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                   } else {
                     pageIdx = i === 0 ? 0 : i === 1 ? -1 : i === 5 ? -1 : i === 6 ? pageCount - 1 : current - 2 + (i - 2)
                   }
-                  if (pageIdx === -1) return <span key={i} className="px-1 text-gray-400">…</span>
+                  if (pageIdx === -1) return <span key={i} className="px-1 text-muted-foreground">…</span>
                   return (
                     <Button
                       key={pageIdx}
