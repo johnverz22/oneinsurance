@@ -8,36 +8,9 @@ import { PaymentHistory } from '@/types/agent/payments'
 import { usePaymentsHistory, usePaymentSummary } from '@/app/data/queries/payments'
 import { cn } from '@/lib/utils'
 import { ShoppingCart, DollarSign, TrendingUp, Receipt, Percent } from 'lucide-react'
+import { StatCard } from '@/components/ui/design-system'
 
-// ─── Stat Card (same style as My Sales / Policy) ─────────────────────────────
-const STAT_COLORS = [
-  { bar: 'bg-[#B8960C]', icon: 'text-[#B8960C] bg-[#B8960C]/10' },
-  { bar: 'bg-primary',   icon: 'text-primary bg-primary/10' },
-  { bar: 'bg-emerald-500', icon: 'text-emerald-600 bg-emerald-50' },
-  { bar: 'bg-amber-500', icon: 'text-amber-600 bg-amber-50' },
-  { bar: 'bg-violet-500', icon: 'text-violet-600 bg-violet-50' },
-]
-
-const StatCard = ({
-  title, value, subtitle, icon: Icon, colorIdx,
-}: {
-  title: string; value: string; subtitle?: string; icon: React.ElementType; colorIdx: number
-}) => {
-  const c = STAT_COLORS[colorIdx]
-  return (
-    <Card className="overflow-hidden border shadow-sm">
-      <div className={cn('h-1.5 w-full', c.bar)} />
-      <CardContent className="p-4">
-        <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center mb-3', c.icon)}>
-          <Icon className="w-4 h-4" />
-        </div>
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{title}</p>
-        <p className="text-xl font-bold text-foreground">{value}</p>
-        {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-      </CardContent>
-    </Card>
-  )
-}
+// ─── Payment History Columns ──────────────────────────────────────────────────
 
 const PAYMENT_HISTORY_COLUMNS: ColumnDef<PaymentHistory>[] = [
   {
@@ -260,7 +233,7 @@ const PaymentsPage = () => {
     <div className="relative mx-auto space-y-6 overflow-hidden">
       {/* Summary Cards */}
       {isPaymentSummaryLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-4xl">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-[72px] w-full rounded-xl" />
           ))}
@@ -271,7 +244,7 @@ const PaymentsPage = () => {
           <p className="text-sm text-muted-foreground">{paymentSummaryError.message}</p>
         </div>
       ) : isPaymentSummaryFetched && paymentSummary ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-4xl">
           <StatCard title="Cases" value={String(paymentSummary.total_cases || '0')} subtitle="Total transactions" icon={ShoppingCart} colorIdx={0} />
           <StatCard title="Sales" value={`₱${paymentSummary.total_net_premium || '0.00'}`} subtitle="Net premium total" icon={DollarSign} colorIdx={1} />
           <StatCard title="My Commissions" value={`₱${paymentSummary.total_net_commission || '0.00'}`} subtitle="Net commission earned" icon={TrendingUp} colorIdx={2} />

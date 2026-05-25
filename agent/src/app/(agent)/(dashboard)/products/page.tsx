@@ -11,28 +11,28 @@ const columns: ColumnDef<Product>[] = [
     accessorKey: 'name',
     header: 'Product Name',
     cell: ({ row }) => (
-      <span className="font-semibold text-gray-900">{row.original.name}</span>
+      <span className="font-semibold">{row.original.name}</span>
     ),
   },
   {
     accessorKey: 'description',
     header: 'Description',
     cell: ({ row }) => (
-      <span className="text-sm text-gray-500 line-clamp-2">{row.original.description || '—'}</span>
+      <span className="text-sm text-muted-foreground line-clamp-2">{row.original.description || '—'}</span>
     ),
   },
   {
     accessorKey: 'providerName',
     header: 'Provider',
     cell: ({ row }) => (
-      <span className="text-sm text-gray-700">{row.original.providerName || '—'}</span>
+      <span className="text-sm text-muted-foreground">{row.original.providerName || '—'}</span>
     ),
   },
   {
     accessorKey: 'lobName',
     header: 'Line of Business',
     cell: ({ row }) => (
-      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+      <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
         {row.original.lobName || '—'}
       </span>
     ),
@@ -44,7 +44,7 @@ const columns: ColumnDef<Product>[] = [
       const active = row.original.status?.toLowerCase() === 'active'
       return (
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-          active ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-600'
+          active ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
         }`}>
           {row.original.status}
         </span>
@@ -56,7 +56,7 @@ const columns: ColumnDef<Product>[] = [
     header: 'Agent Commission',
     cell: ({ row }) => {
       const val = row.original.agentCommission
-      if (val == null) return <span className="text-xs text-gray-400">—</span>
+      if (val == null) return <span className="text-xs text-muted-foreground">—</span>
       return (
         <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
           {parseFloat(val).toFixed(2)}%
