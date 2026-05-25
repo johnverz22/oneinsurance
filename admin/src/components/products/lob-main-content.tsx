@@ -192,8 +192,8 @@ export default function LobMainContent() {
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Line of Business</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 className="text-xl font-bold">Line of Business</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Manage and organize all lines of business for easy assignment and
               monitoring.
             </p>
@@ -238,7 +238,7 @@ export default function LobMainContent() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
                   Loading...
                 </TableCell>
               </TableRow>
@@ -251,11 +251,11 @@ export default function LobMainContent() {
               </TableRow>
             ) : lineOfBusinessList.length > 0 ? (
               lineOfBusinessList.map((lob, index) => (
-                <TableRow key={lob.id} className={cn('cursor-pointer', index % 2 === 1 ? 'bg-muted/30' : '')} onClick={() => handleRowClick(lob)}>
-                  <TableCell className="font-semibold text-slate-900">{lob.name}</TableCell>
-                  <TableCell className="text-gray-500 text-sm font-mono">{lob.slug || '—'}</TableCell>
+                <TableRow key={lob.id} className={cn(index % 2 === 1 ? 'bg-muted/30' : '')}>
+                  <TableCell className="font-semibold">{lob.name}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm font-mono">{lob.slug || '—'}</TableCell>
                   <TableCell className="max-w-xs">
-                    <p className="text-sm text-gray-600 line-clamp-2">{lob.description || '—'}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{lob.description || '—'}</p>
                   </TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
@@ -266,7 +266,7 @@ export default function LobMainContent() {
                       {lob.status.toUpperCase()}
                     </span>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-500">
+                  <TableCell className="text-sm text-muted-foreground">
                     {new Date(lob.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
@@ -298,7 +298,7 @@ export default function LobMainContent() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center text-gray-500">
+                <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
                   {nameSearch ? 'No line of business found matching your search' : 'No line of business available'}
                 </TableCell>
               </TableRow>

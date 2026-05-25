@@ -123,6 +123,7 @@ export const Header = ({
                           <>
                             <NavigationMenuTrigger
                               className={cn(
+                                'hover:bg-transparent hover:text-primary hover:border-b-2 hover:border-primary hover:rounded-none',
                                 navigation.items?.some((item) => pathname.startsWith(item.link))
                                   ? 'text-primary font-semibold border-b-2 border-primary rounded-none'
                                   : ''
@@ -152,6 +153,7 @@ export const Header = ({
                             asChild
                             className={cn(
                               navigationMenuTriggerStyle(),
+                              'hover:bg-transparent hover:text-primary hover:border-b-2 hover:border-primary hover:rounded-none',
                               pathname.startsWith(navigation.link ?? '___')
                                 ? 'text-primary font-semibold border-b-2 border-primary rounded-none bg-transparent hover:bg-transparent'
                                 : ''
