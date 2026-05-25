@@ -828,6 +828,7 @@ export function CoverageOptionsForm() {
                   <ul className="space-y-1.5">
                     {availableCoverages.map((coverage: string) => {
                       const isActive = selectedCoverages.includes(coverage)
+                      const capitalizedCoverage = coverage.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
                       return (
                         <li key={coverage}>
                           <button
@@ -836,7 +837,7 @@ export function CoverageOptionsForm() {
                             className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
                           >
                             <span className={`h-2 w-2 shrink-0 rounded-full ${isActive ? 'bg-green-600' : 'bg-gray-300'}`} />
-                            <span className="line-clamp-2 text-left">{coverage}</span>
+                            <span className="text-left capitalize">{capitalizedCoverage}</span>
                           </button>
                         </li>
                       )
@@ -848,7 +849,7 @@ export function CoverageOptionsForm() {
 
             {/* Plan list */}
             <div ref={planListRef} className="flex flex-1 flex-col gap-4">
-              <p className="text-muted-foreground text-sm">
+              <p className="text-foreground text-sm">
                 We have {allTravelPlans.length} recommendation{allTravelPlans.length !== 1 ? 's' : ''} to explore.
               </p>
               {allTravelPlans.map((item: any, index: number) => (
