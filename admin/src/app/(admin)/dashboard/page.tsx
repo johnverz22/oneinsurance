@@ -72,6 +72,7 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#DCFCE7"
+            barColor="bg-emerald-500"
             isLoading={isLoading}
           />
           <OverviewCard
@@ -92,6 +93,7 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#FFEDD5"
+            barColor="bg-orange-500"
             isLoading={isLoading}
           />
           <OverviewCard
@@ -112,6 +114,7 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#FEE2E2"
+            barColor="bg-red-500"
             isLoading={isLoading}
           />
           <OverviewCard
@@ -133,6 +136,7 @@ export default function DashboardPage() {
               </svg>
             }
             iconBgColor="#F3E8FF"
+            barColor="bg-violet-500"
             isCurrency={false}
             isLoading={isLoadingAgents}
           />
@@ -181,6 +185,7 @@ function OverviewCard({
   amount,
   icon,
   iconBgColor,
+  barColor,
   isCurrency = true,
   isLoading = false,
 }: {
@@ -188,11 +193,13 @@ function OverviewCard({
   amount: number
   icon: React.ReactNode
   iconBgColor: string
+  barColor?: string
   isCurrency?: boolean
   isLoading?: boolean
 }) {
   return (
-    <Card className="border-[#B7B7B7]">
+    <Card className="overflow-hidden border-[#B7B7B7]">
+      {barColor && <div className={`h-1 w-full ${barColor}`} />}
       <CardContent className="flex flex-wrap items-center gap-2 text-wrap">
         <div
           className={`rounded-full p-4`}
