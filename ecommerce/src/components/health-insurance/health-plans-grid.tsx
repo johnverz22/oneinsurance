@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Search, ShoppingCart, Loader2, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { useHealthAvailStore } from '@/store/health-avail-store'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
@@ -125,15 +126,32 @@ export function HealthPlansGrid() {
 
   if (isLoadingPlans) {
     return (
-      <section id="health-plans-grid" className="w-full bg-white py-16">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-6">
+      <section id="health-plans-grid" className="w-full py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-6 text-center">
             Choose your Health Plans
           </h2>
-          <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-muted-foreground text-base">
-              We're searching for the best plans for you. This may take a moment...
+          <div className="flex flex-col gap-4 py-8">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex w-full overflow-hidden rounded-xl border">
+                <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[140px] rounded-none" />
+                <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
+                  <Skeleton className="h-5 w-[60%] mb-3" />
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                    <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
+                    <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
+                    <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
+                  </div>
+                </div>
+                <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4">
+                  <Skeleton className="h-8 w-20 mb-2" />
+                  <Skeleton className="h-3 w-14 mb-3" />
+                  <Skeleton className="h-9 w-full rounded-full" />
+                </div>
+              </div>
+            ))}
+            <p className="text-muted-foreground text-center text-sm">
+              Searching for the best plans for you...
             </p>
           </div>
         </div>
@@ -143,7 +161,7 @@ export function HealthPlansGrid() {
 
   if (plansError) {
     return (
-      <section id="health-plans-grid" className="w-full bg-white py-16">
+      <section id="health-plans-grid" className="w-full py-16">
         <div className="mx-auto max-w-7xl px-4">
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-8 text-center">
             Choose your Health Plans
@@ -174,7 +192,7 @@ export function HealthPlansGrid() {
 
   if (!compareQuotePlans.length) {
     return (
-      <section id="health-plans-grid" className="w-full bg-white py-16">
+      <section id="health-plans-grid" className="w-full py-16">
         <div className="mx-auto max-w-7xl px-4 text-center">
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-4">
             Choose your Health Plans
@@ -188,7 +206,7 @@ export function HealthPlansGrid() {
   }
 
   return (
-    <section id="health-plans-grid" className="w-full bg-white py-16">
+    <section id="health-plans-grid" className="w-full py-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mb-10 text-center">
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl">
@@ -230,16 +248,16 @@ export function HealthPlansGrid() {
           <aside className="hidden w-[200px] shrink-0 lg:block">
             <div className="sticky top-4 space-y-6">
               <div>
-                <h4 className="text-gray-900 mb-2 text-sm font-bold">Sorted by</h4>
+                <h4 className="text-foreground mb-2 text-sm font-bold">Sorted by</h4>
                 <ul className="space-y-1.5">
                   <li>
-                    <button type="button" onClick={() => setSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                    <button type="button" onClick={() => setSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                       <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                       Lowest premium
                     </button>
                   </li>
                   <li>
-                    <button type="button" onClick={() => setSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                    <button type="button" onClick={() => setSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                       <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                       Highest sum insured
                     </button>
@@ -247,14 +265,14 @@ export function HealthPlansGrid() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-gray-900 mb-2 text-sm font-bold">By providers</h4>
+                <h4 className="text-foreground mb-2 text-sm font-bold">By providers</h4>
                 <ul className="space-y-1.5">
                   {availableProviders.map((code: string) => {
                     const company = COMPANIES.find((c) => c.carrierCode === code)
                     const isActive = selectedProviders.length === 0 || selectedProviders.includes(code)
                     return (
                       <li key={code}>
-                        <button type="button" onClick={() => toggleProvider(code)} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900">
+                        <button type="button" onClick={() => toggleProvider(code)} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
                           <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
                           {company?.companyName || code}
                         </button>
@@ -281,7 +299,7 @@ export function HealthPlansGrid() {
               const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
               return (
-                <div key={plan.CarrierPlanCode} className="flex w-full overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-lg">
+                <div key={plan.CarrierPlanCode} className="bg-background flex w-full overflow-hidden rounded-xl border transition-all hover:shadow-lg">
                   {/* Left brand block */}
                   <div
                     className="flex w-[140px] shrink-0 flex-col items-center justify-center rounded-l-xl p-4 sm:w-[160px] md:w-[180px]"
@@ -308,34 +326,38 @@ export function HealthPlansGrid() {
 
                   {/* Middle content */}
                   <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
-                    <h3 className="text-base font-bold uppercase tracking-wide text-gray-900 sm:text-lg">
+                    <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
                       {plan.CarrierPlanDesc}
                     </h3>
                     <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
                       {benefitsWithAmounts.map((b: any, i: number) => (
                         <div key={i} className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-gray-900">
+                          <p className="text-foreground truncate text-sm font-semibold">
                             {b.DefaultLimitDesc || `Php ${Number(b.Silimit).toLocaleString('en-PH')}`}
                           </p>
-                          <p className="truncate text-xs text-gray-500">{b.BenefitDesc}</p>
+                          <p className="text-muted-foreground truncate text-xs">{b.BenefitDesc}</p>
                         </div>
                       ))}
                     </div>
                     {benefits.length > 3 && (
-                      <p className="mt-2 text-xs text-gray-400">View more ›</p>
+                      <div className="mt-2 flex justify-center">
+                        <span className="text-foreground text-xs font-medium">View more ›</span>
+                      </div>
                     )}
                   </div>
 
                   {/* Right price + button */}
-                  <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
-                    <span className="text-[10px] uppercase tracking-wide text-gray-400">PHP</span>
-                    <span className="text-xl font-black text-gray-900 sm:text-2xl">
-                      {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </span>
-                    <span className="mb-3 text-[10px] uppercase tracking-wide text-gray-400">Premium</span>
+                  <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[150px]">
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className="text-foreground text-xs font-semibold">PHP</span>
+                      <span className="text-foreground text-xl font-black sm:text-2xl">
+                        {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                    <span className="text-foreground mb-3 text-xs font-medium">Premium</span>
                     <Button
                       size="sm"
-                      className="w-full rounded-md bg-[#2E7D32] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1B5E20] sm:text-sm"
+                      className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white shadow-lg hover:opacity-90 sm:text-sm"
                       onClick={() => handleGetStarted(plan)}
                     >
                       Apply Now

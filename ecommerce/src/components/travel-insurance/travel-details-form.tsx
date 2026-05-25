@@ -730,7 +730,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                     </Link>
                   </Label>
                 </div>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-foreground text-xs">
                   This travel insurance is valid for air travel only.
                 </p>
                 <FieldInfo field={field} />
