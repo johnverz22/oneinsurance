@@ -390,7 +390,7 @@ export function ProposalSearch() {
             </Label>
           </div>
           
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground">
             Enter your proposal number to retrieve your saved quote and continue to payment. If payment is already completed, you'll see your policy details and confirmation.
           </p>
 
