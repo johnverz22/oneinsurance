@@ -21,6 +21,7 @@ import axios from 'axios'
 import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
 import { storePlanName } from '@/utils/custom-fields-storage'
 import { COMPANIES } from '@/constants/companies'
+import pacificCrossPlansData from '@/constants/pacific-cross-travel-plans.json'
 
 function ServerConnectionIssue() {
   return (
@@ -431,18 +432,31 @@ export function CoverageOptionsForm() {
   }
 
   const allTravelPlans = useMemo(() => {
-    const plans = insurancePlans?.data.flatMap(({ Plans, ...item }: any) =>
+    // Dynamic plans from WebSocket (Malayan, Oona, etc.)
+    const dynamicPlans = insurancePlans?.data.flatMap(({ Plans, ...item }: any) =>
       Plans.map((plan: any) => ({
         ...item,
         Plan: plan,
       }))
-    )
+    ) || []
 
-    if (!plans) return []
+    // Static Pacific Cross plans — only show after dynamic plans have loaded (compare-quote was called)
+    const pacificPlans = insurancePlans?.data
+      ? pacificCrossPlansData.Plans.map((plan: any) => ({
+          CarrierCode: pacificCrossPlansData.CarrierCode,
+          IsExternalLink: pacificCrossPlansData.IsExternalLink,
+          RedirectUrl: pacificCrossPlansData.RedirectUrl,
+          Plan: plan,
+        }))
+      : []
+
+    const allPlans = [...dynamicPlans, ...pacificPlans]
+
+    if (!allPlans.length) return []
 
     const lowerFilter = debouncedSearchFilter.toLowerCase()
 
-    return plans
+    return allPlans
       .filter(
         (plan: any) =>
           plan.CarrierCode.toLowerCase().includes(lowerFilter) ||
@@ -497,21 +511,33 @@ export function CoverageOptionsForm() {
 
   // Get available providers from loaded plans
   const availableProviders = useMemo(() => {
-    if (!insurancePlans?.data) return []
-    return Array.from(new Set(insurancePlans.data.map((d: any) => d.CarrierCode))) as string[]
+    const dynamicProviders = insurancePlans?.data ? insurancePlans.data.map((d: any) => d.CarrierCode) : []
+    // Only include Pacific Cross after dynamic plans have loaded
+    const allProviders = insurancePlans?.data ? [...dynamicProviders, pacificCrossPlansData.CarrierCode] : []
+    return Array.from(new Set(allProviders)) as string[]
   }, [insurancePlans?.data])
 
   // Get available coverages from loaded plans
   const availableCoverages = useMemo(() => {
-    if (!insurancePlans?.data) return []
     const coverages = new Set<string>()
-    insurancePlans.data.forEach((provider: any) => {
-      provider.Plans.forEach((plan: any) => {
-        const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
-        allBenefits.forEach((b: any) => {
-          const name = b.CoverageName || b.SubCoverageName
-          if (name) coverages.add(name)
+    // Dynamic plans
+    if (insurancePlans?.data) {
+      insurancePlans.data.forEach((provider: any) => {
+        provider.Plans.forEach((plan: any) => {
+          const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
+          allBenefits.forEach((b: any) => {
+            const name = b.CoverageName || b.SubCoverageName
+            if (name) coverages.add(name)
+          })
         })
+      })
+    }
+    // Pacific Cross static plans
+    pacificCrossPlansData.Plans.forEach((plan: any) => {
+      const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
+      allBenefits.forEach((b: any) => {
+        const name = b.CoverageName || b.SubCoverageName
+        if (name) coverages.add(name)
       })
     })
     return Array.from(coverages).sort()
@@ -692,38 +718,57 @@ export function CoverageOptionsForm() {
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
         {isLoading ? (
-          <div className="flex flex-col gap-4 py-8">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex w-full overflow-hidden rounded-xl border">
-                <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[140px] rounded-none" />
-                <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
-                  <Skeleton className="h-5 w-[60%] mb-3" />
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-                    <div>
-                      <Skeleton className="h-4 w-20 mb-1" />
-                      <Skeleton className="h-3 w-28" />
-                    </div>
-                    <div>
-                      <Skeleton className="h-4 w-20 mb-1" />
-                      <Skeleton className="h-3 w-28" />
-                    </div>
-                    <div>
-                      <Skeleton className="h-4 w-20 mb-1" />
-                      <Skeleton className="h-3 w-28" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-3 w-16 mt-2" />
+          <div className="relative flex min-h-[60vh] gap-6 pb-6">
+            {/* Sidebar skeleton */}
+            <aside className="hidden w-[200px] shrink-0 lg:block">
+              <div className="sticky top-4 space-y-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-20" />
                 </div>
-                <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4">
-                  <Skeleton className="h-8 w-20 mb-2" />
-                  <Skeleton className="h-3 w-14 mb-3" />
-                  <Skeleton className="h-9 w-full rounded-md" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-22" />
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-30" />
+                  <Skeleton className="h-3 w-26" />
                 </div>
               </div>
-            ))}
-            <p className="text-muted-foreground text-center text-sm">
-              Searching for the best plans for you...
-            </p>
+            </aside>
+            {/* Plan cards skeleton */}
+            <div className="flex flex-1 flex-col gap-4">
+              <Skeleton className="h-4 w-56" />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex w-full overflow-hidden rounded-xl border">
+                  <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[120px] rounded-none" />
+                  <div className="flex flex-1 flex-col justify-center p-4 sm:p-5 gap-3">
+                    <Skeleton className="h-5 w-[55%]" />
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+                    </div>
+                  </div>
+                  <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
+                    <Skeleton className="h-7 w-16" />
+                    <Skeleton className="h-3 w-12" />
+                    <Skeleton className="h-8 w-full rounded-full" />
+                  </div>
+                </div>
+              ))}
+              <p className="text-muted-foreground text-center text-sm">
+                Searching for the best plans for you...
+              </p>
+            </div>
           </div>
         ) : isError ? (
           <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
@@ -854,11 +899,13 @@ export function CoverageOptionsForm() {
               </p>
               {allTravelPlans.map((item: any, index: number) => (
                 <TravelInsurancePlan
-                  key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode}-${index}`}
+                  key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode || item.Plan.CarrierPlanDesc}-${index}`}
                   plan={item.Plan}
                   carrierCode={item.CarrierCode}
                   selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
                   isAvailable={!isFormModified}
+                  redirectUrl={item.IsExternalLink === 'Y' ? item.RedirectUrl : undefined}
+                  currency={item.Plan.Currency}
                   onSelectPlan={(plan, carrierCode) => {
                     handleSelectPlan(plan, carrierCode)
                     resetQuoteRefetchCount()
