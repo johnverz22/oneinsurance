@@ -106,7 +106,7 @@ export function TravelInsurancePlan({
       {/* Right price + button section */}
       <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
         <div className="flex items-baseline gap-1 mb-1">
-          <span className="text-foreground text-xs font-semibold">{currency || 'PHP'}</span>
+          <span className="text-primary text-xs font-semibold">{currency || 'PHP'}</span>
           <span className="text-foreground text-xl font-black sm:text-2xl">
             {Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
@@ -128,6 +128,9 @@ export function TravelInsurancePlan({
         >
           Apply Now
         </Button>
+        {redirectUrl && (
+          <span className="text-muted-foreground mt-1 text-center text-[10px]">via Pacific Cross secure site</span>
+        )}
       </div>
       </div>
 

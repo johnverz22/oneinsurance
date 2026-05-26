@@ -95,12 +95,12 @@ export function PriceDisplay({ amount, label = 'Premium', className }: PriceDisp
   return (
     <div className={cn('flex flex-col items-center', className)}>
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-foreground text-xs font-semibold">PHP</span>
+        <span className="text-primary text-xs font-semibold">PHP</span>
         <span className="text-foreground text-xl font-black sm:text-2xl">
           {amount.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </span>
       </div>
-      <span className="text-foreground text-xs font-medium">{label}</span>
+      <span className="text-primary text-xs font-medium">{label}</span>
     </div>
   )
 }
