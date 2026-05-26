@@ -22,6 +22,7 @@ import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quo
 import { storePlanName } from '@/utils/custom-fields-storage'
 import { COMPANIES } from '@/constants/companies'
 import pacificCrossPlansData from '@/constants/pacific-cross-travel-plans.json'
+import pacificCrossAsiaPlansData from '@/constants/pacific-cross-travel-plans-asia.json'
 
 function ServerConnectionIssue() {
   return (
@@ -442,12 +443,20 @@ export function CoverageOptionsForm() {
 
     // Static Pacific Cross plans — only show after dynamic plans have loaded (compare-quote was called)
     const pacificPlans = insurancePlans?.data
-      ? pacificCrossPlansData.Plans.map((plan: any) => ({
-          CarrierCode: pacificCrossPlansData.CarrierCode,
-          IsExternalLink: pacificCrossPlansData.IsExternalLink,
-          RedirectUrl: pacificCrossPlansData.RedirectUrl,
-          Plan: plan,
-        }))
+      ? [
+          ...pacificCrossPlansData.Plans.map((plan: any) => ({
+            CarrierCode: pacificCrossPlansData.CarrierCode,
+            IsExternalLink: pacificCrossPlansData.IsExternalLink,
+            RedirectUrl: pacificCrossPlansData.RedirectUrl,
+            Plan: plan,
+          })),
+          ...pacificCrossAsiaPlansData.Plans.map((plan: any) => ({
+            CarrierCode: pacificCrossAsiaPlansData.CarrierCode,
+            IsExternalLink: pacificCrossAsiaPlansData.IsExternalLink,
+            RedirectUrl: pacificCrossAsiaPlansData.RedirectUrl,
+            Plan: plan,
+          })),
+        ]
       : []
 
     const allPlans = [...dynamicPlans, ...pacificPlans]
