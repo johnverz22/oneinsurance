@@ -91,13 +91,13 @@ export function ReviewCoverage() {
           <CardContent className="h-full w-full space-y-3">
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:divide-x">
               <div className="w-full space-y-2">
-                <div className="border-muted-foreground/10 relative flex h-20 w-32 items-center justify-center rounded-md border bg-white px-3 py-6">
+                <div className="relative h-24 w-24 overflow-hidden rounded-xl">
                   <Image
                     src={provider.image}
                     alt={provider.companyName}
-                    className="rounded-lg"
-                    width={640}
-                    height={640}
+                    className="h-full w-full object-cover"
+                    width={96}
+                    height={96}
                   />
                 </div>
 

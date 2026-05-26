@@ -3,7 +3,7 @@ import { InsuranceCompany } from '@/types/insurance-company'
 // Brand colors for each carrier (used in plan cards)
 export const CARRIER_BRAND_COLORS: Record<string, { bg: string; text: string; invertLogo: boolean; logoWhite?: string }> = {
   MALAYAN: { bg: '#1B4B8F', text: '#ffffff', invertLogo: true },
-  OONAPH: { bg: '#5B2D8E', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/oona logo.svg' },
+  OONAPH: { bg: '#5B2D8E', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/oona logo (1) (1).svg' },
   PACIFIC: { bg: '#E8A838', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/pacific-cross-white.svg' },
   STANDARD: { bg: '#1A5632', text: '#ffffff', invertLogo: true },
   PIONEER: { bg: '#C41E3A', text: '#ffffff', invertLogo: true },
@@ -38,7 +38,7 @@ is known for its commitment to prompt claims settlement.`,
     carrierCode: 'OONAPH',
     companyName: 'Oona Insurance',
     tagLine: 'Peace of Mind, Guaranteed',
-    image: '/images/providers/oona logo.svg',
+    image: '/images/providers/oona logo 1.png',
     description: `Oona Insurance is a general insurance company in the Philippines focused on becoming a
 customer-driven provider in Southeast Asia. It offers a range of products, including motor,
 property, and personal accident insurance. A key aspect of its strategy is leveraging
