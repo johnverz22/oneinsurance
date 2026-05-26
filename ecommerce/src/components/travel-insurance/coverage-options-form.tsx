@@ -23,6 +23,7 @@ import { storePlanName } from '@/utils/custom-fields-storage'
 import { COMPANIES } from '@/constants/companies'
 import pacificCrossPlansData from '@/constants/pacific-cross-travel-plans.json'
 import pacificCrossAsiaPlansData from '@/constants/pacific-cross-travel-plans-asia.json'
+import pacificCrossDomesticPlansData from '@/constants/pacific-cross-travel-plans-domestic.json'
 
 function ServerConnectionIssue() {
   return (
@@ -442,21 +443,47 @@ export function CoverageOptionsForm() {
     ) || []
 
     // Static Pacific Cross plans — only show after dynamic plans have loaded (compare-quote was called)
+    // Filter based on destination type from travel details
     const pacificPlans = insurancePlans?.data
-      ? [
-          ...pacificCrossPlansData.Plans.map((plan: any) => ({
-            CarrierCode: pacificCrossPlansData.CarrierCode,
-            IsExternalLink: pacificCrossPlansData.IsExternalLink,
-            RedirectUrl: pacificCrossPlansData.RedirectUrl,
-            Plan: plan,
-          })),
-          ...pacificCrossAsiaPlansData.Plans.map((plan: any) => ({
-            CarrierCode: pacificCrossAsiaPlansData.CarrierCode,
-            IsExternalLink: pacificCrossAsiaPlansData.IsExternalLink,
-            RedirectUrl: pacificCrossAsiaPlansData.RedirectUrl,
-            Plan: plan,
-          })),
-        ]
+      ? (() => {
+          const coverageArea = travelDetails.travelDetailList?.[0]?.TravelCoverageArea || ''
+          const isDomestic = coverageArea === 'DOMESTIC'
+          const isApac = coverageArea === 'APAC'
+
+          if (isDomestic) {
+            // Domestic destination → only show domestic plans
+            return pacificCrossDomesticPlansData.Plans.map((plan: any) => ({
+              CarrierCode: pacificCrossDomesticPlansData.CarrierCode,
+              IsExternalLink: pacificCrossDomesticPlansData.IsExternalLink,
+              RedirectUrl: pacificCrossDomesticPlansData.RedirectUrl,
+              Plan: plan,
+            }))
+          } else if (isApac) {
+            // Asia/APAC destination → show world + asia plans
+            return [
+              ...pacificCrossPlansData.Plans.map((plan: any) => ({
+                CarrierCode: pacificCrossPlansData.CarrierCode,
+                IsExternalLink: pacificCrossPlansData.IsExternalLink,
+                RedirectUrl: pacificCrossPlansData.RedirectUrl,
+                Plan: plan,
+              })),
+              ...pacificCrossAsiaPlansData.Plans.map((plan: any) => ({
+                CarrierCode: pacificCrossAsiaPlansData.CarrierCode,
+                IsExternalLink: pacificCrossAsiaPlansData.IsExternalLink,
+                RedirectUrl: pacificCrossAsiaPlansData.RedirectUrl,
+                Plan: plan,
+              })),
+            ]
+          } else {
+            // SCHENGEN / WORLD (non-Asia international) → world plans only
+            return pacificCrossPlansData.Plans.map((plan: any) => ({
+              CarrierCode: pacificCrossPlansData.CarrierCode,
+              IsExternalLink: pacificCrossPlansData.IsExternalLink,
+              RedirectUrl: pacificCrossPlansData.RedirectUrl,
+              Plan: plan,
+            }))
+          }
+        })()
       : []
 
     const allPlans = [...dynamicPlans, ...pacificPlans]
@@ -516,7 +543,7 @@ export function CoverageOptionsForm() {
         }
         return getMaxSi(b.Plan) - getMaxSi(a.Plan)
       })
-  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages])
+  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages, travelDetails.travelDetailList])
 
   // Get available providers from loaded plans
   const availableProviders = useMemo(() => {
@@ -543,6 +570,20 @@ export function CoverageOptionsForm() {
     }
     // Pacific Cross static plans
     pacificCrossPlansData.Plans.forEach((plan: any) => {
+      const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
+      allBenefits.forEach((b: any) => {
+        const name = b.CoverageName || b.SubCoverageName
+        if (name) coverages.add(name)
+      })
+    })
+    pacificCrossAsiaPlansData.Plans.forEach((plan: any) => {
+      const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
+      allBenefits.forEach((b: any) => {
+        const name = b.CoverageName || b.SubCoverageName
+        if (name) coverages.add(name)
+      })
+    })
+    pacificCrossDomesticPlansData.Plans.forEach((plan: any) => {
       const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
       allBenefits.forEach((b: any) => {
         const name = b.CoverageName || b.SubCoverageName
