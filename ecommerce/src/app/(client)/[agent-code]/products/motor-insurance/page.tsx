@@ -653,7 +653,7 @@ function CtplInsurance() {
                   const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
                   return (
-                    <div key={index} className="bg-background relative flex w-full rounded-xl border overflow-hidden transition-all hover:shadow-lg mb-3">
+                    <div key={index} className="bg-background relative flex w-full rounded-xl overflow-hidden transition-all shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:shadow-md mb-3">
                       {/* Left brand block */}
                       <div
                         className="flex w-[140px] shrink-0 flex-col items-center justify-center p-4 sm:w-[160px] md:w-[180px]"
@@ -715,7 +715,7 @@ function CtplInsurance() {
                         ) : null}
                         {benefits.length > 3 && (
                           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-                            <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground shadow-sm">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground">
                               View more ›
                             </span>
                           </div>

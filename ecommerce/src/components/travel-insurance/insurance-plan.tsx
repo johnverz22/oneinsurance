@@ -17,6 +17,8 @@ interface TravelInsurancePlanProps {
   carrierCode: string
   selectedPlan?: string
   isAvailable?: boolean
+  redirectUrl?: string
+  currency?: string
   onSelectPlan: (plan: InsurancePlan, carrierCode: string) => void
 }
 
@@ -26,12 +28,14 @@ export function TravelInsurancePlan({
   carrierCode,
   onSelectPlan,
   isAvailable = true,
+  redirectUrl,
+  currency,
 }: TravelInsurancePlanProps) {
   const [showMore, setShowMore] = useState(false)
   const group = groupBenefits(plan)
   const { benefits, hasMore } = getHighlightedBenefits(group, showMore)
 
-  const isSelected = selectedPlan === plan.CarrierPlanCode
+  const isSelected = selectedPlan && plan.CarrierPlanCode ? selectedPlan === plan.CarrierPlanCode : false
   const provider = COMPANIES.find((c) => c.carrierCode === carrierCode)
   const brandColors = CARRIER_BRAND_COLORS[carrierCode] || { bg: '#374151', text: '#ffffff', invertLogo: false }
 
@@ -42,10 +46,9 @@ export function TravelInsurancePlan({
       )}
     >
       <div className={cn(
-        'bg-background flex w-full rounded-xl border overflow-hidden transition-all duration-200 hover:shadow-lg',
+        'bg-background flex w-full rounded-xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-md',
         {
           'ring-primary shadow-lg ring-2': isSelected,
-          'border-gray-200': !isSelected,
         }
       )}>
       {/* Left brand block */}
@@ -103,7 +106,7 @@ export function TravelInsurancePlan({
       {/* Right price + button section */}
       <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
         <div className="flex items-baseline gap-1 mb-1">
-          <span className="text-foreground text-xs font-semibold">PHP</span>
+          <span className="text-foreground text-xs font-semibold">{currency || 'PHP'}</span>
           <span className="text-foreground text-xl font-black sm:text-2xl">
             {Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
@@ -116,7 +119,11 @@ export function TravelInsurancePlan({
           className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
           disabled={!isAvailable}
           onClick={() => {
-            onSelectPlan(plan, carrierCode)
+            if (redirectUrl) {
+              window.open(redirectUrl, '_blank')
+            } else {
+              onSelectPlan(plan, carrierCode)
+            }
           }}
         >
           Apply Now
@@ -130,7 +137,7 @@ export function TravelInsurancePlan({
           <button
             type="button"
             onClick={() => setShowMore(!showMore)}
-            className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             {showMore ? (
               <>View less <ChevronUp className="h-3 w-3" /></>

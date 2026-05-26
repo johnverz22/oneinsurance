@@ -270,13 +270,13 @@ export function TravelInsuranceReviewPage() {
           <CardContent className="h-full w-full space-y-3">
             {/* Provider Information */}
             <div className="flex w-full gap-2">
-              <div className="border-muted-foreground/10 relative flex h-20 w-32 shrink-0 items-center justify-center rounded-md border bg-white px-3 py-6">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl">
                 <Image
                   src={provider.image}
                   alt={provider.companyName}
-                  className="rounded-lg"
-                  width={640}
-                  height={640}
+                  className="h-full w-full object-cover"
+                  width={80}
+                  height={80}
                 />
               </div>
 
