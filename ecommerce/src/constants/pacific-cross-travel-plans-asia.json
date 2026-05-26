@@ -1,0 +1,768 @@
+{
+    "CarrierCode": "PACIFIC",
+    "CarrierName": "Pacific Cross",
+    "ProductCode": "TRAVEL",
+    "ProductVersion": "1.0",
+    "IsExternalLink": "Y",
+    "RedirectUrl": "https://mytravelsafe-partner.pacificcross.com.ph/oqapv3prod/home.aspx/travelinsurance?systemCode=AG-IIAI",
+    "Plans": [
+        {
+            "AddonBenefits": [],
+            "CarrierPlanDesc": "Asia and Oceania Dollar Plan USD 50K",
+            "DiscountAmount": null,
+            "DuePremium": 41,
+            "Currency": "USD",
+            "MainBenefits": [
+                {
+                    "BenefitCode": "C000800",
+                    "BenefitDesc": "In-patient and Out-Patient care",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to USD 50,000",
+                    "DisplaySeqNo": "1",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000801",
+                    "BenefitDesc": "COVID-19 in-Patient care",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to USD 50,000",
+                    "DisplaySeqNo": "2",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000802",
+                    "BenefitDesc": "Emergency Dental",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 2,500",
+                    "DisplaySeqNo": "3",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000803",
+                    "BenefitDesc": "30 days Automatic Extension",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to USD 50,000",
+                    "DisplaySeqNo": "4",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000804",
+                    "BenefitDesc": "Emergency Room and In-patient treatment for Pre-existing Conditions",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 500",
+                    "DisplaySeqNo": "5",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000805",
+                    "BenefitDesc": "Recreational Activities and Sports",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to USD 50,000",
+                    "DisplaySeqNo": "6",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000806",
+                    "BenefitDesc": "Recreational Extreme Sports",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 600",
+                    "DisplaySeqNo": "7",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000807",
+                    "BenefitDesc": "Implants Coverage necessitated by a covered Accident",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 2,500",
+                    "DisplaySeqNo": "8",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000808",
+                    "BenefitDesc": "Hospital Income (per day up to 10 consecutive days) including COVID-19 related hospitalization)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 120 per day",
+                    "DisplaySeqNo": "9",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "120"
+                },
+                {
+                    "BenefitCode": "C000809",
+                    "BenefitDesc": "Burrial Expenses",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 2,000",
+                    "DisplaySeqNo": "10",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "2000"
+                },
+                {
+                    "BenefitCode": "C000810",
+                    "BenefitDesc": "Accident (Insured 16 to 70 years old)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 50,000",
+                    "DisplaySeqNo": "11",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Personal Accident"
+                },
+                {
+                    "BenefitCode": "C000811",
+                    "BenefitDesc": "Accident (Insured 0 to 5 years old and 71 years old and above)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 5,000",
+                    "DisplaySeqNo": "12",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "5000",
+                    "SubCoverageName": "Personal Accident"
+                },
+                {
+                    "BenefitCode": "C000812",
+                    "BenefitDesc": "Accident (Insured 6 to 15 years old)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 20,000",
+                    "DisplaySeqNo": "13",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "20000",
+                    "SubCoverageName": "Personal Accident"
+                },
+                {
+                    "BenefitCode": "C000813",
+                    "BenefitDesc": "Personal Liability",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 50,000",
+                    "DisplaySeqNo": "14",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000"
+                },
+                {
+                    "BenefitCode": "C000814",
+                    "BenefitDesc": "Land Vehicle Rental Excess Protection",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 1,000",
+                    "DisplaySeqNo": "15",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1000"
+                },
+                {
+                    "BenefitCode": "C000815",
+                    "BenefitDesc": "Land Vehicle Rental",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 500",
+                    "DisplaySeqNo": "16",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "500"
+                },
+                {
+                    "BenefitCode": "C000816",
+                    "BenefitDesc": "Baggage Delay (Minimum of six (6) hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 200",
+                    "DisplaySeqNo": "17",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "200",
+                    "SubCoverageName": "Baggage Delay"
+                },
+                {
+                    "BenefitCode": "C000817",
+                    "BenefitDesc": "Baggage Delay (After 48 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 200",
+                    "DisplaySeqNo": "18",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "200",
+                    "SubCoverageName": "Baggage Delay"
+                },
+                {
+                    "BenefitCode": "C000818",
+                    "BenefitDesc": "Loss or Damage to Baggage and Personal Effects",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "per item, pair or set limit of USD 150",
+                    "DisplaySeqNo": "19",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000"
+                },
+                {
+                    "BenefitCode": "C000819",
+                    "BenefitDesc": "Loss or Damage to Sporting Equipment and Musical Instruments",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "per item, pair or set limit of USD 150",
+                    "DisplaySeqNo": "20",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "600"
+                },
+                {
+                    "BenefitCode": "C000820",
+                    "BenefitDesc": "Loss of Gadget(s) (Laptop, Tablet, and/or Mobile Phone)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 1,000",
+                    "DisplaySeqNo": "21",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1000"
+                },
+                {
+                    "BenefitCode": "C000821",
+                    "BenefitDesc": "Theft of Cash",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 300",
+                    "DisplaySeqNo": "22",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "300"
+                },
+                {
+                    "BenefitCode": "C000822",
+                    "BenefitDesc": "Loss of Travel Documents (Travel and unplanned accommodation, max. of 2 days)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 110",
+                    "DisplaySeqNo": "23",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000"
+                },
+                {
+                    "BenefitCode": "C000823",
+                    "BenefitDesc": "Mobile Phone Charges",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 100",
+                    "DisplaySeqNo": "24",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "100"
+                },
+                {
+                    "BenefitCode": "C000824",
+                    "BenefitDesc": "Sudden Acts of Terrorism",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 2,000",
+                    "DisplaySeqNo": "25",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "4000",
+                    "SubCoverageName": "Trip Cancellation"
+                },
+                {
+                    "BenefitCode": "C000825",
+                    "BenefitDesc": "Trip Cancellation for Any Reason",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "USD 2,800",
+                    "DisplaySeqNo": "26",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "4000",
+                    "SubCoverageName": "Trip Cancellation"
+                },
+                {
+                    "BenefitCode": "C000826",
+                    "BenefitDesc": "Trip Termination (Sudden Act of Terrorism)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 2,000",
+                    "DisplaySeqNo": "27",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "4000"
+                },
+                {
+                    "BenefitCode": "C000827",
+                    "BenefitDesc": "Staff Replacement (For Business Trip Only)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 3,000",
+                    "DisplaySeqNo": "28",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000"
+                },
+                {
+                    "BenefitCode": "C000828",
+                    "BenefitDesc": "Flight Delay (Minimum 6 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 200",
+                    "DisplaySeqNo": "29",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "200",
+                    "SubCoverageName": "Flight Delay"
+                },
+                {
+                    "BenefitCode": "C000829",
+                    "BenefitDesc": "Flight Delay (After 48 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 200",
+                    "DisplaySeqNo": "30",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "200",
+                    "SubCoverageName": "Flight Delay"
+                },
+                {
+                    "BenefitCode": "C000830",
+                    "BenefitDesc": "Missed Connecting Flight (Per 6 hours, up to 96 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 200",
+                    "DisplaySeqNo": "31",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "200"
+                },
+                {
+                    "BenefitCode": "C000831",
+                    "BenefitDesc": "Strikes or Hijacking",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 200",
+                    "DisplaySeqNo": "32",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "200"
+                },
+                {
+                    "BenefitCode": "C000832",
+                    "BenefitDesc": "Alternative Means of Transportation",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 400",
+                    "DisplaySeqNo": "33",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "400"
+                },
+                {
+                    "BenefitCode": "C000833",
+                    "BenefitDesc": "Trip Postponement",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "EUR 300",
+                    "DisplaySeqNo": "34",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "300"
+                },
+                {
+                    "BenefitCode": "C000834",
+                    "BenefitDesc": "Emergency Assistance Benefits",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Included",
+                    "DisplaySeqNo": "35",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "Included"
+                }
+            ],
+            "SumInsured": "202320",
+            "TaxAmount": null,
+            "VatAmount": null
+        },
+        {
+            "AddonBenefits": [],
+            "CarrierPlanDesc": "Asia and Oceania Dollar Plan PHP 1.5M",
+            "DiscountAmount": null,
+            "DuePremium": 852,
+            "Currency": "PHP",
+            "MainBenefits": [
+                {
+                    "BenefitCode": "C000800",
+                    "BenefitDesc": "In-patient and Out-Patient care",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to PHP 1,500,000",
+                    "DisplaySeqNo": "1",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000801",
+                    "BenefitDesc": "COVID-19 in-Patient care",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to PHP 1,500,000",
+                    "DisplaySeqNo": "2",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000802",
+                    "BenefitDesc": "Emergency Dental",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 100,000",
+                    "DisplaySeqNo": "3",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000803",
+                    "BenefitDesc": "30 days Automatic Extension",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to PHP 1,500,000",
+                    "DisplaySeqNo": "4",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000804",
+                    "BenefitDesc": "Emergency Room and In-patient treatment for Pre-existing Conditions",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 5,000",
+                    "DisplaySeqNo": "5",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000805",
+                    "BenefitDesc": "Recreational Activities and Sports",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Up to PHP 1,500,000",
+                    "DisplaySeqNo": "6",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000806",
+                    "BenefitDesc": "Recreational Extreme Sports",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 15,000",
+                    "DisplaySeqNo": "7",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "15000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000807",
+                    "BenefitDesc": "Implants Coverage necessitated by a covered Accident",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 40,000",
+                    "DisplaySeqNo": "8",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Medical Treatment"
+                },
+                {
+                    "BenefitCode": "C000808",
+                    "BenefitDesc": "Hospital Income (per day up to 10 consecutive days) including COVID-19 related hospitalization)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 2,000 per day",
+                    "DisplaySeqNo": "9",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "2000"
+                },
+                {
+                    "BenefitCode": "C000809",
+                    "BenefitDesc": "Burial Expenses",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 30,000",
+                    "DisplaySeqNo": "10",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "30000"
+                },
+                {
+                    "BenefitCode": "C000810",
+                    "BenefitDesc": "Accident (Insured 16 to 70 years old)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 1,500,000",
+                    "DisplaySeqNo": "11",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1500000",
+                    "SubCoverageName": "Personal Accident"
+                },
+                {
+                    "BenefitCode": "C000811",
+                    "BenefitDesc": "Accident (Insured 0 to 5 years old and 71 years old and above)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 100,000",
+                    "DisplaySeqNo": "12",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "100000",
+                    "SubCoverageName": "Personal Accident"
+                },
+                {
+                    "BenefitCode": "C000812",
+                    "BenefitDesc": "Accident (Insured 6 to 15 years old)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 1,000,000",
+                    "DisplaySeqNo": "13",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1000000",
+                    "SubCoverageName": "Personal Accident"
+                },
+                {
+                    "BenefitCode": "C000813",
+                    "BenefitDesc": "Personal Liability",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 1,000,000",
+                    "DisplaySeqNo": "14",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "1000000"
+                },
+                {
+                    "BenefitCode": "C000814",
+                    "BenefitDesc": "Land Vehicle Rental Excess Protection",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 50,000",
+                    "DisplaySeqNo": "15",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000"
+                },
+                {
+                    "BenefitCode": "C000815",
+                    "BenefitDesc": "Land Vehicle Rental",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 10,000",
+                    "DisplaySeqNo": "16",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "10000"
+                },
+                {
+                    "BenefitCode": "C000816",
+                    "BenefitDesc": "Baggage Delay (Minimum of six (6) hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 3,000",
+                    "DisplaySeqNo": "17",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000",
+                    "SubCoverageName": "Baggage Delay"
+                },
+                {
+                    "BenefitCode": "C000817",
+                    "BenefitDesc": "Baggage Delay (After 48 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 3,000",
+                    "DisplaySeqNo": "18",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000",
+                    "SubCoverageName": "Baggage Delay"
+                },
+                {
+                    "BenefitCode": "C000818",
+                    "BenefitDesc": "Loss or Damage to Baggage and Personal Effects",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "per item, pair or set limit of PHP 5,000",
+                    "DisplaySeqNo": "19",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000"
+                },
+                {
+                    "BenefitCode": "C000819",
+                    "BenefitDesc": "Loss or Damage to Sporting Equipment and Musical Instruments",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "per item, pair or set limit of PHP 5,000",
+                    "DisplaySeqNo": "20",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "20000"
+                },
+                {
+                    "BenefitCode": "C000820",
+                    "BenefitDesc": "Loss of Gadget(s) (Laptop, Tablet, and/or Mobile Phone)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 20,000",
+                    "DisplaySeqNo": "21",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "20000"
+                },
+                {
+                    "BenefitCode": "C000821",
+                    "BenefitDesc": "Theft of Cash",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 2,000",
+                    "DisplaySeqNo": "22",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "2000"
+                },
+                {
+                    "BenefitCode": "C000822",
+                    "BenefitDesc": "Loss of Travel Documents (Travel and unplanned accommodation, max. of 2 days)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 5,000",
+                    "DisplaySeqNo": "23",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000"
+                },
+                {
+                    "BenefitCode": "C000823",
+                    "BenefitDesc": "Mobile Phone Charges",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 2,500",
+                    "DisplaySeqNo": "24",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "2500"
+                },
+                {
+                    "BenefitCode": "C000824",
+                    "BenefitDesc": "Sudden Acts of Terrorism",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 25,000",
+                    "DisplaySeqNo": "25",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Trip Cancellation"
+                },
+                {
+                    "BenefitCode": "C000825",
+                    "BenefitDesc": "Trip Cancellation for Any Reason",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 35,000",
+                    "DisplaySeqNo": "26",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000",
+                    "SubCoverageName": "Trip Cancellation"
+                },
+                {
+                    "BenefitCode": "C000826",
+                    "BenefitDesc": "Trip Termination (Sudden Act of Terrorism)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 25,000",
+                    "DisplaySeqNo": "27",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50,000"
+                },
+                {
+                    "BenefitCode": "C000827",
+                    "BenefitDesc": "Staff Replacement (For Business Trip Only)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 50,000",
+                    "DisplaySeqNo": "28",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "50000"
+                },
+                {
+                    "BenefitCode": "C000828",
+                    "BenefitDesc": "Flight Delay (Minimum 6 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 3,000",
+                    "DisplaySeqNo": "29",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000",
+                    "SubCoverageName": "Flight Delay"
+                },
+                {
+                    "BenefitCode": "C000829",
+                    "BenefitDesc": "Flight Delay (After 48 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 3,000",
+                    "DisplaySeqNo": "30",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000",
+                    "SubCoverageName": "Flight Delay"
+                },
+                {
+                    "BenefitCode": "C000830",
+                    "BenefitDesc": "Missed Connecting Flight (Per 6 hours, up to 96 hours)",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 2,000",
+                    "DisplaySeqNo": "31",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "2000"
+                },
+                {
+                    "BenefitCode": "C000831",
+                    "BenefitDesc": "Strikes or Hijacking",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 3,000",
+                    "DisplaySeqNo": "32",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "3000"
+                },
+                {
+                    "BenefitCode": "C000832",
+                    "BenefitDesc": "Alternative Means of Transportation",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 6,000",
+                    "DisplaySeqNo": "33",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "6000"
+                },
+                {
+                    "BenefitCode": "C000833",
+                    "BenefitDesc": "Trip Postponement",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "PHP 4,500",
+                    "DisplaySeqNo": "34",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "4500"
+                },
+                {
+                    "BenefitCode": "C000834",
+                    "BenefitDesc": "Emergency Assistance Benefits",
+                    "CarrierCode": "PACIFIC",
+                    "CoverageArea": "WORLD",
+                    "DefaultLimitDesc": "Included",
+                    "DisplaySeqNo": "35",
+                    "IsMainBenefit": "Y",
+                    "Silimit": "Included"
+                }
+            ],
+            "SumInsured": "5549000",
+            "TaxAmount": null,
+            "VatAmount": null
+        }
+    ]
+}
