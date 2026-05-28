@@ -351,6 +351,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
               const handleDomesticToggle = (domestic: boolean) => {
                 setIsDomesticMode(domestic)
+                setIsSearching(false)
                 setFormModified(true)
                 const newList = [{
                   TravelCoverageArea: domestic ? 'DOMESTIC' : 'APAC',
@@ -744,10 +745,10 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
             {([canSubmit, isSubmitting]) => (
               <Button
                 type="button"
-                disabled={isSearching && clientRequest.status !== 'error'}
+                disabled={!isDetailsFormState.canSubmit}
                 onClick={(e) => {
                   e.preventDefault()
-                  if (isSearching && clientRequest.status !== 'error') return
+                  if (!isDetailsFormState.canSubmit) return
                   setIsSearching(false)
                   setInsurancePlans(null)
                   form.handleSubmit()
