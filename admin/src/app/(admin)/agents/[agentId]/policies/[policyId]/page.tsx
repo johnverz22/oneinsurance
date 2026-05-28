@@ -432,7 +432,7 @@ export default function AgentPolicyDetailsPage({ params }: AgentPolicyDetailsPag
   return (
     <div className="min-h-screen bg-background">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-[#B8960C] to-[#8B6914] text-white shadow-lg rounded-t-3xl">
+      <div className="bg-gradient-to-r from-primary to-[#2d6b3f] text-white shadow-lg rounded-t-3xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
