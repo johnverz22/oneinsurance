@@ -530,38 +530,63 @@ function CtplInsurance() {
       {insuranceType && !showComprehensiveForm && (
         <div className="w-full mt-8 border-t border-gray-100">
           <div className="mx-auto w-full max-w-7xl px-4 py-8">
+            {isLoadingPlans && plans.length === 0 ? (
+              <>
+                {/* Header skeleton */}
+                <div className="mb-8 text-center">
+                  <Skeleton className="mx-auto h-8 w-[50%] sm:h-10" />
+                  <Skeleton className="mx-auto mt-2 h-4 w-40" />
+                </div>
+                {/* Content skeleton with sidebar */}
+                <div className="flex gap-6">
+                  <aside className="hidden w-[200px] shrink-0 lg:block">
+                    <div className="sticky top-4 space-y-6">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                  </aside>
+                  <div className="flex flex-1 flex-col gap-4">
+                    <Skeleton className="h-4 w-56" />
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex w-full overflow-hidden rounded-xl border">
+                        <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[120px] rounded-none" />
+                        <div className="flex flex-1 flex-col justify-center p-4 sm:p-5 gap-3">
+                          <Skeleton className="h-5 w-[55%]" />
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+                            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+                            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+                          </div>
+                        </div>
+                        <div className="flex w-[140px] sm:w-[160px] md:w-[180px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
+                          <Skeleton className="h-7 w-16" />
+                          <Skeleton className="h-3 w-12" />
+                          <Skeleton className="h-8 w-full rounded-full" />
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-muted-foreground text-center text-sm">
+                      Searching for the best plans for you...
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+            <>
             <div className="mb-8 text-center">
               <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent sm:text-3xl md:text-4xl">
                 Choose Your Motor Insurance Plan
               </h2>
               <p className="text-muted-foreground mt-2 text-sm">{insuranceType === 'CTPL' ? 'CTPL' : 'Comprehensive'} Insurance Plans</p>
             </div>
-
-            {isLoadingPlans && (
-              <div className="flex flex-col gap-4 py-8">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex w-full overflow-hidden rounded-xl border">
-                    <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[140px] rounded-none" />
-                    <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
-                      <Skeleton className="h-5 w-[60%] mb-3" />
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-                        <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
-                        <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
-                        <div><Skeleton className="h-4 w-20 mb-1" /><Skeleton className="h-3 w-28" /></div>
-                      </div>
-                    </div>
-                    <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4">
-                      <Skeleton className="h-8 w-20 mb-2" />
-                      <Skeleton className="h-3 w-14 mb-3" />
-                      <Skeleton className="h-9 w-full rounded-full" />
-                    </div>
-                  </div>
-                ))}
-                <p className="text-muted-foreground text-center text-sm">
-                  Searching for the best plans for you...
-                </p>
-              </div>
-            )}
 
             {!isLoadingPlans && plansError && plans.length === 0 && (
               <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
@@ -656,27 +681,18 @@ function CtplInsurance() {
                     <div key={index} className="bg-background relative flex w-full rounded-xl overflow-hidden transition-all shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:shadow-md mb-3">
                       {/* Left brand block */}
                       <div
-                        className="flex w-[140px] shrink-0 flex-col items-center justify-center p-4 sm:w-[160px] md:w-[180px]"
-                        style={{ backgroundColor: brandColor.bg }}
+                        className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden sm:w-[160px] md:w-[180px]"
                       >
-                        {brandColor.logoWhite ? (
-                          <Image
-                            src={brandColor.logoWhite}
-                            alt={carrier?.companyName || plan.CarrierCode}
-                            className="h-auto w-[100px] object-contain sm:w-[120px]"
-                            width={120}
-                            height={80}
-                          />
-                        ) : carrier?.image && brandColor.invertLogo ? (
+                        {carrier?.image ? (
                           <Image
                             src={carrier.image}
                             alt={carrier.companyName}
-                            className="h-auto w-[100px] object-contain brightness-0 invert sm:w-[120px]"
-                            width={120}
-                            height={80}
+                            className="h-full w-full object-cover"
+                            width={180}
+                            height={120}
                           />
                         ) : (
-                          <span className="text-center text-lg font-bold uppercase leading-tight tracking-wide text-white sm:text-xl">
+                          <span className="text-foreground text-center text-lg font-bold uppercase leading-tight tracking-wide sm:text-xl">
                             {carrier?.companyName || plan.CarrierCode}
                           </span>
                         )}
@@ -723,7 +739,7 @@ function CtplInsurance() {
                       </div>
 
                       {/* Right price + button */}
-                      <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[150px]">
+                      <div className="flex w-[140px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[160px] md:w-[180px]">
                         <div className="flex items-baseline gap-1 mb-1">
                           <span className="text-foreground text-xs font-semibold">PHP</span>
                           <span className="text-foreground text-xl font-black sm:text-2xl">
@@ -744,6 +760,8 @@ function CtplInsurance() {
                 })}
                 </div>
               </div>
+            )}
+            </>
             )}
           </div>
         </div>

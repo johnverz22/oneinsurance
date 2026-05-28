@@ -40,9 +40,9 @@ export function HealthPlanDetailsStep() {
 
         {/* Provider + Plan */}
         <div className="mb-6 flex items-start gap-4">
-          <div className="flex h-16 w-32 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white p-2">
+          <div className="h-14 w-28 shrink-0 overflow-hidden rounded-md">
             {logo ? (
-              <img src={logo} alt={providerName} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+              <img src={logo} alt={providerName} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
             ) : null}
           </div>
           <div>

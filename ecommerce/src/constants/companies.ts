@@ -19,7 +19,7 @@ export const COMPANIES = [
     carrierCode: 'MALAYAN',
     companyName: 'Malayan Insurance',
     tagLine: 'Your Future, Our Priority',
-    image: '/images/providers/2 Malayan.svg',
+    image: '/images/providers/malayan111.jpg',
     description: `Established in 1930, <strong>Malayan Insurance Co., Inc.</strong> is one of the leading non-life insurance
 companies in the Philippines. It has consistently been ranked number one in non-life
 insurance in terms of Gross Premiums Written since 1970. Malayan Insurance provides
