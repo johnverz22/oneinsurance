@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { PageLoader } from '@/components/page-loader'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { LockedProfilePrompt } from '@/components/accounts/locked-profile-prompt'
 import { useGetAccounts } from '@/app/data/queries/accounts'
 import ServerOffline from '@/components/server-offline'
+import { ProfileOverview } from '@/components/agent/profile-overview'
 
 export default function DashboardLayout({
   children,
@@ -14,8 +15,12 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { user, logout } = useAgentAuthStore()
   const { data, isLoading, isError, error, refetch } = useGetAccounts()
+
+  // Check if we're on the dashboard home page (exact match)
+  const isDashboardHome = pathname === '/' || pathname === ''
 
   // Handle authentication errors
   useEffect(() => {
@@ -65,6 +70,7 @@ export default function DashboardLayout({
 
   return (
     <div className="relative h-full w-full space-y-6">
+      {!isDashboardHome && <ProfileOverview />}
       {children}
     </div>
   )
