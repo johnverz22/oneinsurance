@@ -682,7 +682,7 @@ export function CoverageOptionsForm() {
     return <ServerOffline onRefresh={handleRefetch} />
   }
 
-  const isPlansFetching = isLoading || !insurancePlans?.data?.[0]?.Plans
+  const isPlansFetching = isLoading && !insurancePlans?.data?.[0]?.Plans
   const hasPlans = insurancePlans?.data && insurancePlans.data.length > 0
 
   return (
@@ -739,35 +739,49 @@ export function CoverageOptionsForm() {
 
       <div className="border-t-muted-foreground/10 flex border-t px-4 sm:px-6">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 py-6 sm:gap-6 sm:py-8">
-          <div className="w-full text-center">
-            <h1 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-              Choose your Travel Plans
-            </h1>
-          </div>
+          {isPlansFetching ? (
+            <>
+              <div className="w-full text-center">
+                <Skeleton className="mx-auto h-10 w-[70%] sm:h-12 md:h-14" />
+              </div>
+              <div className="flex justify-start gap-2">
+                <Skeleton className="h-10 w-full max-w-md flex-1/2 rounded-full sm:h-12" />
+                <Skeleton className="h-10 w-full flex-1/2 rounded-full sm:h-12 sm:w-auto lg:max-w-48" />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-full text-center">
+                <h1 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black leading-tight text-transparent sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+                  Choose your Travel Plans
+                </h1>
+              </div>
 
-          <div className="flex justify-start gap-2">
-            <div className="w-full max-w-md flex-1/2">
-              <Input
-                className="h-10 w-full sm:h-12"
-                placeholder="Search plans..."
-                value={searchFilter}
-                onChange={handleSearchInputChange}
-              />
-            </div>
-            <Button
-              type="button"
-              className="bg-primary from-primary to-accent relative h-10 w-full flex-1/2 self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-auto lg:max-w-48 dark:text-white"
-              size="lg"
-            >
-              <ArrowDownUp />
-              Recommended
-            </Button>
-          </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-start">
+                <div className="w-full sm:max-w-md">
+                  <Input
+                    className="h-10 w-full sm:h-12"
+                    placeholder="Search plans..."
+                    value={searchFilter}
+                    onChange={handleSearchInputChange}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  className="bg-primary from-primary to-accent relative hidden h-10 self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:h-12 sm:w-auto lg:max-w-48 dark:text-white"
+                  size="lg"
+                >
+                  <ArrowDownUp />
+                  Recommended
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-1.5">
-        {isLoading ? (
+        {isPlansFetching ? (
           <div className="relative flex min-h-[60vh] gap-6 pb-6">
             {/* Sidebar skeleton */}
             <aside className="hidden w-[200px] shrink-0 lg:block">
@@ -808,7 +822,7 @@ export function CoverageOptionsForm() {
                       <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
                     </div>
                   </div>
-                  <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
+                  <div className="flex w-[140px] sm:w-[160px] md:w-[180px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
                     <Skeleton className="h-7 w-16" />
                     <Skeleton className="h-3 w-12" />
                     <Skeleton className="h-8 w-full rounded-full" />

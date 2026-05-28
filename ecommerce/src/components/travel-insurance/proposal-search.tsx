@@ -414,8 +414,8 @@ export function ProposalSearch() {
             </Alert>
           )}
 
-          <div className="flex gap-2">
-            <div className="flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="w-full sm:flex-1">
               <Input
                 id="proposal-search"
                 placeholder="Enter proposal number (e.g., PTRAVEL0000000803)"
@@ -435,7 +435,7 @@ export function ProposalSearch() {
             <Button
               onClick={handleSearch}
               disabled={isLoading}
-              className="from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-50 dark:text-white"
+              className="from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-50 sm:w-auto dark:text-white"
               size="lg"
             >
               {isLoading ? (

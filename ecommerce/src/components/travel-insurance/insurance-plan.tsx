@@ -46,35 +46,26 @@ export function TravelInsurancePlan({
       )}
     >
       <div className={cn(
-        'bg-background flex w-full rounded-xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-md',
+        'bg-background flex w-full flex-col rounded-xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-md sm:flex-row',
         {
           'ring-primary shadow-lg ring-2': isSelected,
         }
       )}>
       {/* Left brand block */}
       <div
-        className="flex w-[140px] shrink-0 flex-col items-center justify-center p-4 sm:w-[160px] md:w-[180px]"
-        style={{ backgroundColor: brandColors.bg }}
+        className="flex h-16 w-full items-center justify-center overflow-hidden sm:h-auto sm:w-[160px] sm:shrink-0 md:w-[180px]"
       >
-        {brandColors.logoWhite ? (
-          <Image
-            src={brandColors.logoWhite}
-            alt={provider?.companyName || carrierCode}
-            className="h-auto w-[100px] object-contain sm:w-[120px]"
-            width={120}
-            height={80}
-          />
-        ) : provider && brandColors.invertLogo ? (
+        {provider ? (
           <Image
             src={provider.image}
             alt={provider.companyName}
-            className="h-auto w-[100px] object-contain brightness-0 invert sm:w-[120px]"
-            width={120}
-            height={80}
+            className="h-full w-full object-cover"
+            width={180}
+            height={120}
           />
         ) : (
-          <span className="text-center text-lg font-bold uppercase leading-tight tracking-wide text-white sm:text-xl">
-            {provider?.companyName || carrierCode}
+          <span className="text-foreground text-center text-lg font-bold uppercase leading-tight tracking-wide sm:text-xl">
+            {carrierCode}
           </span>
         )}
       </div>
@@ -104,19 +95,19 @@ export function TravelInsurancePlan({
       </div>
 
       {/* Right price + button section */}
-      <div className="flex w-[130px] shrink-0 flex-col items-center justify-center border-l border-gray-100 p-4 sm:w-[150px]">
-        <div className="flex items-baseline gap-1 mb-1">
+      <div className="flex w-full flex-col items-center justify-center gap-1 border-t border-gray-100 p-4 sm:w-[160px] sm:shrink-0 sm:border-t-0 sm:border-l md:w-[180px]">
+        <div className="flex items-baseline gap-1">
           <span className="text-primary text-xs font-semibold">{currency || 'PHP'}</span>
           <span className="text-foreground text-xl font-black sm:text-2xl">
             {Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </span>
         </div>
-        <span className="text-primary mb-3 text-xs font-medium">Premium</span>
+        <span className="text-primary mb-2 text-xs font-medium">Premium</span>
 
         <Button
           type="button"
           size="sm"
-          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+          className="w-full max-w-[200px] rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90 sm:max-w-none"
           disabled={!isAvailable}
           onClick={() => {
             if (redirectUrl) {
