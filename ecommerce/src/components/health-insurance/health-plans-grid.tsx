@@ -324,7 +324,7 @@ export function HealthPlansGrid() {
               const carrierName = provider?.companyName ?? plan.CarrierProductName ?? plan.CarrierCode ?? ''
               const premium = getPremium(plan)
               const benefits: any[] = plan.MainBenefits ?? []
-              const brandColor = provider ? (CARRIER_BRAND_COLORS[provider.carrierCode] || { bg: '#374151', invertLogo: false, logoWhite: undefined }) : { bg: '#374151', invertLogo: false, logoWhite: undefined }
+              const brandColor = provider ? (CARRIER_BRAND_COLORS[provider.carrierCode] || { bg: '#374151', invertLogo: false, logoWhite: undefined, planCardLogo: undefined }) : { bg: '#374151', invertLogo: false, logoWhite: undefined, planCardLogo: undefined }
               const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
               return (
@@ -333,7 +333,13 @@ export function HealthPlansGrid() {
                   <div
                     className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden sm:w-[160px] md:w-[180px]"
                   >
-                    {logo ? (
+                    {brandColor.planCardLogo ? (
+                      <img
+                        src={brandColor.planCardLogo}
+                        alt={carrierName}
+                        className="h-full w-full object-contain p-1"
+                      />
+                    ) : logo ? (
                       <img
                         src={logo}
                         alt={carrierName}
@@ -373,7 +379,7 @@ export function HealthPlansGrid() {
                   {/* Right price + button */}
                   <div className="flex w-[140px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[160px] md:w-[180px]">
                     <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-foreground text-xs font-semibold">PHP</span>
+                      <span className="text-primary text-xs font-semibold">PHP</span>
                       <span className="text-foreground text-xl font-black sm:text-2xl">
                         {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>

@@ -682,7 +682,7 @@ export function CoverageOptionsForm() {
     return <ServerOffline onRefresh={handleRefetch} />
   }
 
-  const isPlansFetching = isLoading && !insurancePlans?.data?.[0]?.Plans
+  const isPlansFetching = (isLoading || !insurancePlans?.data?.[0]?.Plans) && !!clientRequest.id
   const hasPlans = insurancePlans?.data && insurancePlans.data.length > 0
 
   return (
