@@ -71,7 +71,7 @@ export default function DashboardPage() {
           />
           <OverviewCard
             title="Completed"
-            amount={isLoading ? 0 : statistics?.total_cases || 0}
+            amount={isLoading ? 0 : statistics?.number_of_sales || 0}
             icon={
               <svg
                 width="42"
