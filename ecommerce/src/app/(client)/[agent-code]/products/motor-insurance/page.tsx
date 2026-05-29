@@ -687,7 +687,7 @@ function CtplInsurance() {
                           <Image
                             src={brandColor.planCardLogo}
                             alt={carrier?.companyName || plan.CarrierCode}
-                            className="h-full w-full object-contain p-1"
+                            className="h-full w-full object-contain p-8"
                             width={180}
                             height={120}
                           />
