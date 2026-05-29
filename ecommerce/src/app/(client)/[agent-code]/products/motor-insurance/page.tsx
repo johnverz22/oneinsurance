@@ -683,7 +683,15 @@ function CtplInsurance() {
                       <div
                         className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden sm:w-[160px] md:w-[180px]"
                       >
-                        {carrier?.image ? (
+                        {brandColor.planCardLogo ? (
+                          <Image
+                            src={brandColor.planCardLogo}
+                            alt={carrier?.companyName || plan.CarrierCode}
+                            className="h-full w-full object-contain p-1"
+                            width={180}
+                            height={120}
+                          />
+                        ) : carrier?.image ? (
                           <Image
                             src={carrier.image}
                             alt={carrier.companyName}
@@ -741,7 +749,7 @@ function CtplInsurance() {
                       {/* Right price + button */}
                       <div className="flex w-[140px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[160px] md:w-[180px]">
                         <div className="flex items-baseline gap-1 mb-1">
-                          <span className="text-foreground text-xs font-semibold">PHP</span>
+                          <span className="text-primary text-xs font-semibold">PHP</span>
                           <span className="text-foreground text-xl font-black sm:text-2xl">
                             {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
