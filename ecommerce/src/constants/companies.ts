@@ -1,10 +1,10 @@
 import { InsuranceCompany } from '@/types/insurance-company'
 
 // Brand colors for each carrier (used in plan cards)
-export const CARRIER_BRAND_COLORS: Record<string, { bg: string; text: string; invertLogo: boolean; logoWhite?: string }> = {
-  MALAYAN: { bg: '#1B4B8F', text: '#ffffff', invertLogo: true },
-  OONAPH: { bg: '#5B2D8E', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/oona logo (1) (1).svg' },
-  PACIFIC: { bg: '#E8A838', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/pacific-cross-white.svg' },
+export const CARRIER_BRAND_COLORS: Record<string, { bg: string; text: string; invertLogo: boolean; logoWhite?: string; planCardLogo?: string }> = {
+  MALAYAN: { bg: '#1B4B8F', text: '#ffffff', invertLogo: true, planCardLogo: '/images/providers/2 Malayan.svg' },
+  OONAPH: { bg: '#5B2D8E', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/oona logo (1) (1).svg', planCardLogo: '/images/providers/oona-1.webp' },
+  PACIFIC: { bg: '#E8A838', text: '#ffffff', invertLogo: false, logoWhite: '/images/providers/pacific-cross-white.svg', planCardLogo: '/images/providers/5 Pacific Cross.svg' },
   STANDARD: { bg: '#1A5632', text: '#ffffff', invertLogo: true },
   PIONEER: { bg: '#C41E3A', text: '#ffffff', invertLogo: true },
   PARAMOUNT: { bg: '#003366', text: '#ffffff', invertLogo: true },

@@ -47,15 +47,20 @@ export function TravelInsurancePlan({
     >
       <div className={cn(
         'bg-background flex w-full flex-col rounded-xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-md sm:flex-row',
-        {
-          'ring-primary shadow-lg ring-2': isSelected,
-        }
       )}>
       {/* Left brand block */}
       <div
         className="flex h-16 w-full items-center justify-center overflow-hidden sm:h-auto sm:w-[160px] sm:shrink-0 md:w-[180px]"
       >
-        {provider ? (
+        {brandColors.planCardLogo ? (
+          <Image
+            src={brandColors.planCardLogo}
+            alt={provider?.companyName || carrierCode}
+            className="h-full w-full object-contain p-1"
+            width={180}
+            height={120}
+          />
+        ) : provider ? (
           <Image
             src={provider.image}
             alt={provider.companyName}
