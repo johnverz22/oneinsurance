@@ -486,10 +486,7 @@ export function CoverageOptionsForm() {
         })()
       : []
 
-    // TEMPORARILY HIDE MALAYAN & PACIFIC CROSS — only show Oona plans for meeting
-    const allPlans = [...dynamicPlans, ...pacificPlans].filter(
-      (plan: any) => plan.CarrierCode === 'OONAPH'
-    )
+    const allPlans = [...dynamicPlans, ...pacificPlans]
 
     if (!allPlans.length) return []
 
@@ -685,7 +682,7 @@ export function CoverageOptionsForm() {
     return <ServerOffline onRefresh={handleRefetch} />
   }
 
-  const isPlansFetching = (isLoading || allTravelPlans.length === 0) && !!clientRequest.id && !isError
+  const isPlansFetching = (isLoading || !insurancePlans?.data?.[0]?.Plans) && !!clientRequest.id && !isError
   const hasPlans = insurancePlans?.data && insurancePlans.data.length > 0
 
   return (
