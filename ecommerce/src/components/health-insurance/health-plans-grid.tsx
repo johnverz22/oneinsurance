@@ -337,7 +337,7 @@ export function HealthPlansGrid() {
                       <img
                         src={brandColor.planCardLogo}
                         alt={carrierName}
-                        className="h-full w-full object-contain p-8"
+                        className={`h-full w-full object-contain ${provider?.carrierCode === 'PACIFIC' ? 'p-2 sm:p-6' : 'p-3 sm:p-8'}`}
                       />
                     ) : logo ? (
                       <img
