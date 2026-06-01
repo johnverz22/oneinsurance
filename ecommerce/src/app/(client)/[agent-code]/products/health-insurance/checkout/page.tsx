@@ -91,6 +91,7 @@ export default function CheckoutPage() {
 
         if (issueRes.ok) {
           setIsAwaitingPayment(false)
+          // Show inline success on the same page (like travel insurance)
           setShowSuccess(true)
         } else {
           toast.error('Policy issuance failed. Please contact support.')
