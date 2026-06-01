@@ -209,13 +209,93 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
     }
   }
 
+  const [showInlineInvoice, setShowInlineInvoice] = useState(false)
+
   const handleViewInvoice = () => {
     setShowSuccess(false)
-    clearCart()
-    router.push(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(`${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim())}&total=${grandTotal}&proposal=${proposalNo ?? ''}`)
+    setShowInlineInvoice(true)
   }
 
   const err = (key: string) => errors[key] ? <p className="mt-1 text-xs text-red-500">{errors[key]}</p> : null
+
+  // Inline success with Cover Note & Invoice (like travel insurance)
+  if (showInlineInvoice) {
+    const insuredName = `${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim()
+    const firstItem = items[0]
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 py-8">
+        <div className="space-y-4 text-center">
+          <div className="flex justify-center">
+            <div className="rounded-full bg-green-100 p-4">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+          </div>
+          <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
+          <p className="text-lg text-gray-600">Your health insurance policy has been successfully issued.</p>
+        </div>
+
+        {/* Invoice Card */}
+        <div className="rounded-2xl bg-white p-8 shadow-sm border">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Invoice</h2>
+              <p className="text-sm text-gray-500">#{proposalNo}</p>
+            </div>
+            <img src="/images/IFRC.png" alt="IFRC" className="h-10 w-auto" />
+          </div>
+          <hr className="mb-4" />
+          <div className="mb-4 grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p className="text-xs font-bold text-gray-400">Policy Number</p>
+              <p className="font-semibold text-gray-900">{proposalNo || 'Pending'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-400">Insurance Provider</p>
+              <p className="font-semibold text-gray-900">{firstItem?.provider || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-400">Plan Name</p>
+              <p className="font-semibold text-gray-900">{firstItem?.planName || 'Health Insurance'}</p>
+            </div>
+          </div>
+          <hr className="mb-4" />
+          <div className="mb-4 grid grid-cols-2 gap-6 text-sm">
+            <div>
+              <p className="text-xs font-bold text-gray-400">From</p>
+              <p className="font-semibold text-gray-900">IFRC Digitech Online Payment Gateway</p>
+              <p className="text-gray-500">6th Floor Padilla Building</p>
+              <p className="text-gray-500">F. Ortigas Jr. Road, Ortigas Center, Pasig City</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-400">To</p>
+              <p className="font-semibold text-gray-900">{insuredName}</p>
+              <p className="text-gray-500">{email}</p>
+            </div>
+          </div>
+          <hr className="mb-4" />
+          <table className="mb-4 w-full text-sm">
+            <thead><tr className="text-left text-gray-400"><th className="pb-2 font-medium">DESCRIPTION</th><th className="pb-2 text-right font-medium">AMOUNT</th></tr></thead>
+            <tbody><tr className="border-t"><td className="py-3 text-gray-700"><p className="font-medium">{firstItem?.planName}</p><p className="text-xs text-gray-500">{firstItem?.provider}</p></td><td className="py-3 text-right text-gray-700">PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td></tr></tbody>
+          </table>
+          <div className="flex justify-end border-t pt-3">
+            <div className="text-right"><p className="text-sm font-bold">Total Amount</p><p className="text-lg font-black">PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p></div>
+          </div>
+          <hr className="my-4" />
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><p className="text-xs text-gray-400">Status</p><p className="font-semibold text-green-600">Active</p></div>
+            <div><p className="text-xs text-gray-400">Issue Date</p><p className="font-semibold text-gray-900">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p></div>
+          </div>
+          <p className="text-primary mt-4 text-center text-sm italic">Thank you for choosing One Insurance. Stay protected and healthy!</p>
+        </div>
+
+        <div className="flex justify-center">
+          <Button className="from-primary to-accent rounded-full bg-gradient-to-r px-8 text-white" onClick={() => { clearCart(); window.location.href = `/${agentCode}/products/health-insurance` }}>
+            Buy New Health Insurance
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -447,7 +527,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
         </Button>
       </div>
 
-      {/* Success Dialog */}
+      {/* Success Dialog — replaced with inline popup that triggers inline view */}
       <Dialog open={showSuccess} onOpenChange={() => {}}>
         <DialogContent className="max-w-md text-center" showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader className="items-center">
@@ -456,10 +536,10 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
             </div>
             <DialogTitle className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">Payment Successful!</DialogTitle>
             <DialogDescription className="text-sm text-gray-600">
-              Your policy details have been confirmed. The official policy document will be issued by the insurance carrier shortly.
+              Your policy details have been confirmed and recorded in our system. Please note that this serves as a cover note only. The official policy document will be issued directly by the insurance carrier and made available to you shortly.
             </DialogDescription>
           </DialogHeader>
-          <Button variant="outline" className="mt-4 w-full rounded-full" onClick={handleViewInvoice}>View Invoice</Button>
+          <Button className="from-primary to-accent mt-4 w-full rounded-full bg-gradient-to-r text-white" onClick={handleViewInvoice}>Done</Button>
         </DialogContent>
       </Dialog>
     </>
