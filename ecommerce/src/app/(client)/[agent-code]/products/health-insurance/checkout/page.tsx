@@ -376,13 +376,14 @@ export default function CheckoutPage() {
   }
 
   const handleViewInvoice = () => {
-    clearCart()
-    router.push(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(fullName)}&total=${grandTotal}&proposal=${proposalNo ?? ''}`)
+    // Don't clear cart here — just open invoice in new tab to avoid redirect issues
+    window.open(`/${agentCode}/products/health-insurance/invoice?name=${encodeURIComponent(fullName)}&total=${grandTotal}&proposal=${proposalNo ?? ''}&success=true`, '_blank')
   }
 
   // Show inline success page (same as travel insurance)
   if (showSuccess) {
     const firstItem = items[0]
+    const [activeTab, setActiveTab] = useState<'covernote' | 'invoice'>('covernote')
     return (
       <div className="min-h-screen bg-[#eef2f7] px-4 py-8">
         <div className="mx-auto max-w-3xl space-y-6">
@@ -396,82 +397,179 @@ export default function CheckoutPage() {
             <div className="space-y-2">
               <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
               <p className="text-lg text-gray-600">Your health insurance policy has been successfully issued.</p>
-              <p className="text-sm text-gray-500">
-                Please note that this serves as a cover note only. The official policy document will be issued directly by the insurance carrier and made available to you shortly.
-              </p>
             </div>
           </div>
 
-          {/* Invoice Card */}
-          <div className="rounded-2xl bg-white p-8 shadow-sm">
-            <div className="mb-6 flex items-center justify-between">
-              <Image src="/images/logo.png" alt="One Insurance" width={120} height={40} className="h-10 w-auto" />
-              <h2 className="text-xl font-bold text-gray-700">Invoice</h2>
-              <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
-            </div>
-            <hr className="mb-6" />
+          {/* Tabs: Cover Note / Invoice Details */}
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => setActiveTab('covernote')}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === 'covernote' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+            >
+              Cover Note
+            </button>
+            <button
+              onClick={() => setActiveTab('invoice')}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === 'invoice' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+            >
+              Invoice Details
+            </button>
+          </div>
 
-            <div className="mb-6 grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Billed To</p>
-                <p className="font-semibold text-gray-900">{insuredInfo?.insuredName || fullName || 'Insured'}</p>
-                <p className="text-gray-500">{email}</p>
+          {/* Cover Note Content */}
+          {activeTab === 'covernote' && (
+            <div className="rounded-2xl bg-white p-8 shadow-sm">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Cover Note</h2>
+                  <p className="text-sm text-gray-500">#{proposalNo}</p>
+                </div>
+                <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
               </div>
-              <div>
-                <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Proposal Number</p>
-                <p className="font-semibold text-gray-900">{proposalNo || 'N/A'}</p>
-              </div>
-              <div className="text-right">
-                <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Total (PHP)</p>
-                <p className="text-2xl font-black text-gray-900">
-                  ₱ {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
+              <hr className="mb-6" />
 
-            <hr className="mb-4" />
-
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-400">
-                  <th className="pb-3 font-medium">Plan</th>
-                  <th className="pb-3 text-center font-medium">Provider</th>
-                  <th className="pb-3 text-right font-medium">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="py-3 text-gray-700">{firstItem?.planName || 'Health Insurance'}</td>
-                  <td className="py-3 text-center text-gray-700">{firstItem?.provider || ''}</td>
-                  <td className="py-3 text-right text-gray-700">
-                    ₱ {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <hr className="my-4" />
-
-            <div className="flex justify-end">
-              <div className="w-48 space-y-1 text-sm">
-                <div className="flex justify-between border-t pt-1">
-                  <span className="font-bold text-gray-900">Total</span>
-                  <span className="font-bold text-gray-900">₱ {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              <div className="mb-6 grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-xs font-bold text-gray-400">Policy Number</p>
+                  <p className="font-semibold text-gray-900">{proposalNo || 'Pending'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400">Insurance Provider</p>
+                  <p className="font-semibold text-gray-900">{firstItem?.provider || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400">Plan Name</p>
+                  <p className="font-semibold text-gray-900">{firstItem?.planName || 'Health Insurance'}</p>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-center gap-3">
-            <Button variant="outline" className="rounded-full" onClick={handleViewInvoice}>
-              View Full Invoice
-            </Button>
+              <hr className="mb-6" />
+
+              <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-xs font-bold text-gray-400">Issued To</p>
+                  <p className="font-semibold text-gray-900">{insuredInfo?.insuredName || fullName}</p>
+                  <p className="text-gray-500">{email}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400">Coverage</p>
+                  <p className="font-semibold text-gray-900">{firstItem?.tierName || 'Standard'}</p>
+                  <p className="text-gray-500">{firstItem?.tierDescription || ''}</p>
+                </div>
+              </div>
+
+              <hr className="mb-6" />
+
+              <div className="mb-6">
+                <h3 className="mb-3 text-sm font-bold text-gray-700">POLICY STATUS</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-400">Status</p>
+                    <p className="font-semibold text-green-600">Active</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Issue Date</p>
+                    <p className="font-semibold text-gray-900">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-primary mb-4 text-center text-sm italic">
+                Thank you for choosing One Insurance. Stay protected and healthy!
+              </p>
+            </div>
+          )}
+
+          {/* Invoice Details Content */}
+          {activeTab === 'invoice' && (
+            <div className="rounded-2xl bg-white p-8 shadow-sm">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Invoice</h2>
+                  <p className="text-sm text-gray-500">#{proposalNo}</p>
+                </div>
+                <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+              </div>
+              <hr className="mb-6" />
+
+              <div className="mb-6 grid grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="text-xs font-bold text-gray-400">From</p>
+                  <p className="font-semibold text-gray-900">IFRC Digitech Online Payment Gateway</p>
+                  <p className="text-gray-500">6th Floor Padilla Building</p>
+                  <p className="text-gray-500">F. Ortigas Jr. Road, Ortigas Center, Pasig City</p>
+                  <p className="text-gray-500">TEL: +632 8633 5681</p>
+                  <p className="text-gray-500">concierge@ifrcinsurance.com</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400">To</p>
+                  <p className="font-semibold text-gray-900">{insuredInfo?.insuredName || fullName}</p>
+                  <p className="text-gray-500">{email}</p>
+                </div>
+              </div>
+
+              <hr className="mb-4" />
+
+              <table className="mb-4 w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-400">
+                    <th className="pb-3 font-medium">DESCRIPTION</th>
+                    <th className="pb-3 text-right font-medium">AMOUNT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t">
+                    <td className="py-3 text-gray-700">
+                      <p className="font-medium">{firstItem?.planName || 'Health Insurance'}</p>
+                      <p className="text-xs text-gray-500">{firstItem?.provider}</p>
+                    </td>
+                    <td className="py-3 text-right text-gray-700">
+                      PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="flex justify-end border-t pt-3">
+                <div className="text-right">
+                  <p className="text-sm font-bold text-gray-900">Total Amount</p>
+                  <p className="text-lg font-black text-gray-900">PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs text-gray-500 italic">
+                Note: Policy coverage begins on the effective date. VAT inclusive.
+              </p>
+
+              <hr className="my-6" />
+
+              <div className="mb-4">
+                <h3 className="mb-3 text-sm font-bold text-gray-700">POLICY STATUS</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs text-gray-400">Status</p>
+                    <p className="font-semibold text-green-600">Active</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Issue Date</p>
+                    <p className="font-semibold text-gray-900">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-primary text-center text-sm italic">
+                Thank you for choosing One Insurance. Have a safe and healthy life!
+              </p>
+            </div>
+          )}
+
+          {/* Action Button */}
+          <div className="flex justify-center">
             <Button
-              className="from-primary to-accent rounded-full bg-gradient-to-r text-white"
+              className="from-primary to-accent rounded-full bg-gradient-to-r px-8 text-white"
               onClick={() => {
                 clearCart()
-                router.push(`/${agentCode}/products/health-insurance`)
+                window.location.href = `/${agentCode}/products/health-insurance`
               }}
             >
               Buy New Health Insurance
