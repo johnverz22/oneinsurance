@@ -21,6 +21,7 @@ import axios from 'axios'
 import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
 import { storePlanName } from '@/utils/custom-fields-storage'
 import { COMPANIES } from '@/constants/companies'
+import { useTravelProviderFilter } from '@/store/travel-provider-filter-store'
 import pacificCrossPlansData from '@/constants/pacific-cross-travel-plans.json'
 import pacificCrossAsiaPlansData from '@/constants/pacific-cross-travel-plans-asia.json'
 import pacificCrossDomesticPlansData from '@/constants/pacific-cross-travel-plans-domestic.json'
@@ -83,6 +84,7 @@ export function CoverageOptionsForm() {
     resetCoverageOption,
   } = useTravelInsuranceStore()
   const { agentCode } = useAgentCodeStore()
+  const { providerFilter } = useTravelProviderFilter()
 
   // refs for Echo instance, subscribed channel, and queue processing
   const echoRef = useRef<any>(null)
@@ -490,9 +492,14 @@ export function CoverageOptionsForm() {
 
     if (!allPlans.length) return []
 
+    // Apply provider filter if set (from /travel-insurance/oona, /travel-insurance/pacific-cross, etc.)
+    const filteredByProvider = providerFilter
+      ? allPlans.filter((plan: any) => plan.CarrierCode === providerFilter)
+      : allPlans
+
     const lowerFilter = debouncedSearchFilter.toLowerCase()
 
-    return allPlans
+    return filteredByProvider
       .filter(
         (plan: any) =>
           plan.CarrierCode.toLowerCase().includes(lowerFilter) ||
@@ -543,7 +550,7 @@ export function CoverageOptionsForm() {
         }
         return getMaxSi(b.Plan) - getMaxSi(a.Plan)
       })
-  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages, travelDetails.travelDetailList])
+  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages, travelDetails.travelDetailList, providerFilter])
 
   // Get available providers from loaded plans
   const availableProviders = useMemo(() => {
@@ -908,7 +915,8 @@ export function CoverageOptionsForm() {
                   </ul>
                 </div>
 
-                {/* By providers */}
+                {/* By providers — hidden when provider filter is active from URL */}
+                {!providerFilter && (
                 <div>
                   <h4 className="text-foreground mb-2 text-sm font-bold">By providers</h4>
                   <ul className="space-y-1.5">
@@ -930,6 +938,7 @@ export function CoverageOptionsForm() {
                     })}
                   </ul>
                 </div>
+                )}
 
                 {/* By coverages */}
                 <div>
