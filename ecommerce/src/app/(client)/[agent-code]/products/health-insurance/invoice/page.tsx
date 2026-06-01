@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { PageLoader } from '@/components/page-loader'
 import { COMPANIES } from '@/constants/companies'
+import { CheckCircle } from 'lucide-react'
 
 function InvoiceContent() {
   const params = useParams()
@@ -16,8 +17,10 @@ function InvoiceContent() {
   const name = searchParams.get('name') || 'Insured'
   const total = parseFloat(searchParams.get('total') || '0')
   const proposalNo = searchParams.get('proposal') || ''
+  const isSuccess = searchParams.get('success') === 'true'
 
   const [policyData, setPolicyData] = useState<any>(null)
+  const [showSuccessBanner, setShowSuccessBanner] = useState(isSuccess)
 
   useEffect(() => {
     if (!proposalNo) return
@@ -42,6 +45,24 @@ function InvoiceContent() {
   return (
     <div className="min-h-screen bg-[#eef2f7] px-4 py-8">
       <div className="mx-auto max-w-3xl">
+        {/* Success Banner */}
+        {showSuccessBanner && (
+          <div className="mb-6 space-y-4 text-center">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-green-100 p-4">
+                <CheckCircle className="h-10 w-10 text-green-600" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
+              <p className="text-lg text-gray-600">Your health insurance policy has been successfully issued.</p>
+              <p className="text-sm text-gray-500">
+                Please note that this serves as a cover note only. The official policy document will be issued directly by the insurance carrier and made available to you shortly.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-2xl bg-white p-8 shadow-sm">
           {/* Invoice header */}
           <div className="mb-6 flex items-center justify-between">
