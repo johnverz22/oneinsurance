@@ -357,15 +357,25 @@ export function HealthPlansGrid() {
                     <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
                       {plan.CarrierPlanDesc}
                     </h3>
-                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
-                      {benefitsWithAmounts.map((b: any, i: number) => (
-                        <div key={i} className="min-w-0">
-                          <p className="text-foreground truncate text-sm font-semibold">
-                            {b.DefaultLimitDesc || `Php ${Number(b.Silimit).toLocaleString('en-PH')}`}
-                          </p>
-                          <p className="text-muted-foreground truncate text-xs">{b.BenefitDesc}</p>
-                        </div>
-                      ))}
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                      <div className="min-w-0">
+                        <p className="text-foreground text-sm font-semibold">
+                          {Number((plan as any).SumInsured || 0).toLocaleString('en-PH')}
+                        </p>
+                        <p className="text-muted-foreground text-xs">Sum Insured</p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-foreground text-sm font-semibold">
+                          {carrierName}
+                        </p>
+                        <p className="text-muted-foreground text-xs">Provider</p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-foreground text-sm font-semibold">
+                          Health Insurance
+                        </p>
+                        <p className="text-muted-foreground text-xs">Coverage Type</p>
+                      </div>
                     </div>
                     {benefits.length > 3 && (
                       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
