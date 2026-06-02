@@ -413,45 +413,48 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           </form.Field>
         </div>
 
-        {/* Row 3: Coverage Start Date | duration label | Expiry Date */}
-        <div className="mb-2">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <form.Field name="effectiveDate">
-              {(field) => (
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium text-primary">Coverage Start Date <span className="text-destructive">*</span></Label>
-                  <Input
-                    type="date"
-                    value={field.state.value}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value)
-                      // Reset expiry to default when start date changes
-                      setExpiryDate(getDefaultExpiry(e.target.value))
-                    }}
-                    onBlur={field.handleBlur}
-                    className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )}
-            </form.Field>
+        {/* Row 3: Coverage Start Date | Coverage Expiry Date | Duration */}
+        <div className="mb-2 grid gap-4 sm:grid-cols-3">
+          <form.Field name="effectiveDate">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium text-primary">Coverage Start Date</Label>
+                <Input
+                  type="date"
+                  value={field.state.value}
+                  onChange={(e) => {
+                    field.handleChange(e.target.value)
+                    setExpiryDate(getDefaultExpiry(e.target.value))
+                  }}
+                  onBlur={field.handleBlur}
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
 
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-primary">Expiry Date</Label>
-              <Input
-                type="date"
-                value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                className="h-12 rounded-full"
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-primary">Coverage Expiry Date</Label>
+            <Input
+              type="date"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              className="h-12 rounded-full"
+            />
           </div>
+
           <form.Subscribe selector={(s) => s.values.effectiveDate}>
             {(effectiveDate) => {
               const duration = getDurationText(effectiveDate, expiryDate)
-              return duration ? (
-                <p className="text-muted-foreground mt-1.5 text-center text-xs">{duration}</p>
-              ) : null
+              return (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium text-primary">Duration</Label>
+                  <div className="flex h-12 items-center rounded-full border bg-gray-50 px-4 text-sm text-gray-700">
+                    {duration || '—'}
+                  </div>
+                </div>
+              )
             }}
           </form.Subscribe>
         </div>
