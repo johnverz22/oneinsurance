@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import { CheckIcon, Loader2Icon, ShieldCheck } from 'lucide-react'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -93,15 +93,14 @@ export function ReviewCoverage() {
               <div className="w-full space-y-2">
                 <div className="relative h-14 w-28 overflow-hidden rounded-md">
                   <Image
-                    src={provider.image}
+                    src={(CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image}
                     alt={provider.companyName}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                     width={112}
                     height={56}
                   />
                 </div>
 
-                <Badge variant="outline">{provider?.companyName}</Badge>
                 <h3 className="text-foreground text-left text-xl font-bold tracking-wide text-wrap uppercase">
                   {plan.CarrierPlanDesc}
                 </h3>

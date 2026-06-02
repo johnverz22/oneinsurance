@@ -21,6 +21,8 @@ export type CartItem = {
 }
 
 export type HealthInsuredInfo = {
+  firstName: string
+  lastName: string
   insuredName: string
   email: string
   mobile: string
@@ -28,6 +30,7 @@ export type HealthInsuredInfo = {
   genderCode: 'M' | 'F'
   isSmoker: 'Y' | 'N'
   effectiveDate: string
+  expiryDate: string
 }
 
 export type CompareQuotePlan = {
@@ -54,6 +57,8 @@ type HealthCartStore = {
   compareQuotePlans: CompareQuotePlan[]
   isLoadingPlans: boolean
   plansError: string | null
+  duePremium: number | null
+  fullQuoteData: { carrierProductName?: string; expiryDate?: string; effectiveDate?: string; coverages?: Array<{ coverageName: string; sumInsured: number }> } | null
   addItem: (item: Omit<CartItem, 'quantity'>, qty?: number) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
@@ -63,6 +68,8 @@ type HealthCartStore = {
   setCompareQuotePlans: (plans: CompareQuotePlan[]) => void
   setIsLoadingPlans: (loading: boolean) => void
   setPlansError: (error: string | null) => void
+  setDuePremium: (premium: number | null) => void
+  setFullQuoteData: (data: { carrierProductName?: string; expiryDate?: string; effectiveDate?: string; coverages?: Array<{ coverageName: string; sumInsured: number }> } | null) => void
 }
 
 export const useHealthCartStore = create<HealthCartStore>()(
@@ -74,6 +81,8 @@ export const useHealthCartStore = create<HealthCartStore>()(
       compareQuotePlans: [],
       isLoadingPlans: false,
       plansError: null,
+      duePremium: null,
+      fullQuoteData: null,
       addItem: (item, qty = 1) => {
         const existing = get().items.find((i) => i.id === item.id)
         if (existing) {
@@ -97,12 +106,14 @@ export const useHealthCartStore = create<HealthCartStore>()(
           }))
         }
       },
-      clearCart: () => set({ items: [], proposalNo: null }),
+      clearCart: () => set({ items: [], proposalNo: null, duePremium: null, fullQuoteData: null }),
       setProposalNo: (proposalNo) => set({ proposalNo }),
       setInsuredInfo: (info) => set({ insuredInfo: info }),
       setCompareQuotePlans: (plans) => set({ compareQuotePlans: plans }),
       setIsLoadingPlans: (loading) => set({ isLoadingPlans: loading }),
       setPlansError: (error) => set({ plansError: error }),
+      setDuePremium: (premium) => set({ duePremium: premium }),
+      setFullQuoteData: (data) => set({ fullQuoteData: data }),
     }),
     {
       name: 'health-cart',

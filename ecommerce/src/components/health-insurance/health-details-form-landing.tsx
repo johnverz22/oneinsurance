@@ -23,10 +23,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
   const effectiveDate = new Date(value.effectiveDate)
   const expiryDate = new Date(effectiveDate)
-  expiryDate.setFullYear(expiryDate.getFullYear() + 1)
-  expiryDate.setDate(expiryDate.getDate() - 1)
+  expiryDate.setMonth(expiryDate.getMonth() + 1)
   const effectiveISO = effectiveDate.toISOString()
   const expiryISO = expiryDate.toISOString()
+  const insuredName = `${value.firstName} ${value.lastName}`.trim()
   return {
     AgentCode: agentCode ?? '',
     Slug: 'health-insurance',
@@ -41,7 +41,7 @@ function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
       ProductCode: 'HEALTH',
       PolicyRiskList: [{
         ProductElementCode: 'R00001',
-        InsuredName: value.insuredName,
+        InsuredName: insuredName,
         GenderCode: value.genderCode,
         DateOfBirth: value.dateOfBirth,
         IsSmoker: value.isSmoker,
@@ -109,7 +109,9 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
 
   const form = useForm({
     defaultValues: {
-      insuredName: '',
+      firstName: '',
+      lastName: '',
+      email: '',
       mobile: '',
       dateOfBirth: '',
       genderCode: '' as 'M' | 'F',
@@ -135,13 +137,16 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
         if (!clientRequestId) throw new Error('No ClientRequestId returned')
 
         setInsuredInfo({
-          insuredName: value.insuredName,
+          firstName: value.firstName,
+          lastName: value.lastName,
+          insuredName: `${value.firstName} ${value.lastName}`.trim(),
           email: value.email ?? '',
           mobile: value.mobile,
           dateOfBirth: value.dateOfBirth,
           genderCode: value.genderCode,
           isSmoker: value.isSmoker,
           effectiveDate: value.effectiveDate,
+          expiryDate: (() => { const d = new Date(value.effectiveDate); d.setMonth(d.getMonth() + 1); return d.toISOString().split('T')[0] })(),
         })
 
         const echo = getEcho()
@@ -178,24 +183,29 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
         </div>
 
         <div className="mb-4 grid gap-4 sm:grid-cols-3">
-          <form.Field name="insuredName">
+          <form.Field name="firstName">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Full Name <span className="text-red-500">*</span></Label>
-                <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="Enter Full Name" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
+                <Label className="text-sm font-medium">First Name <span className="text-red-500">*</span></Label>
+                <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="e.g. Juan" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
             )}
           </form.Field>
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
-            <Input placeholder="Enter Email Address" className="h-11 rounded-full" />
-          </div>
-          <form.Field name="mobile">
+          <form.Field name="lastName">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Phone Number <span className="text-red-500">*</span></Label>
-                <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="Enter Phone Number" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
+                <Label className="text-sm font-medium">Last Name <span className="text-red-500">*</span></Label>
+                <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="e.g. dela Cruz" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
+          <form.Field name="email">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
+                <Input type="email" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="e.g. juan@email.com" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
             )}
@@ -203,19 +213,28 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
         </div>
 
         <div className="mb-4 grid gap-4 sm:grid-cols-2">
-          <form.Field name="dateOfBirth">
+          <form.Field name="mobile">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Date of Birth <span className="text-red-500">*</span></Label>
-                <Input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
+                <Label className="text-sm font-medium">Phone Number <span className="text-red-500">*</span></Label>
+                <div className={cn('flex h-11 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30', { 'border-destructive': fieldHasError(field) })}>
+                  <span className="border-r px-3 text-sm text-gray-500">+63</span>
+                  <input
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="9171234567"
+                    className="h-full flex-1 bg-transparent px-3 text-sm outline-none"
+                  />
+                </div>
                 <FieldInfo field={field} />
               </div>
             )}
           </form.Field>
-          <form.Field name="effectiveDate">
+          <form.Field name="dateOfBirth">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Coverage Start Date <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Date of Birth <span className="text-red-500">*</span></Label>
                 <Input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
@@ -258,6 +277,29 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
               </div>
             )}
           </form.Field>
+        </div>
+
+        <div className="mb-5 grid gap-4 sm:grid-cols-2">
+          <form.Field name="effectiveDate">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Coverage Start Date <span className="text-red-500">*</span></Label>
+                <Input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
+          <form.Subscribe selector={(s) => s.values.effectiveDate}>
+            {(effectiveDate) => {
+              const getExp = (d: string) => { if (!d) return ''; const x = new Date(d); x.setMonth(x.getMonth() + 1); return x.toISOString().split('T')[0] }
+              return (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Expiry Date</Label>
+                  <Input type="date" value={getExp(effectiveDate)} readOnly className="h-11 rounded-full bg-gray-50" />
+                </div>
+              )
+            }}
+          </form.Subscribe>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
