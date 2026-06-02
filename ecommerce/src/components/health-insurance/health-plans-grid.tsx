@@ -328,16 +328,16 @@ export function HealthPlansGrid() {
               const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
               return (
-                <div key={plan.CarrierPlanCode} className="bg-background relative flex w-full rounded-xl overflow-hidden transition-all shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:shadow-md mb-3">
+                <div key={plan.CarrierPlanCode} className="bg-background relative flex w-full rounded-xl border border-gray-200 transition-all hover:shadow-md mb-3">
                   {/* Left brand block */}
                   <div
-                    className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden sm:w-[160px] md:w-[180px]"
+                    className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden rounded-l-xl sm:w-[160px] md:w-[180px]"
                   >
                     {brandColor.planCardLogo ? (
                       <img
                         src={brandColor.planCardLogo}
                         alt={carrierName}
-                        className={`h-full w-full object-contain ${provider?.carrierCode === 'PACIFIC' ? 'p-2 sm:p-6' : 'p-3 sm:p-8'}`}
+                        className={`h-full w-full object-contain ${provider?.carrierCode === 'PACIFIC' ? 'p-0 sm:p-2' : 'p-3 sm:p-8'}`}
                       />
                     ) : logo ? (
                       <img

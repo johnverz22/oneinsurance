@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from '@tanstack/react-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -32,14 +32,21 @@ type HealthDetailsFormProps = {
   className?: string
 }
 
-function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
+function buildPayload(value: HealthDetailsFormType, agentCode?: string, customExpiryDate?: string) {
   const effectiveDate = new Date(value.effectiveDate)
-  const expiryDate = new Date(effectiveDate)
-  expiryDate.setFullYear(expiryDate.getFullYear() + 1)
-  expiryDate.setDate(expiryDate.getDate() - 1)
+  let expiryDate: Date
+  if (customExpiryDate) {
+    expiryDate = new Date(customExpiryDate)
+  } else {
+    expiryDate = new Date(effectiveDate)
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1)
+    expiryDate.setDate(expiryDate.getDate() - 1)
+  }
 
   const effectiveISO = effectiveDate.toISOString()
   const expiryISO = expiryDate.toISOString()
+
+  const insuredName = `${value.firstName} ${value.lastName}`.trim()
 
   return {
     AgentCode: agentCode ?? '',
@@ -57,7 +64,7 @@ function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
         PolicyRiskList: [
           {
             ProductElementCode: 'R00001',
-            InsuredName: value.insuredName,
+            InsuredName: insuredName,
             GenderCode: value.genderCode,
             DateOfBirth: value.dateOfBirth,
             IsSmoker: value.isSmoker,
@@ -78,6 +85,33 @@ function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
   }
 }
 
+/** Calculate duration text between two dates */
+function getDurationText(effectiveDateStr: string, expiryDateStr?: string): string {
+  if (!effectiveDateStr) return ''
+  const effective = new Date(effectiveDateStr)
+  let expiry: Date
+  if (expiryDateStr) {
+    expiry = new Date(expiryDateStr)
+  } else {
+    expiry = new Date(effective)
+    expiry.setFullYear(expiry.getFullYear() + 1)
+    expiry.setDate(expiry.getDate() - 1)
+  }
+  const diffMs = expiry.getTime() - effective.getTime()
+  const days = Math.round(diffMs / (1000 * 60 * 60 * 24))
+  if (days <= 0) return ''
+  if (days >= 365) return `${days} days (1 year)`
+  return `${days} days`
+}
+
+// Compute default expiry (1 month from start date)
+function getDefaultExpiry(startDate: string): string {
+  if (!startDate) return ''
+  const d = new Date(startDate)
+  d.setMonth(d.getMonth() + 1)
+  return d.toISOString().split('T')[0]
+}
+
 export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const { setInsuredInfo, setCompareQuotePlans, setIsLoadingPlans, setPlansError } = useHealthCartStore()
   const params = useParams()
@@ -87,6 +121,11 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const queue = useRef<string[]>([])
   const isProcessing = useRef(false)
   const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [expiryDate, setExpiryDate] = useState<string>(() => {
+    // Initialize with default expiry (1 year - 1 day from today)
+    const today = new Date().toISOString().split('T')[0]
+    return getDefaultExpiry(today)
+  })
 
   const closeEchoConnection = (channelId: string) => {
     try {
@@ -107,9 +146,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
         )
         const data = res.data
-        // Empty plans is a valid response (e.g. OONAPH has no plans) — don't retry
         if (!data.success || !data.data?.Plans?.length) return null
-        // Inject CarrierCode from parent into each plan (API puts it on data, not on each plan)
         const carrierCode = data.data.CarrierCode ?? ''
         data.data.Plans = data.data.Plans.map((plan: any) => ({
           ...plan,
@@ -117,7 +154,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         }))
         return data.data
       } catch (err: any) {
-        // Only retry on network errors or 5xx, not 404 (cache not ready yet)
         const status = err?.response?.status
         if (status === 404 || attempt >= retries) return null
         await new Promise(r => setTimeout(r, 1000 * attempt))
@@ -127,15 +163,10 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   }
 
   const processQueue = async () => {
-    if (isProcessing.current) {
-      // Already processing — new items will be picked up in the current loop
-      return
-    }
+    if (isProcessing.current) return
     isProcessing.current = true
 
     let foundPlans = false
-
-    // Keep looping — wait briefly for any late-arriving cache keys
     let emptyLoops = 0
     while (emptyLoops < 2) {
       if (queue.current.length === 0) {
@@ -143,7 +174,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         emptyLoops++
         continue
       }
-      emptyLoops = 0 // reset if we got items
+      emptyLoops = 0
 
       const batch = queue.current.splice(0, 5)
       const results = await Promise.allSettled(
@@ -158,7 +189,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         setCompareQuotePlans(allPlans)
         setIsLoadingPlans(false)
         foundPlans = true
-        // Clear the fallback timeout — we got plans
         if (fallbackTimeoutRef.current) {
           clearTimeout(fallbackTimeoutRef.current)
           fallbackTimeoutRef.current = null
@@ -171,7 +201,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
     isProcessing.current = false
 
-    // If no plans found after draining the queue, stop loading and clear timeout
     if (!foundPlans) {
       if (fallbackTimeoutRef.current) {
         clearTimeout(fallbackTimeoutRef.current)
@@ -183,7 +212,8 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
   const form = useForm({
     defaultValues: {
-      insuredName: '',
+      firstName: '',
+      lastName: '',
       email: '',
       mobile: '',
       dateOfBirth: '',
@@ -194,7 +224,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     } as HealthDetailsFormType,
     onSubmit: async ({ value }) => {
       try {
-        // Reset and show loading, scroll down immediately
         setPlansError(null)
         setCompareQuotePlans([])
         setIsLoadingPlans(true)
@@ -202,14 +231,11 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
 
-        const payload = buildPayload(value, agentCode)
+        const payload = buildPayload(value, agentCode, expiryDate || undefined)
 
-        // Establish Echo connection BEFORE calling compare-quote API
-        // so the WebSocket is ready when the BE fires the event
         const echo = getEcho()
         if (echo.connector.pusher.connection.state !== 'connected') {
           echo.connector.pusher.connect()
-          // Wait briefly for connection to establish
           await new Promise(r => setTimeout(r, 300))
         }
         echoRef.current = echo
@@ -234,18 +260,20 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
         if (!clientRequestId) throw new Error('No ClientRequestId returned')
 
-        // Save insured info
+        // Save insured info (including firstName and lastName separately for KYC pre-fill)
         setInsuredInfo({
-          insuredName: value.insuredName,
+          firstName: value.firstName,
+          lastName: value.lastName,
+          insuredName: `${value.firstName} ${value.lastName}`.trim(),
           email: value.email,
           mobile: value.mobile,
           dateOfBirth: value.dateOfBirth,
           genderCode: value.genderCode,
           isSmoker: value.isSmoker,
           effectiveDate: value.effectiveDate,
+          expiryDate: expiryDate || getDefaultExpiry(value.effectiveDate),
         })
 
-        // Subscribe to WebSocket channel using clientRequestId
         const channel = echo
           .channel(clientRequestId)
           .listen('.insurance.plan.received', (e: any) => {
@@ -257,8 +285,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
         channelRef.current = channel
 
-        // Fallback poll: if the WebSocket event fired before we subscribed (BE is fast),
-        // try fetching known cache key patterns directly after a short delay
         setTimeout(async () => {
           if (queue.current.length === 0 && useHealthCartStore.getState().isLoadingPlans) {
             console.log('No WebSocket events received yet — trying direct cache poll...')
@@ -271,7 +297,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           }
         }, 1500)
 
-        // 60s timeout fallback — increased to handle slow connections
         fallbackTimeoutRef.current = setTimeout(() => {
           const { compareQuotePlans, isLoadingPlans } = useHealthCartStore.getState()
           if (!compareQuotePlans.length && isLoadingPlans) {
@@ -293,22 +318,38 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   return (
     <Card className={cn('w-full rounded-md border shadow-lg backdrop-blur-sm bg-white lg:rounded-xl', className)}>
       <CardContent className="px-4 pt-3 pb-6 sm:px-8">
-        <div className="mb-5">
+        <div className="mb-3">
           <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
           <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
         </div>
 
-        {/* Row 1: Full Name | Email | Phone */}
-        <div className="mb-4 grid gap-4 sm:grid-cols-3">
-          <form.Field name="insuredName">
+        {/* Row 1: First Name | Last Name | Email */}
+        <div className="mb-2 grid gap-4 sm:grid-cols-3">
+          <form.Field name="firstName">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium text-primary">Full Name <span className="text-destructive">*</span></Label>
+                <Label className="text-sm font-medium text-primary">First Name <span className="text-destructive">*</span></Label>
                 <Input
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  placeholder="e.g. Juan dela Cruz"
+                  placeholder="e.g. Juan"
+                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                />
+                <FieldInfo field={field} />
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="lastName">
+            {(field) => (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium text-primary">Last Name <span className="text-destructive">*</span></Label>
+                <Input
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="e.g. dela Cruz"
                   className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
                 <FieldInfo field={field} />
@@ -332,26 +373,29 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
               </div>
             )}
           </form.Field>
+        </div>
 
+        {/* Row 2: Phone Number | Date of Birth */}
+        <div className="mb-2 grid gap-4 sm:grid-cols-2">
           <form.Field name="mobile">
             {(field) => (
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-primary">Phone Number <span className="text-destructive">*</span></Label>
-                <Input
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="e.g. 9171234567"
-                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
-                />
+                <div className={cn('flex h-12 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30', { 'border-destructive': fieldHasError(field) })}>
+                  <span className="border-r px-3 text-sm text-gray-500">+63</span>
+                  <input
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="9171234567"
+                    className="h-full flex-1 bg-transparent px-3 text-sm outline-none"
+                  />
+                </div>
                 <FieldInfo field={field} />
               </div>
             )}
           </form.Field>
-        </div>
 
-        {/* Row 2: DOB | Coverage Start */}
-        <div className="mb-4 grid gap-4 sm:grid-cols-2">
           <form.Field name="dateOfBirth">
             {(field) => (
               <div className="space-y-1.5">
@@ -367,26 +411,53 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
               </div>
             )}
           </form.Field>
-
-          <form.Field name="effectiveDate">
-            {(field) => (
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium text-primary">Coverage Start Date <span className="text-destructive">*</span></Label>
-                <Input
-                  type="date"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
         </div>
 
-        {/* Row 3: Gender | Smoker */}
-        <div className="mb-5 grid gap-4 sm:grid-cols-2">
+        {/* Row 3: Coverage Start Date | duration label | Expiry Date */}
+        <div className="mb-2">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <form.Field name="effectiveDate">
+              {(field) => (
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium text-primary">Coverage Start Date <span className="text-destructive">*</span></Label>
+                  <Input
+                    type="date"
+                    value={field.state.value}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value)
+                      // Reset expiry to default when start date changes
+                      setExpiryDate(getDefaultExpiry(e.target.value))
+                    }}
+                    onBlur={field.handleBlur}
+                    className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
+                  />
+                  <FieldInfo field={field} />
+                </div>
+              )}
+            </form.Field>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-primary">Expiry Date</Label>
+              <Input
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                className="h-12 rounded-full"
+              />
+            </div>
+          </div>
+          <form.Subscribe selector={(s) => s.values.effectiveDate}>
+            {(effectiveDate) => {
+              const duration = getDurationText(effectiveDate, expiryDate)
+              return duration ? (
+                <p className="text-muted-foreground mt-1.5 text-center text-xs">{duration}</p>
+              ) : null
+            }}
+          </form.Subscribe>
+        </div>
+
+        {/* Row 4: Gender | Smoker */}
+        <div className="mb-3 grid gap-4 sm:grid-cols-2">
           <form.Field name="genderCode">
             {(field) => (
               <div className="space-y-1.5">
@@ -424,7 +495,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           </form.Field>
         </div>
 
-        {/* Row 4: Terms + Get Advice */}
+        {/* Row 5: Terms + Search Plans */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <form.Field name="agreedToTerms">
             {(field) => (

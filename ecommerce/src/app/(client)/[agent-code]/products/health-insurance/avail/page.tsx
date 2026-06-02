@@ -44,12 +44,27 @@ function HealthAvailContent() {
   const agentCode = params['agent-code'] as string
   const proposalParam = searchParams.get('proposal')
   const { step, highestVisitedStep, setStep } = useHealthAvailStore()
-  const { items, setProposalNo } = useHealthCartStore()
+  const { items, setProposalNo, insuredInfo } = useHealthCartStore()
   const [hydrated, setHydrated] = useState(false)
   const [personalInfo, setPersonalInfo] = useState<PersonalInfoData>(EMPTY_PERSONAL_INFO)
   const [personalInfoErrors, setPersonalInfoErrors] = useState<Record<string, string>>({})
 
   useEffect(() => { setHydrated(true) }, [])
+
+  // Pre-fill personal info from the search form data (insuredInfo)
+  useEffect(() => {
+    if (hydrated && insuredInfo) {
+      setPersonalInfo((prev) => ({
+        ...prev,
+        firstName: prev.firstName || insuredInfo.firstName || '',
+        lastName: prev.lastName || insuredInfo.lastName || '',
+        email: prev.email || insuredInfo.email || '',
+        phone: prev.phone || insuredInfo.mobile || '',
+        dateOfBirth: prev.dateOfBirth || insuredInfo.dateOfBirth || '',
+        gender: insuredInfo.genderCode || prev.gender,
+      }))
+    }
+  }, [hydrated, insuredInfo])
 
   // Handle ?proposal= URL param — load and go to step 3
   useEffect(() => {

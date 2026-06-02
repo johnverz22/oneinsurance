@@ -8,7 +8,7 @@ import { useHealthAvailStore } from '@/store/health-avail-store'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { useParams } from 'next/navigation'
 import { generateHealthQuotePDF } from '@/utils/generate-health-quote-pdf'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import type { PersonalInfoData } from './health-personal-info-form'
 
 interface Props {
@@ -17,14 +17,16 @@ interface Props {
 
 export function HealthReviewPage({ personalInfo }: Props) {
   const { prevStep, nextStep } = useHealthAvailStore()
-  const { items, insuredInfo, proposalNo } = useHealthCartStore()
+  const { items, insuredInfo, proposalNo, duePremium, fullQuoteData } = useHealthCartStore()
   const params = useParams()
   const agentCode = params['agent-code'] as string
   const item = items[0]
 
   const provider = item ? (COMPANIES.find(c => c.carrierCode === item.carrierCode) ?? null) : null
   const providerName = provider?.companyName ?? item?.provider ?? ''
-  const providerLogo = provider?.image ?? item?.providerLogo ?? null
+  const brandColor = provider ? (CARRIER_BRAND_COLORS[provider.carrierCode] || null) : null
+  const providerLogo = (brandColor as any)?.planCardLogo || (provider?.image ?? item?.providerLogo ?? null)
+  const displayPremium = duePremium ?? (item?.premium ?? 0)
 
   const handleCopyProposal = async () => {
     if (!proposalNo) return
@@ -86,38 +88,71 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {item && (
         <Card className="overflow-hidden shadow-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-2xl font-bold text-gray-900">Plan Details</h2>
+            <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-start gap-4">
+            {/* Provider + Plan + Coverage in 2-col layout like travel */}
+            <div className="flex w-full gap-2">
               <div className="h-14 w-28 shrink-0 overflow-hidden rounded-md">
                 {providerLogo ? (
-                  <img src={providerLogo} alt={providerName} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  <img src={providerLogo} alt={providerName} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 ) : null}
               </div>
-              <div>
-                <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{providerName}</span>
-                <h3 className="text-xl font-black uppercase text-gray-900">{item.planName}</h3>
+              <div className="space-y-2 px-1.5">
+                <h3 className="text-foreground text-left text-xl font-bold uppercase tracking-wide">{item.planName}</h3>
+                {fullQuoteData?.carrierProductName && (
+                  <p className="text-sm text-gray-600">{fullQuoteData.carrierProductName}</p>
+                )}
               </div>
               <div className="ml-auto shrink-0">
                 <span className="rounded-full bg-orange-400 px-4 py-2 text-sm font-bold text-white">
-                  ₱ {item.premium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                  ₱ {displayPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
 
-            {insuredInfo?.effectiveDate && (
-              <div className="grid grid-cols-2 gap-4 rounded-xl bg-gray-50 p-4 text-sm">
-                <div>
-                  <p className="text-xs text-gray-400">Effective Date</p>
-                  <p className="font-semibold">{new Date(insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Insured</p>
-                  <p className="font-semibold">{insuredInfo.insuredName}</p>
+            {/* Coverage Section — matching travel's Benefits style */}
+            {fullQuoteData?.coverages && fullQuoteData.coverages.length > 0 && (
+              <div className="w-full space-y-3">
+                <h2 className="text-primary text-base font-bold">Coverage</h2>
+                <div className="border-muted-foreground/20 bg-muted/30 w-full rounded-md border p-4">
+                  <div className="space-y-2">
+                    {fullQuoteData.coverages.map((cov, idx) => (
+                      <div key={idx} className="grid grid-cols-2 items-center gap-3">
+                        <h4 className="text-sm">{cov.coverageName}</h4>
+                        <small className="text-muted-foreground text-right text-xs">
+                          Php {cov.sumInsured.toLocaleString('en-PH')}
+                        </small>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
+
+            {/* Effective / Expiry / Insured row */}
+            <div className="grid grid-cols-2 gap-4 rounded-xl bg-gray-50 p-4 text-sm sm:grid-cols-3">
+              {insuredInfo?.effectiveDate && (
+                <div>
+                  <p className="text-xs text-gray-400">Effective Date</p>
+                  <p className="font-semibold">{new Date(fullQuoteData?.effectiveDate || insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-gray-400">Expiration Date</p>
+                <p className="font-semibold">
+                  {fullQuoteData?.expiryDate
+                    ? new Date(fullQuoteData.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
+                    : insuredInfo?.expiryDate
+                      ? new Date(insuredInfo.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
+                      : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Insured</p>
+                <p className="font-semibold uppercase">{insuredInfo?.insuredName || `${personalInfo.firstName} ${personalInfo.lastName}`.trim()}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -125,7 +160,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {/* Personal Information */}
       <Card className="overflow-hidden shadow-none">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-2xl font-bold text-gray-900">Your Information</h2>
+            <h2 className="text-primary text-2xl font-bold">Your Information</h2>
             <CheckCircle className="text-primary" />
           </CardHeader>
         <CardContent className="space-y-1">
@@ -147,15 +182,15 @@ export function HealthReviewPage({ personalInfo }: Props) {
         <Button
           type="button"
           size="lg"
-          variant="ghost"
-          className="rounded-full px-10 text-gray-700 font-medium"
+          variant="outline"
+          className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
           onClick={prevStep}
         >
           Back
         </Button>
         <Button
           size="lg"
-          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+          className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 text-sm font-medium text-white lg:w-max dark:text-white"
           onClick={nextStep}
         >
           Next
