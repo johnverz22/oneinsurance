@@ -99,6 +99,17 @@ export function HealthPlanDetailsStep() {
                 </p>
               </div>
             )}
+            {insuredInfo.effectiveDate && insuredInfo.expiryDate && (
+              <div className="space-y-2 py-1">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Duration</p>
+                <p className="text-primary dark:text-accent text-base font-bold">
+                  {(() => {
+                    const days = Math.round((new Date(insuredInfo.expiryDate).getTime() - new Date(insuredInfo.effectiveDate).getTime()) / (1000 * 60 * 60 * 24))
+                    return `${days} days`
+                  })()}
+                </p>
+              </div>
+            )}
           </div>
         )}
 

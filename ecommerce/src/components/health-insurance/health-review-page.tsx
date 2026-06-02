@@ -119,8 +119,8 @@ export function HealthReviewPage({ personalInfo }: Props) {
                   <div className="space-y-2">
                     {fullQuoteData.coverages.map((cov, idx) => (
                       <div key={idx} className="grid grid-cols-2 items-center gap-3">
-                        <h4 className="text-sm">{cov.coverageName}</h4>
-                        <small className="text-muted-foreground text-right text-xs">
+                        <h4 className="text-sm font-medium">{cov.coverageName}</h4>
+                        <small className="text-right text-sm text-gray-700">
                           Php {cov.sumInsured.toLocaleString('en-PH')}
                         </small>
                       </div>
@@ -131,26 +131,39 @@ export function HealthReviewPage({ personalInfo }: Props) {
             )}
 
             {/* Effective / Expiry / Insured row */}
-            <div className="grid grid-cols-2 gap-4 rounded-xl bg-gray-50 p-4 text-sm sm:grid-cols-3">
+            {/* Insured / Dates / Duration — row layout */}
+            <div className="space-y-0">
+              <div className="flex items-center justify-between border-b border-gray-100 py-3">
+                <span className="text-sm font-medium text-gray-700">Insured</span>
+                <span className="text-sm font-semibold text-gray-900 uppercase">{insuredInfo?.insuredName || `${personalInfo.firstName} ${personalInfo.lastName}`.trim()}</span>
+              </div>
               {insuredInfo?.effectiveDate && (
-                <div>
-                  <p className="text-xs text-gray-400">Effective Date</p>
-                  <p className="font-semibold">{new Date(fullQuoteData?.effectiveDate || insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="flex items-center justify-between border-b border-gray-100 py-3">
+                  <span className="text-sm font-medium text-gray-700">Effective Date</span>
+                  <span className="text-sm font-semibold text-gray-900">{new Date(fullQuoteData?.effectiveDate || insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 </div>
               )}
-              <div>
-                <p className="text-xs text-gray-400">Expiration Date</p>
-                <p className="font-semibold">
+              <div className="flex items-center justify-between border-b border-gray-100 py-3">
+                <span className="text-sm font-medium text-gray-700">Expiration Date</span>
+                <span className="text-sm font-semibold text-gray-900">
                   {fullQuoteData?.expiryDate
                     ? new Date(fullQuoteData.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
                     : insuredInfo?.expiryDate
                       ? new Date(insuredInfo.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
                       : '—'}
-                </p>
+                </span>
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Insured</p>
-                <p className="font-semibold uppercase">{insuredInfo?.insuredName || `${personalInfo.firstName} ${personalInfo.lastName}`.trim()}</p>
+              <div className="flex items-center justify-between py-3">
+                <span className="text-sm font-medium text-gray-700">Duration</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {(() => {
+                    const start = fullQuoteData?.effectiveDate || insuredInfo?.effectiveDate
+                    const end = fullQuoteData?.expiryDate || insuredInfo?.expiryDate
+                    if (!start || !end) return '—'
+                    const days = Math.round((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24))
+                    return `${days} Days`
+                  })()}
+                </span>
               </div>
             </div>
           </CardContent>
@@ -164,7 +177,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
             <CheckCircle className="text-primary" />
           </CardHeader>
         <CardContent className="space-y-1">
-          {row('Full Name', `${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim())}
+          {row('Full Name', `${personalInfo.firstName ?? ''} ${personalInfo.lastName ?? ''}`.trim().toUpperCase())}
           {row('Email', personalInfo.email)}
           {row('Phone', personalInfo.phone ? `+63 ${personalInfo.phone}` : '')}
           {row('Place of Birth', personalInfo.placeOfBirth)}
