@@ -33,7 +33,7 @@ const MONTHS = ['01','02','03','04','05','06','07','08','09','10','11','12']
 
 export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
   const router = useRouter()
-  const { items, clearCart, proposalNo } = useHealthCartStore()
+  const { items, clearCart, proposalNo, duePremium } = useHealthCartStore()
   const { prevStep } = useHealthAvailStore()
 
   const [selectedBrand, setSelectedBrand] = useState<PaymentBrand | null>(null)
@@ -71,7 +71,9 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
   const { mutateAsync: getPaymentAuth } = usePaymentAuth()
   const { mutateAsync: submitPayment } = usePaymentSubmit()
 
-  const grandTotal = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
+  // Use DuePremium from full-quote if available, otherwise fall back to cart items
+  const cartTotal = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
+  const grandTotal = duePremium ?? cartTotal
 
   const { startPolling } = usePaymentPolling({
     proposalNumber: proposalNo ?? '',

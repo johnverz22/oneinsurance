@@ -65,7 +65,7 @@ interface Props {
 
 export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange, onContinue }: Props) {
   const { prevStep } = useHealthAvailStore()
-  const { items, insuredInfo, setProposalNo } = useHealthCartStore()
+  const { items, insuredInfo, setProposalNo, setDuePremium, setFullQuoteData } = useHealthCartStore()
   const params = useParams()
   const agentCode = params['agent-code'] as string
   const [isRequesting, setIsRequesting] = useState(false)
@@ -122,8 +122,8 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       const effectiveDate = insuredInfo?.effectiveDate
         ? formatDate(new Date(insuredInfo.effectiveDate).toISOString())
         : formatDate(new Date().toISOString())
-      const expiryDate = insuredInfo?.effectiveDate
-        ? (() => { const d = new Date(insuredInfo.effectiveDate); d.setFullYear(d.getFullYear() + 1); d.setDate(d.getDate() - 1); return formatDate(d.toISOString()) })()
+      const expiryDate = insuredInfo?.expiryDate
+        ? formatDate(new Date(insuredInfo.expiryDate).toISOString())
         : formatDate(new Date().toISOString())
 
       const payload = {
@@ -192,8 +192,29 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
         return
       }
 
+      // Store DuePremium from full-quote response
+      const duePremium = responseData?.DuePremium ?? responseData?.data?.DuePremium ?? null
+      if (duePremium != null) {
+        setDuePremium(Number(duePremium))
+      }
+
+      // Store full-quote metadata (coverage name, dates, coverages)
+      const policyCoverageList = responseData?.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList
+        ?? responseData?.data?.PolicyLobList?.[0]?.PolicyRiskList?.[0]?.PolicyCoverageList
+        ?? []
+      const coverages = policyCoverageList.map((c: any) => ({
+        coverageName: c.CoverageName || 'Coverage',
+        sumInsured: Number(c.SumInsured || 0),
+      }))
+
+      setFullQuoteData({
+        carrierProductName: responseData?.CarrierProductName ?? responseData?.data?.CarrierProductName ?? undefined,
+        expiryDate: responseData?.ExpiryDate ?? responseData?.data?.ExpiryDate ?? undefined,
+        effectiveDate: responseData?.EffectiveDate ?? responseData?.data?.EffectiveDate ?? undefined,
+        coverages: coverages.length > 0 ? coverages : undefined,
+      })
+
       setProposalNo(proposalNo)
-      toast.success('Proposal created!')
       onContinue()
     } catch {
       toast.error('Something went wrong. Please try again.')
@@ -429,12 +450,12 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
 
       {/* Actions */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="ghost" className="rounded-full px-8 text-gray-700" onClick={prevStep} disabled={isRequesting}>
+        <Button variant="outline" size="lg" className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max" onClick={prevStep} disabled={isRequesting}>
           Back
         </Button>
         <Button
           size="lg"
-          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+          className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 text-sm font-medium text-white lg:w-max dark:text-white"
           onClick={handleRequestFullQuote}
           disabled={isRequesting}
         >

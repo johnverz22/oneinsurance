@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Info } from 'lucide-react'
 
 export function HealthPremiumSummary() {
-  const { items } = useHealthCartStore()
+  const { items, duePremium } = useHealthCartStore()
   const item = items[0]
-  const total = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
+  const cartTotal = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
+  // Use DuePremium from full-quote if available, otherwise fall back to cart item premium
+  const total = duePremium ?? cartTotal
 
   if (!item) return null
 

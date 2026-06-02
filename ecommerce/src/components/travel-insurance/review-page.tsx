@@ -36,7 +36,7 @@ import {
   groupBenefits,
   groupPlanBenefits,
 } from '@/utils/travel-benefits-helpers'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import Image from 'next/image'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useSignInStateStore } from '@/store/signin-store'
@@ -272,18 +272,15 @@ export function TravelInsuranceReviewPage() {
             <div className="flex w-full gap-2">
               <div className="relative h-14 w-28 shrink-0 overflow-hidden rounded-md">
                 <Image
-                  src={provider.image}
+                  src={(CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image}
                   alt={provider.companyName}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                   width={112}
                   height={56}
                 />
               </div>
 
               <div className="space-y-2 px-1.5">
-                <Badge variant="outline" className="h-max w-max">
-                  {provider.companyName}
-                </Badge>
                 <h3 className="text-foreground text-left text-xl font-bold tracking-wide text-wrap uppercase">
                   {plan.CarrierPlanDesc}
                 </h3>

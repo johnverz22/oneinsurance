@@ -121,6 +121,12 @@ export function HealthSuccessTabs({
                         {format(new Date(insuredInfo.effectiveDate), 'MMM dd, yyyy')}
                       </p>
                     )}
+                    {insuredInfo?.expiryDate && (
+                      <p>
+                        <span className="font-semibold">Expiry Date:</span>{' '}
+                        {format(new Date(insuredInfo.expiryDate), 'MMM dd, yyyy')}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -180,6 +186,14 @@ export function HealthSuccessTabs({
                       <p className="text-xs font-medium text-gray-500">Effective Date</p>
                       <p className="mt-1 text-sm text-gray-800">
                         {format(new Date(insuredInfo.effectiveDate), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                  )}
+                  {insuredInfo?.expiryDate && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">Expiry Date</p>
+                      <p className="mt-1 text-sm text-gray-800">
+                        {format(new Date(insuredInfo.expiryDate), 'MMM dd, yyyy')}
                       </p>
                     </div>
                   )}
@@ -326,6 +340,14 @@ export function HealthSuccessTabs({
                       <p className="text-xs font-medium text-gray-500">Effective Date</p>
                       <p className="mt-1 text-sm text-gray-800">
                         {format(new Date(insuredInfo.effectiveDate), 'MMM dd, yyyy')}
+                      </p>
+                    </div>
+                  )}
+                  {insuredInfo?.expiryDate && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">Expiry Date</p>
+                      <p className="mt-1 text-sm text-gray-800">
+                        {format(new Date(insuredInfo.expiryDate), 'MMM dd, yyyy')}
                       </p>
                     </div>
                   )}

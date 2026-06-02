@@ -2,9 +2,10 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { CheckCircle } from 'lucide-react'
 import { useHealthAvailStore } from '@/store/health-avail-store'
 import { useHealthCartStore } from '@/store/health-cart-store'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import { useParams, useRouter } from 'next/navigation'
 
 export function HealthPlanDetailsStep() {
@@ -25,7 +26,8 @@ export function HealthPlanDetailsStep() {
   }
 
   const provider = COMPANIES.find(c => c.carrierCode === item.carrierCode) ?? null
-  const logo = provider?.image ?? item.providerLogo ?? null
+  const brandColor = provider ? (CARRIER_BRAND_COLORS[provider.carrierCode] || null) : null
+  const logo = (brandColor as any)?.planCardLogo || (provider?.image ?? item.providerLogo ?? null)
   const providerName = provider?.companyName ?? item.provider
   const benefits = item.tierDescription ? item.tierDescription.split(', ') : []
 
@@ -34,19 +36,21 @@ export function HealthPlanDetailsStep() {
       {/* Plan Details Card */}
       <Card className="overflow-hidden shadow-none">
         <CardContent className="p-6">
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">
-          Your Plan Details
-        </h2>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-primary text-2xl font-bold">
+            Your Plan Details
+          </h2>
+          <CheckCircle className="text-primary h-6 w-6" />
+        </div>
 
         {/* Provider + Plan */}
         <div className="mb-6 flex items-start gap-4">
           <div className="h-14 w-28 shrink-0 overflow-hidden rounded-md">
             {logo ? (
-              <img src={logo} alt={providerName} className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+              <img src={logo} alt={providerName} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
             ) : null}
           </div>
           <div>
-            <span className="mb-1 inline-block rounded-full border border-gray-200 px-3 py-0.5 text-xs text-gray-600">{providerName}</span>
             <h3 className="text-lg font-black uppercase text-gray-900">{item.planName}</h3>
           </div>
           <div className="ml-auto shrink-0">
@@ -60,28 +64,38 @@ export function HealthPlanDetailsStep() {
 
         {/* Insured Info */}
         {insuredInfo && (
-          <div className="mb-6 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
-            <div>
-              <p className="text-xs text-gray-400">Insured Name</p>
-              <p className="font-semibold text-gray-800">{insuredInfo.insuredName}</p>
+          <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="space-y-2 py-1">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Insured Name</p>
+              <p className="text-primary dark:text-accent text-base font-bold uppercase">{insuredInfo.insuredName}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-400">Date of Birth</p>
-              <p className="font-semibold text-gray-800">{insuredInfo.dateOfBirth}</p>
+            <div className="space-y-2 py-1">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth</p>
+              <p className="text-primary dark:text-accent text-base font-bold">{insuredInfo.dateOfBirth}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-400">Gender</p>
-              <p className="font-semibold text-gray-800">{insuredInfo.genderCode === 'M' ? 'Male' : 'Female'}</p>
+            <div className="space-y-2 py-1">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Gender</p>
+              <p className="text-primary dark:text-accent text-base font-bold">{insuredInfo.genderCode === 'M' ? 'Male' : 'Female'}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-400">Smoker</p>
-              <p className="font-semibold text-gray-800">{insuredInfo.isSmoker === 'Y' ? 'Yes' : 'No'}</p>
+            <div className="space-y-2 py-1">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Smoker</p>
+              <p className="text-primary dark:text-accent text-base font-bold">{insuredInfo.isSmoker === 'Y' ? 'Yes' : 'No'}</p>
             </div>
             {insuredInfo.effectiveDate && (
-              <div>
-                <p className="text-xs text-gray-400">Coverage Start</p>
-                <p className="font-semibold text-gray-800">
-                  {new Date(insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
+              <div className="space-y-2 py-1">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Coverage Start</p>
+                <p className="text-primary dark:text-accent text-base font-bold">
+                  {new Date(insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+            )}
+            {insuredInfo.effectiveDate && (
+              <div className="space-y-2 py-1">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Expiration Date</p>
+                <p className="text-primary dark:text-accent text-base font-bold">
+                  {insuredInfo.expiryDate
+                    ? new Date(insuredInfo.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
+                    : '—'}
                 </p>
               </div>
             )}
@@ -109,11 +123,12 @@ export function HealthPlanDetailsStep() {
       </Card>
 
       <div className="flex items-center justify-between">
-        <Button variant="ghost" className="rounded-full px-8 text-gray-700" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>
+        <Button variant="outline" size="lg" className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>
           Cancel
         </Button>
         <Button
-          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+          size="lg"
+          className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 text-sm font-medium text-white shadow-lg lg:w-max dark:text-white"
           onClick={nextStep}
         >
           Next

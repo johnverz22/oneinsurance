@@ -56,7 +56,7 @@ export function TravelInsurancePlan({
           <Image
             src={brandColors.planCardLogo}
             alt={provider?.companyName || carrierCode}
-            className={`h-full w-full object-contain ${carrierCode === 'PACIFIC' ? 'p-2 sm:p-6' : 'p-3 sm:p-8'}`}
+            className={`h-full w-full object-contain ${carrierCode === 'PACIFIC' ? 'p-0 sm:p-2' : 'p-3 sm:p-8'}`}
             width={180}
             height={120}
           />
