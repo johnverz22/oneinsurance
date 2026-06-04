@@ -106,18 +106,18 @@ export default function PaymentBrands({
         <div
           className={cn(
             'grid gap-3',
-            className || 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+            className || 'grid-cols-3 sm:grid-cols-3 md:grid-cols-4'
           )}
         >
           {filteredBrands.map((brand: PaymentBrand) => (
             <Card
               key={`${brand.code}-${brand.value}`}
               className={cn(
-                'relative cursor-pointer border-2 transition-all duration-300 ease-in-out',
-                'hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]',
-                'min-h-[120px]', // Slightly smaller for side-by-side layout
+                'relative cursor-pointer border transition-all duration-200 shadow-none',
+                'hover:scale-[1.01] active:scale-[0.98]',
+                'aspect-square w-full',
                 selectedBrand?.value === brand.value
-                  ? 'border-primary bg-primary/10 ring-primary/20 shadow-lg ring-2'
+                  ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
                   : 'hover:border-primary/60 border-gray-200 hover:bg-gray-50',
                 'focus:ring-primary focus:ring-2 focus:ring-offset-2 focus:outline-none'
               )}
@@ -132,73 +132,44 @@ export default function PaymentBrands({
               role="button"
               aria-label={`Select ${brand.value} as payment method`}
             >
-              <CardContent className="flex h-full flex-col items-center justify-between p-3 text-center">
-                {/* Brand Logo Section */}
-                <div className="relative mb-3 flex h-12 w-full items-center justify-center">
-                  <div className="relative mx-auto h-full w-full max-w-[60px]">
-                    <Image
-                      src={brand.image}
-                      alt={`${brand.value} payment method`}
-                      fill
-                      className="object-contain drop-shadow-sm"
-                      sizes="60px"
-                      priority={false}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.style.opacity = '0'
-                      }}
-                      onLoad={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.style.opacity = '1'
-                        const fallback =
-                          target.parentElement?.querySelector('.fallback-icon')
-                        if (fallback) {
-                          ;(fallback as HTMLElement).style.display = 'none'
-                        }
-                      }}
-                      style={{ transition: 'opacity 0.3s ease' }}
-                    />
-                    {/* Fallback icon */}
-                    <div className="fallback-icon absolute inset-0 flex items-center justify-center rounded-lg border bg-gray-50">
-                      {brand.is_card ? (
-                        <CreditCard className="h-6 w-6 text-gray-400" />
-                      ) : (
-                        <Smartphone className="h-6 w-6 text-gray-400" />
-                      )}
-                    </div>
+              <CardContent className="flex h-full items-center justify-center p-4">
+                {/* Brand Logo Only — centered, fills card */}
+                <div className="relative h-[60%] w-[85%]">
+                  <Image
+                    src={brand.image}
+                    alt={`${brand.value} payment method`}
+                    fill
+                    className="object-contain"
+                    sizes="100px"
+                    priority={false}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.style.opacity = '0'
+                    }}
+                    onLoad={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.style.opacity = '1'
+                      const fallback =
+                        target.parentElement?.querySelector('.fallback-icon')
+                      if (fallback) {
+                        ;(fallback as HTMLElement).style.display = 'none'
+                      }
+                    }}
+                    style={{ transition: 'opacity 0.3s ease' }}
+                  />
+                  {/* Fallback icon */}
+                  <div className="fallback-icon absolute inset-0 flex items-center justify-center">
+                    {brand.is_card ? (
+                      <CreditCard className="h-8 w-8 text-gray-400" />
+                    ) : (
+                      <Smartphone className="h-8 w-8 text-gray-400" />
+                    )}
                   </div>
-                </div>
-
-                {/* Brand Name */}
-                <div className="flex w-full flex-1 flex-col justify-end">
-                  <h3 className="mb-2 line-clamp-2 text-xs leading-tight font-semibold text-gray-900">
-                    {brand.value}
-                  </h3>
-
-                  {/* Card/Digital Badge */}
-                  {showCardBadge && (
-                    <Badge
-                      variant={brand.is_card ? 'default' : 'secondary'}
-                      className="mx-auto px-2 py-0.5 text-xs font-medium"
-                    >
-                      {brand.is_card ? (
-                        <>
-                          <CreditCard className="mr-1 h-2.5 w-2.5" />
-                          Card
-                        </>
-                      ) : (
-                        <>
-                          <Smartphone className="mr-1 h-2.5 w-2.5" />
-                          Digital
-                        </>
-                      )}
-                    </Badge>
-                  )}
                 </div>
 
                 {/* Selection Indicator */}
                 {selectedBrand?.value === brand.value && (
-                  <div className="bg-primary absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white shadow-lg">
+                  <div className="bg-primary absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white shadow-sm">
                     <svg
                       className="h-3 w-3 text-white"
                       fill="currentColor"
