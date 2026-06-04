@@ -512,48 +512,24 @@ export default function PaymentSelection() {
                 </TabsList>
 
                 <TabsContent value="all" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>All Payment Options</CardTitle>
-                    </CardHeader>
-                    <CardContent>
                       <PaymentBrands
                         onBrandSelect={handleBrandSelect}
                         selectedBrand={selectedPaymentBrand}
-                        className="grid-cols-2 sm:grid-cols-3"
                       />
-                    </CardContent>
-                  </Card>
                 </TabsContent>
 
                 <TabsContent value="cards" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Credit & Debit Cards</CardTitle>
-                    </CardHeader>
-                    <CardContent>
                       <CardPaymentBrands
                         onBrandSelect={handleBrandSelect}
                         selectedBrand={selectedPaymentBrand}
-                        className="grid-cols-2 sm:grid-cols-3"
                       />
-                    </CardContent>
-                  </Card>
                 </TabsContent>
 
                 <TabsContent value="digital" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Digital Wallets & E-Money</CardTitle>
-                    </CardHeader>
-                    <CardContent>
                       <DigitalPaymentBrands
                         onBrandSelect={handleBrandSelect}
                         selectedBrand={selectedPaymentBrand}
-                        className="grid-cols-2 sm:grid-cols-3"
                       />
-                    </CardContent>
-                  </Card>
                 </TabsContent>
               </Tabs>
             </div>
