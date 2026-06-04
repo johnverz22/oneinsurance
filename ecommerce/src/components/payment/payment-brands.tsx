@@ -106,7 +106,7 @@ export default function PaymentBrands({
         <div
           className={cn(
             'grid gap-3',
-            className || 'grid-cols-3 sm:grid-cols-3 md:grid-cols-4'
+            className || 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
           )}
         >
           {filteredBrands.map((brand: PaymentBrand) => (
@@ -132,9 +132,9 @@ export default function PaymentBrands({
               role="button"
               aria-label={`Select ${brand.value} as payment method`}
             >
-              <CardContent className="flex h-full items-center justify-center p-4">
+              <CardContent className="flex h-full items-center justify-center p-2">
                 {/* Brand Logo Only — centered, fills card */}
-                <div className="relative h-[60%] w-[85%]">
+                <div className="relative h-[70%] w-[90%]">
                   <Image
                     src={brand.image}
                     alt={`${brand.value} payment method`}

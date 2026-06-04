@@ -293,13 +293,13 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
               <TabsTrigger value="digital" className="flex items-center gap-1.5"><Smartphone className="h-4 w-4" />Digital Wallets</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
-                <PaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} className="grid-cols-3" />
+                <PaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} />
             </TabsContent>
             <TabsContent value="cards" className="mt-4">
-                <CardPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} className="grid-cols-3" />
+                <CardPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} />
             </TabsContent>
             <TabsContent value="digital" className="mt-4">
-                <DigitalPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} className="grid-cols-3" />
+                <DigitalPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} />
             </TabsContent>
           </Tabs>
         </div>
