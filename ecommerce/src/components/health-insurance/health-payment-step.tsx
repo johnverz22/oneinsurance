@@ -264,9 +264,9 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
 
   return (
     <>
-      {/* Header */}
-      <Card className="overflow-hidden p-0 pb-0 shadow-none">
-        <CardHeader className="flex items-center justify-between border-b pt-6">
+      {/* Single Card wrapping header + content — matching travel's layout */}
+      <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
+        <CardHeader className="flex items-center justify-between -space-y-2 border-b pt-6">
           <div className="flex-1">
             <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
               Choose Your Payment Method
@@ -280,35 +280,26 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
             </p>
           </div>
         </CardHeader>
-      </Card>
 
-      {/* Main 2-col layout */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Left — Payment brand tabs */}
-        <div className="space-y-4">
-          <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
-            <TabsList className="grid w-full grid-cols-3">
+        <CardContent>
+          {/* Main 2-col layout */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Left — Payment brand tabs */}
+            <div className="space-y-6">
+              <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
+                <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all" className="flex items-center gap-1.5"><ShoppingCart className="h-4 w-4" />All Methods</TabsTrigger>
               <TabsTrigger value="cards" className="flex items-center gap-1.5"><CreditCard className="h-4 w-4" />Cards</TabsTrigger>
               <TabsTrigger value="digital" className="flex items-center gap-1.5"><Smartphone className="h-4 w-4" />Digital Wallets</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
-              <Card><CardContent className="pt-4">
-                <p className="mb-3 font-semibold text-gray-800">All Payment Options</p>
                 <PaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} className="grid-cols-3" />
-              </CardContent></Card>
             </TabsContent>
             <TabsContent value="cards" className="mt-4">
-              <Card><CardContent className="pt-4">
-                <p className="mb-3 font-semibold text-gray-800">Credit & Debit Cards</p>
                 <CardPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} className="grid-cols-3" />
-              </CardContent></Card>
             </TabsContent>
             <TabsContent value="digital" className="mt-4">
-              <Card><CardContent className="pt-4">
-                <p className="mb-3 font-semibold text-gray-800">Digital Wallets & E-Money</p>
                 <DigitalPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} className="grid-cols-3" />
-              </CardContent></Card>
             </TabsContent>
           </Tabs>
         </div>
@@ -484,6 +475,8 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
           )}
         </div>
       </div>
+        </CardContent>
+      </Card>
 
       {/* Back button */}
       <div className="mt-6">
