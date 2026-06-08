@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FieldInfo } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
-import { toast } from 'sonner'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
@@ -127,6 +126,9 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     return getDefaultExpiry(today)
   })
 
+  // Track which cache keys have already been fetched successfully
+  const fetchedKeysRef = useRef<Set<string>>(new Set())
+
   const closeEchoConnection = (channelId: string) => {
     try {
       if (echoRef.current) {
@@ -139,75 +141,58 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     } catch {}
   }
 
-  const fetchPlanByCacheKey = async (cacheKey: string, retries = 2): Promise<any> => {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        const res = await axios.get(
-          `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
-        )
-        const data = res.data
-        if (!data.success || !data.data?.Plans?.length) return null
-        const carrierCode = data.data.CarrierCode ?? ''
-        data.data.Plans = data.data.Plans.map((plan: any) => ({
-          ...plan,
-          CarrierCode: plan.CarrierCode || carrierCode,
-        }))
-        return data.data
-      } catch (err: any) {
-        const status = err?.response?.status
-        if (status === 404 || attempt >= retries) return null
-        await new Promise(r => setTimeout(r, 1000 * attempt))
-      }
+  const fetchPlanByCacheKey = async (cacheKey: string): Promise<any> => {
+    try {
+      const res = await axios.get(
+        `/api/health-insurance/load-quote-by-cache?cacheKey=${cacheKey}`
+      )
+      const data = res.data
+      if (!data.success || !data.data?.Plans?.length) return null
+      const carrierCode = data.data.CarrierCode ?? ''
+      data.data.Plans = data.data.Plans.map((plan: any) => ({
+        ...plan,
+        CarrierCode: plan.CarrierCode || carrierCode,
+      }))
+      return data.data
+    } catch {
+      return null
     }
-    return null
   }
 
   const processQueue = async () => {
     if (isProcessing.current) return
     isProcessing.current = true
 
-    let foundPlans = false
-    let emptyLoops = 0
-    while (emptyLoops < 2) {
-      if (queue.current.length === 0) {
-        await new Promise(r => setTimeout(r, 200))
-        emptyLoops++
-        continue
-      }
-      emptyLoops = 0
+    const batch = queue.current.splice(0, queue.current.length)
+    const newKeys = batch.filter(k => !fetchedKeysRef.current.has(k))
 
-      const batch = queue.current.splice(0, 5)
-      const results = await Promise.allSettled(
-        batch.map((cacheKey) => fetchPlanByCacheKey(cacheKey))
-      )
-      const successfulPlans = results
-        .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled' && r.value !== null)
-        .map((r) => r.value)
+    if (newKeys.length === 0) {
+      isProcessing.current = false
+      return
+    }
 
-      if (successfulPlans.length > 0) {
-        const allPlans = successfulPlans.flatMap((p: any) => p.Plans ?? [])
-        setCompareQuotePlans(allPlans)
-        setIsLoadingPlans(false)
-        foundPlans = true
-        if (fallbackTimeoutRef.current) {
-          clearTimeout(fallbackTimeoutRef.current)
-          fallbackTimeoutRef.current = null
-        }
-        setTimeout(() => {
-          document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
-        }, 100)
+    const results = await Promise.allSettled(
+      newKeys.map((cacheKey) => fetchPlanByCacheKey(cacheKey))
+    )
+
+    const newPlans: any[] = []
+    results.forEach((r, idx) => {
+      if (r.status === 'fulfilled' && r.value !== null) {
+        fetchedKeysRef.current.add(newKeys[idx])
+        newPlans.push(...(r.value.Plans ?? []))
       }
+    })
+
+    if (newPlans.length > 0) {
+      const existing = useHealthCartStore.getState().compareQuotePlans
+      setCompareQuotePlans([...existing, ...newPlans])
+      setIsLoadingPlans(false)
+      setTimeout(() => {
+        document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
     }
 
     isProcessing.current = false
-
-    if (!foundPlans) {
-      if (fallbackTimeoutRef.current) {
-        clearTimeout(fallbackTimeoutRef.current)
-        fallbackTimeoutRef.current = null
-      }
-      setIsLoadingPlans(false)
-    }
   }
 
   const form = useForm({
@@ -227,6 +212,9 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         setPlansError(null)
         setCompareQuotePlans([])
         setIsLoadingPlans(true)
+        fetchedKeysRef.current = new Set()
+        queue.current = []
+        isProcessing.current = false
         setTimeout(() => {
           document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
@@ -260,7 +248,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
 
         if (!clientRequestId) throw new Error('No ClientRequestId returned')
 
-        // Save insured info (including firstName and lastName separately for KYC pre-fill)
+        // Save insured info
         setInsuredInfo({
           firstName: value.firstName,
           lastName: value.lastName,
@@ -278,31 +266,38 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           .channel(clientRequestId)
           .listen('.insurance.plan.received', (e: any) => {
             const cacheKey = e['cache_key']
-            console.log('Health plan received, cache_key:', cacheKey)
             queue.current.push(cacheKey)
             processQueue()
           })
 
         channelRef.current = channel
 
-        setTimeout(async () => {
-          if (queue.current.length === 0 && useHealthCartStore.getState().isLoadingPlans) {
-            console.log('No WebSocket events received yet — trying direct cache poll...')
-            const carriers = supportedCarriers.length > 0 ? supportedCarriers : ['OONAPH']
+        // Fallback poll at 3s in case WebSocket is delayed
+        const carriers = supportedCarriers.length > 0
+          ? supportedCarriers
+          : ['OONAPH', 'PACIFIC']
+
+        setTimeout(() => {
+          if (useHealthCartStore.getState().isLoadingPlans) {
             for (const carrier of carriers) {
               const cacheKey = `${carrier}_${clientRequestId}`
-              queue.current.push(cacheKey)
+              if (!fetchedKeysRef.current.has(cacheKey)) {
+                queue.current.push(cacheKey)
+              }
             }
             processQueue()
           }
-        }, 1500)
+        }, 3000)
 
+        // Final timeout at 60s
         fallbackTimeoutRef.current = setTimeout(() => {
           const { compareQuotePlans, isLoadingPlans } = useHealthCartStore.getState()
-          if (!compareQuotePlans.length && isLoadingPlans) {
+          if (isLoadingPlans) {
             setIsLoadingPlans(false)
             closeEchoConnection(clientRequestId)
-            setPlansError('Plans are taking longer than expected. Please try again.')
+            if (!compareQuotePlans.length) {
+              setPlansError('Plans are taking longer than expected. Please try again.')
+            }
           }
           fallbackTimeoutRef.current = null
         }, 60000)

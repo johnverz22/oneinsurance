@@ -115,7 +115,7 @@ export default function PaymentBrands({
               className={cn(
                 'relative cursor-pointer border transition-all duration-200 shadow-none',
                 'hover:scale-[1.01] active:scale-[0.98]',
-                'aspect-square w-full',
+                'aspect-[4/3] sm:aspect-square w-full',
                 selectedBrand?.value === brand.value
                   ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
                   : 'hover:border-primary/60 border-gray-200 hover:bg-gray-50',

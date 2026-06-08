@@ -223,9 +223,9 @@ export function CardPaymentForm({
   ]
 
   return (
-    <div className={cn('mx-auto max-w-4xl space-y-6', className)}>
+    <div className={cn('mx-auto max-w-4xl space-y-3 lg:space-y-6', className)}>
       {/* Header */}
-      <Card className="border-primary/20 bg-primary/5">
+      <Card className="border-primary/20 bg-primary/5 shadow-none hidden lg:block">
         <CardHeader className="pb-4">
           <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex h-8 w-12 items-center justify-center rounded border bg-white">
@@ -256,7 +256,7 @@ export function CardPaymentForm({
       >
         <div className="space-y-6">
           {/* Card Information */}
-          <Card>
+          <Card className="shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base">
                 <CreditCard className="h-5 w-5" />
@@ -440,7 +440,7 @@ export function CardPaymentForm({
           </Card>
 
           {/* Personal Details */}
-          <Card>
+          <Card className="shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-base">Personal Details</CardTitle>
             </CardHeader>
@@ -538,7 +538,7 @@ export function CardPaymentForm({
           </Card>
 
           {/* Address */}
-          <Card>
+          <Card className="shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-base">Billing Address</CardTitle>
             </CardHeader>

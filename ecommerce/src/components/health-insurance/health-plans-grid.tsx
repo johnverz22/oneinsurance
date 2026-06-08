@@ -328,10 +328,10 @@ export function HealthPlansGrid() {
               const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
               return (
-                <div key={plan.CarrierPlanCode} className="bg-background relative flex w-full rounded-xl border border-gray-200 transition-all hover:shadow-md mb-3">
+                <div key={plan.CarrierPlanCode} className="bg-background relative flex w-full flex-col rounded-xl border border-gray-200 transition-all hover:shadow-md mb-3 sm:flex-row">
                   {/* Left brand block */}
                   <div
-                    className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden rounded-l-xl sm:w-[160px] md:w-[180px]"
+                    className="flex h-[100px] w-full shrink-0 items-center justify-center overflow-hidden rounded-t-xl sm:h-auto sm:w-[140px] sm:rounded-l-xl sm:rounded-tr-none md:w-[160px] lg:w-[180px]"
                   >
                     {brandColor.planCardLogo ? (
                       <img
@@ -354,50 +354,43 @@ export function HealthPlansGrid() {
 
                   {/* Middle content */}
                   <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
-                    <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
+                    <h3 className="text-foreground text-sm font-bold uppercase tracking-wide sm:text-base lg:text-lg">
                       {plan.CarrierPlanDesc}
                     </h3>
                     <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
                       <div className="min-w-0">
-                        <p className="text-foreground text-sm font-semibold">
+                        <p className="text-foreground text-xs font-semibold sm:text-sm">
                           {Number((plan as any).SumInsured || 0).toLocaleString('en-PH')}
                         </p>
                         <p className="text-muted-foreground text-xs">Sum Insured</p>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-foreground text-sm font-semibold">
+                        <p className="text-foreground text-xs font-semibold sm:text-sm">
                           {carrierName}
                         </p>
                         <p className="text-muted-foreground text-xs">Provider</p>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-foreground text-sm font-semibold">
+                      <div className="min-w-0 col-span-2 sm:col-span-1">
+                        <p className="text-foreground text-xs font-semibold sm:text-sm">
                           Health Insurance
                         </p>
                         <p className="text-muted-foreground text-xs">Coverage Type</p>
                       </div>
                     </div>
-                    {benefits.length > 3 && (
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-                        <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground">
-                          View more ›
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Right price + button */}
-                  <div className="flex w-[140px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[160px] md:w-[180px]">
-                    <div className="flex items-baseline gap-1 mb-1">
+                  <div className="flex w-full shrink-0 flex-row items-center justify-between border-t border-gray-100 p-4 sm:w-[140px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
+                    <div className="flex items-baseline gap-1 sm:mb-1">
                       <span className="text-primary text-xs font-semibold">PHP</span>
-                      <span className="text-foreground text-xl font-black sm:text-2xl">
+                      <span className="text-foreground text-lg font-black sm:text-xl lg:text-2xl">
                         {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
                     </div>
-                    <span className="text-primary mb-3 text-xs font-medium">Premium</span>
+                    <span className="text-primary text-xs font-medium hidden sm:block sm:mb-3">Premium</span>
                     <Button
                       size="sm"
-                      className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+                      className="rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90 sm:w-full"
                       onClick={() => handleGetStarted(plan)}
                     >
                       Apply Now

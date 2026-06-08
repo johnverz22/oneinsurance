@@ -113,6 +113,33 @@ export function Stepper({
 }: StepperProps) {
   const isMobile = useIsMobile()
 
+  // Mobile: compact progress indicator
+  if (isMobile) {
+    return (
+      <div className="mx-auto w-full max-w-sm px-4 pb-2">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-primary text-sm font-bold">
+            Step {currentStep + 1} of {steps.length}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {steps[currentStep]?.title}
+          </p>
+        </div>
+        <div className="mt-2 flex gap-1">
+          {steps.map((_, index) => (
+            <div
+              key={index}
+              className={cn(
+                'h-1.5 flex-1 rounded-full transition-colors',
+                index <= currentStep ? 'bg-primary' : 'bg-gray-200'
+              )}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto w-full max-w-sm overflow-x-auto px-2 sm:px-4 md:overflow-hidden lg:max-w-7xl">
       <div
@@ -120,8 +147,7 @@ export function Stepper({
           'relative mb-4 flex h-full flex-col items-center justify-between gap-2 sm:mb-6',
           {
             'md:flex-row md:items-center':
-              orientation === 'horizontal' && !isMobile,
-            'flex-row items-center': orientation === 'horizontal' && isMobile,
+              orientation === 'horizontal',
           },
           contentContainerClass
         )}
@@ -141,7 +167,7 @@ export function Stepper({
               className={cn({ 'cursor-pointer': index <= highestVisitedStep })}
             />
             {index < steps.length - 1 && (
-              <div className="flex h-full w-full items-center justify-center bg-red-500">
+              <div className="flex h-full w-full items-center justify-center">
                 {orientation === 'horizontal' ? (
                   <div className="bg-foreground h-px w-3 sm:w-4 lg:w-6" />
                 ) : (
