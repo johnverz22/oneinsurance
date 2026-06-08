@@ -271,11 +271,11 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
             <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
               Choose Your Payment Method
             </h2>
-            <p className="text-muted-foreground text-sm">Select which payment you will use</p>
+            <p className="text-sm font-bold text-gray-700">Select which payment you will use</p>
           </div>
           <div className="flex flex-col items-start gap-1 sm:items-end">
-            <p className="text-muted-foreground text-xs">Total Amount</p>
-            <p className="text-primary text-2xl font-bold">
+            <p className="text-sm font-bold text-gray-700">Total Amount</p>
+            <p className="text-primary text-2xl font-black">
               ₱{grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </p>
           </div>
@@ -308,9 +308,9 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
               <div className={selectedBrand ? 'hidden lg:block' : ''}>
               <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
                 <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all" className="flex items-center gap-1.5"><ShoppingCart className="h-4 w-4" />All Methods</TabsTrigger>
+              <TabsTrigger value="all" className="flex items-center gap-1.5"><ShoppingCart className="h-4 w-4" /><span className="sm:hidden">All</span><span className="hidden sm:inline">All Methods</span></TabsTrigger>
               <TabsTrigger value="cards" className="flex items-center gap-1.5"><CreditCard className="h-4 w-4" />Cards</TabsTrigger>
-              <TabsTrigger value="digital" className="flex items-center gap-1.5"><Smartphone className="h-4 w-4" />Digital Wallets</TabsTrigger>
+              <TabsTrigger value="digital" className="flex items-center gap-1.5"><Smartphone className="h-4 w-4" /><span className="sm:hidden">Wallets</span><span className="hidden sm:inline">Digital Wallets</span></TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
                 <PaymentBrands onBrandSelect={(brand) => { setSelectedBrand(brand); setTimeout(() => document.getElementById('health-payment-form')?.scrollIntoView({ behavior: 'smooth' }), 100) }} selectedBrand={selectedBrand} />
