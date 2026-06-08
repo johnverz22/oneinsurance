@@ -37,6 +37,7 @@ import { isSingedin } from '@/utils/is-sigin'
 import { NavigationItem } from '@/types/navigation'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname } from 'next/navigation'
+import { useAgentCodeStore } from '@/store/agent-code-store'
 
 // Icon mapping for navigation items
 const iconMap: Record<string, React.ElementType> = {
@@ -66,6 +67,9 @@ export const AppSidebar = ({
   const isMobile = useIsMobile()
 
   const pathname = usePathname()
+  const { agentCode } = useAgentCodeStore()
+
+  const prefixLink = (link: string) => agentCode ? `/${agentCode}${link}` : link
 
   const getIcon = (label: string) => {
     const key = label.toLowerCase()
@@ -123,7 +127,7 @@ export const AppSidebar = ({
                               )}
                             >
                               <Link
-                                href={item.link}
+                                href={prefixLink(item.link)}
                                 className="flex items-center gap-3"
                               >
                                 {getIcon(item.title)}
@@ -145,7 +149,7 @@ export const AppSidebar = ({
                       )}
                     >
                       <Link
-                        href={navigation.link ?? '/'}
+                        href={prefixLink(navigation.link ?? '/')}
                         className="flex items-center gap-3"
                       >
                         {getIcon(navigation.label)}

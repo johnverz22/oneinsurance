@@ -265,7 +265,10 @@ export default function PaymentSelection() {
     setSelectedPaymentBrand(brand)
     // Store payment brand in localStorage dynamically
     storePaymentBrand(brand.value)
-    console.log('Payment brand stored in localStorage:', brand.value)
+    // On mobile, scroll to payment form after brand selection
+    setTimeout(() => {
+      document.getElementById('payment-form-section')?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
   }
 
   async function handleCardPaymentIssueQuote(
@@ -459,7 +462,7 @@ export default function PaymentSelection() {
   return (
     <>
       <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-        <CardHeader className="flex items-center justify-between -space-y-2 border-b pt-6">
+        <CardHeader className="flex flex-col gap-2 border-b pt-6 sm:flex-row sm:items-center sm:justify-between sm:-space-y-2">
           <div className="flex-1">
             <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
               Choose Your Payment Method
@@ -468,7 +471,7 @@ export default function PaymentSelection() {
               Select which payment you will use
             </p>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-start gap-1 sm:items-end">
             <p className="text-muted-foreground text-xs">Total Amount</p>
             <p className="text-primary text-2xl font-bold">
               ₱
@@ -485,7 +488,37 @@ export default function PaymentSelection() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Left Side - Payment Method Selection */}
             <div className="space-y-6">
-              {/* Payment Method Tabs */}
+              {/* Mobile: Show compact selected brand with Change button when brand is selected */}
+              {selectedPaymentBrand && (
+                <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-3 lg:hidden">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-14 items-center justify-center rounded border bg-white p-1">
+                      <img
+                        src={selectedPaymentBrand.image}
+                        alt={selectedPaymentBrand.value}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{selectedPaymentBrand.value}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedPaymentBrand.is_card ? 'Card' : 'Digital Wallet'}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full text-xs"
+                    onClick={() => setSelectedPaymentBrand(null)}
+                  >
+                    Change
+                  </Button>
+                </div>
+              )}
+
+              {/* Payment Method Tabs — hidden on mobile when brand is selected */}
+              <div className={selectedPaymentBrand ? 'hidden lg:block' : ''}>
               <Tabs
                 value={paymentMethod}
                 onValueChange={(value) => setPaymentMethod(value as any)}
@@ -532,13 +565,14 @@ export default function PaymentSelection() {
                       />
                 </TabsContent>
               </Tabs>
+              </div>
             </div>
 
             {/* Right Side - Payment Form */}
-            <div className="space-y-6">
+            <div id="payment-form-section" className="space-y-3 lg:space-y-6">
               {!selectedPaymentBrand ? (
                 // Placeholder when no payment method is selected
-                <Card className="h-full min-h-[500px]">
+                <Card className="h-full min-h-[500px] shadow-none">
                   <CardContent className="flex h-full items-center justify-center p-8">
                     <div className="space-y-4 text-center">
                       <div className="bg-primary/10 dark:bg-primary/50 mx-auto flex h-24 w-24 items-center justify-center rounded-full">

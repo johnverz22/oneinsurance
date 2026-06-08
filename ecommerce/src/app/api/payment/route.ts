@@ -115,7 +115,7 @@ export async function POST() {
 }
 
 export async function GET(req: NextRequest) {
-  const url = `${process.env.PAYMENT_BASE_URL}/api/collection/apn/${process.env.MERCHANT_ACCOUNT_ID}/brands`
+  const url = `${process.env.PAYMENT_BASE_URL}/api/v1/collection/apn/${process.env.MERCHANT_ACCOUNT_ID}/brands`
   const token = await getToken()
   if (!token) {
     console.log('invalid token')
