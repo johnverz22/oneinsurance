@@ -266,14 +266,14 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
     <>
       {/* Single Card wrapping header + content — matching travel's layout */}
       <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-        <CardHeader className="flex items-center justify-between -space-y-2 border-b pt-6">
+        <CardHeader className="flex flex-col gap-2 border-b pt-6 sm:flex-row sm:items-center sm:justify-between sm:-space-y-2">
           <div className="flex-1">
             <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
               Choose Your Payment Method
             </h2>
             <p className="text-muted-foreground text-sm">Select which payment you will use</p>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-start gap-1 sm:items-end">
             <p className="text-muted-foreground text-xs">Total Amount</p>
             <p className="text-primary text-2xl font-bold">
               ₱{grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
@@ -286,6 +286,26 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Left — Payment brand tabs */}
             <div className="space-y-6">
+              {/* Mobile: Show compact selected brand with Change button */}
+              {selectedBrand && (
+                <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-3 lg:hidden">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-14 items-center justify-center rounded border bg-white p-1">
+                      <img src={selectedBrand.image} alt={selectedBrand.value} className="h-full w-full object-contain" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{selectedBrand.value}</p>
+                      <p className="text-xs text-muted-foreground">{selectedBrand.is_card ? 'Card' : 'Digital Wallet'}</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" className="rounded-full text-xs" onClick={() => setSelectedBrand(null)}>
+                    Change
+                  </Button>
+                </div>
+              )}
+
+              {/* Payment Method Tabs — hidden on mobile when brand is selected */}
+              <div className={selectedBrand ? 'hidden lg:block' : ''}>
               <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
                 <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="all" className="flex items-center gap-1.5"><ShoppingCart className="h-4 w-4" />All Methods</TabsTrigger>
@@ -293,21 +313,22 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
               <TabsTrigger value="digital" className="flex items-center gap-1.5"><Smartphone className="h-4 w-4" />Digital Wallets</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
-                <PaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} />
+                <PaymentBrands onBrandSelect={(brand) => { setSelectedBrand(brand); setTimeout(() => document.getElementById('health-payment-form')?.scrollIntoView({ behavior: 'smooth' }), 100) }} selectedBrand={selectedBrand} />
             </TabsContent>
             <TabsContent value="cards" className="mt-4">
-                <CardPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} />
+                <CardPaymentBrands onBrandSelect={(brand) => { setSelectedBrand(brand); setTimeout(() => document.getElementById('health-payment-form')?.scrollIntoView({ behavior: 'smooth' }), 100) }} selectedBrand={selectedBrand} />
             </TabsContent>
             <TabsContent value="digital" className="mt-4">
-                <DigitalPaymentBrands onBrandSelect={setSelectedBrand} selectedBrand={selectedBrand} />
+                <DigitalPaymentBrands onBrandSelect={(brand) => { setSelectedBrand(brand); setTimeout(() => document.getElementById('health-payment-form')?.scrollIntoView({ behavior: 'smooth' }), 100) }} selectedBrand={selectedBrand} />
             </TabsContent>
           </Tabs>
+              </div>
         </div>
 
         {/* Right — Form */}
-        <div className="space-y-4">
+        <div id="health-payment-form" className="space-y-3 lg:space-y-4">
           {!selectedBrand ? (
-            <Card className="min-h-[300px]">
+            <Card className="min-h-[300px] shadow-none">
               <CardContent className="flex h-full items-center justify-center p-8">
                 <div className="space-y-3 text-center">
                   <div className="bg-primary/10 mx-auto flex h-20 w-20 items-center justify-center rounded-full">
@@ -321,7 +342,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
           ) : (
             <div className="space-y-4">
               {/* Pay with [Brand] header */}
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/20 bg-primary/5 shadow-none hidden lg:block">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3">
                     <div className="flex h-8 w-12 items-center justify-center rounded border bg-white p-1">
@@ -338,7 +359,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
               </Card>
 
               {selectedBrand.is_card && (
-                <Card>
+                <Card className="shadow-none">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <CreditCard className="h-4 w-4" />Card Information
@@ -386,7 +407,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
               )}
 
               {/* Personal Details */}
-              <Card>
+              <Card className="shadow-none">
                 <CardHeader className="pb-3"><CardTitle className="text-base">Personal Details</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -417,7 +438,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
               </Card>
 
               {/* Billing Address */}
-              <Card>
+              <Card className="shadow-none">
                 <CardHeader className="pb-3"><CardTitle className="text-base">Billing Address</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-1.5">

@@ -70,13 +70,13 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {/* Proposal Number — always visible since it was set in step 3 */}
       {proposalNo && (
         <Card className="overflow-hidden shadow-none">
-          <CardContent className="flex items-center justify-between px-6 py-4">
+          <CardContent className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-semibold text-gray-700">Proposal Number</h3>
             <div className="flex items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-4 py-2">
-                <p className="text-lg font-bold tracking-wider text-primary">{proposalNo}</p>
+              <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 overflow-hidden">
+                <p className="text-sm font-bold tracking-wider text-primary sm:text-lg truncate">{proposalNo}</p>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyProposal}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCopyProposal}>
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -91,21 +91,21 @@ export function HealthReviewPage({ personalInfo }: Props) {
             <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Provider + Plan + Coverage in 2-col layout like travel */}
-            <div className="flex w-full gap-2">
+            {/* Provider + Plan + Coverage in responsive layout */}
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-2">
               <div className="h-14 w-28 shrink-0 overflow-hidden rounded-md">
                 {providerLogo ? (
                   <img src={providerLogo} alt={providerName} className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 ) : null}
               </div>
-              <div className="space-y-2 px-1.5">
-                <h3 className="text-foreground text-left text-xl font-bold uppercase tracking-wide">{item.planName}</h3>
+              <div className="min-w-0 flex-1 space-y-2">
+                <h3 className="text-foreground text-left text-lg font-bold uppercase tracking-wide sm:text-xl break-words">{item.planName}</h3>
                 {fullQuoteData?.carrierProductName && (
                   <p className="text-sm text-gray-600">{fullQuoteData.carrierProductName}</p>
                 )}
               </div>
-              <div className="ml-auto shrink-0">
-                <span className="rounded-full bg-orange-400 px-4 py-2 text-sm font-bold text-white">
+              <div className="shrink-0">
+                <span className="rounded-full bg-orange-400 px-4 py-2 text-sm font-bold text-white whitespace-nowrap">
                   ₱ {displayPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
               </div>
