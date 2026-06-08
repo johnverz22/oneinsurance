@@ -271,10 +271,9 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
             <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-black text-transparent">
               Choose Your Payment Method
             </h2>
-            <p className="text-sm font-bold text-gray-700">Select which payment you will use</p>
           </div>
           <div className="flex flex-col items-start gap-1 sm:items-end">
-            <p className="text-sm font-bold text-gray-700">Total Amount</p>
+            <p className="text-sm font-medium text-gray-400">Total Amount</p>
             <p className="text-primary text-2xl font-black">
               ₱{grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </p>

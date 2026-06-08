@@ -275,13 +275,13 @@ export default function AvailTravelInsurance() {
   return (
     <div className="relative w-full bg-[#F3F5FC] pb-10">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <div className="inline-flex items-center gap-3 rounded-tl-full rounded-br-full bg-white px-13 py-1 shadow-lg">
+        <div className="inline-flex items-center gap-3 rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg sm:px-13">
           <Image
             src="/images/logo.png"
             alt="One Insurance"
             width={140}
             height={45}
-            className="h-10 w-auto"
+            className="h-7 w-auto sm:h-10"
             priority
           />
         </div>
@@ -290,7 +290,7 @@ export default function AvailTravelInsurance() {
           alt="IFRC"
           width={120}
           height={40}
-          className="h-8 w-auto sm:h-10"
+          className="h-6 w-auto sm:h-10"
           priority
         />
       </div>
