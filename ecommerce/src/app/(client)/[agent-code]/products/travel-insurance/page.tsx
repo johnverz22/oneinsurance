@@ -68,14 +68,14 @@ function TravelInsurancePageSSR() {
             tabIndex={0}
             role="button"
             onClick={() => router.push('/')}
-            className="absolute top-8 left-4 z-10 cursor-pointer gap-3 rounded-tl-full rounded-br-full bg-white px-12 py-1 shadow-lg lg:left-28 xl:left-32"
+            className="absolute top-4 left-3 z-10 cursor-pointer gap-3 rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg sm:top-8 sm:left-4 sm:px-12 lg:left-28 xl:left-32"
           >
             <Image
               src="/images/logo.png"
               alt="One Insurance"
               width={140}
               height={45}
-              className="h-10 w-auto"
+              className="h-7 w-auto sm:h-10"
               priority
             />
           </div>
@@ -83,7 +83,7 @@ function TravelInsurancePageSSR() {
           <div className="absolute inset-0 bg-black/80 dark:bg-black/30" />
         </div>
 
-        <div className="absolute top-0 right-4 max-h-24 max-w-24 rounded-b-2xl bg-white px-3 py-2 sm:right-8 sm:max-h-32 sm:max-w-32 sm:px-4 sm:py-3 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
+        <div className="absolute top-0 right-3 max-h-16 max-w-16 rounded-b-xl bg-white px-2 py-1.5 sm:right-8 sm:max-h-24 sm:max-w-24 sm:rounded-b-2xl sm:px-3 sm:py-2 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
           <Image
             src="/images/IFRC.png"
             alt="IFRC Logo"

@@ -91,8 +91,8 @@ export default function PaymentBrands({
 
   return (
     <div className={cn('w-full space-y-4', className)}>
-      {/* Header Section - More compact */}
-      <div className="text-center">
+      {/* Header Section - hidden on mobile since page already has header */}
+      <div className="hidden sm:block text-center">
         <h3 className="text-lg font-semibold text-gray-900">
           Choose Your Payment Method
         </h3>
