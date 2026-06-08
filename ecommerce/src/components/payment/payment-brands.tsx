@@ -106,7 +106,7 @@ export default function PaymentBrands({
         <div
           className={cn(
             'grid gap-3',
-            className || 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+            className || 'grid-cols-3 sm:grid-cols-3 md:grid-cols-4'
           )}
         >
           {filteredBrands.map((brand: PaymentBrand) => (
@@ -115,7 +115,7 @@ export default function PaymentBrands({
               className={cn(
                 'relative cursor-pointer border transition-all duration-200 shadow-none',
                 'hover:scale-[1.01] active:scale-[0.98]',
-                'aspect-[4/3] sm:aspect-square w-full',
+                'aspect-square w-full',
                 selectedBrand?.value === brand.value
                   ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
                   : 'hover:border-primary/60 border-gray-200 hover:bg-gray-50',
