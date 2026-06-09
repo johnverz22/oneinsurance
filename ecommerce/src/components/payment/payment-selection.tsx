@@ -116,15 +116,21 @@ export default function PaymentSelection() {
 
   // Check for proposal number on component mount (e-wallet return)
   useEffect(() => {
-    const proposalNumber = getProposalNumber()
+    const storedProposalNumber = getProposalNumber()
+    const currentProposalNumber = apiResponse?.data?.ProposalNo
 
-    if (proposalNumber && !isProcessing) {
+    // Only auto-poll if the stored proposal matches the current booking's proposal
+    // This prevents auto-processing when starting a new booking
+    if (storedProposalNumber && currentProposalNumber && storedProposalNumber === currentProposalNumber && !isProcessing) {
       // Remove transaction_id from URL if present
       removeTransactionIdFromUrl()
       // Start polling
       setIsProcessing(true)
       setShowCardPaymentProcessing(true)
       startPolling()
+    } else if (storedProposalNumber && storedProposalNumber !== currentProposalNumber) {
+      // Stale proposal from a previous booking — clear it
+      clearProposalNumber()
     }
   }, [])
 

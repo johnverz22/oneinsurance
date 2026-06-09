@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { PageLoader } from '@/components/page-loader'
 import { Star } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { clearProposalNumber } from '@/utils/payment-storage'
 
 export default function TravelInsurancePage() {
   return (
@@ -47,6 +48,7 @@ function TravelInsurancePageSSR() {
     resetForm()
     setInsurancePlans(null)
     resetApiResponse()
+    clearProposalNumber()
   }, [])
 
 
