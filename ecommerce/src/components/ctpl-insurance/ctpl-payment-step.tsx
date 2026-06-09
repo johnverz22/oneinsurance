@@ -189,11 +189,14 @@ export default function CtplPaymentStep() {
   useEffect(() => {
     const storedProposalNumber = getProposalNumber()
 
-    if (storedProposalNumber && !isProcessing) {
+    // Only auto-poll if stored proposal matches current booking
+    if (storedProposalNumber && storedProposalNumber === proposalNumber && !isProcessing) {
       removeTransactionIdFromUrl()
       setIsProcessing(true)
       setShowCardPaymentProcessing(true)
       startPolling()
+    } else if (storedProposalNumber && storedProposalNumber !== proposalNumber) {
+      clearProposalNumber()
     }
   }, [])
 

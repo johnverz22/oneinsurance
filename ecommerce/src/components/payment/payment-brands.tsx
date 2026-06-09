@@ -132,7 +132,7 @@ export default function PaymentBrands({
               role="button"
               aria-label={`Select ${brand.value} as payment method`}
             >
-              <CardContent className="flex h-full items-center justify-center p-2">
+              <CardContent className="flex h-full items-center justify-center p-1 sm:p-2">
                 {/* Brand Logo Only — centered, fills card */}
                 <div className="relative h-[70%] w-[90%]">
                   <Image
