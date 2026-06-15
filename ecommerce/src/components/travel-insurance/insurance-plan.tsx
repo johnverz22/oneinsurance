@@ -127,6 +127,16 @@ export function TravelInsurancePlan({
         {redirectUrl && (
           <span className="text-muted-foreground mt-1 text-center text-[10px]">via Pacific Cross secure site</span>
         )}
+        {carrierCode === 'PACIFIC' && (
+          <a
+            href="/files/pacific-cross-select-er-brochure.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 text-center text-xs text-primary font-medium underline underline-offset-2 hover:text-primary/80"
+          >
+            View Brochure
+          </a>
+        )}
       </div>
       </div>
 

@@ -395,6 +395,16 @@ export function HealthPlansGrid() {
                     >
                       Apply Now
                     </Button>
+                    {provider?.carrierCode === 'PACIFIC' && (
+                      <a
+                        href="/files/pacific-cross-select-er-brochure.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 text-center text-xs text-primary font-medium underline underline-offset-2 hover:text-primary/80"
+                      >
+                        View Brochure
+                      </a>
+                    )}
                   </div>
                 </div>
               )
