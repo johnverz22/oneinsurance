@@ -171,12 +171,12 @@ export default function VehicleRegistration() {
             {/* Field Office Code + Date of Registration */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <Label className="mb-2 block font-semibold">Field Office Code</Label>
+                <Label className="mb-1 block font-semibold">Field Office Code</Label>
                 <p className="text-muted-foreground mb-1 text-xs">Format: NCR-MM-001</p>
                 <Input value={fieldOfficeCode} onChange={e => setFieldOfficeCode(e.target.value)} placeholder="e.g. NCR-MM-001" autoComplete="off" />
               </div>
               <div>
-                <Label className="mb-2 font-semibold">Date of Registration</Label>
+                <Label className="mb-1 block font-semibold">Date of Registration</Label>
                 <p className="text-muted-foreground mb-1 text-xs">&nbsp;</p>
                 <DateTimePicker variant="date" value={dateOfRegistration ?? undefined} onChange={(date) => setDateOfRegistration(date ?? null)} disabled={(date) => date > new Date()} />
               </div>
