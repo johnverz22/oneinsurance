@@ -331,23 +331,23 @@ function CtplInsurance() {
             <p className="text-sm text-gray-500 mt-1">Select the coverage that fits your needs</p>
 
             {/* Bigger card-style toggle — taller with icon, title, description, select button */}
-            <div className="mt-5 grid grid-cols-2 gap-4">
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4">
               <button
                 onClick={() => selectType('CTPL')}
-                className={`group relative flex flex-col items-center gap-3 rounded-2xl border-2 p-8 transition-all text-center ${
+                className={`group relative flex flex-col items-center gap-2 sm:gap-3 rounded-2xl border-2 p-4 sm:p-8 transition-all text-center ${
                   insuranceType === 'CTPL'
                     ? 'border-primary bg-primary/5 shadow-md'
                     : 'border-gray-200 bg-gray-50 hover:border-primary/40 hover:bg-gray-100'
                 }`}
               >
-                <div className={`flex h-14 w-14 items-center justify-center rounded-full ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
-                  <Shield className={`h-7 w-7 ${insuranceType === 'CTPL' ? 'text-primary' : 'text-blue-400'}`} />
+                <div className={`flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-full ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
+                  <Shield className={`h-5 w-5 sm:h-7 sm:w-7 ${insuranceType === 'CTPL' ? 'text-primary' : 'text-blue-400'}`} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">CTPL Insurance</h3>
-                  <p className="mt-0.5 text-sm text-gray-500">Required by law for all vehicles</p>
+                  <h3 className="text-sm sm:text-base font-bold text-gray-900">CTPL Insurance</h3>
+                  <p className="mt-0.5 text-xs sm:text-sm text-gray-500">Required by law for all vehicles</p>
                 </div>
-                <span className={`mt-2 rounded-full border px-5 py-1.5 text-sm font-medium transition-all ${
+                <span className={`mt-1 sm:mt-2 rounded-full border px-3 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   insuranceType === 'CTPL'
                     ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
                     : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
@@ -358,20 +358,20 @@ function CtplInsurance() {
 
               <button
                 onClick={() => selectType('COMPREHENSIVE')}
-                className={`group relative flex flex-col items-center gap-3 rounded-2xl border-2 p-8 transition-all text-center ${
+                className={`group relative flex flex-col items-center gap-2 sm:gap-3 rounded-2xl border-2 p-4 sm:p-8 transition-all text-center ${
                   insuranceType === 'COMPREHENSIVE'
                     ? 'border-primary bg-primary/5 shadow-md'
                     : 'border-gray-200 bg-gray-50 hover:border-primary/40 hover:bg-gray-100'
                 }`}
               >
-                <div className={`flex h-14 w-14 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
-                  <Car className={`h-7 w-7 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-green-400'}`} />
+                <div className={`flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
+                  <Car className={`h-5 w-5 sm:h-7 sm:w-7 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-green-400'}`} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">Comprehensive</h3>
-                  <p className="mt-0.5 text-sm text-gray-500">Complete vehicle protection</p>
+                  <h3 className="text-sm sm:text-base font-bold text-gray-900">Comprehensive</h3>
+                  <p className="mt-0.5 text-xs sm:text-sm text-gray-500">Complete vehicle protection</p>
                 </div>
-                <span className={`mt-2 rounded-full border px-5 py-1.5 text-sm font-medium transition-all ${
+                <span className={`mt-1 sm:mt-2 rounded-full border px-3 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   insuranceType === 'COMPREHENSIVE'
                     ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
                     : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
@@ -678,10 +678,10 @@ function CtplInsurance() {
                   const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
                   return (
-                    <div key={index} className="bg-background relative flex w-full rounded-xl overflow-hidden transition-all shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:shadow-md mb-3">
+                    <div key={index} className="bg-background relative flex w-full flex-col rounded-xl overflow-hidden transition-all shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:shadow-md mb-3 sm:flex-row">
                       {/* Left brand block */}
                       <div
-                        className="flex w-[140px] shrink-0 items-center justify-center overflow-hidden sm:w-[160px] md:w-[180px]"
+                        className="flex h-[100px] w-full shrink-0 items-center justify-center overflow-hidden sm:h-auto sm:w-[140px] sm:rounded-l-xl md:w-[160px] lg:w-[180px]"
                       >
                         {brandColor.planCardLogo ? (
                           <Image
@@ -747,10 +747,10 @@ function CtplInsurance() {
                       </div>
 
                       {/* Right price + button */}
-                      <div className="flex w-[140px] shrink-0 flex-col items-center justify-center border-l border-gray-100 dark:border-gray-800 p-4 sm:w-[160px] md:w-[180px]">
+                      <div className="flex w-full shrink-0 flex-col items-center justify-center border-t border-gray-100 dark:border-gray-800 p-4 sm:w-[140px] sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
                         <div className="flex items-baseline gap-1 mb-1">
                           <span className="text-primary text-xs font-semibold">PHP</span>
-                          <span className="text-foreground text-xl font-black sm:text-2xl">
+                          <span className="text-foreground text-lg font-black sm:text-xl lg:text-2xl">
                             {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
                         </div>

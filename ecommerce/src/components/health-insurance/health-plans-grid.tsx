@@ -380,17 +380,17 @@ export function HealthPlansGrid() {
                   </div>
 
                   {/* Right price + button */}
-                  <div className="flex w-full shrink-0 flex-row items-center justify-between border-t border-gray-100 p-4 sm:w-[140px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
+                  <div className="flex w-full shrink-0 flex-col items-center justify-center border-t border-gray-100 p-4 sm:w-[140px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
                     <div className="flex items-baseline gap-1 sm:mb-1">
                       <span className="text-primary text-xs font-semibold">PHP</span>
                       <span className="text-foreground text-lg font-black sm:text-xl lg:text-2xl">
                         {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
                     </div>
-                    <span className="text-primary text-xs font-medium hidden sm:block sm:mb-3">Premium</span>
+                    <span className="text-primary text-xs font-medium mb-3">Premium</span>
                     <Button
                       size="sm"
-                      className="rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90 sm:w-full"
+                      className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
                       onClick={() => handleGetStarted(plan)}
                     >
                       Apply Now
