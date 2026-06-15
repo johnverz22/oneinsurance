@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { CheckCircle, Car, Info } from 'lucide-react'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
 import { useParams, useRouter } from 'next/navigation'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import Image from 'next/image'
 import { format } from 'date-fns'
 
@@ -36,26 +36,14 @@ export default function CtplPlanDetailsStep() {
             <CheckCircle className="text-primary" />
           </CardHeader>
           <CardContent className="space-y-5 px-6 pb-6">
-            {/* Carrier row — logo left, name+badge right */}
-            <div className="flex items-start gap-4">
-              {carrier?.image ? (
-                <div className="flex h-12 w-20 shrink-0 items-center">
-                  <Image src={carrier.image} alt={carrier.companyName} width={80} height={40} className="object-contain object-left" />
-                </div>
-              ) : (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <Car className="h-5 w-5 text-primary" />
-                </div>
-              )}
-              <div>
-                <p className="text-sm text-gray-500">{carrier?.companyName || coverageOption?.carrierCode}</p>
-                <h3 className="text-base font-black text-gray-900 leading-snug">
-                  {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
-                </h3>
-                <span className="mt-1 inline-block rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
-                  {insuranceType} Insurance
-                </span>
-              </div>
+            {/* Plan name + badge only (no logo — matching travel's "Your Travel Details" card) */}
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 uppercase leading-snug">
+                {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
+              </h3>
+              <span className="mt-1 inline-block rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500">
+                {insuranceType} Insurance
+              </span>
             </div>
 
             {/* Coverage period */}
@@ -71,52 +59,55 @@ export default function CtplPlanDetailsStep() {
           </CardContent>
         </Card>
 
-        {/* Benefits card — matches travel plan card with two-column internal layout */}
+        {/* Benefits card — matches travel review-coverage layout */}
         {plan?.MainBenefits?.length > 0 && (
           <Card className="bg-background overflow-hidden shadow-none">
             <CardHeader className="pb-2 pt-6">
               <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
             </CardHeader>
             <CardContent className="px-6 py-6">
-              <div className="flex gap-6">
-                {/* Left: carrier logo + plan name (like travel) */}
-                <div className="w-36 shrink-0 space-y-3">
-                  {carrier?.image ? (
-                    <Image src={carrier.image} alt={carrier.companyName} width={80} height={40} className="object-contain object-left" />
-                  ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                      <Car className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-500">{carrier?.companyName || coverageOption?.carrierCode}</p>
-                  <p className="text-sm font-black text-gray-900 leading-snug">
+              <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:divide-x">
+                {/* Left: carrier logo + plan name (like travel - no provider name text) */}
+                <div className="w-full space-y-2 lg:w-auto lg:shrink-0">
+                  <div className="relative h-14 w-28 overflow-hidden rounded-md">
+                    {(() => {
+                      const brandColor = carrier ? (CARRIER_BRAND_COLORS[carrier.carrierCode] as any) : null
+                      const logoSrc = brandColor?.planCardLogo || carrier?.image
+                      return logoSrc ? (
+                        <Image src={logoSrc} alt={carrier?.companyName || ''} width={112} height={56} className="h-full w-full object-contain" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10">
+                          <Car className="h-5 w-5 text-primary" />
+                        </div>
+                      )
+                    })()}
+                  </div>
+
+                  <h3 className="text-foreground text-left text-xl font-bold tracking-wide uppercase">
                     {plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}
-                  </p>
+                  </h3>
                 </div>
 
                 {/* Right: benefits list */}
-                <div className="flex-1">
-                  <h3 className="mb-3 text-base font-black text-primary">Benefits</h3>
+                <div className="flex w-full flex-col gap-4 lg:pl-8">
+                  <h3 className="text-primary text-base font-bold lg:text-2xl">Benefits</h3>
                   <div className="space-y-2.5">
                     {plan.MainBenefits.map((benefit: any, i: number) => (
-                      <div key={i} className="flex items-start justify-between gap-4 border-b border-gray-50 pb-2.5 last:border-0 last:pb-0">
-                        <div className="flex items-start gap-2">
-                          <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          <span className="text-sm text-gray-700">{benefit.BenefitDesc}</span>
-                        </div>
-                        {benefit.Silimit && (
-                          <span className="shrink-0 text-sm text-gray-600">
-                            ₱ {parseInt(benefit.Silimit).toLocaleString('en-PH')}
-                          </span>
-                        )}
+                      <div key={i} className="grid grid-cols-2 items-center gap-3">
+                        <h4 className="text-sm">{benefit.BenefitDesc}</h4>
+                        <small className="text-muted-foreground text-right text-xs">
+                          {benefit.Silimit
+                            ? `₱ ${parseInt(benefit.Silimit).toLocaleString('en-PH')}`
+                            : benefit.DefaultLimitDesc || '—'}
+                        </small>
                       </div>
                     ))}
                   </div>
 
-                  {/* Orange price pill at bottom — matches travel */}
-                  <div className="mt-4 flex justify-end">
-                    <span className="rounded-full bg-orange-400 px-5 py-1.5 text-sm font-bold text-white">
-                      ₱ {totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                  {/* Price pill — green like travel */}
+                  <div className="flex justify-end">
+                    <span className="bg-tertiary rounded-full px-6 py-2 text-center text-base font-bold text-white">
+                      PHP {totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
