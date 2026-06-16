@@ -45,6 +45,7 @@ export function TravelInsurancePlan({
         'relative mb-3',
       )}
     >
+      {/* Brochure tag removed from here — now inline after plan name */}
       <div className={cn(
         'bg-background flex w-full flex-col rounded-xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-md sm:flex-row',
       )}>
@@ -80,6 +81,17 @@ export function TravelInsurancePlan({
         {/* Plan name */}
         <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
           {plan.CarrierPlanDesc}
+          {carrierCode === 'PACIFIC' && (
+            <a
+              href="/files/pacific-cross-select-er-brochure.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="ml-2 inline-block align-middle rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-medium normal-case tracking-normal text-primary hover:bg-primary/10 transition-colors"
+            >
+              Brochure
+            </a>
+          )}
         </h3>
 
         {/* Benefits grid */}
@@ -126,16 +138,6 @@ export function TravelInsurancePlan({
         </Button>
         {redirectUrl && (
           <span className="text-muted-foreground mt-1 text-center text-[10px]">via Pacific Cross secure site</span>
-        )}
-        {carrierCode === 'PACIFIC' && (
-          <a
-            href="/files/pacific-cross-select-er-brochure.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 text-center text-xs text-primary font-medium underline underline-offset-2 hover:text-primary/80"
-          >
-            View Brochure
-          </a>
         )}
       </div>
       </div>

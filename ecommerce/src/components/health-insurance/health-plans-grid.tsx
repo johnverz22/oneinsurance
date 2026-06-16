@@ -356,6 +356,17 @@ export function HealthPlansGrid() {
                   <div className="flex flex-1 flex-col justify-center p-4 sm:p-5">
                     <h3 className="text-foreground text-sm font-bold uppercase tracking-wide sm:text-base lg:text-lg">
                       {plan.CarrierPlanDesc}
+                      {provider?.carrierCode === 'PACIFIC' && (
+                        <a
+                          href="/files/pacific-cross-select-er-brochure.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="ml-2 inline-block align-middle rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-medium normal-case tracking-normal text-primary hover:bg-primary/10 transition-colors"
+                        >
+                          Brochure
+                        </a>
+                      )}
                     </h3>
                     <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
                       <div className="min-w-0">
@@ -395,16 +406,6 @@ export function HealthPlansGrid() {
                     >
                       Apply Now
                     </Button>
-                    {provider?.carrierCode === 'PACIFIC' && (
-                      <a
-                        href="/files/pacific-cross-select-er-brochure.pdf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 text-center text-xs text-primary font-medium underline underline-offset-2 hover:text-primary/80"
-                      >
-                        View Brochure
-                      </a>
-                    )}
                   </div>
                 </div>
               )
