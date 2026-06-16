@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { useForm } from '@tanstack/react-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -31,16 +31,11 @@ type HealthDetailsFormProps = {
   className?: string
 }
 
-function buildPayload(value: HealthDetailsFormType, agentCode?: string, customExpiryDate?: string) {
+function buildPayload(value: HealthDetailsFormType, agentCode?: string) {
   const effectiveDate = new Date(value.effectiveDate)
-  let expiryDate: Date
-  if (customExpiryDate) {
-    expiryDate = new Date(customExpiryDate)
-  } else {
-    expiryDate = new Date(effectiveDate)
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1)
-    expiryDate.setDate(expiryDate.getDate() - 1)
-  }
+  const expiryDate = new Date(effectiveDate)
+  expiryDate.setFullYear(expiryDate.getFullYear() + 1)
+  expiryDate.setDate(expiryDate.getDate() - 1)
 
   const effectiveISO = effectiveDate.toISOString()
   const expiryISO = expiryDate.toISOString()
@@ -103,11 +98,12 @@ function getDurationText(effectiveDateStr: string, expiryDateStr?: string): stri
   return `${days} days`
 }
 
-// Compute default expiry (1 month from start date)
+// Compute default expiry (1 year from start date)
 function getDefaultExpiry(startDate: string): string {
   if (!startDate) return ''
   const d = new Date(startDate)
-  d.setMonth(d.getMonth() + 1)
+  d.setFullYear(d.getFullYear() + 1)
+  d.setDate(d.getDate() - 1)
   return d.toISOString().split('T')[0]
 }
 
@@ -120,11 +116,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
   const queue = useRef<string[]>([])
   const isProcessing = useRef(false)
   const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [expiryDate, setExpiryDate] = useState<string>(() => {
-    // Initialize with default expiry (1 year - 1 day from today)
-    const today = new Date().toISOString().split('T')[0]
-    return getDefaultExpiry(today)
-  })
 
   // Track which cache keys have already been fetched successfully
   const fetchedKeysRef = useRef<Set<string>>(new Set())
@@ -219,7 +210,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           document.getElementById('health-plans-grid')?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
 
-        const payload = buildPayload(value, agentCode, expiryDate || undefined)
+        const payload = buildPayload(value, agentCode)
 
         const echo = getEcho()
         if (echo.connector.pusher.connection.state !== 'connected') {
@@ -259,7 +250,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           genderCode: value.genderCode,
           isSmoker: value.isSmoker,
           effectiveDate: value.effectiveDate,
-          expiryDate: expiryDate || getDefaultExpiry(value.effectiveDate),
+          expiryDate: getDefaultExpiry(value.effectiveDate),
         })
 
         const channel = echo
@@ -273,9 +264,8 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
         channelRef.current = channel
 
         // Fallback poll at 3s in case WebSocket is delayed
-        const carriers = supportedCarriers.length > 0
-          ? supportedCarriers
-          : ['OONAPH', 'PACIFIC']
+        // Always include PACIFIC since SupportedCarrier from backend can be inconsistent
+        const carriers = Array.from(new Set(['PACIFIC', ...supportedCarriers, 'OONAPH']))
 
         setTimeout(() => {
           if (useHealthCartStore.getState().isLoadingPlans) {
@@ -370,8 +360,8 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
           </form.Field>
         </div>
 
-        {/* Row 2: Phone Number | Date of Birth */}
-        <div className="mb-2 grid gap-4 sm:grid-cols-2">
+        {/* Row 2: Phone Number | Date of Birth | Coverage Start Date */}
+        <div className="mb-2 grid gap-4 sm:grid-cols-3">
           <form.Field name="mobile">
             {(field) => (
               <div className="space-y-1.5">
@@ -406,10 +396,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
               </div>
             )}
           </form.Field>
-        </div>
 
-        {/* Row 3: Coverage Start Date | Coverage Expiry Date | Duration */}
-        <div className="mb-2 grid gap-4 sm:grid-cols-3">
           <form.Field name="effectiveDate">
             {(field) => (
               <div className="space-y-1.5">
@@ -417,10 +404,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
                 <Input
                   type="date"
                   value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                    setExpiryDate(getDefaultExpiry(e.target.value))
-                  }}
+                  onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className={cn('h-12 rounded-full', { 'border-destructive': fieldHasError(field) })}
                 />
@@ -428,30 +412,6 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
               </div>
             )}
           </form.Field>
-
-          <div className="space-y-1.5">
-            <Label className="text-sm font-medium text-primary">Coverage Expiry Date</Label>
-            <Input
-              type="date"
-              value={expiryDate}
-              onChange={(e) => setExpiryDate(e.target.value)}
-              className="h-12 rounded-full"
-            />
-          </div>
-
-          <form.Subscribe selector={(s) => s.values.effectiveDate}>
-            {(effectiveDate) => {
-              const duration = getDurationText(effectiveDate, expiryDate)
-              return (
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium text-primary">Duration</Label>
-                  <div className="flex h-12 items-center rounded-full border bg-gray-50 px-4 text-sm text-gray-700">
-                    {duration || '—'}
-                  </div>
-                </div>
-              )
-            }}
-          </form.Subscribe>
         </div>
 
         {/* Row 4: Gender | Smoker */}
