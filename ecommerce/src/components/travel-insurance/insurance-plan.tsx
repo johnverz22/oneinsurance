@@ -83,7 +83,7 @@ export function TravelInsurancePlan({
           {plan.CarrierPlanDesc}
           {carrierCode === 'PACIFIC' && (
             <a
-              href="/files/pacific-cross-select-er-brochure.pdf"
+              href="/pacific-cross-health-brochure"
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
