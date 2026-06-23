@@ -116,6 +116,26 @@ export default function CtplPlanDetailsStep() {
           </Card>
         )}
 
+        {/* Mobile-only: Premium summary (replaces sidebar on mobile) */}
+        <div className="lg:hidden rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Insurance Provider</span>
+            <span className="text-sm font-semibold text-gray-900">{carrier?.companyName || coverageOption?.carrierCode}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Plan</span>
+            <span className="text-sm font-semibold text-gray-900 uppercase text-right max-w-[60%]">{plan?.CarrierProductName || plan?.CarrierPlanDesc || plan?.CarrierPlanCode}</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+            <span className="text-sm font-bold text-gray-700">Total Premium</span>
+            <span className="text-lg font-black text-primary">₱{totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+          </div>
+          <p className="text-xs text-gray-500 flex items-start gap-1">
+            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+            The total premium includes base cost and applicable taxes.
+          </p>
+        </div>
+
         {/* Buttons — Cancel left, Next right — exactly like travel */}
         <div className="flex items-center justify-between pt-2">
           <Button
@@ -136,8 +156,8 @@ export default function CtplPlanDetailsStep() {
         </div>
       </div>
 
-      {/* RIGHT — 2/5 width sticky sidebar, exactly like travel PlanPaymentReview */}
-      <div className="lg:w-2/5">
+      {/* RIGHT — 2/5 width sticky sidebar, hidden on mobile */}
+      <div className="hidden lg:block lg:w-2/5">
         <div className="sticky top-24 flex w-full flex-col space-y-6">
           <Card className="bg-background overflow-hidden shadow-none">
             <CardHeader className="pt-6 pb-4">

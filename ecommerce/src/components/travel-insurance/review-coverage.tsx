@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
-import { CheckIcon, Loader2Icon, ShieldCheck } from 'lucide-react'
+import { CheckIcon, Info, Loader2Icon, ShieldCheck } from 'lucide-react'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { DownloadPDFButton } from './travel-policy-pdf'
@@ -223,6 +223,26 @@ export function ReviewCoverage() {
               </div>
             )}
         </Card>
+
+        {/* Mobile-only: Premium summary (replaces sidebar on mobile) */}
+        <div className="lg:hidden rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Insurance Provider</span>
+            <span className="text-sm font-semibold text-gray-900">{provider.companyName}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Plan</span>
+            <span className="text-sm font-semibold text-gray-900 uppercase text-right max-w-[60%]">{plan.CarrierPlanDesc}</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+            <span className="text-sm font-bold text-gray-700">Total Premium</span>
+            <span className="text-lg font-black text-primary">₱{Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+          </div>
+          <p className="text-xs text-gray-500 flex items-start gap-1">
+            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+            The total premium includes base cost, add-ons, and applicable taxes.
+          </p>
+        </div>
 
         <div className="relative flex w-full items-center justify-center gap-3 px-1.5 lg:justify-start lg:px-0">
           <Button
