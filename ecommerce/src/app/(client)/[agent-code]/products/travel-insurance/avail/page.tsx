@@ -311,7 +311,7 @@ export default function AvailTravelInsurance() {
           {steps[step].component}
         </div>
 
-        <div className={cn('relative lg:w-2/5', { hidden: step > 3 })}>
+        <div className={cn('relative hidden lg:block lg:w-2/5', { 'lg:hidden': step > 3 })}>
           <PlanPaymentReview
             stage={step <= 2 ? "initial" : "final"}
             grossPremium={

@@ -1,195 +1,428 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useState } from 'react'
 
 const plans = [
   {
     name: 'Select ER',
-    description: 'Coverage for the treatment of an emergency medical condition in the Emergency Room as Out-Patient or as In-Patient.',
-    issueAge: '15 days - 65 years old',
+    description: 'Emergency room — out-patient or in-patient',
+    fullDescription: 'Coverage for the treatment of an emergency medical condition in the Emergency Room as Out-Patient or as In-Patient.',
+    issueAge: '15 days – 65 years old',
     waitingPeriod: '7 days',
+    accentColor: 'from-primary to-primary/80',
     options: [
-      { label: 'Plan A', maxBenefit: '₱5,000.00', premium: '499' },
-      { label: 'Plan B', maxBenefit: '₱10,000.00', premium: '849' },
-      { label: 'Plan C', maxBenefit: '₱20,000.00', premium: '1,199' },
+      { label: 'Plan A', maxBenefit: '₱5,000', premium: '499' },
+      { label: 'Plan B', maxBenefit: '₱10,000', premium: '849' },
+      { label: 'Plan C', maxBenefit: '₱20,000', premium: '1,199' },
     ],
   },
   {
     name: 'Select Assist',
-    description: 'Coverage for the treatment of emergency medical condition as In-Patient.',
-    issueAge: '15 days - 65 years old',
+    description: 'Emergency medical condition — in-patient',
+    fullDescription: 'Coverage for the treatment of emergency medical condition as In-Patient.',
+    issueAge: '15 days – 65 years old',
     waitingPeriod: '7 days',
+    accentColor: 'from-primary to-primary/80',
     options: [
-      { label: 'Plan A', maxBenefit: '₱10,000.00', premium: '1,499' },
-      { label: 'Plan B', maxBenefit: '₱20,000.00', premium: '2,699' },
-      { label: 'Plan C', maxBenefit: '₱30,000.00', premium: '3,899' },
+      { label: 'Plan A', maxBenefit: '₱10,000', premium: '1,499' },
+      { label: 'Plan B', maxBenefit: '₱20,000', premium: '2,699' },
+      { label: 'Plan C', maxBenefit: '₱30,000', premium: '3,899' },
     ],
   },
   {
     name: 'Select MedSecure',
-    description: 'Coverage for post-hospitalization prescribed medicines.',
-    issueAge: '15 days - 60 years old',
+    description: 'Post-hospitalization prescribed medicines',
+    fullDescription: 'Coverage for post-hospitalization prescribed medicines.',
+    issueAge: '15 days – 60 years old',
     waitingPeriod: '15 days',
+    accentColor: 'from-primary to-primary/80',
     options: [
-      { label: 'Plan A', maxBenefit: '₱2,000.00', premium: '549' },
-      { label: 'Plan B', maxBenefit: '₱2,500.00', premium: '649' },
-      { label: 'Plan C', maxBenefit: '₱5,000.00', premium: '950' },
+      { label: 'Plan A', maxBenefit: '₱2,000', premium: '549' },
+      { label: 'Plan B', maxBenefit: '₱2,500', premium: '649' },
+      { label: 'Plan C', maxBenefit: '₱5,000', premium: '950' },
     ],
   },
   {
     name: 'Select DengueGuard',
-    description: 'Coverage for medically diagnosed Dengue.',
+    description: 'Medically diagnosed dengue — any age',
+    fullDescription: 'Coverage for medically diagnosed Dengue.',
     issueAge: 'Any age',
     waitingPeriod: '15 days',
+    accentColor: 'from-primary to-primary/80',
     options: [
-      { label: 'Single Plan', maxBenefit: '₱10,000.00', premium: '325' },
+      { label: 'Single Plan', maxBenefit: '₱10,000', premium: '325' },
     ],
   },
   {
     name: 'Select COVID-19 Care',
-    description: 'Coverage for the In-Patient treatment of COVID-19 and Serious Adverse Effects of COVID-19 vaccination.',
-    issueAge: '15 days - 65 years old',
+    description: 'In-patient COVID-19 treatment + vaccine adverse effects',
+    fullDescription: 'Coverage for the In-Patient treatment of COVID-19 and Serious Adverse Effects of COVID-19 vaccination.',
+    issueAge: '15 days – 65 years old',
     waitingPeriod: '15 days',
+    accentColor: 'from-primary to-primary/80',
     options: [
-      { label: 'Plan 30', maxBenefit: '₱30,000.00', premium: '579' },
-      { label: 'Plan 100', maxBenefit: '₱100,000.00', premium: '1,999' },
-      { label: 'Plan 500', maxBenefit: '₱500,000.00', premium: '4,670 - 11,850' },
+      { label: 'Plan 30', maxBenefit: '₱30,000', premium: '579' },
+      { label: 'Plan 100', maxBenefit: '₱100,000', premium: '1,999' },
+      { label: 'Plan 500', maxBenefit: '₱500,000', premium: '4,670 – 11,850' },
     ],
   },
 ]
 
-const faqs = [
-  { q: 'What is the eligibility age in order to avail of a Select Prepaid Insurance Plan?', a: 'Eligibility age refers to the Issue Age specified under each Prepaid Plan. The issue age is the age of the Insured Person at the time of purchase and registration.' },
-  { q: 'Can I use my Select Prepaid Insurance Plan for claims incurred immediately after successful registration?', a: 'No. Please refer to the specific Effective Date after successful registration indicated under each Prepaid Plan as well as other information described under Plan Benefits and Limitations.' },
-  { q: 'Can I get insured under several Select Prepaid Insurance Plans?', a: 'Yes. An Insured Person can have all 5 Prepaid Insurance Plans but only 1 Plan Option can be chosen per Period of Insurance. You can buy multiple Prepaid Insurance Plans that should be registered under the name of an Insured Person.' },
-  { q: 'How do I file a claim?', a: 'Please submit the necessary claims requirements to Pacific Cross Customer Services team via e-mail claims@pacificcross.com.ph.' },
-  { q: 'How will I receive my claims reimbursements?', a: 'Pacific Cross will credit the approved claims reimbursement of the Client to his/her nominated bank account.' },
-  { q: 'What happens to my coverage if my claim was denied?', a: 'If the claim was denied, the Select Prepaid Insurance will remain active within the Period of Insurance. Period of Insurance means a validity of 1 year from Effective Date but Policy terminates once claim is approved.' },
+const benefits = [
+  {
+    icon: '🏥',
+    title: 'ER & in-patient coverage',
+    desc: 'Covers actual medical cost in the Emergency Room of an accredited hospital — as out-patient or in-patient, via reimbursement or direct settlement.',
+    color: 'bg-primary/10 text-blue-700',
+    border: 'border-l-primary',
+  },
+  {
+    icon: '💵',
+    title: 'Lump-sum cash assistance',
+    desc: 'In-patient emergency treatment qualifies for lump-sum reimbursement regardless of actual medical cost incurred.',
+    color: 'bg-green-50 text-green-700',
+    border: 'border-l-green-500',
+  },
+  {
+    icon: '🔄',
+    title: 'All 5 plans allowed',
+    desc: 'One insured person may hold all 5 prepaid plans simultaneously — only 1 option per plan per period of insurance.',
+    color: 'bg-primary/10 text-blue-700',
+    border: 'border-l-primary',
+  },
+  {
+    icon: '📅',
+    title: '1-year validity',
+    desc: 'Coverage runs for 1 full year from the Effective Date. If no claim is filed, the policy stays active until expiry.',
+    color: 'bg-amber-50 text-amber-700',
+    border: 'border-l-amber-500',
+  },
 ]
 
-export default function PacificCrossHealthBrochurePage() {
+const exclusions = [
+  'Diagnostic confinement', 'Epidemic / pandemic', 'Congenital conditions',
+  'STD', 'AIDS / HIV', 'Pregnancy', 'Autoimmune', 'Mental / anxiety disorders',
+  'Degenerative brain disorder', 'Suicide', 'Hazardous activities',
+  'Substance abuse', 'Professional sports', 'Contact sports',
+]
+
+const timelineSteps = [
+  { icon: '🛒', label: 'Purchase & register', sub: '' },
+  { icon: '⏱', label: 'Wait 7–15 days', sub: 'per plan' },
+  { icon: '🛡', label: 'Coverage active', sub: 'up to 1 year' },
+  { icon: '📋', label: 'File a claim', sub: '' },
+  { icon: '⚡', label: 'Policy terminates', sub: 'on approval' },
+]
+
+const faqs = [
+  {
+    q: 'What is the eligibility age?',
+    a: 'Issue Age is the age of the insured at the time of purchase and registration. Each plan has its own issue age range — from 15 days old up to 60 or 65 years, depending on the plan. DengueGuard accepts any age.',
+  },
+  {
+    q: 'Can I claim immediately after registration?',
+    a: 'No. A waiting period applies before coverage begins. Select ER and Select Assist have a 7-day waiting period; Select MedSecure, DengueGuard, and COVID-19 Care have a 15-day waiting period from the date of purchase and registration.',
+  },
+  {
+    q: 'Can I hold multiple plans at once?',
+    a: 'Yes — you can purchase all 5 prepaid plans for a single insured person. However, only 1 plan option may be selected per plan per period of insurance. Each plan must be registered under the insured person\'s name.',
+  },
+  {
+    q: 'How do I file a claim?',
+    a: 'Submit the required claims documents to Pacific Cross Customer Services via email at claims@pacificcross.com.ph. Once your claim is approved, reimbursement will be credited directly to your nominated bank account.',
+  },
+  {
+    q: 'What happens if my claim is denied?',
+    a: 'If your claim is denied, your policy remains active for the full Period of Insurance (up to 1 year from Effective Date). The policy only terminates once a claim is approved — a denial keeps your coverage intact.',
+  },
+  {
+    q: 'How will I receive my reimbursement?',
+    a: 'Pacific Cross will credit approved reimbursements directly to your nominated bank account. Make sure your bank details are up to date when filing your claim.',
+  },
+]
+
+function PlanCard({ plan }: { plan: typeof plans[0] }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="mx-auto max-w-5xl px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
-          <div className="flex items-center gap-3">
-            <Image src="/images/providers/5 Pacific Cross.svg" alt="Pacific Cross" width={100} height={40} className="h-8 w-auto" />
-            <h1 className="text-lg font-bold text-gray-900">Select Prepaid Insurance Plans</h1>
+    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className={`bg-gradient-to-r ${plan.accentColor} px-5 py-4`}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h4 className="text-base font-semibold text-white">{plan.name}</h4>
+            <p className="text-green-100 text-xs mt-0.5">{plan.description}</p>
+          </div>
+          <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+            <span className="text-[10px] font-medium bg-white/10 text-green-50 border border-white/20 rounded-full px-2.5 py-1">
+              {plan.issueAge}
+            </span>
+            <span className="text-[10px] font-medium bg-white/10 text-green-50 border border-white/20 rounded-full px-2.5 py-1">
+              {plan.waitingPeriod} wait
+            </span>
           </div>
         </div>
       </div>
+      <div className="p-5">
+        {plan.options.length === 1 ? (
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900">{plan.options[0].label}</p>
+              <p className="text-xs text-gray-500 mt-0.5">Up to {plan.options[0].maxBenefit}</p>
+            </div>
+            <p className="text-xl font-bold text-primary">₱{plan.options[0].premium}</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 text-[11px] text-gray-400 font-medium pb-2 border-b border-gray-100 mb-1">
+              <span>Option</span>
+              <span>Max benefit</span>
+              <span className="text-right">Premium</span>
+            </div>
+            {plan.options.map((opt) => (
+              <div key={opt.label} className="grid grid-cols-3 items-center py-2 border-b border-gray-50 last:border-0">
+                <span className="text-sm font-medium text-gray-900">{opt.label}</span>
+                <span className="text-sm text-gray-500">{opt.maxBenefit}</span>
+                <span className="text-sm font-bold text-primary text-right">₱{opt.premium}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
 
-      <div className="mx-auto max-w-5xl px-4 py-8 space-y-10">
-        {/* Hero */}
-        <section className="text-center space-y-3">
-          <h2 className="text-3xl font-black text-gray-900 sm:text-4xl">Pacific Cross Select Prepaid Insurance Plans</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Get yours today and avail of reimbursement or cash assistance for COVID-19, medical emergencies, dengue and post-hospitalization prescribed medications.
+function FaqItem({ faq, index, open, onToggle }: {
+  faq: typeof faqs[0]
+  index: number
+  open: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div
+      className={`rounded-xl border bg-white overflow-hidden transition-colors ${open ? 'border-primary' : 'border-gray-200'}`}
+    >
+      <button
+        className="w-full flex items-center gap-3 px-4 py-4 text-left"
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <span
+          className={`w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors ${open ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}
+        >
+          {index + 1}
+        </span>
+        <span className="flex-1 text-sm font-medium text-gray-900">{faq.q}</span>
+        <svg
+          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-primary' : 'text-gray-400'}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pl-[52px] border-t border-gray-100 pt-3">
+          <p className="text-sm text-gray-500 leading-relaxed">{faq.a}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function PacificCrossHealthBrochurePage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(0)
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Sticky header */}
+      <div className="bg-white border-b sticky top-0 z-10">
+        <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Link>
+          <span className="text-sm font-semibold text-gray-900">Select Prepaid Insurance Plans</span>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-4xl px-4 py-8 space-y-10">
+
+        {/* ── Hero ── */}
+        <section className="relative rounded-2xl bg-primary px-6 py-8 overflow-hidden">
+          {/* Decorative circles */}
+          <div className="absolute -top-8 -right-8 w-48 h-48 rounded-full bg-white/[0.03]" />
+          <div className="absolute -bottom-12 left-1/3 w-36 h-36 rounded-full bg-white/[0.03]" />
+
+          <p className="text-[10px] font-semibold tracking-widest text-green-300 uppercase mb-2">Pacific Cross · Select Series</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug mb-3">
+            Select Prepaid Insurance Plans
+          </h1>
+          <p className="text-green-200 text-sm max-w-xl leading-relaxed mb-5">
+            Reimbursement and cash assistance for medical emergencies, COVID-19, dengue, and
+            post-hospitalization medicines — valid for 1 year.
           </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
-            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">Philippine availment only</span>
-            <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">Valid for 1 year</span>
-            <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700">Terminates once claim is approved</span>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-900/60 border border-green-700 px-3 py-1 text-[11px] font-medium text-green-200">
+              📍 Philippine availment only
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-900/50 border border-green-700 px-3 py-1 text-[11px] font-medium text-green-200">
+              📅 Valid for 1 year
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-900/50 border border-amber-700 px-3 py-1 text-[11px] font-medium text-amber-200">
+              ⚡ Terminates once claim is approved
+            </span>
           </div>
         </section>
 
-        {/* Important Notes */}
-        <section className="rounded-xl border border-blue-200 bg-blue-50 p-5 space-y-2">
-          <h3 className="font-bold text-blue-900">Important Notes</h3>
-          <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-            <li><strong>Period of Insurance:</strong> Valid for 1 year from Effective Date but Policy will be terminated once claim is approved.</li>
-            <li><strong>Waiting Period:</strong> Number of days from the date of purchase and registration of the Insured Person before the Effective Date indicated in the Policy.</li>
-            <li>For every Insured Person, you can buy all 5 Prepaid Insurance Plans by choosing 1 Plan Option per Period of Insurance.</li>
+        {/* ── Important Notes ── */}
+        <section className="rounded-xl border-l-4 border-primary bg-primary/5 px-5 py-4 space-y-1.5">
+          <h3 className="text-sm font-semibold text-primary">Important notes</h3>
+          <ul className="text-xs text-gray-700 space-y-1 list-disc list-inside leading-relaxed">
+            <li><strong>Period of Insurance:</strong> Valid for 1 year from Effective Date — terminated once a claim is approved.</li>
+            <li><strong>Waiting Period:</strong> Number of days from purchase before coverage begins.</li>
+            <li>You may purchase all 5 plans, but only 1 option per plan per period.</li>
           </ul>
         </section>
 
-        {/* Plans */}
-        <section className="space-y-6">
-          <h3 className="text-2xl font-bold text-gray-900">Available Plans</h3>
-          {plans.map((plan) => (
-            <div key={plan.name} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-              <div className="bg-gradient-to-r from-[#1a3a6b] to-[#2a5298] px-5 py-3">
-                <h4 className="text-lg font-bold text-white">{plan.name}</h4>
-                <p className="text-blue-100 text-sm">{plan.description}</p>
-              </div>
-              <div className="p-5 space-y-3">
-                <div className="flex flex-wrap gap-4 text-xs text-gray-500">
-                  <span>Issue Age: <strong className="text-gray-700">{plan.issueAge}</strong></span>
-                  <span>Waiting Period: <strong className="text-gray-700">{plan.waitingPeriod}</strong></span>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100">
-                        <th className="py-2 text-left font-medium text-gray-500">Plan Option</th>
-                        <th className="py-2 text-left font-medium text-gray-500">Max Benefit Limit (Up to)</th>
-                        <th className="py-2 text-right font-medium text-gray-500">Premium</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {plan.options.map((opt) => (
-                        <tr key={opt.label} className="border-b border-gray-50 last:border-0">
-                          <td className="py-2 font-medium text-gray-900">{opt.label}</td>
-                          <td className="py-2 text-gray-700">{opt.maxBenefit}</td>
-                          <td className="py-2 text-right font-bold text-primary">₱{opt.premium}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+        {/* ── Plans ── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-gray-900">Available plans</h2>
+
+          {/* Top 2 plans full-width */}
+          {plans.slice(0, 2).map((plan) => (
+            <PlanCard key={plan.name} plan={plan} />
           ))}
-        </section>
 
-        {/* Plan Benefits */}
-        <section className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">Plan Benefits and Limitations</h3>
-          <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-3 text-sm text-gray-700">
-            <ul className="list-disc list-inside space-y-2">
-              <li>Defrays the out-patient or in-patient medical treatment cost for an eligible emergency condition occurring during the Period of Insurance. Once claim is approved, the limit is considered fully exhausted, and Policy is automatically terminated.</li>
-              <li>Effective Date is on the 7th day after successful registration.</li>
-              <li>Coverage for single occurrence of an eligible emergency condition happening within the Period of Insurance and availed of through either:
-                <ul className="list-[lower-alpha] list-inside ml-4 mt-1 space-y-1">
-                  <li>Reimbursement or direct settlement of actual medical cost incurred in the Emergency Room Department of an accredited Hospital, or</li>
-                  <li>Reimbursement of lump sum cash assistance for the Emergency In-Patient treatment regardless of the incurred medical cost.</li>
-                </ul>
-              </li>
-              <li>Only 1 Plan Option per Period of Insurance is allowed.</li>
-              <li>This Prepaid Plan does not cover claims related to confinement purely for diagnostic purposes, epidemic/pandemic, congenital, STD, AIDS/HIV, Pregnancy, autoimmune conditions, mental or nervous/anxiety disorder, degenerative brain disorder, suicide and accidents resulting from hazardous activity or substance abuse, professional sports and contact sports, among others.</li>
-            </ul>
+          {/* MedSecure + DengueGuard side by side */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            {plans.slice(2, 4).map((plan) => (
+              <PlanCard key={plan.name} plan={plan} />
+            ))}
           </div>
+
+          {/* COVID-19 full-width */}
+          <PlanCard plan={plans[4]} />
         </section>
 
-        {/* FAQs */}
-        <section className="space-y-4">
-          <h3 className="text-2xl font-bold text-gray-900">Frequently Asked Questions</h3>
-          <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
-                <p className="font-semibold text-gray-900 text-sm">{faq.q}</p>
-                <p className="mt-1 text-sm text-gray-600">{faq.a}</p>
+        {/* ── Plan Benefits & Limitations ── */}
+        <section className="space-y-5">
+          <div>
+            <p className="text-[10px] font-semibold tracking-widest text-primary uppercase mb-1">Coverage details</p>
+            <h2 className="text-xl font-bold text-gray-900">Plan benefits &amp; limitations</h2>
+          </div>
+
+          {/* How it works timeline */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5">
+            <p className="text-xs font-medium text-gray-500 mb-5 flex items-center gap-1.5">
+              <span className="text-primary">→</span> How your coverage works
+            </p>
+            <div className="flex items-start gap-0 overflow-x-auto pb-1">
+              {timelineSteps.map((step, i) => (
+                <div key={step.label} className="flex items-center flex-shrink-0">
+                  <div className="flex flex-col items-center w-20 sm:w-24">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg mb-2 ${
+                      i === 0 ? 'bg-primary/10' :
+                      i === 2 ? 'bg-green-50' :
+                      i === 3 ? 'bg-amber-50' :
+                      i === 4 ? 'bg-red-50' : 'bg-primary/10'
+                    }`}>
+                      {step.icon}
+                    </div>
+                    <p className="text-[10px] font-medium text-gray-800 text-center leading-tight">{step.label}</p>
+                    {step.sub && <p className="text-[9px] text-gray-400 text-center mt-0.5">{step.sub}</p>}
+                  </div>
+                  {i < timelineSteps.length - 1 && (
+                    <div className="w-8 sm:w-12 h-px bg-primary/30 flex-shrink-0 mb-5" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Benefit cards */}
+          <div className="grid sm:grid-cols-2 gap-3">
+            {benefits.map((b) => (
+              <div key={b.title} className={`rounded-xl border border-gray-200 border-l-4 ${b.border} bg-white p-4 flex gap-3`}>
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0 ${b.color}`}>
+                  {b.icon}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{b.title}</p>
+                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{b.desc}</p>
+                </div>
               </div>
             ))}
           </div>
+
+          {/* Exclusions */}
+          <div className="rounded-xl bg-red-50 border border-red-100 p-4">
+            <p className="text-xs font-semibold text-red-800 mb-3 flex items-center gap-1.5">
+              <span>🚫</span> Not covered under this plan
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {exclusions.map((ex) => (
+                <span
+                  key={ex}
+                  className="inline-block rounded-full bg-white border border-red-200 px-3 py-1 text-[10px] font-medium text-red-700"
+                >
+                  {ex}
+                </span>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* Contact */}
-        <section className="rounded-xl border border-gray-200 bg-white p-6 text-center space-y-2">
-          <p className="text-sm text-gray-600">For full list of exclusions, terms, and conditions, please ask for a specimen Policy via e-mail</p>
-          <p className="font-semibold text-primary">client_services@pacificcross.com.ph</p>
-          <p className="text-sm text-gray-500">Pacific Cross Hotline: +63 2 8230-8511</p>
-          <a href="/files/pacific-cross-select-er-brochure.pdf" target="_blank" className="inline-block mt-3 rounded-full bg-primary px-6 py-2 text-sm font-semibold text-white hover:bg-primary/90">
+        {/* ── FAQ ── */}
+        <section className="space-y-4">
+          <div>
+            <p className="text-[10px] font-semibold tracking-widest text-primary uppercase mb-1">Need to know</p>
+            <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
+          </div>
+
+          <div className="space-y-2">
+            {faqs.map((faq, i) => (
+              <FaqItem
+                key={i}
+                faq={faq}
+                index={i}
+                open={openFaq === i}
+                onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+              />
+            ))}
+          </div>
+
+          {/* Still have questions */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-gray-200 bg-white p-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
+              ✉️
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-900">Still have questions?</p>
+              <p className="text-xs text-gray-500 mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
+            </div>
+            <div className="text-right sm:flex-shrink-0">
+              <p className="text-sm font-semibold text-primary">client_services@pacificcross.com.ph</p>
+              <p className="text-xs text-gray-500">+63 2 8230-8511</p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Contact / CTA ── */}
+        <section className="rounded-xl border border-gray-200 bg-white p-6 text-center space-y-3">
+          <p className="text-sm text-gray-500">
+            For the full list of exclusions, terms, and conditions, please ask for a specimen Policy via email
+          </p>
+          <p className="text-base font-semibold text-primary">client_services@pacificcross.com.ph</p>
+          <p className="text-sm text-gray-400">Pacific Cross Hotline: +63 2 8230-8511</p>
+          <a
+            href="/files/pacific-cross-select-er-brochure.pdf"
+            target="_blank"
+            className="inline-block mt-2 rounded-full bg-primary px-7 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
+          >
             Download PDF Brochure
           </a>
         </section>
+
       </div>
     </div>
   )

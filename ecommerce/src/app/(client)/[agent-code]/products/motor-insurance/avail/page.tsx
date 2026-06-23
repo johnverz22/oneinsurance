@@ -118,7 +118,7 @@ function CtplAvailContent() {
               {stepContent()}
             </div>
             {showSidebar && (
-              <div className="relative lg:w-2/5">
+              <div className="relative hidden lg:block lg:w-2/5">
                 <CtplPremiumSummary />
               </div>
             )}
