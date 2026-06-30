@@ -304,7 +304,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     <Card className={cn('w-full rounded-md border shadow-lg backdrop-blur-sm bg-white lg:rounded-xl', className)}>
       <CardContent className="px-4 pt-3 pb-6 sm:px-8">
         <div className="mb-3">
-          <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Personalized Advice</h2>
           <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
         </div>
 

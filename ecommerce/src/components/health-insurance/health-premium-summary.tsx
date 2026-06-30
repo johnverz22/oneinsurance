@@ -21,10 +21,10 @@ export function HealthPremiumSummary() {
     <div className="sticky top-24 flex w-full flex-col space-y-6">
       <Card className="bg-background overflow-hidden p-0 shadow-none">
         <CardHeader className="pt-6 pb-4">
-          <h2 className="text-center text-2xl font-black text-gray-900 dark:text-gray-100">
+          <h2 className="text-center text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
             Total Premium
           </h2>
-          <p className="text-center text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
+          <p className="text-center text-lg sm:text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
             ₱{total.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
           </p>
         </CardHeader>

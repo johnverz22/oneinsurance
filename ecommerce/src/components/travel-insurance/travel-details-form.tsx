@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { subDays } from 'date-fns'
-import { Users } from 'lucide-react'
+import { Users, ChevronDown, ChevronUp } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useCreateQuoteRequest } from '@/app/data/mutations/create-quote-request'
 import {
@@ -49,6 +49,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   } = useTravelInsuranceStore()
 
   const [isSearching, setIsSearching] = useState(false)
+  const [isFormExpanded, setIsFormExpanded] = useState(true)
 
   // Track domestic mode explicitly — derived from store on init, then controlled by toggle
   const [isDomesticMode, setIsDomesticMode] = useState(() => {
@@ -241,6 +242,23 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       data-testid="travel-details-form"
     >
       <CardContent className="space-y-6 px-4 pt-3 pb-6 sm:px-8">
+        {/* Mobile collapse/expand toggle */}
+        <button
+          type="button"
+          className="flex w-full items-center justify-between lg:hidden"
+          onClick={() => setIsFormExpanded(!isFormExpanded)}
+        >
+          <span className="text-sm font-semibold text-gray-700">
+            {isFormExpanded ? 'Hide Form' : 'Show Form'}
+          </span>
+          {isFormExpanded ? (
+            <ChevronUp className="h-4 w-4 text-gray-500" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-500" />
+          )}
+        </button>
+
+        <div className={cn('space-y-6', { 'hidden lg:block': !isFormExpanded })}>
         <div className="flex flex-col items-stretch justify-end gap-6 sm:flex-row sm:items-center sm:gap-4">
           <form.Field name="isAnnualMultiTrip">
             {(field) => (
@@ -760,6 +778,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
               </Button>
             )}
           </form.Subscribe>
+        </div>
         </div>
       </CardContent>
     </Card>

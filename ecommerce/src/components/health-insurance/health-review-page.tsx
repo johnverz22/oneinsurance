@@ -88,7 +88,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {item && (
         <Card className="overflow-hidden shadow-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
+            <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Provider + Plan + Coverage in responsive layout */}
@@ -173,7 +173,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {/* Personal Information */}
       <Card className="overflow-hidden shadow-none">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-primary text-2xl font-bold">Your Information</h2>
+            <h2 className="text-primary text-lg sm:text-2xl font-bold">Your Information</h2>
             <CheckCircle className="text-primary" />
           </CardHeader>
         <CardContent className="space-y-1">
@@ -191,13 +191,14 @@ export function HealthReviewPage({ personalInfo }: Props) {
       </Card>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="hidden items-center justify-between lg:flex">
         <Button
           type="button"
           size="lg"
           variant="outline"
           className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max"
           onClick={prevStep}
+          data-mobile-action="back"
         >
           Back
         </Button>
@@ -205,6 +206,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
           size="lg"
           className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 text-sm font-medium text-white lg:w-max dark:text-white"
           onClick={nextStep}
+          data-mobile-action="next"
         >
           Next
         </Button>

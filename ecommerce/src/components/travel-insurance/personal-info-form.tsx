@@ -328,7 +328,7 @@ export function PersonalInfoForm() {
           }}
         >
           <Card id="travelers-info" className="gap-4 shadow-none">
-            <CardHeader className="text-2xl font-bold">
+            <CardHeader className="text-lg sm:text-2xl font-bold">
               Travelers Information
             </CardHeader>
 
@@ -1301,7 +1301,7 @@ export function PersonalInfoForm() {
             </div>
           </Card>
 
-          <div className="sticky bottom-0 flex items-center justify-center gap-3 bg-[#F3F5FC] px-1.5 py-6 lg:justify-start lg:px-0">
+          <div className="sticky bottom-0 hidden items-center justify-center gap-3 bg-[#F3F5FC] px-1.5 py-6 lg:flex lg:justify-start lg:px-0">
             <Button
               type="button"
               size="lg"
@@ -1311,6 +1311,7 @@ export function PersonalInfoForm() {
                 if (currentTabIndex === 0) return prevStep()
                 else return handlePrevTraveller()
               }}
+              data-mobile-action="back"
             >
               {currentTabIndex === 0 ? 'Back' : 'Previous Traveller'}
             </Button>
@@ -1321,6 +1322,7 @@ export function PersonalInfoForm() {
                 size="lg"
                 className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
                 onClick={handleNextTraveller}
+                data-mobile-action="next"
               >
                 Next Traveller
               </Button>
@@ -1332,6 +1334,7 @@ export function PersonalInfoForm() {
                     size="lg"
                     className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
                     onClick={handleTriggerValidation}
+                    data-mobile-action="next"
                   >
                     {isSubmitting ? 'Processing...' : 'Request Full Quote'}
                   </Button>
