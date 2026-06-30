@@ -37,7 +37,7 @@ export function HealthPlanDetailsStep() {
       <Card className="overflow-hidden shadow-none">
         <CardContent className="p-6">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-primary text-2xl font-bold">
+          <h2 className="text-primary text-lg sm:text-2xl font-bold">
             Your Plan Details
           </h2>
           <CheckCircle className="text-primary h-6 w-6" />
@@ -133,14 +133,15 @@ export function HealthPlanDetailsStep() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between">
-        <Button variant="outline" size="lg" className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max" onClick={() => router.push(`/${agentCode}/products/health-insurance`)}>
+      <div className="hidden items-center justify-between lg:flex">
+        <Button variant="outline" size="lg" className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max" onClick={() => router.push(`/${agentCode}/products/health-insurance`)} data-mobile-action="back">
           Cancel
         </Button>
         <Button
           size="lg"
           className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 text-sm font-medium text-white shadow-lg lg:w-max dark:text-white"
           onClick={nextStep}
+          data-mobile-action="next"
         >
           Next
         </Button>

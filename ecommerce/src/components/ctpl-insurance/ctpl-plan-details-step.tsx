@@ -32,7 +32,7 @@ export default function CtplPlanDetailsStep() {
         {/* Your Plan Details card */}
         <Card className="bg-background overflow-hidden shadow-none">
           <CardHeader className="flex items-center justify-between -space-y-2 pb-2 pt-6">
-            <h2 className="text-primary text-2xl font-bold">Your Plan Details</h2>
+            <h2 className="text-primary text-lg sm:text-2xl font-bold">Your Plan Details</h2>
             <CheckCircle className="text-primary" />
           </CardHeader>
           <CardContent className="space-y-5 px-6 pb-6">
@@ -63,7 +63,7 @@ export default function CtplPlanDetailsStep() {
         {plan?.MainBenefits?.length > 0 && (
           <Card className="bg-background overflow-hidden shadow-none">
             <CardHeader className="pb-2 pt-6">
-              <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
+              <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
             </CardHeader>
             <CardContent className="px-6 py-6">
               <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:divide-x">
@@ -137,12 +137,13 @@ export default function CtplPlanDetailsStep() {
         </div>
 
         {/* Buttons — Cancel left, Next right — exactly like travel */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="hidden items-center justify-between pt-2 lg:flex">
           <Button
             variant="ghost"
             size="lg"
             className="rounded-full px-10 font-medium text-gray-700"
             onClick={() => router.push(`/${agentCode}/products/motor-insurance`)}
+            data-mobile-action="back"
           >
             Cancel
           </Button>
@@ -150,6 +151,7 @@ export default function CtplPlanDetailsStep() {
             size="lg"
             className="from-primary to-accent rounded-full bg-gradient-to-r px-10 font-semibold text-white"
             onClick={increaseStep}
+            data-mobile-action="next"
           >
             Next
           </Button>

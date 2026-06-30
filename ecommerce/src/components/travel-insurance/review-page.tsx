@@ -256,7 +256,7 @@ export function TravelInsuranceReviewPage() {
 
         <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
+            <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
             <Button
               onClick={handleDownloadPDF}
               variant="default"
@@ -281,7 +281,7 @@ export function TravelInsuranceReviewPage() {
               </div>
 
               <div className="space-y-2 px-1.5">
-                <h3 className="text-foreground text-left text-xl font-bold tracking-wide text-wrap uppercase">
+                <h3 className="text-foreground text-left text-base sm:text-xl font-bold tracking-wide text-wrap uppercase">
                   {plan.CarrierPlanDesc}
                 </h3>
               </div>
@@ -362,7 +362,7 @@ export function TravelInsuranceReviewPage() {
         {/* Your Information Section */}
         <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
           <CardHeader className="flex items-center justify-between -space-y-2 pt-6">
-            <h2 className="text-primary text-2xl font-bold">
+            <h2 className="text-primary text-lg sm:text-2xl font-bold">
               Your information
             </h2>
             <CheckCircle className="dark:text-accent text-primary" />
@@ -520,7 +520,7 @@ export function TravelInsuranceReviewPage() {
             Download Quote PDF
           </Button>
           
-          <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
+          <div className="hidden w-full flex-col gap-3 lg:flex lg:w-auto lg:flex-row">
             {!isReadOnlyMode && (
               <Button
                 type="button"
@@ -528,6 +528,7 @@ export function TravelInsuranceReviewPage() {
                 variant="outline"
                 className="w-full rounded-full bg-transparent px-12 font-semibold lg:w-max"
                 onClick={prevStep}
+                data-mobile-action="back"
               >
                 Back
               </Button>
@@ -540,6 +541,7 @@ export function TravelInsuranceReviewPage() {
                 setProceedingToPayment(true)
                 await handleProceedToPayment()
               }}
+              data-mobile-action="next"
             >
               <CreditCard className="mr-2 h-4 w-4" />
               {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}

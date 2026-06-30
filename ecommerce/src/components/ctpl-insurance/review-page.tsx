@@ -135,7 +135,7 @@ export default function ReviewCoverage() {
     <div className="relative w-full space-y-4 border-0">
       <div className="bg-primary flex w-full items-center">
         <div className="mx-auto flex h-fit w-full max-w-7xl flex-col items-center justify-between gap-2 p-8 py-10 lg:flex-row">
-          <h1 className="text-xl font-bold text-white md:text-2xl lg:text-3xl xl:text-4xl">
+          <h1 className="text-lg font-bold text-white md:text-2xl lg:text-3xl xl:text-4xl">
             Your Insurance Plan
           </h1>
           <p className="text-sm text-gray-300 lg:max-w-2/5 lg:text-right">
@@ -148,7 +148,7 @@ export default function ReviewCoverage() {
         <div className="space-y-8 lg:col-span-2">
           <Card className="overflow-hidden p-0 shadow-none">
             <CardHeader className="bg-primary/10 dark:bg-primary/30 -space-y-2 border-b pt-6">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
                 Main Benefits
               </h2>
               <p className="text-muted-foreground text-sm">
@@ -182,7 +182,7 @@ export default function ReviewCoverage() {
             Object.keys(groupedAddonBenefits).length > 0 && (
               <Card className="overflow-hidden p-0 shadow-none">
                 <CardHeader className="bg-primary/10 dark:bg-primary/30 -space-y-2 border-b pt-6">
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-gray-100">
+                  <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
                     Select Add-on Benefits
                   </h2>
                 </CardHeader>
@@ -264,7 +264,7 @@ export default function ReviewCoverage() {
 
             <Card className="mt-4 overflow-hidden p-0 shadow-none">
               <CardHeader className="bg-primary/10 dark:bg-primary/30 -space-y-2 border-b pt-6">
-                <h2 className="text-2xl font-black text-gray-900 dark:text-gray-100">
+                <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
                   Plan Summary
                 </h2>
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -315,17 +315,18 @@ export default function ReviewCoverage() {
                     <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
                       Total Premium
                     </span>
-                    <span className="text-primary text-2xl font-bold">
+                    <span className="text-primary text-lg sm:text-2xl font-bold">
                       ₱ {plan.GrossPremium.toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-3 py-2">
+                <div className="hidden space-y-3 py-2 lg:block">
                   <Button
                     size="lg"
                     className="bg-primary hover:bg-primary/90 w-full rounded-lg py-3 font-semibold text-white"
                     onClick={handleAccept}
+                    data-mobile-action="next"
                   >
                     Accept
                   </Button>
@@ -334,6 +335,7 @@ export default function ReviewCoverage() {
                     variant="outline"
                     className="w-full border-red-200 bg-transparent font-semibold"
                     onClick={() => decreaseStep()}
+                    data-mobile-action="back"
                   >
                     Cancel
                   </Button>

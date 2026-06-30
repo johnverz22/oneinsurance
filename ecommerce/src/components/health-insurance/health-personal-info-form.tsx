@@ -229,7 +229,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">
+      <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
         Personal Information
       </h2>
 
@@ -449,8 +449,8 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-2">
-        <Button variant="outline" size="lg" className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max" onClick={prevStep} disabled={isRequesting}>
+      <div className="hidden items-center justify-between pt-2 lg:flex">
+        <Button variant="outline" size="lg" className="w-1/2 rounded-full bg-transparent px-12 font-semibold lg:w-max" onClick={prevStep} disabled={isRequesting} data-mobile-action="back">
           Back
         </Button>
         <Button
@@ -458,6 +458,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
           className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 text-sm font-medium text-white lg:w-max dark:text-white"
           onClick={handleRequestFullQuote}
           disabled={isRequesting}
+          data-mobile-action="next"
         >
           {isRequesting ? (
             <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Requesting...</span>
