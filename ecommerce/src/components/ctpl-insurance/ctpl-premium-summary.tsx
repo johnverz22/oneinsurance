@@ -25,7 +25,7 @@ export default function CtplPremiumSummary() {
           <h2 className="text-center text-2xl font-black text-gray-900">
             Total Premium
           </h2>
-          <p className="text-center text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
+          <p className="text-center text-lg sm:text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
             {totalPremium > 0
               ? `₱${totalPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
               : '—'}

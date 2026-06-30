@@ -274,37 +274,40 @@ export default function AvailTravelInsurance() {
 
   return (
     <div className="relative w-full bg-[#F3F5FC] pb-10">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <div className="inline-flex items-center gap-3 rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg sm:px-13">
+      {/* Sticky header on mobile: logos + step indicator */}
+      <div className="sticky top-0 z-20 bg-[#F3F5FC] lg:relative lg:z-auto">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6 sm:py-3 lg:px-8">
+          <div className="inline-flex items-center gap-3 rounded-tl-full rounded-br-full bg-white px-4 py-1 shadow-lg sm:px-13">
+            <Image
+              src="/images/logo.png"
+              alt="One Insurance"
+              width={140}
+              height={45}
+              className="h-5 w-auto sm:h-10"
+              priority
+            />
+          </div>
           <Image
-            src="/images/logo.png"
-            alt="One Insurance"
-            width={140}
-            height={45}
-            className="h-7 w-auto sm:h-10"
+            src="/images/IFRC.png"
+            alt="IFRC"
+            width={120}
+            height={40}
+            className="h-4 w-auto sm:h-10"
             priority
           />
         </div>
-        <Image
-          src="/images/IFRC.png"
-          alt="IFRC"
-          width={120}
-          height={40}
-          className="h-6 w-auto sm:h-10"
-          priority
-        />
-      </div>
-      <div className="flex items-start justify-start pt-6">
-        <Stepper
-          steps={steps}
-          currentStep={step}
+        <div className="flex items-start justify-start pt-2 pb-1 lg:pt-6 lg:pb-0">
+          <Stepper
+            steps={steps}
+            currentStep={step}
           highestVisitedStep={isReadOnlyMode ? step : highestVisitedStep}
           contentContainerClass="flex items-start md:justify-start"
           onStepChange={isReadOnlyMode ? undefined : (step) => setStep(step)}
         />
+        </div>
       </div>
 
-      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 lg:flex-row">
+      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 pb-16 lg:flex-row lg:pb-0">
         <div
           className={cn('lg:col-span-3 lg:w-3/5', { 'lg:w-full': step > 3 })}
         >
@@ -323,6 +326,48 @@ export default function AvailTravelInsurance() {
           />
         </div>
       </div>
+
+      {/* Fixed bottom premium bar — mobile only, steps 1-3 */}
+      {step >= 1 && step <= 3 && coverageOption.selectedPlan && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+            <div className="shrink-0">
+              <p className="text-[11px] text-gray-500">Total Premium</p>
+              <p className="text-base font-black text-primary">
+                ₱{(step >= 3 && apiResponse?.data?.DuePremium
+                  ? Number(apiResponse.data.DuePremium)
+                  : Number(coverageOption.selectedPlan.DuePremium) || 0
+                ).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const backBtn = document.querySelector('[data-mobile-action="back"]') as HTMLButtonElement
+                    if (backBtn) backBtn.click()
+                    else setStep(step - 1)
+                  }}
+                  className="rounded-full border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700"
+                >
+                  Back
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  const nextBtn = document.querySelector('[data-mobile-action="next"]') as HTMLButtonElement
+                  if (nextBtn) nextBtn.click()
+                }}
+                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white"
+              >
+                {step === 1 ? 'Next' : step === 2 ? 'Request Full Quote' : 'Proceed to Payment'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

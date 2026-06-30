@@ -219,7 +219,7 @@ export default function CtplPersonalInfoForm() {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">
+      <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
         Personal Information
       </h2>
       <p className="text-sm text-gray-500">Upload your ID to automatically fill in the fields below.</p>
@@ -365,8 +365,8 @@ export default function CtplPersonalInfoForm() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-2">
-        <Button variant="ghost" className="rounded-full px-8 text-gray-700 font-medium" onClick={decreaseStep} disabled={isSubmitting}>
+      <div className="hidden items-center justify-between pt-2 lg:flex">
+        <Button variant="ghost" className="rounded-full px-8 text-gray-700 font-medium" onClick={decreaseStep} disabled={isSubmitting} data-mobile-action="back">
           Back
         </Button>
         <Button
@@ -374,6 +374,7 @@ export default function CtplPersonalInfoForm() {
           className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
           onClick={handleNext}
           disabled={isSubmitting}
+          data-mobile-action="next"
         >
           {isSubmitting ? (
             <>

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
-import { CheckIcon, Info, Loader2Icon, ShieldCheck } from 'lucide-react'
+import { CheckIcon, ChevronDown, ChevronUp, Info, Loader2Icon, ShieldCheck } from 'lucide-react'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { DownloadPDFButton } from './travel-policy-pdf'
@@ -20,6 +20,7 @@ import {
 } from '@/utils/travel-benefits-helpers'
 import { TravelDetailsSummary } from './travel-details-summary'
 import { useAgentCodeStore } from '@/store/agent-code-store'
+import { cn } from '@/lib/utils'
 
 export function ReviewCoverage() {
   const router = useRouter()
@@ -37,6 +38,7 @@ export function ReviewCoverage() {
   const [localSelectedAddons, setLocalSelectedAddons] = useState<string[]>(
     coverageOption.selectedAddonBenefits || []
   )
+  const [isPlanExpanded, setIsPlanExpanded] = useState(true)
 
   const provider = COMPANIES.find(
     (c) => c.carrierCode === coverageOption.carrierCode
@@ -85,10 +87,16 @@ export function ReviewCoverage() {
         <TravelDetailsSummary />
 
         <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-          <CardHeader className="flex items-center justify-between -space-y-2 pt-6">
-            <h2 className="text-primary text-2xl font-bold">Plan Details</h2>
+          <CardHeader
+            className="flex items-center justify-between -space-y-2 pt-4 sm:pt-6 cursor-pointer lg:cursor-default"
+            onClick={() => setIsPlanExpanded(!isPlanExpanded)}
+          >
+            <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
+            <button className="lg:hidden text-gray-500" type="button">
+              {isPlanExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+            </button>
           </CardHeader>
-          <CardContent className="h-full w-full space-y-3">
+          <CardContent className={cn('h-full w-full space-y-3', { 'hidden lg:block': !isPlanExpanded })}>
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:divide-x">
               <div className="w-full space-y-2">
                 <div className="relative h-14 w-28 overflow-hidden rounded-md">
@@ -101,7 +109,7 @@ export function ReviewCoverage() {
                   />
                 </div>
 
-                <h3 className="text-foreground text-left text-xl font-bold tracking-wide text-wrap uppercase">
+                <h3 className="text-foreground text-left text-base sm:text-xl font-bold tracking-wide text-wrap uppercase">
                   {plan.CarrierPlanDesc}
                 </h3>
               </div>
@@ -150,7 +158,7 @@ export function ReviewCoverage() {
           {groupedAddonBenefits &&
             Object.keys(groupedAddonBenefits).length > 0 && (
               <div className="border-t-muted-foreground/10 space-y-6 border-t px-6 py-6">
-                <h2 className="text-primary text-2xl font-bold">
+                <h2 className="text-primary text-lg sm:text-2xl font-bold">
                   Travel Add-Ons
                 </h2>
                 <div className="grid gap-3 lg:grid-cols-2">
@@ -244,7 +252,7 @@ export function ReviewCoverage() {
           </p>
         </div>
 
-        <div className="relative flex w-full items-center justify-center gap-3 px-1.5 lg:justify-start lg:px-0">
+        <div className="relative hidden w-full items-center justify-center gap-3 px-1.5 lg:flex lg:justify-start lg:px-0">
           <Button
             size="lg"
             variant="outline"
@@ -253,6 +261,7 @@ export function ReviewCoverage() {
               resetAvailForm()
               router.push(`/${agentCode}/products/travel-insurance`)
             }}
+            data-mobile-action="back"
           >
             Cancel
           </Button>
@@ -260,6 +269,7 @@ export function ReviewCoverage() {
             size="lg"
             className="from-primary to-accent w-1/2 rounded-full bg-gradient-to-r via-90% px-14 lg:w-max dark:text-white"
             onClick={handleAccept}
+            data-mobile-action="next"
           >
             Next
           </Button>
