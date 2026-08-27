@@ -1,5 +1,4 @@
 import type { NextConfig } from 'next'
-import { hostname } from 'os'
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -21,7 +20,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*',
+        hostname: 'dev-one-insurance.intel-soln.com.ph',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dzv00tuelpzbp.cloudfront.net',
       },
     ],
   },

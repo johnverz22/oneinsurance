@@ -43,18 +43,12 @@ export async function POST(req: NextRequest) {
 
     const url = `${process.env.BASE_URL}/quote/travel/load-quote`
 
-    console.log('Travel Insurance Load Quote URL:', url)
-    console.log('Request payload:', JSON.stringify(requestPayload, null, 2))
-
     const response = await axios.post(url, requestPayload, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+        'Authorization': `Bearer ${process.env.BACKEND_TOKEN}`,
       },
     })
-
-    console.log('Backend Response Status:', response.status)
-    console.log('Backend Response Data:', JSON.stringify(response.data, null, 2))
 
     const headers = {
       'Access-Control-Allow-Origin': '*',
@@ -70,7 +64,6 @@ export async function POST(req: NextRequest) {
     
     // If backend returns success: false, it's an error response
     if (backendData && backendData.success === false) {
-      console.log('Backend returned error response:', backendData)
       return NextResponse.json(
         {
           success: false,

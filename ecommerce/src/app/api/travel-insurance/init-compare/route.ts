@@ -16,29 +16,19 @@ export async function GET(req: NextRequest) {
 
     const url = `${process.env.BASE_URL}/quote/compare?ClientRequestId=${clientRequestId}`
 
-    console.log('Travel Insurance Init Compare URL:', url)
-
     const response = await axios.get(url, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+        Authorization: `Bearer ${process.env.BACKEND_TOKEN}`,
       },
     })
 
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    }
-
-    return NextResponse.json(response.data, { status: 200, headers })
+    return NextResponse.json(response.data, { status: 200 })
   } catch (error: any) {
-    console.error('Error fetching travel insurance init compare:', error)
-    
     if (axios.isAxiosError(error)) {
       return handleServerSideAxiosError(error)
     }
-    
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

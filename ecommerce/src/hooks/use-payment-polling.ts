@@ -53,16 +53,12 @@ export function usePaymentPolling(config: PaymentPollingConfig) {
 
   const checkPaymentStatus = useCallback(async () => {
     try {
+      // Call the BFF route — the server adds the backend Authorization header.
+      // This keeps BACKEND_ACCESS_TOKEN out of the browser entirely.
       const response = await axios.post<PaymentVerificationResponse>(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/transactions/verify-status`,
+        '/api/payment/verify-status',
         {
           proposal_number: proposalNumber,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
-          },
         }
       )
 

@@ -7,7 +7,8 @@ import crypto from 'crypto'
 import { headers } from 'next/headers'
 
 // Generate a proper 32-byte key for AES-256
-const secretKey = 'your-secret-your-secret-your-secret-your-secret-your-secret'
+const secretKey = process.env.SECRET_KEY
+if (!secretKey) throw new Error('SECRET_KEY environment variable is not set')
 const keyInBytes = crypto.createHash('sha256').update(secretKey).digest()
 
 type paymentAuthTokenDB = {
@@ -115,7 +116,6 @@ export async function POST() {
 }
 
 export async function GET(req: NextRequest) {
-  const url = `${process.env.PAYMENT_BASE_URL}/api/v1/collection/apn/${process.env.MERCHANT_ACCOUNT_ID}/brands`
   const token = await getToken()
   if (!token) {
     console.log('invalid token')
@@ -132,10 +132,16 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  // DLT v1.3+: brands endpoint uses query params, not path segments
+  const url = new URL(`${process.env.PAYMENT_BASE_URL}/api/v1/collection/apn/brands`)
+  url.searchParams.set('merchant_account_id', process.env.MERCHANT_ACCOUNT_ID || '')
+  url.searchParams.set('service_code', process.env.PAYMENT_SERVICE_CODE || '')
+
   try {
-    const response = await axios.get(url, {
+    const response = await axios.get(url.toString(), {
       headers: {
-        Authorization: token.access_token,
+        Authorization: `Bearer ${token.access_token}`,
+        Accept: 'application/json',
       },
       timeout: 10000, // 10 second timeout
       // Add retry logic for network errors

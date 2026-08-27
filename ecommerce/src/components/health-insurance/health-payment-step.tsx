@@ -158,14 +158,13 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
       const paymentConfig: PaymentRequestConfig = {
         merchantAccountId: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
         merchantTransactionId: generateTransactionId(),
+        serviceCode: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
         productReferenceId: proposalNo,
         productDescription: `Health Insurance - ${items[0]?.planName ?? ''}`,
         amount: grandTotal,
         currency: 'PHP',
-        description: 'Health Insurance Premium',
-        callbackUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/avail`,
-        other_reference_1: proposalNo,
-        other_reference_1_caption: 'proposal',
+        successUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/avail`,
+        failureUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/avail`,
       }
 
       const formData = {
@@ -198,7 +197,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
         brand_token: authResponse.access_token,
       })
 
-      if (!paymentResult?.success || !(paymentResult as any)?.data?.status_code?.includes('OK')) {
+      if (!paymentResult?.success || (paymentResult as any)?.data?.payment_status === 'REJECTED') {
         toast.error(paymentResult?.message ?? 'Payment submission failed.')
         setIsProcessing(false)
         return

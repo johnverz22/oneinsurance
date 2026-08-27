@@ -36,14 +36,13 @@ export interface DigitalPaymentFormData {
 export interface PaymentRequestConfig {
   merchantAccountId: string
   merchantTransactionId: string
+  serviceCode: string // DLT v1.3+ — issued by DLT (e.g. "APN-COLLECTION")
   productReferenceId?: string
   productDescription: string
   amount: number
   currency: string
-  description?: string
-  callbackUrl: string
-  other_reference_1: string
-  other_reference_1_caption: string
+  successUrl?: string // DLT v3.0 — e-wallet redirect on success
+  failureUrl?: string // DLT v3.0 — e-wallet redirect on failure
 }
 
 // Device information utilities
@@ -112,14 +111,13 @@ export const mapCardPaymentToRequest = (
   const cleanCardNumber = formData.cardNumber.replace(/\s/g, '')
 
   return {
+    service_code: config.serviceCode,
+    channel: 1, // 1 = API (direct integration)
     merchant_account_id: config.merchantAccountId,
     merchant_transaction_id: config.merchantTransactionId,
     product_reference_id: config.productReferenceId,
+    product_name: config.productDescription || 'Insurance',
     product_description: config.productDescription || 'Product Payment',
-    other_reference_1: config.other_reference_1,
-    other_reference_1_caption: config.other_reference_1_caption,
-    other_reference_2: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
-    other_reference_2_caption: 'customer',
     first_name: formData.firstName.trim(),
     last_name: formData.lastName.trim(),
     email: formData.email.trim().toLowerCase(),
@@ -132,16 +130,14 @@ export const mapCardPaymentToRequest = (
     postal_code: formData.postalCode.trim(),
     is_card_payment: true,
     card_holder_name: formData.cardholderName.trim().toUpperCase(),
-    card_number: cleanCardNumber, // Keep as string
+    card_number: cleanCardNumber,
     expiration_month: formData.expiryMonth.padStart(2, '0'),
-    expiration_year: formData.expiryYear.slice(-2).padStart(2, '0'), // Last 2 digits
+    expiration_year: formData.expiryYear.slice(-2).padStart(2, '0'),
     ccv: parseInt(formData.ccv, 10),
     payment_brand_code: selectedBrand.code,
     payment_brand: selectedBrand.value,
     amount: config.amount,
     currency: config.currency,
-    description: config.description,
-    callback_url: config.callbackUrl,
     time_offset: getFormattedTimezoneOffset(),
     device: deviceInfo,
   }
@@ -153,17 +149,14 @@ export const mapDigitalPaymentToRequest = (
   selectedBrand: PaymentBrand,
   config: PaymentRequestConfig
 ): PaymentSubmitRequest => {
-  const deviceInfo = getDeviceInfo()
-
   return {
+    service_code: config.serviceCode,
+    channel: 1, // 1 = API (direct integration)
     merchant_account_id: config.merchantAccountId,
     merchant_transaction_id: config.merchantTransactionId,
     product_reference_id: config.productReferenceId,
+    product_name: config.productDescription || 'Insurance',
     product_description: config.productDescription || 'Product Payment',
-    other_reference_1: config.other_reference_1,
-    other_reference_1_caption: config.other_reference_1_caption,
-    other_reference_2: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
-    other_reference_2_caption: 'customer',
     first_name: formData.firstName.trim(),
     last_name: formData.lastName.trim(),
     email: formData.email.trim().toLowerCase(),
@@ -175,15 +168,14 @@ export const mapDigitalPaymentToRequest = (
     country_code: formData.country.trim() || 'PH',
     postal_code: formData.postalCode.trim(),
     is_card_payment: false,
-    // Card fields are undefined for digital payments
     payment_brand_code: selectedBrand.code,
     payment_brand: selectedBrand.value,
     amount: config.amount,
     currency: config.currency,
-    description: config.description,
-    callback_url: config.callbackUrl,
+    success_url: config.successUrl,
+    failure_url: config.failureUrl,
     time_offset: getFormattedTimezoneOffset(),
-    device: deviceInfo,
+    // device block omitted — only required for card payments per DLT spec
   }
 }
 

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const response = await axios.post(url, body, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${process.env.BACKEND_ACCESS_TOKEN}`,
       },
       timeout: 60000,
     })

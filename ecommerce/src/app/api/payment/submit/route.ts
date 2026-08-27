@@ -13,8 +13,6 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  console.log('Payment submit payload:', JSON.stringify(data, null, 2))
-
   const url = `${process.env.PAYMENT_BASE_URL}/api/v1/collection/apn/submit`
 
   try {

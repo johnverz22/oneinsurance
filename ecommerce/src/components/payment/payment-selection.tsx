@@ -253,17 +253,14 @@ export default function PaymentSelection() {
     merchantAccountId:
       process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
     merchantTransactionId: generateTransactionId(),
+    serviceCode: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
     productReferenceId:
       `${apiResponse?.data?.BusinessObjectId}` || 'ITEM-HZ5RHQD9D',
     productDescription: apiResponse?.data?.ProductCode || 'Travel Insurance',
     amount: apiResponse?.data?.DuePremium || 0,
     currency: 'PHP',
-    description:
-      coverageOption.selectedPlan?.CarrierPlanDesc ||
-      'Travel Insurance Premium Payment',
-    callbackUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/travel-insurance/avail`,
-    other_reference_1: apiResponse?.data?.ProposalNo,
-    other_reference_1_caption: 'proposal',
+    successUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/travel-insurance/avail`,
+    failureUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/travel-insurance/avail`,
   }
 
 
@@ -348,7 +345,7 @@ export default function PaymentSelection() {
 
       if (
         !paymentResult?.success ||
-        !paymentResult.data.status_code.includes('OK')
+        paymentResult.data.payment_status === 'REJECTED'
       ) {
         alert(
           paymentResult?.message ||
@@ -403,7 +400,7 @@ export default function PaymentSelection() {
 
       if (
         !paymentResult?.success ||
-        !paymentResult.data.status_code.includes('OK')
+        paymentResult.data.payment_status === 'REJECTED'
       ) {
         alert(
           paymentResult.message ||
@@ -415,7 +412,7 @@ export default function PaymentSelection() {
       // store payment response in the store
       setPaymentSubmitResponse(paymentResult)
 
-      const redirectUrl = paymentResult.data.redirect_url
+      const redirectUrl = paymentResult.data.payment_url
       if (redirectUrl) {
         // Save proposal number to localStorage before redirect
         saveProposalNumber(apiResponse.data.ProposalNo)

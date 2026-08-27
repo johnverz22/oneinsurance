@@ -204,14 +204,13 @@ export default function CtplPaymentStep() {
   const paymentConfig: PaymentRequestConfig = {
     merchantAccountId: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
     merchantTransactionId: generateTransactionId(),
+    serviceCode: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
     productReferenceId: `${fullQuoteResponse?.BusinessObjectId}` || 'MOTOR-INSURANCE',
     productDescription: fullQuoteResponse?.ProductCode || 'Motor Insurance',
     amount: premium,
     currency: 'PHP',
-    description: `${insuranceType} Insurance Premium Payment`,
-    callbackUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/motor-insurance/avail`,
-    other_reference_1: proposalNumber,
-    other_reference_1_caption: 'proposal',
+    successUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/motor-insurance/avail`,
+    failureUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/motor-insurance/avail`,
   }
 
   const handleBrandSelect = (brand: PaymentBrand) => {
@@ -243,7 +242,7 @@ export default function CtplPaymentStep() {
         brand_token: authResponse.access_token,
       })
 
-      if (!paymentResult?.success || !paymentResult.data.status_code.includes('OK')) {
+      if (!paymentResult?.success || paymentResult.data.payment_status === 'REJECTED') {
         alert(paymentResult?.message || 'Payment submission failed. Please try again.')
         setShowCardPaymentProcessing(false)
         return
@@ -281,12 +280,12 @@ export default function CtplPaymentStep() {
         brand_token: authResponse.access_token,
       })
 
-      if (!paymentResult?.success || !paymentResult.data.status_code.includes('OK')) {
+      if (!paymentResult?.success || paymentResult.data.payment_status === 'REJECTED') {
         alert(paymentResult.message || 'Payment submission failed. Please try again.')
         return
       }
 
-      const redirectUrl = paymentResult.data.redirect_url
+      const redirectUrl = paymentResult.data.payment_url
       if (redirectUrl) {
         saveProposalNumber(proposalNumber)
         alert("You will be redirected to payment wall. Please don't close this tab.")

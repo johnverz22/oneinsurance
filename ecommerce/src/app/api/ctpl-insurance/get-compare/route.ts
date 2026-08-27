@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
   const clientRequestId = req.nextUrl.searchParams.get('ClientRequestId')
-  const token = `Bearer ${process.env.NEXT_PUBLIC_ACCESS_TOKEN}`
+  const token = `Bearer ${process.env.BACKEND_ACCESS_TOKEN}`
 
   if (!clientRequestId) {
     return NextResponse.json(

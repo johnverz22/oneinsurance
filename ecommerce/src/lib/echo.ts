@@ -18,8 +18,8 @@ export const getEcho = (): Echo<'reverb'> => {
   if (!echoInstance) {
     window.Pusher = Pusher
 
-    // Enable Pusher logging for debugging
-    Pusher.logToConsole = true
+    // Only log WebSocket traffic in development
+    Pusher.logToConsole = process.env.NODE_ENV === 'development'
 
     const config = {
       broadcaster: 'reverb' as const,

@@ -295,14 +295,12 @@ export default function CheckoutPage() {
 
       const paymentResult = await submitPayment({
         data: {
+          service_code: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
+          channel: 1,
           merchant_account_id: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
           merchant_transaction_id: transactionId,
           product_reference_id: String(businessObjectId ?? resolvedProposalNo),
           product_description: `Health Insurance - ${firstItem?.planName ?? ''}`,
-          other_reference_1: resolvedProposalNo,
-          other_reference_1_caption: 'proposal',
-          other_reference_2: `${fullName.split(' ')[0]} ${fullName.split(' ').slice(1).join(' ')}`.trim(),
-          other_reference_2_caption: 'customer',
           first_name: fullName.split(' ')[0] ?? fullName,
           last_name: fullName.split(' ').length > 1 ? fullName.split(' ').slice(1).join(' ') : fullName,
           email: email.trim().toLowerCase(),
@@ -325,8 +323,8 @@ export default function CheckoutPage() {
           payment_brand: brandValue,
           amount: duePremium,
           currency: 'PHP',
-          description: 'Health Insurance Premium',
-          callback_url: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/checkout`,
+          success_url: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/checkout`,
+          failure_url: `${typeof window !== 'undefined' ? window.location.origin : ''}/${agentCode}/products/health-insurance/checkout`,
           time_offset: (() => {
             const off = new Date().getTimezoneOffset()
             const h = Math.abs(off) / 60
@@ -351,7 +349,7 @@ export default function CheckoutPage() {
         brand_token: authResponse.access_token,
       })
 
-      if (!paymentResult?.success || !(paymentResult as any)?.data?.status_code?.includes('OK')) {
+      if (!paymentResult?.success || (paymentResult as any)?.data?.payment_status === 'REJECTED') {
         toast.error(paymentResult?.message ?? 'Payment submission failed.')
         return
       }

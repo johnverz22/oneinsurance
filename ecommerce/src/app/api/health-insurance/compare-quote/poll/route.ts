@@ -17,30 +17,17 @@ export async function POST(req: NextRequest) {
 
     const url = `${process.env.BASE_URL}/quote/health/compare-quote`
 
-    console.log('Health Insurance Poll Compare Quote URL:', url)
-    console.log('ClientRequestId:', clientRequestId)
-
-    // Send as GET with body (Postman collection shows GET with ClientRequestId in body)
     const response = await axios.get(url, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_TOKEN}`,
+        Authorization: `Bearer ${process.env.BACKEND_TOKEN}`,
       },
       data: { ClientRequestId: clientRequestId },
       timeout: 30000,
     })
 
-    console.log('Poll response status:', response.status)
-    console.log('Poll response data:', JSON.stringify(response.data, null, 2))
-
     return NextResponse.json(response.data, { status: 200 })
   } catch (error: any) {
-    console.error('Health Insurance Poll error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-    })
-
     if (axios.isAxiosError(error)) {
       return handleServerSideAxiosError(error)
     }

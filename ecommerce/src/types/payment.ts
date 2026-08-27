@@ -39,14 +39,13 @@ export type DeviceInfo = {
 }
 
 export type PaymentSubmitRequest = {
+  service_code: string // Required by DLT v1.3+ — issued by DLT (e.g. "APN-COLLECTION")
+  channel: number // Required by DLT v3.0 — 1=API, 2=QuickLink, 3=WooCommerce, 4=Custom
   merchant_account_id: string
   merchant_transaction_id: string
   product_reference_id?: string
+  product_name?: string // required in practice despite spec listing as optional
   product_description: string
-  other_reference_1: string
-  other_reference_1_caption: string
-  other_reference_2: string
-  other_reference_2_caption: string
   first_name: string
   last_name: string
   email: string
@@ -56,7 +55,7 @@ export type PaymentSubmitRequest = {
   city_municipality: string
   state_province_region: string
   country_code: string
-  postal_code: string
+  postal_code: string // undocumented but required in practice
   is_card_payment: boolean
   card_holder_name?: string // if is_card_payment is true
   card_number?: string // if is_card_payment is true - keep as string for payment gateway
@@ -65,12 +64,12 @@ export type PaymentSubmitRequest = {
   ccv?: number // if is_card_payment is true
   payment_brand_code: string
   payment_brand: string
-  amount: number
+  amount: number | string
   currency: string
-  description?: string
-  callback_url: string
+  success_url?: string // DLT v3.0 — redirect after successful e-wallet payment
+  failure_url?: string // DLT v3.0 — redirect after failed e-wallet payment
   time_offset: string
-  device: DeviceInfo
+  device?: DeviceInfo // required only if is_card_payment is true
 }
 
 export type PaymentSubmitResponse = {
@@ -81,13 +80,13 @@ export type PaymentSubmitResponse = {
 
 export type PaymentSubmitData = {
   is_card_payment: boolean
-  status_code: string
+  payment_status: string // "PAID" | "PENDING" | "REJECTED"
   merchant_transaction_id: string
   amount: string | number
-  fee: string | number
-  total_due: string | number
-  redirect_url: string | null
-  transaction_date_time: Date
+  payment_url: string | null // redirect target for e-wallet flows; null for card
+  success_url: string | null
+  failure_url: string | null
+  timestamp: string // e.g. "2026-08-18T04:07:32.060+0000"
 }
 
 export type PaymentConfirmationResponse = {

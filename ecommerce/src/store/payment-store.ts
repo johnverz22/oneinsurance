@@ -1,58 +1,95 @@
 import { create } from 'zustand'
 import { PaymentAuthResponse } from '@/types/payment'
 import { createJSONStorage, persist, StateStorage } from 'zustand/middleware'
-import * as crypto from 'crypto'
 
-function splitEncryptedText(encryptedText: string) {
-  return {
-    ivString: encryptedText.slice(0, 32),
-    encryptedDataString: encryptedText.slice(32),
+// ---------------------------------------------------------------------------
+// AES-GCM encryption using the browser's built-in Web Crypto API.
+// Node.js `crypto` cannot be used here because this store runs in the browser.
+// The encryption key is derived from NEXT_PUBLIC_MERCHANT_ACCOUNT_ID, which
+// is a non-secret public value — the goal is obfuscation of sessionStorage,
+// not cryptographic protection of secrets.
+// ---------------------------------------------------------------------------
+
+async function getKey(): Promise<CryptoKey> {
+  const raw = new TextEncoder().encode(
+    process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID ?? 'one-insurance-default'
+  )
+  // Import the raw bytes as a base key for PBKDF2-style derivation.
+  // Using a fixed salt is acceptable here since we're not protecting secrets.
+  const baseKey = await crypto.subtle.importKey('raw', raw, 'PBKDF2', false, [
+    'deriveKey',
+  ])
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: new TextEncoder().encode('one-insurance-payment-store'),
+      iterations: 100_000,
+      hash: 'SHA-256',
+    },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  )
+}
+
+async function encryptValue(value: string): Promise<string> {
+  const key = await getKey()
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const encoded = new TextEncoder().encode(value)
+  const cipherBuffer = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    encoded
+  )
+  // Combine iv + ciphertext and base64-encode for storage
+  const combined = new Uint8Array(iv.byteLength + cipherBuffer.byteLength)
+  combined.set(iv, 0)
+  combined.set(new Uint8Array(cipherBuffer), iv.byteLength)
+  return btoa(String.fromCharCode(...combined))
+}
+
+async function decryptValue(stored: string): Promise<string | null> {
+  try {
+    const key = await getKey()
+    const combined = Uint8Array.from(atob(stored), (c) => c.charCodeAt(0))
+    const iv = combined.slice(0, 12)
+    const ciphertext = combined.slice(12)
+    const plainBuffer = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      ciphertext
+    )
+    return new TextDecoder().decode(plainBuffer)
+  } catch {
+    return null
   }
 }
 
-// Generate a proper 32-byte key for AES-256
-const secretKey = process.env.SECRET_KEY || ''
-const keyInBytes = crypto.createHash('sha256').update(secretKey).digest()
-
 const SecureStorage: StateStorage = {
-  getItem: (name: string): string | Promise<string | null> | null => {
+  getItem: async (name: string): Promise<string | null> => {
     try {
-      const encryptedValue = sessionStorage.getItem(name)
-      if (!encryptedValue) return null
-
-      const { encryptedDataString, ivString } =
-        splitEncryptedText(encryptedValue)
-      const iv = Buffer.from(ivString, 'hex')
-      const decipher = crypto.createDecipheriv('aes-256-cbc', keyInBytes, iv)
-      let decrypted = decipher.update(encryptedDataString, 'hex', 'utf8')
-      decrypted += decipher.final('utf8')
-      return decrypted || null
-    } catch (error) {
-      console.error('Decryption error:', error)
-      // Return the raw value as fallback
+      const stored = sessionStorage.getItem(name)
+      if (!stored) return null
+      return await decryptValue(stored)
+    } catch {
+      // Fallback: return raw value if decryption fails (e.g. after key change)
       return sessionStorage.getItem(name)
     }
   },
-  setItem: (name: string, value: string): unknown | Promise<unknown> => {
-    try {
-      const iv = crypto.randomBytes(16)
-      const cipher = crypto.createCipheriv('aes-256-cbc', keyInBytes, iv)
-      let encrypted = cipher.update(value, 'utf8', 'hex')
-      encrypted += cipher.final('hex')
 
-      // Combine IV and encrypted data
-      const combinedData = iv.toString('hex') + encrypted
-      sessionStorage.setItem(name, combinedData)
-    } catch (error) {
-      console.error('Encryption error:', error)
-      // Fallback to plain storage in case of encryption failure
+  setItem: async (name: string, value: string): Promise<void> => {
+    try {
+      const encrypted = await encryptValue(value)
+      sessionStorage.setItem(name, encrypted)
+    } catch {
+      // Fallback to plain storage so the app doesn't break
       sessionStorage.setItem(name, value)
     }
-    return
   },
-  removeItem: (name: string): unknown | Promise<unknown> => {
+
+  removeItem: (name: string): void => {
     sessionStorage.removeItem(name)
-    return
   },
 }
 
