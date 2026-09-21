@@ -374,8 +374,8 @@ export interface InitTravelInsuranceRequest {
   NoOfTravellers?: string | number
   BranchCode?: string
   Age?: number
-  LGT?: string
-  PromoCodeList: string
+  LGT?: number
+  PromoCodeList: string[] | Record<string, unknown>[]
   TravelDetailList: TravelDetail[]
   PolicyCustomerList: PolicyCustomer[]
   PolicyLobList: PolicyLob[]

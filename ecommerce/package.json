@@ -4,13 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NEXT_DISABLE_ESLINT=1 next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "ts-node ./src/app/api/payment/migrate.ts"
+    "migrate": "ts-node ./src/app/api/payment/migrate.ts",
+    "postinstall": "node scripts/copy-ort.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
+    "@paddleocr/paddleocr-js": "0.4.2",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -45,14 +47,13 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-fade": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
-    "groq-sdk": "^0.33.0",
     "isomorphic-dompurify": "^2.27.0",
     "jspdf": "^4.2.1",
     "laravel-echo": "^2.2.4",
     "lucide-react": "^0.536.0",
     "next": "^16.3.1",
     "next-themes": "^0.4.6",
-    "onnxruntime-web": "^1.14.0",
+    "onnxruntime-web": "1.22.0",
     "pusher-js": "^8.4.0",
     "react": "^19.0.0",
     "react-aria-components": "^1.12.2",

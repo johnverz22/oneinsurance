@@ -45,7 +45,7 @@ export const INSURANCES = [
     description:
       'Provides financial protection against legal liabilities arising from injury, loss, or damage caused to third parties.',
     image: '/images/products/ctpl.png',
-    checkoutLink: '/coming-soon',
+    checkoutLink: `/products/ctpl-insurance`,
     tag: 'Popular',
     more: {
       overview: 'Worry-Free Trips, Anywhere You Go.',
@@ -80,7 +80,7 @@ export const INSURANCES = [
     description:
       'Protects your cargo from loss or damage during transit by sea, air, or land, from origin to destination.',
     image: '/images/products/marine.png',
-    checkoutLink: '/coming-soon',
+    checkoutLink: `/products/ctpl-insurance`,
     tag: 'Popular',
     more: {
       overview: 'Worry-Free Trips, Anywhere You Go.',
@@ -115,7 +115,7 @@ export const INSURANCES = [
     description:
       'Covers engineering projects, machinery, and equipment against construction risks, breakdowns, and unexpected operational losses.',
     image: '/images/products/engineer.png',
-    checkoutLink: '/coming-soon',
+    checkoutLink: `/products/ctpl-insurance`,
     tag: 'Popular',
     more: {
       overview: 'Worry-Free Trips, Anywhere You Go.',
@@ -150,7 +150,7 @@ export const INSURANCES = [
     description:
       'Delivers compliant, industry-specific insurance solutions that meet legal requirements while protecting your business from specialized risks.',
     image: '/images/products/mandatory.png',
-    checkoutLink: '/coming-soon',
+    checkoutLink: `/products/ctpl-insurance`,
     tag: 'Popular',
     more: {
       overview: 'Worry-Free Trips, Anywhere You Go.',

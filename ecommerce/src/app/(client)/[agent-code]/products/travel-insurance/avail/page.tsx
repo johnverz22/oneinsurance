@@ -273,53 +273,53 @@ export default function AvailTravelInsurance() {
   }
 
   return (
-    <div className="relative w-full bg-[#F3F5FC] pb-10">
-      {/* Sticky header on mobile: logos + step indicator */}
-      <div className="sticky top-0 z-20 bg-[#F3F5FC] lg:relative lg:z-auto">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6 sm:py-3 lg:px-8">
-          <div className="inline-flex items-center gap-3 rounded-tl-full rounded-br-full bg-white px-4 py-1 shadow-lg sm:px-13">
+    <div className="relative min-h-screen w-full bg-[#F3F5FC]">
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-20 border-b border-gray-200/60 bg-white shadow-sm lg:relative lg:z-auto lg:border-0 lg:bg-[#F3F5FC] lg:shadow-none">
+        {/* Logo bar */}
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 lg:pt-5 lg:pb-2">
+          <a href={`/${agentCode}`} className="flex items-center">
             <Image
               src="/images/logo.png"
               alt="One Insurance"
               width={140}
               height={45}
-              className="h-5 w-auto sm:h-10"
+              className="h-7 w-auto lg:h-9"
               priority
             />
-          </div>
+          </a>
           <Image
             src="/images/IFRC.png"
             alt="IFRC"
-            width={120}
+            width={80}
             height={40}
-            className="h-4 w-auto sm:h-10"
+            className="h-8 w-auto opacity-80 lg:h-10"
             priority
           />
         </div>
-        <div className="flex items-start justify-start pt-2 pb-1 lg:pt-6 lg:pb-0">
+
+        {/* Step progress */}
+        <div className="lg:pt-2 lg:pb-0">
           <Stepper
             steps={steps}
             currentStep={step}
-          highestVisitedStep={isReadOnlyMode ? step : highestVisitedStep}
-          contentContainerClass="flex items-start md:justify-start"
-          onStepChange={isReadOnlyMode ? undefined : (step) => setStep(step)}
-        />
+            highestVisitedStep={isReadOnlyMode ? step : highestVisitedStep}
+            contentContainerClass="flex items-start md:justify-start"
+            onStepChange={isReadOnlyMode ? undefined : (step) => setStep(step)}
+          />
         </div>
       </div>
 
-      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 pb-16 lg:flex-row lg:pb-0">
-        <div
-          className={cn('lg:col-span-3 lg:w-3/5', { 'lg:w-full': step > 3 })}
-        >
+      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 pb-20 lg:flex-row lg:items-start lg:pb-0">
+        <div className={cn('lg:col-span-3 lg:w-3/5', { 'lg:w-full': step > 3 })}>
           {steps[step].component}
         </div>
 
         <div className={cn('relative hidden lg:block lg:w-2/5', { 'lg:hidden': step > 3 })}>
           <PlanPaymentReview
-            stage={step <= 2 ? "initial" : "final"}
+            stage={step <= 2 ? 'initial' : 'final'}
             grossPremium={
-              // Use full quote response premium when available (step 3+), otherwise use selected plan premium
-              step >= 3 && apiResponse?.data?.DuePremium 
+              step >= 3 && apiResponse?.data?.DuePremium
                 ? Number(apiResponse.data.DuePremium)
                 : Number(coverageOption.selectedPlan?.DuePremium) || 0
             }
@@ -327,44 +327,51 @@ export default function AvailTravelInsurance() {
         </div>
       </div>
 
-      {/* Fixed bottom premium bar — mobile only, steps 1-3 */}
+      {/* ── Mobile bottom action bar (steps 1–3) ── */}
       {step >= 1 && step <= 3 && coverageOption.selectedPlan && (
         <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-            <div className="shrink-0">
-              <p className="text-[11px] text-gray-500">Total Premium</p>
-              <p className="text-base font-black text-primary">
-                ₱{(step >= 3 && apiResponse?.data?.DuePremium
-                  ? Number(apiResponse.data.DuePremium)
-                  : Number(coverageOption.selectedPlan.DuePremium) || 0
+          <div className="mx-auto flex max-w-7xl items-center gap-3">
+            {/* Left: Cancel (step 1) or Back (steps 2–3) */}
+            <button
+              type="button"
+              onClick={() => {
+                if (step === 1) {
+                  // Cancel — back to travel insurance search
+                  router.push(`/${agentCode}/products/travel-insurance`)
+                } else {
+                  const backBtn = document.querySelector('[data-mobile-action="back"]') as HTMLButtonElement
+                  if (backBtn) backBtn.click()
+                  else setStep(step - 1)
+                }
+              }}
+              className="shrink-0 rounded-full border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700"
+            >
+              {step === 1 ? 'Cancel' : 'Back'}
+            </button>
+
+            {/* Center: premium */}
+            <div className="flex-1 text-center">
+              <p className="text-[10px] text-gray-500 leading-none">Total Premium</p>
+              <p className="text-sm font-black text-primary leading-tight">
+                ₱{(
+                  step >= 3 && apiResponse?.data?.DuePremium
+                    ? Number(apiResponse.data.DuePremium)
+                    : Number(coverageOption.selectedPlan.DuePremium) || 0
                 ).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const backBtn = document.querySelector('[data-mobile-action="back"]') as HTMLButtonElement
-                    if (backBtn) backBtn.click()
-                    else setStep(step - 1)
-                  }}
-                  className="rounded-full border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700"
-                >
-                  Back
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  const nextBtn = document.querySelector('[data-mobile-action="next"]') as HTMLButtonElement
-                  if (nextBtn) nextBtn.click()
-                }}
-                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white"
-              >
-                {step === 1 ? 'Next' : step === 2 ? 'Request Full Quote' : 'Proceed to Payment'}
-              </button>
-            </div>
+
+            {/* Right: primary action */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextBtn = document.querySelector('[data-mobile-action="next"]') as HTMLButtonElement
+                if (nextBtn) nextBtn.click()
+              }}
+              className="shrink-0 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-white"
+            >
+              {step === 1 ? 'Next' : step === 2 ? 'Continue' : 'Proceed'}
+            </button>
           </div>
         </div>
       )}

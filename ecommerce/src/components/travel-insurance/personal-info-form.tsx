@@ -30,10 +30,18 @@ import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { provinces } from '@/constants/phil-prov'
 import { citiesMunicipalities } from '@/constants/phil-city-mun'
 import { useState, useEffect, useRef, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { getZipCodeByCityCode } from '@/utils/address-util'
-import { IdUploadComponent } from '../id-upload/id-upload-component'
+import type { IdOcrResult } from '@/utils/paddle-ocr-types'
 import { z } from 'zod'
 import { getSortedTravelerErrors } from '@/utils/travel-helpers'
+
+// IdUploadWithOcr is the only file that imports paddle-ocr/opencv-js.
+// Loading it with ssr:false keeps the entire WASM stack out of the SSR bundle.
+const IdUploadWithOcr = dynamic(
+  () => import('@/components/id-upload/id-upload-with-ocr'),
+  { ssr: false, loading: () => <div className="h-40 w-full animate-pulse rounded-lg bg-gray-100" /> }
+)
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   FullQuoteResponse,
@@ -421,7 +429,7 @@ export function PersonalInfoForm() {
 
                               {/* ID Upload Component */}
                               <div className="w-full">
-                                <IdUploadComponent
+                                <IdUploadWithOcr
                                   initialFrontFile={idFilesStore.get(index)?.frontId ?? null}
                                   initialBackFile={idFilesStore.get(index)?.backId ?? null}
                                   onIdUploaded={(frontFile, backFile) => {
@@ -440,6 +448,34 @@ export function PersonalInfoForm() {
                                       `travelers[${index}].idBackUploaded`,
                                       !!backFile
                                     )
+                                  }}
+                                  onOcrResult={(result: IdOcrResult) => {
+                                    // Auto-fill traveler fields from OCR — user can review / correct
+                                    if (result.first_name) {
+                                      form.setFieldValue(`travelers[${index}].firstName`, result.first_name)
+                                    }
+                                    if (result.middle_name) {
+                                      form.setFieldValue(`travelers[${index}].middleName`, result.middle_name)
+                                    }
+                                    if (result.last_name) {
+                                      form.setFieldValue(`travelers[${index}].lastName`, result.last_name)
+                                    }
+                                    if (result.id_number) {
+                                      form.setFieldValue(`travelers[${index}].idNumber`, result.id_number)
+                                    }
+                                    if (result.id_type) {
+                                      form.setFieldValue(`travelers[${index}].idType`, result.id_type as any)
+                                    }
+                                    if (result.date_of_birth) {
+                                      // Parse MM/DD/YYYY → Date
+                                      const [mm, dd, yyyy] = result.date_of_birth.split('/')
+                                      if (mm && dd && yyyy) {
+                                        const dob = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
+                                        if (!isNaN(dob.getTime())) {
+                                          form.setFieldValue(`travelers[${index}].dateOfBirth`, dob)
+                                        }
+                                      }
+                                    }
                                   }}
                                 />
                                 {/* Show validation errors for ID uploads */}

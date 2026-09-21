@@ -33,20 +33,55 @@ export default function ProductsLayout({
     }
   }, [resolvedParams, setAgentCode])
 
+  const isProductPage =
+    pathname.includes('travel') ||
+    pathname.includes('health') ||
+    pathname.includes('ctpl') ||
+    pathname.includes('motor')
+
   return (
     <>
-      {!pathname.includes('travel') && !pathname.includes('health') && !pathname.includes('ctpl') && !pathname.includes('motor') && (
-        <div className="h-full w-full">
-          <Header navigations={NAVIGATIONS} isNavigationVisible={true} />
+      {!isProductPage && (
+        <>
+          <Header navigations={NAVIGATIONS} isNavigationVisible={true} showSidebarTrigger={false} />
           <div className="sm:hidden">
-            <AppSidebar navigations={NAVIGATIONS} />
+            <AppSidebar side="right" navigations={NAVIGATIONS} />
           </div>
+        </>
+      )}
+
+      {/* Product pages: dark hero at top — overlay a transparent, light-text nav
+          on landing pages only. Sub-pages (/avail etc.) manage their own
+          header and suppress this one entirely. */}
+      {isProductPage && !pathname.includes('/avail') && (
+        <div className="hidden md:block">
+          <Header
+            navigations={NAVIGATIONS}
+            isNavigationVisible={true}
+            showSidebarTrigger={false}
+            showBrand={true}
+            variant={
+              pathname.endsWith('/travel-insurance') ||
+              pathname.endsWith('/motor-insurance') ||
+              pathname.endsWith('/health-insurance')
+                ? 'transparent'
+                : 'default'
+            }
+            contentContainerClassName="pr-52 lg:pr-60"
+          />
         </div>
       )}
 
-      <main className="h-full w-full">{children}</main>
+      <main className="min-h-full w-full">{children}</main>
 
-      <Footer />
+      {/* Avail pages: footer hidden on mobile (fixed action bar takes that space),
+          shown on lg+ where the action bar is not rendered */}
+      {!pathname.includes('/avail') && <Footer />}
+      {pathname.includes('/avail') && (
+        <div className="hidden lg:block">
+          <Footer />
+        </div>
+      )}
     </>
   )
 }

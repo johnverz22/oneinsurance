@@ -42,7 +42,11 @@ export function ReviewCoverage() {
 
   const provider = COMPANIES.find(
     (c) => c.carrierCode === coverageOption.carrierCode
-  )!
+  ) ?? {
+    carrierCode: coverageOption.carrierCode,
+    companyName: coverageOption.carrierCode,
+    image: '',
+  }
 
   const plan = coverageOption.selectedPlan!
   const groupedMainBenefits = groupBenefits(plan)
@@ -100,13 +104,15 @@ export function ReviewCoverage() {
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:divide-x">
               <div className="w-full space-y-2">
                 <div className="relative h-14 w-28 overflow-hidden rounded-md">
-                  <Image
-                    src={(CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image}
-                    alt={provider.companyName}
-                    className="h-full w-full object-contain"
-                    width={112}
-                    height={56}
-                  />
+                  {((CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image) && (
+                    <Image
+                      src={(CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image}
+                      alt={provider.companyName}
+                      className="h-full w-full object-contain"
+                      width={112}
+                      height={56}
+                    />
+                  )}
                 </div>
 
                 <h3 className="text-foreground text-left text-base sm:text-xl font-bold tracking-wide text-wrap uppercase">

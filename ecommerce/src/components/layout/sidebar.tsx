@@ -26,6 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import {
   Collapsible,
@@ -68,6 +69,14 @@ export const AppSidebar = ({
 
   const pathname = usePathname()
   const { agentCode } = useAgentCodeStore()
+  const { setOpenMobile } = useSidebar()
+
+  // Ensure the mobile menu is never left open after a route change.
+  React.useEffect(() => {
+    setOpenMobile(false)
+  }, [pathname, setOpenMobile])
+
+  const closeMobile = () => setOpenMobile(false)
 
   const prefixLink = (link: string) => agentCode ? `/${agentCode}${link}` : link
 
@@ -108,34 +117,57 @@ export const AppSidebar = ({
                     defaultOpen
                     className="group/collapsible text-foreground"
                   >
-                    <div className="text-muted-foreground flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide uppercase">
-                      {navigation.label}
+                    <div className="flex items-center gap-2 px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                      <span>{navigation.label}</span>
+                      <span className="h-px flex-1 bg-border" aria-hidden="true" />
                     </div>
 
                     <SidebarGroup>
-                      <SidebarGroupContent className="ml-2 flex flex-col gap-1">
-                        {navigation.items.map((item, itemIndex) => (
-                          <SidebarMenuItem key={itemIndex}>
-                            <SidebarMenuButton
-                              asChild
-                              className={cn(
-                                'text-muted-foreground hover:text-foreground hover:bg-accent/50 h-12 px-4',
-                                {
-                                  'bg-accent text-white':
-                                    pathname === item.link,
-                                }
-                              )}
-                            >
-                              <Link
-                                href={prefixLink(item.link)}
-                                className="flex items-center gap-3"
+                      <SidebarGroupContent className="flex flex-col gap-px">
+                        {navigation.items.map((item, itemIndex) => {
+                          const icon = getIcon(item.title)
+                          const isActive = pathname === item.link
+                          return (
+                            <SidebarMenuItem key={itemIndex}>
+                              <SidebarMenuButton
+                                asChild
+                                className={cn(
+                                  'group/link relative h-auto min-h-9 items-start overflow-visible rounded-lg py-1.5 pl-4 pr-3 text-sm font-medium leading-snug text-foreground transition-colors',
+                                  'hover:bg-primary/10 hover:text-primary',
+                                  '[&>span:last-child]:overflow-visible [&>span:last-child]:whitespace-normal',
+                                  {
+                                    'bg-primary/10 font-semibold text-primary':
+                                      isActive,
+                                  }
+                                )}
                               >
-                                {getIcon(item.title)}
-                                <span>{item.title}</span>
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
+                                <Link
+                                  href={prefixLink(item.link)}
+                                  onClick={closeMobile}
+                                  className="flex items-start gap-3"
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={cn(
+                                      'absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary transition-opacity',
+                                      isActive
+                                        ? 'opacity-100'
+                                        : 'opacity-0 group-hover/link:opacity-60'
+                                    )}
+                                  />
+                                  {icon && (
+                                    <span className="mt-0.5 shrink-0 text-current">
+                                      {icon}
+                                    </span>
+                                  )}
+                                  <span className="!overflow-visible !whitespace-normal break-words">
+                                    {item.title}
+                                  </span>
+                                </Link>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          )
+                        })}
                       </SidebarGroupContent>
                     </SidebarGroup>
                   </Collapsible>
@@ -144,16 +176,37 @@ export const AppSidebar = ({
                     <SidebarMenuButton
                       asChild
                       className={cn(
-                        'text-muted-foreground hover:text-foreground hover:bg-accent/50 h-12 px-4',
-                        { 'bg-accent text-white': pathname === navigation.link }
+                        'group/link relative h-auto min-h-9 items-start overflow-visible rounded-lg py-1.5 pl-4 pr-3 text-sm font-medium leading-snug text-foreground transition-colors',
+                        'hover:bg-primary/10 hover:text-primary',
+                        '[&>span:last-child]:overflow-visible [&>span:last-child]:whitespace-normal',
+                        {
+                          'bg-primary/10 font-semibold text-primary':
+                            pathname === navigation.link,
+                        }
                       )}
                     >
                       <Link
                         href={prefixLink(navigation.link ?? '/')}
-                        className="flex items-center gap-3"
+                        onClick={closeMobile}
+                        className="flex items-start gap-3"
                       >
-                        {getIcon(navigation.label)}
-                        <span>{navigation.label}</span>
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary transition-opacity',
+                            pathname === navigation.link
+                              ? 'opacity-100'
+                              : 'opacity-0 group-hover/link:opacity-60'
+                          )}
+                        />
+                        {getIcon(navigation.label) && (
+                          <span className="mt-0.5 shrink-0 text-current">
+                            {getIcon(navigation.label)}
+                          </span>
+                        )}
+                        <span className="!overflow-visible !whitespace-normal break-words">
+                          {navigation.label}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

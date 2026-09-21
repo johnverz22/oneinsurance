@@ -3,5 +3,5 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <main className="h-full w-full">{children}</main>
+  return <main className="min-h-full w-full">{children}</main>
 }

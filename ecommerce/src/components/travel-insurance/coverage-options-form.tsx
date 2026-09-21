@@ -1,14 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ChangeEvent, useMemo, useState, useEffect, useRef } from 'react'
+import { ChangeEvent, useMemo, useState } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  ClientRequest,
-  useTravelInsuranceStore,
-} from '@/store/travel-insurance-store'
+import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Skeleton } from '@/components/ui/skeleton'
-import { InsurancePlan, TravelInsuranceApiResponse } from '@/types/plan'
+import { InsurancePlan } from '@/types/plan'
 import { TravelInsurancePlan } from './insurance-plan'
 import ServerOffline from '../server-offline'
 import { Input } from '../ui/input'
@@ -16,9 +14,6 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { ArrowDownUp } from 'lucide-react'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { useAgentCodeStore } from '@/store/agent-code-store'
-import { getEcho } from '@/lib/echo'
-import axios from 'axios'
-import { TravelCompareQuoteResponse } from '@/types/travel-insurance/compare-quote'
 import { storePlanName } from '@/utils/custom-fields-storage'
 import { COMPANIES } from '@/constants/companies'
 import { useTravelProviderFilter } from '@/store/travel-provider-filter-store'
@@ -86,339 +81,25 @@ export function CoverageOptionsForm() {
   const { agentCode } = useAgentCodeStore()
   const { providerFilter } = useTravelProviderFilter()
 
-  // refs for Echo instance, subscribed channel, and queue processing
-  const echoRef = useRef<any>(null)
-  const channelRef = useRef<any>(null)
-  const queue = useRef<any[]>([]) // Queue to store WebSocket responses
-  const isProcessing = useRef(false) // Flag to track if the queue is being processed
-
-  const closeEchoConnection = () => {
-    try {
-      if (clientRequest.id && echoRef.current) {
-        echoRef.current.leave?.(clientRequest.id)
-      }
-
-      const connector = echoRef.current?.connector as any
-      if (connector?.pusher?.disconnect) {
-        connector.pusher.disconnect()
-      }
-
-      channelRef.current = null
-      echoRef.current = null
-    } catch (err) {}
-  }
-
-  const hasHydrated = useTravelInsuranceStore.persist?.hasHydrated()
   const [hasReachedLimit, setHasReachedLimit] = useState(false)
-  const isEnabled = hasHydrated && !!clientRequest.id && !hasReachedLimit
-  const setStatus = (status: ClientRequest['status']) => {
-    setClientRequest({ status: status })
-  }
-
-  const [isLoading, setIsLoading] = useState(false) // Tracks loading state
-  const [isError, setIsError] = useState(false) // Tracks error state
-  const [expectedProviders, setExpectedProviders] = useState(0) // Track expected number of providers
-  const [receivedProviders, setReceivedProviders] = useState(0) // Track received providers
-  const receivedProvidersRef = useRef(0) // Ref to track received providers without stale closure
-  const expectedProvidersRef = useRef(0) // Ref to track expected providers without stale closure
-  const allProvidersTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Timeout for all providers
-
-  // Configuration constants
-  const CONCURRENCY_LIMIT = 5
-  const REQUEST_TIMEOUT = 15000 // 15 seconds per request
-  const ALL_PROVIDERS_TIMEOUT = 30000 // 30 seconds max wait for all providers
-
-  // Helper function: Fetch plan with timeout
-  const fetchPlanWithTimeout = async (
-    cacheKey: string,
-    timeout: number
-  ): Promise<TravelCompareQuoteResponse['data'] | null> => {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
-
-    try {
-      const startTime = performance.now()
-
-      const response = await axios.get(
-        `/api/travel-insurance/load-quote-by-cache?cacheKey=${cacheKey}`,
-        {
-          signal: controller.signal,
-        }
-      )
-
-      const endTime = performance.now()
-      console.log(
-        `✅ Cache key ${cacheKey} fetched in ${(endTime - startTime).toFixed(2)}ms`
-      )
-
-      clearTimeout(timeoutId)
-
-      const data = response.data as TravelCompareQuoteResponse
-      if (!data.success || data.data.Plans.length === 0) {
-        console.log(`⚠️ Cache key ${cacheKey} returned no valid plans`)
-        return null
-      }
-
-      return removeNullBenefitCodeItems(data).data
-    } catch (error: any) {
-      clearTimeout(timeoutId)
-      if (error.name === 'AbortError' || error.code === 'ECONNABORTED') {
-        console.warn(`⏱️ Request timeout for cache key: ${cacheKey}`)
-      } else if (error.message === 'canceled' || error.message?.includes('cancel')) {
-        // Silently ignore canceled requests (happens when navigating away)
-        console.log(`ℹ️ Request canceled for cache key: ${cacheKey}`)
-      } else {
-        console.error(`❌ Error fetching cache key ${cacheKey}:`, error.message)
-      }
-      return null
-    }
-  }
-
-  // Helper function: Update plans state
-  const updatePlansState = (
-    newPlans: TravelCompareQuoteResponse['data'][]
-  ): void => {
-    const currentPlans = useTravelInsuranceStore.getState().insurancePlans
-
-    if (!currentPlans) {
-      // First batch of plans — reset any previously selected plan
-      resetCoverageOption()
-      setInsurancePlans({
-        success: true,
-        message: 'Plans loaded',
-        data: newPlans,
-      })
-    } else {
-      // Append to existing plans
-      setInsurancePlans({
-        ...currentPlans,
-        data: [...currentPlans.data, ...newPlans],
-      })
-    }
-  }
-
-  // Helper: check plans and finalize loading state
-  const finalizeLoading = () => {
-    console.log(`🏁 finalizeLoading called — received: ${receivedProvidersRef.current}, expected: ${expectedProvidersRef.current}`)
-    const currentPlans = useTravelInsuranceStore.getState().insurancePlans
-    const hasAnyPlans = currentPlans?.data?.some((provider: any) => provider.Plans && provider.Plans.length > 0)
-    if (!hasAnyPlans) {
-      console.log('❌ No plans available from any provider - showing error')
-      setIsError(true)
-      // Reset clientRequest status so the Search button stops showing "Searching..."
-      setClientRequest({ ...useTravelInsuranceStore.getState().clientRequest, status: 'error' })
-    } else {
-      console.log('✅ Plans available - clearing any error state')
-      setIsError(false)
-    }
-    // Clear timeout
-    if (allProvidersTimeoutRef.current) {
-      clearTimeout(allProvidersTimeoutRef.current)
-      allProvidersTimeoutRef.current = null
-    }
-    isProcessing.current = false
-    setIsLoading(false)
-
-    // Keep WebSocket open for a grace period to catch late-arriving providers
-    setTimeout(() => {
-      closeEchoConnection()
-      console.log('🔌 WebSocket connection closed after grace period')
-    }, 15000)
-  }
-
-  useEffect(() => {
-    if (clientRequest.id !== undefined) {
-      // Reset error state and counters when starting a new search
-      setIsError(false)
-      receivedProvidersRef.current = 0
-      expectedProvidersRef.current = 0
-      setExpectedProviders(0)
-      setReceivedProviders(0)
-
-      // Clear any previous timeout
-      if (allProvidersTimeoutRef.current) {
-        clearTimeout(allProvidersTimeoutRef.current)
-        allProvidersTimeoutRef.current = null
-      }
-
-      const echo = getEcho()
-
-      if (echo.connector.pusher.connection.state !== 'connected') {
-        echo.connector.pusher.connect()
-      }
-
-      const processQueue = async () => {
-        if (isProcessing.current) {
-          console.log('⏸️ Queue processor already running, skipping duplicate call')
-          return
-        }
-        
-        isProcessing.current = true
-        setIsLoading(true)
-
-        const startTime = performance.now()
-        const totalItems = queue.current.length
-        console.log(`🚀 Starting queue processing with ${totalItems} items`)
-
-        while (queue.current.length > 0) {
-          // Take up to CONCURRENCY_LIMIT items from queue
-          const batch = queue.current.splice(0, CONCURRENCY_LIMIT)
-          console.log(
-            `📦 Processing batch of ${batch.length} items, ${queue.current.length} remaining in queue`
-          )
-
-          // Process batch in parallel using Promise.allSettled
-          const results = await Promise.allSettled(
-            batch.map((cacheKey) =>
-              fetchPlanWithTimeout(cacheKey, REQUEST_TIMEOUT)
-            )
-          )
-
-          // Collect successful results
-          const successfulPlans = results
-            .filter(
-              (r): r is PromiseFulfilledResult<TravelCompareQuoteResponse['data']> =>
-                r.status === 'fulfilled' && r.value !== null
-            )
-            .map((r) => r.value)
-
-          const failedCount = batch.length - successfulPlans.length
-          console.log(
-            `✅ Batch complete: ${successfulPlans.length} successful, ${failedCount} failed`
-          )
-
-          // Batch update state
-          if (successfulPlans.length > 0) {
-            updatePlansState(successfulPlans)
-          }
-
-          // Don't set error here - wait until all batches are processed
-        }
-
-        const endTime = performance.now()
-        const duration = (endTime - startTime).toFixed(2)
-        console.log(`✨ Queue processing complete in ${duration}ms (processed ${totalItems} items)`)
-
-        // Increment received providers count using ref (avoids stale closure)
-        receivedProvidersRef.current += 1
-        setReceivedProviders(receivedProvidersRef.current)
-        console.log(`📊 Received ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
-
-        // Only check for errors after ALL providers have responded
-        if (receivedProvidersRef.current >= expectedProvidersRef.current) {
-          console.log('🔍 All providers received - checking for plans...')
-          
-          // Small delay to ensure state is updated
-          await new Promise(resolve => setTimeout(resolve, 100))
-          
-          // Clear the hard timeout since all providers responded
-          if (allProvidersTimeoutRef.current) {
-            clearTimeout(allProvidersTimeoutRef.current)
-            allProvidersTimeoutRef.current = null
-          }
-
-          finalizeLoading()
-        } else {
-          console.log(`⏳ Waiting for more providers (${receivedProvidersRef.current}/${expectedProvidersRef.current})...`)
-          isProcessing.current = false
-          // Show plans immediately if we have any — don't wait for all providers
-          const currentPlans = useTravelInsuranceStore.getState().insurancePlans
-          const hasPlans = currentPlans?.data?.some((p: any) => p.Plans && p.Plans.length > 0)
-          if (hasPlans) {
-            // Display what we have now, keep listening for more providers
-            setIsLoading(false)
-            setIsError(false)
-          }
-          // Keep the timeout running — it will finalize when remaining providers respond or time out
-        }
-      }
-
-      const channel = echo
-        .channel(clientRequest.id)
-        .listen('.insurance.plan.received', (e: any) => {
-          const cacheKey = e['cache_key']
-          const timestamp = new Date().toISOString()
-          
-          queue.current.push(cacheKey)
-          
-          console.log(`📨 WebSocket event received at ${timestamp}`)
-          console.log(`   Cache key: ${cacheKey}`)
-          console.log(`   Queue size: ${queue.current.length}`)
-          console.log(`   Processing: ${isProcessing.current ? 'Yes' : 'No'}`)
-
-          // Set expected providers from the event if available, otherwise default to 2
-          if (expectedProvidersRef.current === 0) {
-            const count = e['total_providers'] ?? 2
-            expectedProvidersRef.current = count
-            setExpectedProviders(count)
-            console.log(`📋 Expected providers set to: ${count} (raw value from event: ${e['total_providers']})`)
-
-            // Hard timeout fallback — if not all providers respond within timeout, finalize anyway
-            if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
-            allProvidersTimeoutRef.current = setTimeout(() => {
-              console.log(`⏰ Timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
-              finalizeLoading()
-            }, ALL_PROVIDERS_TIMEOUT)
-          } else {
-            // After first provider responded, keep waiting for remaining providers
-            if (allProvidersTimeoutRef.current) clearTimeout(allProvidersTimeoutRef.current)
-            allProvidersTimeoutRef.current = setTimeout(() => {
-              console.log(`⏰ Short timeout reached — finalizing with ${receivedProvidersRef.current}/${expectedProvidersRef.current} providers`)
-              finalizeLoading()
-            }, 20000)
-          }
-          
-          processQueue()
-        })
-      setClientRequest({ ...clientRequest, status: 'success' })
-      echoRef.current = echo
-      channelRef.current = channel
-    }
-
-    return () => {
-      closeEchoConnection()
-      if (allProvidersTimeoutRef.current) {
-        clearTimeout(allProvidersTimeoutRef.current)
-        allProvidersTimeoutRef.current = null
-      }
-    }
-  }, [clientRequest.id])
-
-  // Handle page unload to cancel ongoing requests
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // Cancel any ongoing travel quote requests
-      if (isLoading) {
-        // Set status to indicate cancellation
-        setStatus('error')
-
-        // The AbortController in React Query will automatically cancel the HTTP request
-        // but we can also clean up any local state if needed
-        setHasReachedLimit(true)
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [isLoading, setStatus, setHasReachedLimit])
-
   const [searchFilter, setSearchFilter] = useState('')
   const debouncedSearchFilter = useDebounce(searchFilter, 300)
   const [sortBy, setSortBy] = useState<'lowest' | 'highest' | 'addons' | 'discounts'>('lowest')
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const [selectedCoverages, setSelectedCoverages] = useState<string[]>([])
-  const planListRef = useRef<HTMLDivElement>(null)
+
+  // Plans come directly from the store — set synchronously by the mutation
+  const isLoading = !!clientRequest.id && clientRequest.status === 'fetching'
+  const isError = clientRequest.status === 'error' && !!clientRequest.id
+
+  const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchFilter(event.target.value)
+  }
 
   const scrollToPlans = () => {
     setTimeout(() => {
-      planListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById('plan-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 100)
-  }
-  const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchFilter(event.target.value)
   }
 
   const toggleProvider = (code: string) => {
@@ -606,23 +287,14 @@ export function CoverageOptionsForm() {
       return
     }
     
-    // Store only PlanName in CustomFields for the issue-quote API
     const customFields = {
-      PlanName: plan.CarrierPlanDesc, // Use CarrierPlanDesc value as PlanName
+      PlanName: plan.CarrierPlanDesc,
     }
     
-    // Store in localStorage for immediate access
-    storePlanName(plan.CarrierPlanDesc) // Store PlanName specifically
-    
-    // Store in Zustand store for app-wide access
+    storePlanName(plan.CarrierPlanDesc)
     updateCustomFields(customFields)
-    
     updateCoverageOption({ selectedPlan: plan, carrierCode })
     
-    console.log('Plan selected - CustomFields stored for issue-quote:', customFields)
-    
-    // close websocket/echo connection before navigating away
-    closeEchoConnection()
     router.push(`/${agentCode}/products/travel-insurance/avail`)
   }
 
@@ -635,14 +307,6 @@ export function CoverageOptionsForm() {
       setHasReachedLimit(true)
       resetForm()
       removeStorage('travel-insurance-form')
-      // reached retry limit — ensure any open echo connection is closed
-      closeEchoConnection()
-      return
-    }
-
-    // Only refetch if we have a valid client request ID
-    if (clientRequest?.id) {
-      // refetch()
     }
   }
 
@@ -693,7 +357,7 @@ export function CoverageOptionsForm() {
   const hasPlans = insurancePlans?.data && insurancePlans.data.length > 0
 
   return (
-    <div className="relative w-full overflow-hidden border-0">
+    <div className="relative w-full border-0">
       {/* Overlay when form is modified */}
       {isFormModified && (
         <div className="absolute inset-0 z-20 flex items-start justify-center bg-black/60 pt-8 backdrop-blur-sm">
@@ -745,7 +409,7 @@ export function CoverageOptionsForm() {
       )}
 
       <div className="border-t-muted-foreground/10 flex border-t px-4 sm:px-6">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 py-6 sm:gap-6 sm:py-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 py-4 sm:gap-6 sm:py-8">
           {isPlansFetching ? (
             <>
               <div className="w-full text-center">
@@ -764,6 +428,7 @@ export function CoverageOptionsForm() {
                 </h1>
               </div>
 
+              {/* Search + sort row */}
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-start">
                 <div className="w-full sm:max-w-md">
                   <Input
@@ -781,6 +446,51 @@ export function CoverageOptionsForm() {
                   <ArrowDownUp />
                   Recommended
                 </Button>
+              </div>
+
+              {/* Mobile-only horizontal sort pills */}
+              <div className="flex sm:hidden gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+                {(
+                  [
+                    { value: 'lowest', label: '↓ Lowest Price' },
+                    { value: 'highest', label: '↑ Sum Insured' },
+                    { value: 'addons', label: '✦ With Add-ons' },
+                    { value: 'discounts', label: '% Discounts' },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSortBy(opt.value)}
+                    className={cn(
+                      'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                      sortBy === opt.value
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-gray-300 bg-white text-gray-600 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+                {!providerFilter && availableProviders.map((code: string) => {
+                  const company = COMPANIES.find((c) => c.carrierCode === code)
+                  const isActive = selectedProviders.includes(code)
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      onClick={() => toggleProvider(code)}
+                      className={cn(
+                        'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                        isActive
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-gray-300 bg-white text-gray-600 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300'
+                      )}
+                    >
+                      {company?.companyName || code}
+                    </button>
+                  )
+                })}
               </div>
             </>
           )}
@@ -966,7 +676,7 @@ export function CoverageOptionsForm() {
             </aside>
 
             {/* Plan list */}
-            <div ref={planListRef} className="flex flex-1 flex-col gap-4">
+            <div id="plan-list" className="flex flex-1 flex-col gap-4">
               <p className="text-foreground text-sm">
                 We have {allTravelPlans.length} recommendation{allTravelPlans.length !== 1 ? 's' : ''} to explore.
               </p>
@@ -991,40 +701,4 @@ export function CoverageOptionsForm() {
       </div>
     </div>
   )
-}
-
-function removeNullBenefitCodeItems(
-  response: TravelCompareQuoteResponse
-): TravelCompareQuoteResponse {
-  // Create a deep copy to avoid mutating the original object
-  const cleanedResponse: TravelCompareQuoteResponse = JSON.parse(
-    JSON.stringify(response)
-  )
-
-  // Process each plan
-  cleanedResponse.data.Plans.forEach((plan) => {
-    // Filter out AddonBenefits with null BenefitCode
-    if (plan.AddonBenefits) {
-      plan.AddonBenefits = plan.AddonBenefits.filter(
-        (benefit) => benefit.BenefitCode !== null
-      )
-    }
-
-    // Filter out MainBenefits with null BenefitCode
-    if (plan.MainBenefits) {
-      plan.MainBenefits = plan.MainBenefits.filter(
-        (benefit) => benefit.BenefitCode !== null
-      )
-    }
-  })
-
-  // Keep plans that have either MainBenefits OR AddonBenefits
-  // Some providers (e.g. OONA) may return plans with only AddonBenefits
-  cleanedResponse.data.Plans = cleanedResponse.data.Plans.filter(
-    (plan) =>
-      (plan.MainBenefits && plan.MainBenefits.length > 0) ||
-      (plan.AddonBenefits && plan.AddonBenefits.length > 0)
-  )
-
-  return cleanedResponse
 }

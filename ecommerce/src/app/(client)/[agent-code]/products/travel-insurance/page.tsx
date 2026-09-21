@@ -17,6 +17,7 @@ import { PageLoader } from '@/components/page-loader'
 import { Star } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { clearProposalNumber } from '@/utils/payment-storage'
+import { MobileProductNav } from '@/components/layout/mobile-product-nav'
 
 export default function TravelInsurancePage() {
   return (
@@ -43,19 +44,22 @@ function TravelInsurancePageSSR() {
     setHydrated(true)
     
     // Always reset the full form when landing on this page.
-    // If the user was mid-flow they'd be on /avail, not here.
-    // This prevents stale plan/traveler data from a previous session showing up.
     resetForm()
     setInsurancePlans(null)
     resetApiResponse()
     clearProposalNumber()
   }, [])
 
-
-
-
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-x-hidden pb-20 md:pb-0">
+      {/* Shared mobile bottom nav + desktop chrome hiding + sidebar mount */}
+      <MobileProductNav
+        searchContent={<ProposalSearch />}
+        searchTitle="Find Proposal"
+        plansTargetId="coverage-options"
+      />
+
+      {/* --- HERO SECTION --- */}
       <div className="relative h-[25rem] w-full md:h-[35rem] lg:h-[45rem]">
         <div className="relative h-full w-full">
           <Image
@@ -66,25 +70,17 @@ function TravelInsurancePageSSR() {
             fill
           />
 
-          <div
-            tabIndex={0}
-            role="button"
-            onClick={() => router.push('/')}
-            className="absolute top-4 left-3 z-10 cursor-pointer gap-3 rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg sm:top-8 sm:left-4 sm:px-12 lg:left-28 xl:left-32"
-          >
-            <Image
-              src="/images/logo.png"
-              alt="One Insurance"
-              width={140}
-              height={45}
-              className="h-7 w-auto sm:h-10"
-              priority
-            />
-          </div>
-
           <div className="absolute inset-0 bg-black/80 dark:bg-black/30" />
+
+          {/* Mobile-only brand logo — header is hidden on mobile by MobileProductNav */}
+          <div className="absolute top-4 left-3 z-10 md:hidden">
+            <a href={`/${agentCode}`} className="flex cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
+              <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-7 w-auto" priority />
+            </a>
+          </div>
         </div>
 
+        {/* Floating Logo Top Right */}
         <div className="absolute top-0 right-3 max-h-16 max-w-16 rounded-b-xl bg-white px-2 py-1.5 sm:right-8 sm:max-h-24 sm:max-w-24 sm:rounded-b-2xl sm:px-3 sm:py-2 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
           <Image
             src="/images/IFRC.png"
@@ -95,14 +91,15 @@ function TravelInsurancePageSSR() {
           />
         </div>
 
-        <div className="absolute inset-0 mx-auto -mt-8 flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-4 text-white lg:-mt-16">
-          <h1 className="text-3xl font-black md:text-4xl lg:text-5xl xl:text-6xl">
+        {/* Hero Text */}
+        <div className="absolute inset-0 mx-auto -mt-6 flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-5 text-white lg:-mt-16">
+          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl lg:text-5xl xl:text-6xl">
             Travel Confidently
           </h1>
-          <h2 className="text-xl font-semibold md:text-2xl lg:text-3xl xl:text-4xl">
+          <h2 className="hidden text-xl font-semibold text-slate-200 md:block md:text-2xl lg:text-3xl xl:text-4xl">
             We've Got You Covered!
           </h2>
-          <p className="max-w-4/5 text-sm md:text-base lg:max-w-2/5">
+          <p className="max-w-[280px] text-xs leading-relaxed text-slate-300 md:max-w-[90%] md:text-base lg:max-w-2/5">
             Get comprehensive travel insurance that protects you from trip
             cancellations, medical emergencies, and more—wherever your journey
             takes you.
@@ -110,16 +107,35 @@ function TravelInsurancePageSSR() {
         </div>
       </div>
 
-      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col gap-8 px-1.5 lg:-mt-40 lg:gap-12">
+      {/* --- FORMS SECTION --- */}
+      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
+        <style>{`
+          @media (max-width: 767px) {
+            [data-testid="travel-details-form"] {
+              border: none !important;
+              box-shadow: none !important;
+              background: transparent !important;
+            }
+            [data-testid="travel-details-form"] > div {
+              padding: 0 !important;
+            }
+          }
+        `}</style>
+        
         <TravelDetailsForm />
-        <ProposalSearch />
+        
+        {/* Proposal search is inline on desktop, but accessible via bottom nav sheet on mobile */}
+        <div className="hidden md:block">
+          <ProposalSearch />
+        </div>
       </div>
 
-      <div id="coverage-options" className="relative w-full pt-16 pb-12">
+      <div id="coverage-options" className="relative w-full pb-12 pt-8 md:pt-16">
         <CoverageOptionsForm />
       </div>
 
-      <div className="relative mx-auto flex h-full w-full max-w-7xl flex-col items-center justify-center gap-2.5 px-4">
+      {/* --- LOW PRIORITY CONTENT (lg+ only) --- */}
+      <div className="relative mx-auto hidden w-full max-w-7xl flex-col items-center justify-center gap-2.5 px-4 lg:flex">
         <h1 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-center text-2xl font-black text-transparent sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
           Why Choose Us?
         </h1>

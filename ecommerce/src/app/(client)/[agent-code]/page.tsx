@@ -25,6 +25,7 @@ import { INSURANCES } from '@/constants/insurances'
 import { COMPANIES } from '@/constants/companies'
 import { AGENT_CODE } from '@/constants/agent-code'
 import { useAgentCodeStore } from '@/store/agent-code-store'
+import { MobileHomeNav } from '@/components/layout/mobile-home-nav'
 
 export default function Home() {
 
@@ -147,39 +148,41 @@ export default function Home() {
   // }, [])
 
   return (
-    <div className="relative h-full w-full pt-10">
-      <section className="relative h-full w-full px-4 py-16 lg:py-20">
-        {/* Background Image Container with max-width and rounded edges */}
-        <div className="relative mx-auto h-full max-w-7xl overflow-hidden rounded-3xl lg:h-[35rem]">
+    <div className="relative h-full w-full pt-20 pb-20 md:pb-0">
+      {/* Mobile-only bottom navigation (keeps header/footer on home) */}
+      <MobileHomeNav />
+
+      <section className="relative h-[24rem] w-full sm:h-[28rem] lg:h-[36rem]">
+        {/* Full-bleed background image */}
+        <div className="absolute inset-0 h-full w-full overflow-hidden">
           <Image
             src="/images/hero-bg.png"
             alt="Hero background"
             fill
-            className="object-cover"
-            style={{
-              maskImage: 'linear-gradient(to right, transparent 0%, black 10%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%)'
-            }}
+            /* Image has baked-in rounded corners; scale up so the container clip
+               (overflow-hidden) crops them off, leaving clean square edges. */
+            className="scale-110 object-cover object-center"
+            sizes="100vw"
             priority
           />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent" />
 
-          {/* Content */}
-          <div className="relative z-10 flex h-full items-center px-8 lg:px-16">
-            <div className="max-w-2xl space-y-4">
-              <h1 className="text-3xl font-bold text-black sm:text-4xl lg:text-5xl xl:text-6xl">
-                Insurance Made Simple.
-              </h1>
-              <h2 className="text-3xl font-bold text-black sm:text-4xl lg:text-5xl xl:text-6xl">
-                Coverage Made Easy.
-              </h2>
-              <p className="text-base text-black sm:text-lg lg:text-xl">
-                Your one-stop shop to compare, choose,
-                <br />
-                and get insured — fast.
-              </p>
-            </div>
+          {/* Legibility scrims:
+              - horizontal white fade (desktop) so left-aligned copy stays readable
+              - vertical fade (mobile) where copy overlaps the image */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/40 to-transparent sm:bg-gradient-to-r sm:from-white sm:via-white/70 sm:to-transparent" />
+        </div>
+
+        {/* Constrained content within a full-bleed section */}
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6 sm:px-8 lg:px-12">
+          <div className="max-w-2xl space-y-4">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl xl:text-6xl">
+              Insurance Made Simple.
+              <br />
+              Coverage Made Easy.
+            </h1>
+            <p className="max-w-md text-base text-slate-700 sm:text-lg lg:text-xl">
+              Your one-stop shop to compare, choose, and get insured — fast.
+            </p>
           </div>
         </div>
       </section>

@@ -43,6 +43,17 @@ type HeaderProps = {
   isLoggedIn?: boolean
   className?: string
   contentContainerClassName?: string
+  /** Show the mobile hamburger (sidebar trigger) in the header. Defaults to true. */
+  showSidebarTrigger?: boolean
+  /** Show the brand logo. Defaults to true. */
+  showBrand?: boolean
+  /**
+   * Visual theme.
+   * - 'default': opaque background with primary-colored nav (light pages).
+   * - 'transparent': transparent background with light nav text, for
+   *   overlaying dark hero sections.
+   */
+  variant?: 'default' | 'transparent'
 } & (WithNavigationProps | NoNavigationProps)
 
 export const Header = ({
@@ -50,6 +61,9 @@ export const Header = ({
   isNavigationVisible = true,
   className,
   contentContainerClassName,
+  showSidebarTrigger = true,
+  showBrand = true,
+  variant = 'default',
   ...rest
 }: HeaderProps) => {
   const navigations = isNavigationVisible
@@ -58,13 +72,45 @@ export const Header = ({
 
   const {agentCode} = useAgentCodeStore()
 
+  // Desktop (lg) top-nav layout:
+  // - Promote the first 3 "Products" sub-items to top-level menu items
+  //   (abbreviating the 3rd — Comprehensive Third-Party Liability — to "CTPL").
+  // - Move the remaining Products sub-items under an "Other Insurances" group.
+  // The mobile sidebar keeps the original `navigations` structure untouched.
+  const desktopNavigations: NavigationItem[] = navigations.flatMap(
+    (navigation): NavigationItem[] => {
+      if (navigation.type !== 'multiple' || navigation.label !== 'Products') {
+        return [navigation]
+      }
+
+      const promoted = navigation.items.slice(0, 3)
+      const remaining = navigation.items.slice(3)
+
+      const promotedSingles: NavigationItem[] = promoted.map((item, index) => ({
+        type: 'single',
+        label: index === 2 ? 'CTPL' : item.title,
+        link: item.link,
+      }))
+
+      const otherGroup: NavigationItem[] =
+        remaining.length > 0
+          ? [{ type: 'multiple', label: 'Other Insurances', items: remaining }]
+          : []
+
+      return [...promotedSingles, ...otherGroup]
+    }
+  )
+
   const { isMobile } = useSidebar()
   const isSingIn = isLoggedIn ?? isSingedin()
+
+  const isTransparent = variant === 'transparent'
 
   return (
     <header
       className={cn(
-        'bg-background fixed top-0 z-40 h-20 w-full px-4 py-4 lg:px-8',
+        'z-40 h-20 w-full px-4 py-4 lg:px-8',
+        isTransparent ? 'absolute top-0 bg-transparent' : 'fixed top-0 bg-background',
         className
       )}
     >
@@ -75,15 +121,24 @@ export const Header = ({
         )}
       >
         <div className="flex items-center">
-          <SidebarTrigger
-            size="lg"
-            variant="ghost"
-            className={cn('h-10 w-10 rounded-full p-2', {
-              hidden: !isMobile,
-            })}
-          />
+          {showSidebarTrigger && (
+            <SidebarTrigger
+              size="lg"
+              variant="ghost"
+              className={cn('h-10 w-10 rounded-full p-2', {
+                hidden: !isMobile,
+              })}
+            />
+          )}
 
-          <Brand />
+          {showBrand &&
+            (isTransparent ? (
+              <div className="rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
+                <Brand href={agentCode ? `/${agentCode}` : '/'} />
+              </div>
+            ) : (
+              <Brand href={agentCode ? `/${agentCode}` : '/'} />
+            ))}
         </div>
 
         <div className="flex h-full items-center gap-8">
@@ -95,14 +150,21 @@ export const Header = ({
             >
               <NavigationMenu viewport={false}>
                 <NavigationMenuList>
-                  {navigations.map((navigation, index) => {
+                  {desktopNavigations.map((navigation, index) => {
                     const isList = navigation.type === 'multiple'
 
                     return (
                       <NavigationMenuItem key={index}>
                         {isList ? (
                           <>
-                            <NavigationMenuTrigger className='font-bold text-primary'>
+                            <NavigationMenuTrigger
+                              className={cn(
+                                'font-bold',
+                                isTransparent
+                                  ? 'bg-transparent text-white hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white data-[state=open]:bg-white/10 data-[state=open]:text-white data-[state=open]:hover:bg-white/10 data-[state=open]:focus:bg-white/10'
+                                  : 'text-primary'
+                              )}
+                            >
                               {navigation.label}
                             </NavigationMenuTrigger>
                             {navigation.items && (
@@ -125,7 +187,13 @@ export const Header = ({
                         ) : (
                           <NavigationMenuLink
                             asChild
-                            className={navigationMenuTriggerStyle() + ' font-bold text-primary'}
+                            className={cn(
+                              navigationMenuTriggerStyle(),
+                              'font-bold',
+                              isTransparent
+                                ? 'bg-transparent text-white hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white data-[active=true]:bg-white/10 data-[active=true]:text-white data-[active=true]:hover:bg-white/10 data-[active=true]:focus:bg-white/10'
+                                : 'text-primary'
+                            )}
                           >
                             <Link href={agentCode ? `/${agentCode}${navigation.link ?? '/'}` : navigation.link ?? '/'}>
                               {navigation.label}

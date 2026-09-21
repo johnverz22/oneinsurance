@@ -49,7 +49,11 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
   } = useTravelInsuranceStore()
 
   const [isSearching, setIsSearching] = useState(false)
-  const [isFormExpanded, setIsFormExpanded] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Track domestic mode explicitly — derived from store on init, then controlled by toggle
   const [isDomesticMode, setIsDomesticMode] = useState(() => {
@@ -158,10 +162,10 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       // Don't set status to undefined - just let the new request set it
       
       setIsSearching(true)
-      const clientRequestId = await mutateAsync({ values: value, agentCode: agentCode ?? '' })
+      await mutateAsync({ values: value, agentCode: agentCode ?? '' })
       setFormModified(false)
       setClientRequest({
-        id: clientRequestId,
+        id: 'sync', // sentinel: plans are already in store, no WebSocket needed
         status: 'success',
       })
 
@@ -242,23 +246,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       data-testid="travel-details-form"
     >
       <CardContent className="space-y-6 px-4 pt-3 pb-6 sm:px-8">
-        {/* Mobile collapse/expand toggle */}
-        <button
-          type="button"
-          className="flex w-full items-center justify-between lg:hidden"
-          onClick={() => setIsFormExpanded(!isFormExpanded)}
-        >
-          <span className="text-sm font-semibold text-gray-700">
-            {isFormExpanded ? 'Hide Form' : 'Show Form'}
-          </span>
-          {isFormExpanded ? (
-            <ChevronUp className="h-4 w-4 text-gray-500" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-500" />
-          )}
-        </button>
-
-        <div className={cn('space-y-6', { 'hidden lg:block': !isFormExpanded })}>
+        <div className="space-y-6">
         <div className="flex flex-col items-stretch justify-end gap-6 sm:flex-row sm:items-center sm:gap-4">
           <form.Field name="isAnnualMultiTrip">
             {(field) => (
@@ -757,27 +745,22 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
             )}
           </form.Field>
 
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
+          <Button
+            type="button"
+            disabled={!mounted || !isDetailsFormState.canSubmit}
+            suppressHydrationWarning
+            onClick={(e) => {
+              e.preventDefault()
+              if (!isDetailsFormState.canSubmit) return
+              setIsSearching(false)
+              setInsurancePlans(null)
+              form.handleSubmit()
+            }}
+            className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
+            size="lg"
           >
-            {([canSubmit, isSubmitting]) => (
-              <Button
-                type="button"
-                disabled={!isDetailsFormState.canSubmit}
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (!isDetailsFormState.canSubmit) return
-                  setIsSearching(false)
-                  setInsurancePlans(null)
-                  form.handleSubmit()
-                }}
-                className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
-                size="lg"
-              >
-                {isDetailsFormState.title}
-              </Button>
-            )}
-          </form.Subscribe>
+            {mounted ? isDetailsFormState.title : 'Search'}
+          </Button>
         </div>
         </div>
       </CardContent>

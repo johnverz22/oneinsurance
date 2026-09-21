@@ -11,6 +11,7 @@ import { Star, Shield, Car, CheckCircle2, Loader2, TriangleAlert } from 'lucide-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
+import { MobileProductNav } from '@/components/layout/mobile-product-nav'
 import { getEcho } from '@/lib/echo'
 import axios from 'axios'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
@@ -23,6 +24,14 @@ const CTPL_FAQS = [
   { question: 'How long is CTPL valid?', answers: ['CTPL is typically valid for one year, aligned with your vehicle registration period.'] },
   { question: 'Can I get CTPL online?', answers: ['Yes. Through One Insurance, you can get your CTPL insurance online quickly and conveniently.'] },
 ]
+
+// Shared styling for the comprehensive vehicle dropdowns.
+// `appearance-none` (incl. -webkit-appearance) strips Safari's native <select>
+// chrome so the rounded-pill styling and fixed height render consistently across
+// browsers; a custom SVG chevron is drawn via background-image, with right padding
+// so option text never overlaps it.
+const VEHICLE_SELECT_CLASS =
+  "h-10 w-full appearance-none rounded-full border bg-white bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")] bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pl-4 pr-9 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
 
 export default function CtplInsurancePage() {
   return (
@@ -302,29 +311,53 @@ function CtplInsurance() {
   }
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden pb-20 md:pb-0">
+      {/* Shared mobile bottom nav + desktop chrome hiding + sidebar mount */}
+      <MobileProductNav
+        searchContent={<MotorProposalSearch />}
+        searchTitle="Find Proposal"
+        plansTargetId="motor-plans"
+      />
+
       {/* Hero */}
       <div className="relative h-[25rem] w-full md:h-[35rem] lg:h-[45rem]">
         <div className="relative h-full w-full">
           <Image src="/our-products-motorvehicle.webp" alt="motor-hero" className="aspect-video object-cover opacity-75" sizes="100vw" fill />
           <div className="absolute inset-0 bg-black/80" />
-        </div>
-        <div tabIndex={0} role="button" onClick={() => router.push('/')} className="absolute top-4 left-3 z-10 cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg sm:top-8 sm:left-4 sm:px-12 lg:left-28">
-          <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-7 w-auto sm:h-10" priority />
+
+          {/* Mobile-only brand logo — header is hidden on mobile by MobileProductNav */}
+          <div className="absolute top-4 left-3 z-10 md:hidden">
+            <a href={`/${agentCode}`} className="flex cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
+              <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-7 w-auto" priority />
+            </a>
+          </div>
         </div>
         <div className="absolute top-0 right-3 max-h-16 max-w-16 rounded-b-xl bg-white px-2 py-1.5 sm:right-8 sm:max-h-24 sm:max-w-24 sm:rounded-b-2xl sm:px-3 sm:py-2 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
           <Image src="/images/IFRC.png" alt="IFRC Logo" width={1920} height={1240} className="h-full w-full object-contain" />
         </div>
-        <div className="absolute inset-0 mx-auto flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-4 text-white">
-          <h1 className="text-3xl font-black md:text-4xl lg:text-5xl xl:text-6xl">Motor Insurance</h1>
-          <h2 className="text-xl font-semibold md:text-2xl lg:text-3xl">CTPL & Comprehensive Coverage</h2>
-          <p className="text-sm md:text-base lg:max-w-2/5">Protect yourself and your vehicle with the right motor insurance plan.</p>
+        <div className="absolute inset-0 mx-auto -mt-6 flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-4 text-white lg:-mt-16">
+          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl lg:text-5xl xl:text-6xl">Motor Insurance</h1>
+          <h2 className="hidden text-xl font-semibold text-slate-200 md:block md:text-2xl lg:text-3xl xl:text-4xl">CTPL & Comprehensive Coverage</h2>
+          <p className="max-w-[280px] text-xs leading-relaxed text-slate-300 md:max-w-[90%] md:text-base lg:max-w-2/5">Protect yourself and your vehicle with the right motor insurance plan.</p>
         </div>
       </div>
 
       {/* Main Card - always visible, overlaps hero */}
-      <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col px-1.5 lg:-mt-40">
-        <div className="rounded-md bg-white shadow-lg backdrop-blur-sm overflow-hidden lg:rounded-xl">
+      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
+        <style>{`
+          @media (max-width: 767px) {
+            [data-testid="motor-details-form"] {
+              border: none !important;
+              box-shadow: none !important;
+              background: transparent !important;
+            }
+            [data-testid="motor-details-form"] > div {
+              padding: 0 !important;
+            }
+          }
+        `}</style>
+
+        <div data-testid="motor-details-form" className="rounded-md bg-white shadow-lg backdrop-blur-sm overflow-hidden lg:rounded-xl">
           {/* Header */}
           <div className="px-4 pt-3 pb-6 sm:px-8">
             <h2 className="text-2xl font-black text-gray-900">Choose Your Insurance Type</h2>
@@ -395,7 +428,7 @@ function CtplInsurance() {
                   <select
                     value={comprehensiveForm.vehicleType}
                     onChange={e => handleComprehensiveFieldChange('vehicleType', e.target.value)}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.vehicleType ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleType ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">Select Vehicle Type</option>
                     {[{ value: 'MOTORCYCLE', label: 'Motorcycle' }, { value: 'PRIVATECAR', label: 'Private Car' }, { value: 'COMMERCIAL', label: 'Commercial' }, { value: 'LTO', label: 'LTO' }].map(o => (
@@ -412,7 +445,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.vehicleMake}
                     onChange={e => handleComprehensiveFieldChange('vehicleMake', e.target.value)}
                     disabled={!comprehensiveForm.vehicleType || loadingField === 'vehicleMake'}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleMake ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleMake ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'vehicleMake' ? 'Loading...' : 'Select Make'}</option>
                     {makeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -427,7 +460,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.vehicleModel}
                     onChange={e => handleComprehensiveFieldChange('vehicleModel', e.target.value)}
                     disabled={!comprehensiveForm.vehicleMake || loadingField === 'vehicleModel'}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleModel ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleModel ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'vehicleModel' ? 'Loading...' : 'Select Model'}</option>
                     {modelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -442,7 +475,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.bodyType}
                     onChange={e => handleComprehensiveFieldChange('bodyType', e.target.value)}
                     disabled={!comprehensiveForm.vehicleModel || loadingField === 'bodyType'}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.bodyType ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.bodyType ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'bodyType' ? 'Loading...' : 'Select Body Type'}</option>
                     {bodyTypeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -457,7 +490,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.modelYear}
                     onChange={e => handleComprehensiveFieldChange('modelYear', e.target.value)}
                     disabled={!comprehensiveForm.bodyType || loadingField === 'modelYear'}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.modelYear ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.modelYear ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'modelYear' ? 'Loading...' : 'Select Year'}</option>
                     {yearOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -472,7 +505,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.subModel}
                     onChange={e => handleComprehensiveFieldChange('subModel', e.target.value)}
                     disabled={!comprehensiveForm.modelYear || loadingField === 'subModel'}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.subModel ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.subModel ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'subModel' ? 'Loading...' : 'Select Sub Model'}</option>
                     {subModelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -487,7 +520,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.vehicleUsage}
                     onChange={e => handleComprehensiveFieldChange('vehicleUsage', e.target.value)}
                     disabled={!comprehensiveForm.subModel || loadingField === 'vehicleUsage'}
-                    className={`w-full rounded-full border bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 ${comprehensiveFormErrors.vehicleUsage ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleUsage ? 'border-red-400' : 'border-gray-200'}`}
                   >
                     <option value="">{loadingField === 'vehicleUsage' ? 'Loading...' : 'Select Usage'}</option>
                     {usageOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -522,13 +555,13 @@ function CtplInsurance() {
           )}
         </div>
 
-        {/* Proposal Search */}
-        <div className="mt-4"><MotorProposalSearch /></div>
+        {/* Proposal Search — inline on desktop, in bottom-nav sheet on mobile */}
+        <div className="mt-4 hidden md:block"><MotorProposalSearch /></div>
       </div>
 
       {/* Plans section */}
       {insuranceType && !showComprehensiveForm && (
-        <div className="w-full mt-8 border-t border-gray-100">
+        <div id="motor-plans" className="w-full mt-8 border-t border-gray-100">
           <div className="mx-auto w-full max-w-7xl px-4 py-8">
             {isLoadingPlans && plans.length === 0 ? (
               <>
@@ -775,8 +808,8 @@ function CtplInsurance() {
         </div>
       )}
 
-      {/* Testimonials */}
-      <div className="mx-auto mt-16 w-full max-w-7xl px-4">
+      {/* Testimonials — hidden on mobile (low priority) */}
+      <div className="mx-auto mt-16 hidden w-full max-w-7xl px-4 md:block">
         <div className="mb-6">
           <h2 className="text-2xl font-black text-gray-900">What Our Customers Say</h2>
           <p className="text-sm text-gray-500">Real stories from real Filipino families we've protected</p>
@@ -806,8 +839,8 @@ function CtplInsurance() {
         </div>
       </div>
 
-      {/* FAQs */}
-      <section className="mt-16 w-full bg-[#eef2f7] py-16">
+      {/* FAQs — hidden on mobile (low priority) */}
+      <section className="mt-16 hidden w-full bg-[#eef2f7] py-16 md:block">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-3 md:gap-12">
             <div className="space-y-4">

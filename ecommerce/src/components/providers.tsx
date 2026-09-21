@@ -16,7 +16,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       enableSystem
       disableTransitionOnChange
     >
-      <SidebarProvider className="flex flex-col">
+      <SidebarProvider>
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
