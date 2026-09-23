@@ -676,7 +676,7 @@ export function CoverageOptionsForm() {
             </aside>
 
             {/* Plan list */}
-            <div id="plan-list" className="flex flex-1 flex-col gap-4">
+            <div id="plan-list" className="flex flex-1 flex-col gap-2">
               <p className="text-foreground text-sm">
                 We have {allTravelPlans.length} recommendation{allTravelPlans.length !== 1 ? 's' : ''} to explore.
               </p>

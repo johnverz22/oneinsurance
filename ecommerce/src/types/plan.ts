@@ -29,16 +29,19 @@ export const InsurancePlanSchema = z.object({
   CarrierPlanDesc: z.string(),
   CarrierProductCode: z.string(),
   CarrierProductName: z.string(),
+  Currency: z.string().optional(),
   DiscountAmount: z.string().nullable(),
   DuePremium: z.union([z.number(), z.string()]),
   GrossPremium: z.union([z.number(), z.string()]),
   LGTAmount: z.union([z.number(), z.string()]),
+  LogoUrl: z.string().optional(),
   MainBenefits: z.array(InsuranceBenefitSchema),
   PremiumTaxAmt: z.union([z.number(), z.string()]).nullable(),
   StampDuty: z.union([z.number(), z.string()]).nullable(),
   SumInsured: z.string().nullable(),
   TaxAmount: z.union([z.number(), z.string()]).nullable(),
   VatAmount: z.union([z.number(), z.string()]).nullable(),
+  Zone: z.object({ code: z.string(), name: z.string() }).optional(),
 })
 
 export const TravelInsuranceDataSchema = z.object({

@@ -33,6 +33,7 @@ function TravelInsurancePageSSR() {
     setInsurancePlans,
     resetAvailForm,
     setFormModified,
+    insurancePlans,
   } = useTravelInsuranceStore()
   const { resetApiResponse } = useFullQuoteResponseStore()
   const router = useRouter()
@@ -51,7 +52,7 @@ function TravelInsurancePageSSR() {
   }, [])
 
   return (
-    <div className="relative overflow-x-hidden pb-20 md:pb-0">
+    <div className="relative overflow-x-hidden pb-16 md:pb-0">
       {/* Shared mobile bottom nav + desktop chrome hiding + sidebar mount */}
       <MobileProductNav
         searchContent={<ProposalSearch />}
@@ -108,7 +109,7 @@ function TravelInsurancePageSSR() {
       </div>
 
       {/* --- FORMS SECTION --- */}
-      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
+      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-5 pt-6 md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 lg:-mt-40 lg:gap-12">
         <style>{`
           @media (max-width: 767px) {
             [data-testid="travel-details-form"] {
@@ -124,15 +125,16 @@ function TravelInsurancePageSSR() {
         
         <TravelDetailsForm />
         
-        {/* Proposal search is inline on desktop, but accessible via bottom nav sheet on mobile */}
-        <div className="hidden md:block">
-          <ProposalSearch />
+        <div className="mt-4 md:mt-0">
+          <ProposalSearch variant="collapsible" />
         </div>
       </div>
 
-      <div id="coverage-options" className="relative w-full pb-12 pt-8 md:pt-16">
-        <CoverageOptionsForm />
-      </div>
+      {insurancePlans && (
+        <div id="coverage-options" className="relative w-full pb-0 pt-4 md:pb-12 md:pt-16">
+          <CoverageOptionsForm />
+        </div>
+      )}
 
       {/* --- LOW PRIORITY CONTENT (lg+ only) --- */}
       <div className="relative mx-auto hidden w-full max-w-7xl flex-col items-center justify-center gap-2.5 px-4 lg:flex">

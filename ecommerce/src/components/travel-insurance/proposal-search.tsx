@@ -1,19 +1,25 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Search, Loader2, AlertCircle, X } from 'lucide-react'
+import { Search, Loader2, AlertCircle, X, ChevronDown, FileSearch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { toast } from 'sonner'
 import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
 import { useRouter, useParams } from 'next/navigation'
 import { PaymentSuccessInline } from '@/components/payment/payment-success-inline'
 import { PaymentBrand } from '@/types/payment'
+import { cn } from '@/lib/utils'
 
-export function ProposalSearch() {
+type ProposalSearchProps = {
+  variant?: 'full' | 'collapsible'
+}
+
+export function ProposalSearch({ variant = 'full' }: ProposalSearchProps) {
   const [proposalNumber, setProposalNumber] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -380,75 +386,108 @@ export function ProposalSearch() {
     }
   }
 
-  return (
-    <Card className="w-full shadow-lg">
-      <CardContent className="pt-6">
-        <div className="space-y-4">
+  const searchFormContent = (
+    <div className="space-y-4">
+      {variant === 'full' && (
+        <>
           <div className="flex items-center justify-between">
             <Label htmlFor="proposal-search" className="text-lg font-semibold">
               Have an existing proposal?
             </Label>
           </div>
-          
           <p className="text-sm text-foreground">
             Enter your proposal number to retrieve your saved quote and continue to payment. If payment is already completed, you'll see your policy details and confirmation.
           </p>
+        </>
+      )}
 
-          {/* Error Card */}
-          {errorMessage && (
-            <Alert className={`${errorType === 'business' ? 'border-orange-200 bg-orange-50' : 'border-red-200 bg-red-50'}`}>
-              <AlertCircle className={`h-4 w-4 ${errorType === 'business' ? 'text-orange-600' : 'text-red-600'}`} />
-              <AlertDescription className="flex items-center justify-between">
-                <span className={`${errorType === 'business' ? 'text-orange-800' : 'text-red-800'}`}>
-                  {errorMessage}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearError}
-                  className={`ml-2 h-6 w-6 p-0 ${errorType === 'business' ? 'text-orange-600 hover:text-orange-800' : 'text-red-600 hover:text-red-800'}`}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="w-full sm:flex-1">
-              <Input
-                id="proposal-search"
-                placeholder="Enter proposal number (e.g., PTRAVEL0000000803)"
-                value={proposalNumber}
-                onChange={(e) => {
-                  setProposalNumber(e.target.value)
-                  // Clear error when user starts typing
-                  if (errorMessage) {
-                    clearError()
-                  }
-                }}
-                onKeyDown={handleKeyPress}
-                disabled={isLoading}
-                className="h-12"
-              />
-            </div>
+      {errorMessage && (
+        <Alert className={`${errorType === 'business' ? 'border-orange-200 bg-orange-50' : 'border-red-200 bg-red-50'}`}>
+          <AlertCircle className={`h-4 w-4 ${errorType === 'business' ? 'text-orange-600' : 'text-red-600'}`} />
+          <AlertDescription className="flex items-center justify-between">
+            <span className={`${errorType === 'business' ? 'text-orange-800' : 'text-red-800'}`}>
+              {errorMessage}
+            </span>
             <Button
-              onClick={handleSearch}
-              disabled={isLoading}
-              className="from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-50 sm:w-auto dark:text-white"
-              size="lg"
+              variant="ghost"
+              size="sm"
+              onClick={clearError}
+              className={`ml-2 h-6 w-6 p-0 ${errorType === 'business' ? 'text-orange-600 hover:text-orange-800' : 'text-red-600 hover:text-red-800'}`}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                'Search'
-              )}
+              <X className="h-4 w-4" />
             </Button>
-          </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="w-full sm:flex-1">
+          <Input
+            id="proposal-search"
+            placeholder="Enter proposal number (e.g., PTRAVEL0000000803)"
+            value={proposalNumber}
+            onChange={(e) => {
+              setProposalNumber(e.target.value)
+              if (errorMessage) {
+                clearError()
+              }
+            }}
+            onKeyDown={handleKeyPress}
+            disabled={isLoading}
+            className="h-12"
+          />
         </div>
+        <Button
+          onClick={handleSearch}
+          disabled={isLoading}
+          className="from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% px-6 font-semibold text-white shadow-lg disabled:pointer-events-none disabled:opacity-50 sm:w-auto dark:text-white"
+          size="lg"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            'Search'
+          )}
+        </Button>
+      </div>
+    </div>
+  )
+
+  if (variant === 'collapsible') {
+    return (
+      <Collapsible defaultOpen={false}>
+        <Card className="w-full border-dashed shadow-none">
+          <CollapsibleTrigger asChild>
+            <button className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="from-primary to-accent flex size-10 items-center justify-center rounded-full bg-gradient-to-r">
+                  <FileSearch className="size-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Have an existing proposal?</p>
+                  <p className="text-xs text-muted-foreground">Retrieve a saved quote or check your policy</p>
+                </div>
+              </div>
+              <ChevronDown className="size-5 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-6">
+              {searchFormContent}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+    )
+  }
+
+  return (
+    <Card className="w-full shadow-lg">
+      <CardContent className="pt-6">
+        {searchFormContent}
       </CardContent>
     </Card>
   )

@@ -10,6 +10,7 @@ type InsuranceCardProps = Insurance & {
   orientation?: 'horizontal' | 'vertical'
   className?: string
   companyName?: string
+  enabled?: boolean
 }
 
 export const InsuranceCard = ({
@@ -17,9 +18,11 @@ export const InsuranceCard = ({
   orientation = 'horizontal',
   className,
   companyName,
+  enabled = true,
   ...insurance
 }: InsuranceCardProps) => {
   const img = insurance.image ?? '/logo.png'
+
 
   if (variant === 'compact') {
     return (
@@ -34,9 +37,14 @@ export const InsuranceCard = ({
           <Image
             src={img}
             alt={insurance.title}
-            className="object-cover"
+            className={cn("object-cover", !enabled && "grayscale opacity-80")}
             fill
           />
+          {!enabled && (
+            <div className="absolute top-4 left-4 rounded-md bg-slate-800/90 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
+              Coming Soon
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -58,10 +66,14 @@ export const InsuranceCard = ({
             >
               <Link
                 href={insurance.checkoutLink}
-                className="from-primary to-tertiary bg-gradient-to-r bg-clip-text text-transparent"
+                className={cn(
+                  "bg-clip-text text-transparent",
+                  !enabled ? "bg-slate-500" : "from-primary to-tertiary bg-gradient-to-r"
+                )}
               >
                 Learn More
               </Link>
+
             </Button>
           </div>
         </div>
@@ -76,14 +88,17 @@ export const InsuranceCard = ({
         className
       )}
     >
-      {insurance.tag && (
+      {(insurance.tag || !enabled) && (
         <div className="absolute top-10 -left-[21px] z-10">
           <div className="border-t-primary absolute -bottom-[16px] -left-px h-0 w-0 rounded-tl-md border-t-[18px] border-l-[22px] border-r-transparent border-l-transparent" />
 
           <div className="relative">
-            <div className="bg-lilac insurances-center z-10 flex gap-1 rounded-sm rounded-bl-xs px-6 py-2 text-xs font-semibold text-white shadow-lg">
-              <span>⭐</span>
-              <span>{insurance.tag}</span>
+            <div className={cn(
+              "insurances-center z-10 flex gap-1 rounded-sm rounded-bl-xs px-6 py-2 text-xs font-semibold shadow-lg",
+              !enabled ? "bg-slate-500 text-white" : "bg-lilac text-white"
+            )}>
+              {enabled && <span>⭐</span>}
+              <span>{!enabled ? 'Coming Soon' : insurance.tag}</span>
             </div>
           </div>
         </div>
@@ -106,7 +121,7 @@ export const InsuranceCard = ({
           <Image
             src={img}
             alt={insurance.title}
-            className="object-cover"
+            className={cn("object-cover", !enabled && "grayscale opacity-80")}
             fill
           />
         </div>
@@ -129,7 +144,7 @@ export const InsuranceCard = ({
             className="text-foreground !px-0 py-0 underline underline-offset-8"
             asChild
           >
-            <Link href={`/coming-soon`}>
+            <Link href={insurance.checkoutLink}>
               Learn More <ChevronRight />
             </Link>
           </Button>

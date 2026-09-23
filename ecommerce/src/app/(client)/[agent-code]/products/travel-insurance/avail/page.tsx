@@ -273,7 +273,7 @@ export default function AvailTravelInsurance() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#F3F5FC]">
+    <div className="relative min-h-screen lg:min-h-0 w-full bg-[#F3F5FC]">
       {/* ── Header ── */}
       <div className="sticky top-0 z-20 border-b border-gray-200/60 bg-white shadow-sm lg:relative lg:z-auto lg:border-0 lg:bg-[#F3F5FC] lg:shadow-none">
         {/* Logo bar */}
@@ -310,7 +310,7 @@ export default function AvailTravelInsurance() {
         </div>
       </div>
 
-      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 pb-20 lg:flex-row lg:items-start lg:pb-0">
+      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 pt-6 pb-20 lg:flex-row lg:items-start lg:pt-8 lg:pb-12">
         <div className={cn('lg:col-span-3 lg:w-3/5', { 'lg:w-full': step > 3 })}>
           {steps[step].component}
         </div>

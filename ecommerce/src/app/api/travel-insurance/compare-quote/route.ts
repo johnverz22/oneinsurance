@@ -2,18 +2,35 @@ import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-hand
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
-// IGW response shapes
-interface IgwBenefit {
+// IGW response shapes (v2 — coverages with per-benefit limit objects)
+
+interface IgwCoverageLimit {
+  type: 'amount' | 'included' | 'unlimited'
+  amount: string | null
+  sub_limit_amount: string | null
+  sub_limit_per: string | null
+  per_unit: string | null
+  per_unit_size: number | null
+  max_units: number | null
+  waiting_period_hours: number | null
+  notes: string | null
+}
+
+interface IgwCoverage {
   category: string
   name: string
+  is_optional: boolean
+  addon_code: string | null
+  limit: IgwCoverageLimit
 }
 
 interface IgwPlanItem {
-  insurer: { name: string; logo_url: string }
+  insurer: { name: string; logo_url: string | null }
   product: { code: string; name: string }
   plan: { code: string; name: string; sum_insured: string }
+  zone: { code: string; name: string }
   premium: { amount: string; currency: string }
-  benefits: IgwBenefit[]
+  coverages: IgwCoverage[]
 }
 
 interface IgwCompareQuoteResponse {
@@ -51,13 +68,47 @@ function insurerNameToCarrierCode(insurerName: string): string {
 }
 
 /**
- * Maps the flat IGW response into the internal TravelInsuranceApiResponse shape
+ * Derives a human-readable limit string from a coverage limit object.
+ *
+ * - type "amount"    → formatted numeric string, e.g. "1,000,000.00"
+ * - type "included"  → "Included"
+ * - type "unlimited" → "Unlimited"
+ *
+ * Returns null when there is no meaningful display value.
+ */
+function deriveLimitDisplay(limit: IgwCoverageLimit): {
+  silimit: string | undefined
+  defaultLimitDesc: string | undefined
+} {
+  switch (limit.type) {
+    case 'amount':
+      return {
+        silimit: limit.amount ?? undefined,
+        defaultLimitDesc: undefined,
+      }
+    case 'included':
+      return {
+        silimit: undefined,
+        defaultLimitDesc: 'Included',
+      }
+    case 'unlimited':
+      return {
+        silimit: undefined,
+        defaultLimitDesc: 'Unlimited',
+      }
+    default:
+      return { silimit: undefined, defaultLimitDesc: undefined }
+  }
+}
+
+/**
+ * Maps the IGW response into the internal TravelInsuranceApiResponse shape
  * expected by the store and coverage-options-form.
  *
  * Groups plans by insurer so each entry in data[] has a CarrierCode and Plans[].
+ * Uses the new coverages[].limit structure for accurate per-benefit amounts.
  */
 function mapIgwResponseToInternal(igw: IgwCompareQuoteResponse) {
-  // Group plans by insurer (mapped to internal carrier code)
   const grouped = new Map<string, { carrierCode: string; items: IgwPlanItem[] }>()
 
   for (const item of igw.data) {
@@ -74,18 +125,31 @@ function mapIgwResponseToInternal(igw: IgwCompareQuoteResponse) {
     ProductCode: items[0].product.code,
     ProductVersion: '1.0',
     Plans: items.map((item) => {
-      // Split benefits into main and addon — IGW doesn't distinguish, so treat all as MainBenefits
-      const mainBenefits = item.benefits.map((b, idx) => ({
-        BenefitCode: `${item.plan.code}-${idx}`,
-        BenefitDesc: b.name,
-        BenefitType: 'MAIN',
-        CoverageName: b.category,
-        SubCoverageName: b.name,
-        DisplaySeqNo: String(idx + 1),
-        Silimit: item.plan.sum_insured,
-        IsMainBenefit: 'Y',
-        IsApplicable: 'Y',
-      }))
+      const mapCoverage = (c: IgwCoverage, idx: number) => {
+        const { silimit, defaultLimitDesc } = deriveLimitDisplay(c.limit)
+        return {
+          BenefitCode: c.addon_code ?? `${item.plan.code}-${idx}`,
+          BenefitDesc: c.name,
+          BenefitType: c.is_optional ? 'ADDON' : 'MAIN',
+          CoverageName: c.category,
+          SubCoverageName: c.name,
+          DisplaySeqNo: String(idx + 1),
+          Silimit: silimit,
+          DefaultLimitDesc: defaultLimitDesc,
+          // notes surface as LimitModeDesc (e.g. "Per day, up to 7 days.")
+          LimitModeDesc: c.limit.notes ?? undefined,
+          IsMainBenefit: c.is_optional ? 'N' : 'Y',
+          IsApplicable: 'Y',
+        }
+      }
+
+      const mainBenefits = item.coverages
+        .filter((c) => !c.is_optional)
+        .map((c, idx) => mapCoverage(c, idx))
+
+      const addonBenefits = item.coverages
+        .filter((c) => c.is_optional)
+        .map((c, idx) => mapCoverage(c, idx))
 
       return {
         CarrierPlanCode: item.plan.code,
@@ -95,6 +159,8 @@ function mapIgwResponseToInternal(igw: IgwCompareQuoteResponse) {
         DuePremium: item.premium.amount,
         GrossPremium: item.premium.amount,
         BeforeVatPremium: item.premium.amount,
+        Currency: item.premium.currency,
+        Zone: item.zone,
         LGTAmount: '0',
         VatAmount: null,
         TaxAmount: null,
@@ -102,8 +168,9 @@ function mapIgwResponseToInternal(igw: IgwCompareQuoteResponse) {
         StampDuty: null,
         DiscountAmount: null,
         SumInsured: item.plan.sum_insured,
+        LogoUrl: item.insurer.logo_url ?? undefined,
         MainBenefits: mainBenefits,
-        AddonBenefits: [],
+        AddonBenefits: addonBenefits,
       }
     }),
   }))

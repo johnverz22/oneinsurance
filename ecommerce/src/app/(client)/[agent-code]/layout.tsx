@@ -72,7 +72,7 @@ export default function ProductsLayout({
         </div>
       )}
 
-      <main className="min-h-full w-full">{children}</main>
+      <main className={`w-full${pathname.includes('/avail') ? '' : ' min-h-full'}`}>{children}</main>
 
       {/* Avail pages: footer hidden on mobile (fixed action bar takes that space),
           shown on lg+ where the action bar is not rendered */}

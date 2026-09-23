@@ -68,7 +68,6 @@
     "sonner": "^2.0.6",
     "sqlite3": "^6.0.1",
     "tailwind-merge": "^3.3.1",
-    "tesseract.js": "^6.0.1",
     "zod": "^3.25.67",
     "zustand": "^5.0.5"
   },
@@ -89,5 +88,17 @@
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"
   },
-  "packageManager": "yarn@4.9.2"
+  "overrides": {
+    "@react-pdf/renderer": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
+  "allowScripts": {
+    "@tailwindcss/oxide@4.1.14": true,
+    "core-js@3.46.0": true,
+    "protobufjs@7.6.5": true,
+    "sqlite3@6.0.1": true,
+    "unrs-resolver@1.11.1": true
+  }
 }

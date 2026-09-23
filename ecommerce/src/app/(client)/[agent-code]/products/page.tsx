@@ -6,6 +6,7 @@ import { InsuranceCard } from '@/components/insurance-card'
 import { INSURANCES } from '@/constants/insurances'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PRODUCT_FLAGS, ProductKey } from '@/lib/product-flags'
 
 export default function ProductsPage() {
   const [searchFilter, setSearchFilter] = useState('')
@@ -14,7 +15,7 @@ export default function ProductsPage() {
     if (!searchFilter) return INSURANCES
 
     return INSURANCES.filter((insurance) =>
-      insurance.title.includes(searchFilter)
+      insurance.title.toLowerCase().includes(searchFilter.toLowerCase())
     )
   }, [searchFilter])
 
@@ -67,14 +68,20 @@ export default function ProductsPage() {
 
         <div className="flex w-full flex-col items-center justify-between gap-8">
           {FILTERED_INSURANCES.length > 0 ? (
-            FILTERED_INSURANCES.map((product, index) => (
-              <InsuranceCard
-                key={index}
-                variant="expanded"
-                className="md:w-full"
-                {...product}
-              />
-            ))
+            FILTERED_INSURANCES.map((product, index) => {
+              const productKey = product.checkoutLink.split('/').pop() || ''
+              const isEnabled = PRODUCT_FLAGS[productKey] ?? false
+
+              return (
+                <InsuranceCard
+                  key={index}
+                  variant="expanded"
+                  className="md:w-full"
+                  enabled={isEnabled}
+                  {...product}
+                />
+              )
+            })
           ) : (
             <div className="bg-muted-foreground/20 border-muted-foreground/30 flex h-full w-full flex-col items-center justify-center gap-4 rounded-lg border p-12">
               <TextSearch size={64} strokeWidth={0.75} />

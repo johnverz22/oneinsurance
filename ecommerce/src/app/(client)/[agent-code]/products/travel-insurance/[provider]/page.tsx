@@ -38,6 +38,7 @@ function ProviderTravelInsurancePageContent() {
   const params = useParams()
   const providerSlug = params.provider as string
   const { setProviderFilter } = useTravelProviderFilter()
+  const { agentCode } = useAgentCodeStore()
 
   useEffect(() => {
     // Set the provider filter based on URL slug

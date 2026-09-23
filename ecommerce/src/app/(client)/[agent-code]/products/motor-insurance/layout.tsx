@@ -1,16 +1,25 @@
-'use client'
+import { HoldingPage } from '@/components/holding-page'
+import { PRODUCT_FLAGS } from '@/lib/product-flags'
+import { ScrollToTop } from '@/components/scroll-to-top'
 
-import { useEffect } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-export default function CtplInsuranceLayout({
+export default function MotorInsuranceLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+  if (!PRODUCT_FLAGS['motor-insurance']) {
+    return <HoldingPage reason="product" />
+  }
 
-  return <div>{children}</div>
+  // Check if backend is explicitly offline
+  if (process.env.BACKEND_OFFLINE === 'true') {
+    return <HoldingPage reason="backend" />
+  }
+  
+  return (
+    <>
+      <ScrollToTop />
+      {children}
+    </>
+  )
 }

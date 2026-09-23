@@ -87,12 +87,15 @@ export function ReviewCoverage() {
 
   return (
     <div className="relative w-full space-y-4 border-0">
-      <div className="space-y-8">
+      <div className="space-y-4 lg:space-y-8">
         <TravelDetailsSummary />
 
-        <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
+        <Card className={cn("bg-background overflow-hidden p-0 shadow-none", { "pb-8": isPlanExpanded })}>
           <CardHeader
-            className="flex items-center justify-between -space-y-2 pt-4 sm:pt-6 cursor-pointer lg:cursor-default"
+            className={cn(
+              "flex items-center justify-between cursor-pointer lg:cursor-default",
+              !isPlanExpanded ? "py-4 sm:py-6" : "pt-4 pb-2 sm:pt-6"
+            )}
             onClick={() => setIsPlanExpanded(!isPlanExpanded)}
           >
             <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>

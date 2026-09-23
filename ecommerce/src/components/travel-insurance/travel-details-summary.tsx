@@ -75,7 +75,10 @@ export function TravelDetailsSummary() {
     <div className="space-y-4">
       <Card className="bg-background overflow-hidden p-0 shadow-none">
         <CardHeader
-          className="flex items-center justify-between -space-y-2 pt-4 pb-2 sm:pt-6 cursor-pointer lg:cursor-default"
+          className={cn(
+            "flex items-center justify-between cursor-pointer lg:cursor-default",
+            !isExpanded ? "py-4 sm:py-6" : "pt-4 pb-2 sm:pt-6"
+          )}
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center gap-2">
