@@ -85,7 +85,7 @@ export function InsurancePlans({
               <h3 className="text-foreground text-left text-xl font-bold tracking-wide text-wrap uppercase">
                 {plan.CarrierProductName}
               </h3>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-success">
                 PHP {plan.GrossPremium.toLocaleString()}
               </div>
             </div>

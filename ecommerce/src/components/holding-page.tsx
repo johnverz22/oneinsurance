@@ -10,28 +10,28 @@ export function HoldingPage({ reason }: HoldingPageProps) {
   if (reason === 'backend') {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-white p-8 text-center shadow-xl">
           <div className="relative mb-6">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
-              <WifiOff className="h-10 w-10 text-red-500" />
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
+              <WifiOff className="h-10 w-10 text-destructive" />
             </div>
-            <div className="absolute -top-1 -right-1 flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-red-500">
+            <div className="absolute -top-1 -right-1 flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-destructive">
               <AlertCircle className="h-4 w-4 text-white" />
             </div>
           </div>
 
-          <h1 className="mb-2 text-2xl font-bold text-slate-800">
+          <h1 className="mb-2 text-2xl font-bold text-foreground">
             System Unavailable
           </h1>
 
-          <p className="mb-6 leading-relaxed text-slate-600">
+          <p className="mb-6 leading-relaxed text-muted-foreground">
             Our services are temporarily down for maintenance. Please check back later.
           </p>
 
           <div className="space-y-3">
             <Button
               size="lg"
-              className="w-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+              className="w-full bg-muted text-muted-foreground hover:bg-slate-200"
               asChild
             >
               <Link href="/">
@@ -59,7 +59,7 @@ export function HoldingPage({ reason }: HoldingPageProps) {
             <h1 className="from-primary to-tertiary bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent sm:text-5xl lg:text-6xl">
               Coming Soon
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600 sm:text-xl dark:text-gray-400">
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl dark:text-muted-foreground">
               We're working hard to bring you something amazing. This feature
               will be available soon!
             </p>
@@ -71,7 +71,7 @@ export function HoldingPage({ reason }: HoldingPageProps) {
                 <Bell className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-semibold">Get Notified</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Be the first to know when we launch
               </p>
             </div>
@@ -81,7 +81,7 @@ export function HoldingPage({ reason }: HoldingPageProps) {
                 <Calendar className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-semibold">Coming Soon</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 New features in development
               </p>
             </div>
@@ -91,7 +91,7 @@ export function HoldingPage({ reason }: HoldingPageProps) {
                 <Clock className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-semibold">Stay Tuned</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Exciting updates on the way
               </p>
             </div>

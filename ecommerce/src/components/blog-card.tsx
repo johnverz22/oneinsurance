@@ -40,7 +40,7 @@ export const BlogCard = ({
           </p>
 
           {/* Title */}
-          <h3 className="line-clamp-2 text-lg leading-tight font-bold text-gray-900">
+          <h3 className="line-clamp-2 text-lg leading-tight font-bold text-foreground">
             {title}
           </h3>
 

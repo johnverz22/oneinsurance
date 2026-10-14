@@ -2,10 +2,18 @@
 
 import { useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Search, ShoppingCart, Loader2, TriangleAlert } from 'lucide-react'
+import { Search, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  PlanCardSkeleton,
+  NoPlanState,
+  SortFilterSidebar,
+  PriceDisplay,
+  PrimaryActionButton,
+} from '@/components/ui/insurance-shared'
 import { useHealthCartStore } from '@/store/health-cart-store'
 import { useHealthAvailStore } from '@/store/health-avail-store'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
@@ -161,22 +169,7 @@ export function HealthPlansGrid() {
             <div className="flex flex-1 flex-col gap-4">
               <Skeleton className="h-4 w-56" />
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex w-full overflow-hidden rounded-xl border">
-                  <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[120px] rounded-none" />
-                  <div className="flex flex-1 flex-col justify-center p-4 sm:p-5 gap-3">
-                    <Skeleton className="h-5 w-[55%]" />
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                    </div>
-                  </div>
-                  <div className="flex w-[140px] sm:w-[160px] md:w-[180px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
-                    <Skeleton className="h-7 w-16" />
-                    <Skeleton className="h-3 w-12" />
-                    <Skeleton className="h-8 w-full rounded-full" />
-                  </div>
-                </div>
+                <PlanCardSkeleton key={i} />
               ))}
               <p className="text-muted-foreground text-center text-sm">
                 Searching for the best plans for you...
@@ -195,25 +188,14 @@ export function HealthPlansGrid() {
           <h2 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-4xl font-black text-transparent md:text-5xl mb-8 text-center">
             Choose your Health Plans
           </h2>
-          <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <div className="mb-4 flex justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-                <TriangleAlert className="h-7 w-7 text-gray-400" />
-              </div>
-            </div>
-            <h3 className="mb-2 text-lg font-bold text-gray-800">No Plans Available</h3>
-            <p className="mb-4 text-sm text-gray-500">
-              {plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('authorized') || plansError.toLowerCase().includes('lob')
+          <NoPlanState
+            message={
+              plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('authorized') || plansError.toLowerCase().includes('lob')
                 ? "We're sorry, but health insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
-                : plansError}
-            </p>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
-            >
-              Modify Search
-            </button>
-          </div>
+                : plansError
+            }
+            onModifySearch={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          />
         </div>
       </section>
     )
@@ -252,7 +234,7 @@ export function HealthPlansGrid() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search plans..."
-                className="h-10 w-56 rounded-full bg-white pl-9 border border-gray-200"
+                className="h-10 w-56 rounded-full bg-white pl-9 border border-border"
               />
             </div>
             <Button size="sm" className="from-primary to-accent rounded-full bg-gradient-to-r text-white gap-1.5">
@@ -274,44 +256,23 @@ export function HealthPlansGrid() {
         {/* Plans list with sidebar — horizontal card layout */}
         <div className="flex gap-6">
           {/* Left sidebar filters */}
-          <aside className="hidden w-[200px] shrink-0 lg:block">
-            <div className="sticky top-4 space-y-6">
-              <div>
-                <h4 className="text-foreground mb-2 text-sm font-bold">Sorted by</h4>
-                <ul className="space-y-1.5">
-                  <li>
-                    <button type="button" onClick={() => setSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-                      <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
-                      Lowest premium
-                    </button>
-                  </li>
-                  <li>
-                    <button type="button" onClick={() => setSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-                      <span className={`h-2.5 w-2.5 rounded-full border ${sortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
-                      Highest sum insured
-                    </button>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-foreground mb-2 text-sm font-bold">By providers</h4>
-                <ul className="space-y-1.5">
-                  {availableProviders.map((code: string) => {
-                    const company = COMPANIES.find((c) => c.carrierCode === code)
-                    const isActive = selectedProviders.length === 0 || selectedProviders.includes(code)
-                    return (
-                      <li key={code}>
-                        <button type="button" onClick={() => toggleProvider(code)} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-                          <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
-                          {company?.companyName || code}
-                        </button>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            </div>
-          </aside>
+          <SortFilterSidebar
+            sortOptions={[
+              { key: 'lowest', label: 'Lowest premium' },
+              { key: 'highest', label: 'Highest sum insured' },
+            ]}
+            currentSort={sortBy}
+            onSortChange={(key) => setSortBy(key as 'lowest' | 'highest')}
+            providers={availableProviders.map((code: string) => {
+              const company = COMPANIES.find((c) => c.carrierCode === code)
+              return {
+                code,
+                name: company?.companyName || code,
+                isActive: selectedProviders.length === 0 || selectedProviders.includes(code),
+              }
+            })}
+            onProviderToggle={toggleProvider}
+          />
 
           {/* Plan cards */}
           <div className="flex flex-1 flex-col gap-4">
@@ -328,7 +289,7 @@ export function HealthPlansGrid() {
               const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
               return (
-                <div key={plan.CarrierPlanCode} className="bg-background relative flex w-full flex-col rounded-xl border border-gray-200 transition-all hover:shadow-md mb-3 sm:flex-row">
+                <Card key={plan.CarrierPlanCode} variant="interactive" className="relative mb-3 w-full gap-0 overflow-hidden py-0 transition-all sm:flex-row">
                   {/* Left brand block */}
                   <div
                     className="flex h-[100px] w-full shrink-0 items-center justify-center overflow-hidden rounded-t-xl sm:h-auto sm:w-[140px] sm:rounded-l-xl sm:rounded-tr-none md:w-[160px] lg:w-[180px]"
@@ -391,23 +352,17 @@ export function HealthPlansGrid() {
                   </div>
 
                   {/* Right price + button */}
-                  <div className="flex w-full shrink-0 flex-col items-center justify-center border-t border-gray-100 p-4 sm:w-[140px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
-                    <div className="flex items-baseline gap-1 sm:mb-1">
-                      <span className="text-primary text-xs font-semibold">PHP</span>
-                      <span className="text-foreground text-lg font-black sm:text-xl lg:text-2xl">
-                        {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                      </span>
-                    </div>
-                    <span className="text-primary text-xs font-medium mb-3">Premium</span>
-                    <Button
+                  <div className="flex w-full shrink-0 flex-col items-center justify-center border-t border-border p-4 sm:w-[140px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
+                    <PriceDisplay amount={premium} label="Premium" className="mb-3" />
+                    <PrimaryActionButton
                       size="sm"
-                      className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+                      className="h-8 w-full px-4 text-xs font-semibold"
                       onClick={() => handleGetStarted(plan)}
                     >
                       Apply Now
-                    </Button>
+                    </PrimaryActionButton>
                   </div>
-                </div>
+                </Card>
               )
             })}
           </div>

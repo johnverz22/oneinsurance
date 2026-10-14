@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Card } from '@/components/ui/card'
+import { StarRating } from '@/components/ui/star-rating'
 import Link from 'next/link'
 
 const TESTIMONIALS = [
@@ -60,10 +62,10 @@ export function HealthTestimonials() {
   const visible = TESTIMONIALS.slice(page * perPage, page * perPage + perPage)
 
   return (
-    <section className="w-full bg-[#eef2f7] py-16">
+    <section className="w-full bg-section py-16">
       <div className="mx-auto max-w-7xl px-4">
         {/* Rounded container matching Figma */}
-        <div className="rounded-3xl bg-white p-8 lg:p-12">
+        <Card className="gap-0 rounded-3xl border-0 p-8 shadow-none lg:p-12">
           {/* Header */}
           <div className="mb-8 flex items-start justify-between">
             <div>
@@ -85,15 +87,11 @@ export function HealthTestimonials() {
           {/* Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {visible.map((t, i) => (
-              <div key={i} className="flex flex-col rounded-2xl border bg-white p-5 shadow-sm">
+              <Card key={i} className="gap-0 rounded-2xl p-5">
                 {/* Stars */}
-                <div className="mb-3 flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <Star key={s} className="h-4 w-4" fill="#FBBF24" stroke="#FBBF24" />
-                  ))}
-                </div>
+                <StarRating rating={t.rating} className="mb-3" />
                 {/* Title */}
-                <h4 className="mb-2 text-sm font-bold text-gray-900">{t.title}</h4>
+                <h4 className="mb-2 text-sm font-bold text-foreground">{t.title}</h4>
                 {/* Content */}
                 <p className="text-muted-foreground mb-4 flex-1 text-xs leading-relaxed line-clamp-4">
                   "{t.content}"
@@ -105,11 +103,11 @@ export function HealthTestimonials() {
                     <AvatarFallback>{t.name[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
                     <p className="text-muted-foreground text-xs">{t.city}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
 
@@ -118,19 +116,19 @@ export function HealthTestimonials() {
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-gray-100 disabled:opacity-30"
+              className="flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-muted disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-gray-100 disabled:opacity-30"
+              className="flex h-9 w-9 items-center justify-center rounded-full border transition hover:bg-muted disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-        </div>
+        </Card>
       </div>
     </section>
   )

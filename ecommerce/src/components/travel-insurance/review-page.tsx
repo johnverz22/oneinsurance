@@ -192,7 +192,7 @@ export function TravelInsuranceReviewPage() {
         {proposalNumber && (
           <Card className="bg-background overflow-hidden p-0 shadow-none">
             <CardContent className="flex items-center justify-between px-6 py-4">
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+              <h3 className="text-lg font-semibold text-foreground dark:text-muted-foreground">
                 Proposal Number
               </h3>
               <div className="flex items-center gap-3">
@@ -334,9 +334,11 @@ export function TravelInsuranceReviewPage() {
                               >
                                 <h4 className="text-sm">{addon.BenefitDesc}</h4>
                                 <small className="text-muted-foreground text-right text-xs">
-                                  {addon.DefaultLimitDesc
+                                  {addon.DefaultLimitDesc && addon.DefaultLimitDesc !== '0'
                                     ? addon.DefaultLimitDesc
-                                    : `Up to ₱${Number.parseFloat(addon.Silimit ?? '0').toLocaleString('en-PH')}`}
+                                    : addon.Silimit && addon.Silimit !== '0'
+                                      ? `Up to ₱${Number.parseFloat(addon.Silimit).toLocaleString('en-PH')}`
+                                      : '—'}
                                   <br />
                                   {addon.LimitModeDesc}
                                 </small>
@@ -468,7 +470,7 @@ export function TravelInsuranceReviewPage() {
                     <h5 className="text-primary dark:text-accent mb-3 text-lg font-semibold">
                       Beneficiary
                     </h5>
-                    <div className="space-y-2 rounded-lg border border-gray-200 p-4">
+                    <div className="space-y-2 rounded-lg border border-border p-4">
                       <div>
                         <p className="text-muted-foreground text-sm">Name</p>
                         <p className="font-semibold">

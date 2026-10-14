@@ -6,6 +6,11 @@
       "sourceType": "github",
       "skillPath": "skills/next-dev-loop/SKILL.md",
       "computedHash": "18d8a8f48b8dc50e084de85afe6bd517a178c83684d45c1ebd16cf396428bedf"
+    },
+    "travel-insurance-igw": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".kiro/skills/travel-insurance-igw/SKILL.md"
     }
   }
 }

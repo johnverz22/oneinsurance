@@ -12,9 +12,9 @@ import {
 
 export const Footer = () => {
   return (
-    <footer className="relative bg-[#E8E9F3] dark:bg-zinc-800">
+    <footer className="relative bg-section">
       {/* Newsletter Section */}
-      <div className="border-b border-gray-200 py-12 dark:border-zinc-800">
+      <div className="border-b py-12">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex flex-col items-center justify-center gap-6 lg:flex-row lg:gap-8">
             <form className="flex w-full max-w-md items-center gap-3">
@@ -22,12 +22,13 @@ export const Footer = () => {
                 <Input
                   type="email"
                   placeholder="Email Address"
-                  className="h-14 rounded-full border-0 bg-white pr-16 text-gray-600 shadow-sm placeholder:text-gray-400"
+                  className="h-14 rounded-full border-0 bg-white pr-16 text-foreground shadow-sm placeholder:text-muted-foreground"
                   required
                 />
                 <Button
                   type="submit"
                   size="icon"
+                  aria-label="Subscribe"
                   className="bg-primary hover:bg-primary/90 absolute top-2 right-2 h-10 w-10 rounded-full"
                 >
                   <ArrowRight className="h-5 w-5 text-white" />
@@ -35,10 +36,10 @@ export const Footer = () => {
               </div>
             </form>
             <div className="text-center lg:text-left">
-              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              <p className="text-base font-semibold text-foreground">
                 Don&apos;t miss out on the latest updates.
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Stay informed about new products, tips, and exclusive offers.
               </p>
             </div>
@@ -56,7 +57,7 @@ export const Footer = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full bg-white text-gray-600 hover:bg-white/80 hover:text-gray-900"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
                 asChild
               >
                 <a
@@ -72,7 +73,7 @@ export const Footer = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full bg-white text-gray-600 hover:bg-white/80 hover:text-gray-900"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
                 asChild
               >
                 <a
@@ -88,7 +89,7 @@ export const Footer = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full bg-white text-gray-600 hover:bg-white/80 hover:text-gray-900"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
                 asChild
               >
                 <a
@@ -104,7 +105,7 @@ export const Footer = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full bg-white text-gray-600 hover:bg-white/80 hover:text-gray-900"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
                 asChild
               >
                 <a

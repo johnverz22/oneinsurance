@@ -251,11 +251,11 @@ Thank you for choosing our travel insurance service!
       >
         <DialogHeader className="text-center">
           <div className="mb-3 flex justify-center sm:mb-4">
-            <div className="rounded-full bg-green-100 p-2 sm:p-3">
-              <CheckCircle className="h-6 w-6 text-green-600 sm:h-8 sm:w-8" />
+            <div className="rounded-full bg-success/10 p-2 sm:p-3">
+              <CheckCircle className="h-6 w-6 text-success sm:h-8 sm:w-8" />
             </div>
           </div>
-          <DialogTitle className="text-xl font-bold text-green-600 sm:text-2xl">
+          <DialogTitle className="text-xl font-bold text-success sm:text-2xl">
             Payment Successful!
           </DialogTitle>
           <DialogDescription className="text-sm sm:text-base">
@@ -290,11 +290,11 @@ Thank you for choosing our travel insurance service!
               <h3 className="text-base font-semibold sm:text-lg">
                 Cover Note
               </h3>
-              <Badge className="self-start border-green-200 bg-green-100 text-green-700 sm:self-auto">
+              <Badge className="self-start border-success/50 bg-success/10 text-success sm:self-auto">
                 Active Policy
               </Badge>
             </div>
-            <div className="rounded-lg border bg-gray-50 p-2 sm:p-4">
+            <div className="rounded-lg border bg-muted/50 p-2 sm:p-4">
               <CoverageOfConfirmation
                 policyData={policyData}
                 quoteData={quoteData}
@@ -416,7 +416,7 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">Status</span>
-                  <Badge className="border-green-200 bg-green-100 text-green-700">
+                  <Badge className="border-success/50 bg-success/10 text-success">
                     Active
                   </Badge>
                 </div>
@@ -557,8 +557,8 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                 <Separator />
 
                 {/* Detailed Cost Breakdown */}
-                <div className="space-y-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50">
-                  <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                <div className="space-y-2 rounded-lg bg-muted/50 p-3 dark:bg-gray-800/50">
+                  <h4 className="text-sm font-semibold text-foreground dark:text-muted-foreground">
                     Cost Breakdown
                   </h4>
 
@@ -614,7 +614,7 @@ This certificate serves as proof of coverage for the above-mentioned travel insu
                 <Separator />
                 <div className="flex items-center justify-between text-lg font-bold">
                   <span>Total Paid</span>
-                  <span className="text-green-600">
+                  <span className="text-success">
                     ₱{quoteData.DuePremium?.toLocaleString()}
                   </span>
                 </div>

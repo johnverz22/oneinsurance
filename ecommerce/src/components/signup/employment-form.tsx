@@ -113,7 +113,7 @@ export default function EmploymentForm() {
             <div className="mt-4 grid grid-cols-2 place-content-around gap-3">
               <Button
                 variant={'ghost'}
-                className="text-gray-600"
+                className="text-muted-foreground"
                 onClick={decreaseStep}
               >
                 <ChevronLeft />

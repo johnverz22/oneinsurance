@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Brand } from '@/components/layout/brand'
+import { BECOME_AN_AGENT_URL } from '@/constants/app'
 import {
   Facebook,
   Instagram,
@@ -124,7 +125,7 @@ export const Footer = () => {
                 className="text-foreground w-full !p-0 lg:!text-left"
                 asChild
               >
-                <Link href="/agent-application">Become an Agent</Link>
+                <Link href={BECOME_AN_AGENT_URL}>Become an Agent</Link>
               </Button>
               <Button
                 variant="link"

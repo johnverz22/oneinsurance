@@ -12,9 +12,9 @@ import { TRAVEL_FAQS } from '@/constants/faqs/travel-insurance-faqs'
 import { CoverageOptionsForm } from '@/components/travel-insurance/coverage-options-form'
 import { useCreateQuoteRequest } from '@/app/data/mutations/create-quote-request'
 import { useAgentCodeStore } from '@/store/agent-code-store'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { PageLoader } from '@/components/page-loader'
-import { Star } from 'lucide-react'
+import { StarRating } from '@/components/ui/star-rating'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { clearProposalNumber } from '@/utils/payment-storage'
 import { MobileProductNav } from '@/components/layout/mobile-product-nav'
@@ -52,7 +52,7 @@ function TravelInsurancePageSSR() {
   }, [])
 
   return (
-    <div className="relative overflow-x-hidden pb-16 md:pb-0">
+    <div className="relative pb-16 md:pb-0">
       {/* Shared mobile bottom nav + desktop chrome hiding + sidebar mount */}
       <MobileProductNav
         searchContent={<ProposalSearch />}
@@ -60,8 +60,9 @@ function TravelInsurancePageSSR() {
         plansTargetId="coverage-options"
       />
 
-      {/* --- HERO SECTION --- */}
-      <div className="relative h-[25rem] w-full md:h-[35rem] lg:h-[45rem]">
+      {/* --- HERO SECTION --- overflow-x-hidden scoped here so the hero image
+          doesn't bleed out, without affecting the compare table further down */}
+      <div className="relative h-[25rem] w-full overflow-x-hidden md:h-[35rem] lg:h-[45rem]">
         <div className="relative h-full w-full">
           <Image
             src="/images/travel-hero.png"
@@ -76,7 +77,7 @@ function TravelInsurancePageSSR() {
           {/* Mobile-only brand logo — header is hidden on mobile by MobileProductNav */}
           <div className="absolute top-4 left-3 z-10 md:hidden">
             <a href={`/${agentCode}`} className="flex cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
-              <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-7 w-auto" priority />
+              <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-7 w-auto" priority />
             </a>
           </div>
         </div>
@@ -86,8 +87,8 @@ function TravelInsurancePageSSR() {
           <Image
             src="/images/IFRC.png"
             alt="IFRC Logo"
-            width={1920}
-            height={1240}
+            width={1290}
+            height={800}
             className="h-full w-full object-contain"
           />
         </div>
@@ -109,7 +110,7 @@ function TravelInsurancePageSSR() {
       </div>
 
       {/* --- FORMS SECTION --- */}
-      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-5 pt-6 md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 lg:-mt-40 lg:gap-12">
+      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-border bg-white px-5 pb-5 pt-6 md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 lg:-mt-40 lg:gap-12">
         <style>{`
           @media (max-width: 767px) {
             [data-testid="travel-details-form"] {
@@ -212,11 +213,7 @@ function TravelInsurancePageSSR() {
 
           <div className="flex flex-col gap-3">
             <div className="from-primary to-accent h-full w-full space-y-3 rounded-xl bg-gradient-to-r px-8 py-6 text-white shadow-2xs">
-              <div className="flex">
-                {[...Array(5)].map((_, index) => (
-                  <Star key={index} stroke="0.5" fill="#FFA500" />
-                ))}
-              </div>
+              <StarRating rating={5} starClassName="h-6 w-6" />
               <p>
                 “Sobrang gaan ng loob ko nung nalaman kong covered pala kami ng travel insurance namin kahit na-delay ang flight namin sa Cebu. Ang bilis ng process at walang hassle. Highly recommended sa lahat ng magbabiyahe!”
               </p>
@@ -233,11 +230,7 @@ function TravelInsurancePageSSR() {
               </div>
             </div>
             <div className="border-muted-foreground/20 h-full w-full space-y-3 rounded-xl border px-8 py-6 shadow-2xs">
-              <div className="flex">
-                {[...Array(5)].map((_, index) => (
-                  <Star key={index} stroke="0.5" fill="#FFA500" />
-                ))}
-              </div>
+              <StarRating rating={5} starClassName="h-6 w-6" />
               <p>
                 “I travel frequently for work across Southeast Asia and One Insurance has been my go-to for travel coverage. The online process is seamless, and their support team was incredibly helpful when I had a medical emergency in Bangkok. Worth every peso!”
               </p>
@@ -254,11 +247,7 @@ function TravelInsurancePageSSR() {
               </div>
             </div>
             <div className="border-muted-foreground/20 h-full w-full space-y-3 rounded-xl border px-8 py-6 shadow-2xs">
-              <div className="flex">
-                {[...Array(5)].map((_, index) => (
-                  <Star key={index} stroke="0.5" fill="#FFA500" />
-                ))}
-              </div>
+              <StarRating rating={5} starClassName="h-6 w-6" />
               <p>
                 “Nagpunta kami ng pamilya sa Japan last December at talagang natuwa kami sa coverage ng One Insurance. Nag-file kami ng claim dahil may nawala kaming bagahe at napakabilis ng reimbursement. Definitely uulitin namin ito sa susunod na biyahe!”
               </p>

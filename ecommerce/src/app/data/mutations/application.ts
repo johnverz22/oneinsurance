@@ -1,4 +1,4 @@
-import { api } from '@/lib/axios'
+import axios from 'axios'
 import { ApplyFormValues } from '@/app/(client)/agent-application/form.schema'
 import { useMutation } from '@tanstack/react-query'
 
@@ -13,9 +13,24 @@ export const useCreateAgentApplication = () => {
         contact_number: value.contact_number,
         notes: value.notes,
       }
-      const response = await api.post('/agents/apply', requestBody)
 
-      return response.data
+      try {
+        const response = await axios.post('/api/agents/apply', requestBody, {
+          // Give the BFF enough time to hear back from the backend (65 s) plus
+          // a small buffer, so we always get the BFF's normalised response
+          // rather than a raw browser network timeout.
+          timeout: 70_000,
+        })
+        return response.data
+      } catch (err: any) {
+        const data = err?.response?.data
+        const message =
+          data?.message ||
+          data?.error ||
+          err?.message ||
+          'Something went wrong. Please try again.'
+        throw new Error(message)
+      }
     },
   })
 }

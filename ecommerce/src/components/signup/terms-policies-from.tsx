@@ -151,7 +151,7 @@ export default function TermsPoliciesForm() {
                 <div className="mt-4 grid grid-cols-2 place-content-around">
                   <Button
                     variant={'ghost'}
-                    className="text-gray-600"
+                    className="text-muted-foreground"
                     onClick={decreaseStep}
                   >
                     <ChevronLeft />

@@ -46,10 +46,10 @@ export default function ProcessingPaymentPage() {
           />
         </circle>
       </svg>
-      <h2 className="mb-3 text-xl font-semibold text-gray-800">
+      <h2 className="mb-3 text-xl font-semibold text-foreground">
         Processing your payment...
       </h2>
-      <p className="max-w-xs text-center text-gray-500">
+      <p className="max-w-xs text-center text-muted-foreground">
         Please wait while we process your payment. You will be redirected
         automatically once the payment is successful.
       </p>

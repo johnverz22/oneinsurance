@@ -90,7 +90,7 @@ function FieldRow({
           {label}
         </Label>
         {isDifferent && (
-          <span className="text-[10px] text-amber-600 font-medium">corrected</span>
+          <span className="text-[10px] text-warning font-medium">corrected</span>
         )}
       </div>
       <div className="flex gap-2">
@@ -100,7 +100,7 @@ function FieldRow({
           onChange={(e) => onChange(e.target.value)}
           className={cn(
             'h-8 text-sm',
-            isDifferent && 'border-amber-400 bg-amber-50/40'
+            isDifferent && 'border-warning bg-warning/10/40'
           )}
           placeholder="—"
         />
@@ -154,7 +154,7 @@ function EntryCard({
               </Badge>
             )}
             {entry.status === 'done' && (
-              <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200 text-xs gap-1">
+              <Badge className="bg-success/10 text-success hover:bg-success/10 border-success/50 text-xs gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {idTypeLabel}
               </Badge>
@@ -195,7 +195,7 @@ function EntryCard({
               <Label className="text-xs font-medium">
                 ID Type
                 {entry.raw.id_type !== getValue('id_type') && (
-                  <span className="ml-2 text-[10px] text-amber-600 font-medium">corrected</span>
+                  <span className="ml-2 text-[10px] text-warning font-medium">corrected</span>
                 )}
               </Label>
               <Select
@@ -286,7 +286,7 @@ function EntryCard({
                 <Textarea
                   readOnly
                   value={entry.raw.raw_text}
-                  className="font-mono text-xs h-40 resize-none bg-slate-950 text-green-400 border-slate-800"
+                  className="font-mono text-xs h-40 resize-none bg-slate-950 text-success border-slate-800"
                 />
               )}
             </div>
@@ -294,7 +294,7 @@ function EntryCard({
         )}
 
         {entry.status === 'error' && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
             {entry.error ?? 'OCR scan failed. Upload a clearer image or check the console.'}
           </div>
         )}
@@ -404,7 +404,7 @@ export default function OcrCalibrationPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex gap-2">
+          <div className="rounded-lg border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-amber-800 flex gap-2">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold">Dev-only page.</span> Do not share, link to, or deploy this page in production.
@@ -460,7 +460,7 @@ export default function OcrCalibrationPage() {
                 <Textarea
                   readOnly
                   value={JSON.stringify(exportData, null, 2)}
-                  className="font-mono text-xs h-64 resize-none bg-slate-950 text-green-400 border-slate-800"
+                  className="font-mono text-xs h-64 resize-none bg-slate-950 text-success border-slate-800"
                 />
                 <Button
                   className="w-full gap-2"

@@ -1,5 +1,7 @@
-import { FullQuoteRequest } from '@/types/full-quote-request'
-import { FullQuoteResponseSchema } from '@/types/travel-insurance/policy-types'
+import {
+  IgwFullQuoteRequest,
+  IgwFullQuoteResponse,
+} from '@/utils/mappers/travel-insurance/full-quote'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 
@@ -10,8 +12,10 @@ export interface IdImage {
 }
 
 // Flatten a nested object into FormData using bracket notation
-// e.g. { PolicyCustomerList: [{ FirstName: 'John' }] }
-// becomes PolicyCustomerList[0][FirstName] = 'John'
+// e.g. { travellers: [{ first_name: 'John' }] }
+// becomes travellers[0][first_name] = 'John'
+// Booleans become 1/0 — the IGW gateway rejects literal 'true'/'false'
+// in multipart bodies.
 function flattenToFormData(formData: FormData, obj: any, prefix = '') {
   for (const key in obj) {
     if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
@@ -30,6 +34,8 @@ function flattenToFormData(formData: FormData, obj: any, prefix = '') {
       })
     } else if (typeof value === 'object' && !(value instanceof File)) {
       flattenToFormData(formData, value, formKey)
+    } else if (typeof value === 'boolean') {
+      formData.append(formKey, value ? '1' : '0')
     } else {
       formData.append(formKey, value instanceof File ? value : String(value))
     }
@@ -42,9 +48,9 @@ export function useFullQuoteRequest() {
       fullQuoteRequest,
       idImages = [],
     }: {
-      fullQuoteRequest: FullQuoteRequest
+      fullQuoteRequest: IgwFullQuoteRequest
       idImages?: IdImage[]
-    }) => {
+    }): Promise<IgwFullQuoteResponse> => {
       try {
         const formData = new FormData()
 
@@ -64,25 +70,14 @@ export function useFullQuoteRequest() {
           formData
         )
 
-        if (FullQuoteResponseSchema.safeParse(response.data).success) {
-          const validatedData = FullQuoteResponseSchema.safeParse(response.data).data
-
-          if (validatedData?.success && validatedData.data?.ProposalNo) {
-            try {
-              const proposalKey = `proposal_${validatedData.data.ProposalNo}`
-              localStorage.setItem(proposalKey, JSON.stringify(validatedData.data))
-              console.log('Saved proposal to localStorage:', validatedData.data.ProposalNo)
-            } catch (storageError) {
-              console.warn('Failed to save proposal to localStorage:', storageError)
-            }
-          }
-
-          return validatedData
-        }
-
         return response.data
       } catch (error: any) {
-        return error.response.data
+        // Backend error bodies ({ success:false, message, errors{} }) are
+        // returned to the caller so field errors can be shown in the form.
+        return error.response?.data ?? {
+          success: false,
+          message: error.message ?? 'Unexpected error',
+        }
       }
     },
     retry: false,

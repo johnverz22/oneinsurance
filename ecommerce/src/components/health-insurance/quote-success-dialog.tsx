@@ -27,22 +27,22 @@ export function QuoteSuccessDialog({ open, quoteId, onSubmitAnother }: QuoteSucc
       >
         <DialogHeader className="items-center text-center">
           <div className="mb-2 flex justify-center">
-            <div className="rounded-full bg-green-100 p-3">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="rounded-full bg-success/10 p-3">
+              <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </div>
           <DialogTitle className="text-xl font-bold">Quote Request Submitted!</DialogTitle>
           <DialogDescription>Let our experts recommend the best plan for you</DialogDescription>
         </DialogHeader>
 
-        <div className="mt-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-center">
-          <p className="text-sm font-semibold text-green-700">{quoteId}</p>
-          <p className="text-xs text-green-600">Expected callback: 24 hours</p>
+        <div className="mt-2 rounded-lg border border-success/50 bg-success/10 px-4 py-3 text-center">
+          <p className="text-sm font-semibold text-success">{quoteId}</p>
+          <p className="text-xs text-success">Expected callback: 24 hours</p>
         </div>
 
         <div className="mt-4 space-y-2">
-          <p className="text-sm font-medium text-gray-700">Next Steps:</p>
-          <ol className="space-y-1.5 text-sm text-gray-600">
+          <p className="text-sm font-medium text-foreground">Next Steps:</p>
+          <ol className="space-y-1.5 text-sm text-muted-foreground">
             {[
               'Our insurance expert will review your information',
               "You'll receive a personalized quote via email",

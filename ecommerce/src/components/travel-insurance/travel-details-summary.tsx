@@ -85,7 +85,7 @@ export function TravelDetailsSummary() {
             <h2 className="text-primary text-lg sm:text-2xl font-bold">Your Travel Details</h2>
             <CheckCircle className="text-primary dark:text-accent h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <button className="lg:hidden text-gray-500" type="button">
+          <button className="lg:hidden text-muted-foreground" type="button">
             {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </button>
         </CardHeader>
@@ -95,7 +95,7 @@ export function TravelDetailsSummary() {
         )}>
           <div className="space-y-2 sm:space-y-4">
             <div className="space-y-0.5 sm:space-y-2 sm:py-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-xs sm:text-sm font-medium text-foreground dark:text-muted-foreground">
                 From
               </p>
               <p className="text-primary dark:text-accent text-sm sm:text-base font-bold whitespace-nowrap">
@@ -103,7 +103,7 @@ export function TravelDetailsSummary() {
               </p>
             </div>
             <div className="space-y-0.5 sm:space-y-2 sm:py-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-xs sm:text-sm font-medium text-foreground dark:text-muted-foreground">
                 To
               </p>
               {travelDetails.travelDetailList.map((detail) => (
@@ -124,7 +124,7 @@ export function TravelDetailsSummary() {
 
           <div className="space-y-2 sm:space-y-4">
             <div className="space-y-0.5 sm:space-y-2 sm:py-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-xs sm:text-sm font-medium text-foreground dark:text-muted-foreground">
                 Departure Date
               </p>
               <p className="text-primary dark:text-accent text-sm sm:text-base font-bold whitespace-nowrap">
@@ -132,7 +132,7 @@ export function TravelDetailsSummary() {
               </p>
             </div>
             <div className="space-y-0.5 sm:space-y-2 sm:py-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-xs sm:text-sm font-medium text-foreground dark:text-muted-foreground">
                 Return Date
               </p>
               <p className="text-primary dark:text-accent text-sm sm:text-base font-bold whitespace-nowrap">
@@ -143,7 +143,7 @@ export function TravelDetailsSummary() {
 
           <div className="space-y-2 sm:space-y-4">
             <div className="space-y-0.5 sm:space-y-2 sm:py-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-xs sm:text-sm font-medium text-foreground dark:text-muted-foreground">
                 No. Of Travellers
               </p>
               <p className="text-primary dark:text-accent text-sm sm:text-base font-bold whitespace-nowrap">

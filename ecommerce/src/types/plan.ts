@@ -1,6 +1,29 @@
 import { z } from 'zod'
 
 // Zod Schemas
+
+/**
+ * Normalized per-benefit limit, emitted by the compare-quote mapper.
+ * Survives insurer differences (MIC uses structured type/amount, OONA stuffs
+ * everything into notes) so display code doesn't re-parse strings.
+ *
+ *  - amount → Amount holds the numeric string ("1000000.00"); Qualifier may add
+ *    rate/sub-limit context ("per day, up to 7 days", "subject to limit of …")
+ *  - label  → short badge text ("Included", "Unlimited", "Actual Cost")
+ *  - text   → longer free text rendered wrapped instead of a chip
+ *  - none   → no cover ("0" sentinel or missing) — renders "—"
+ */
+export const BenefitLimitSchema = z.object({
+  Kind: z.enum(['amount', 'label', 'text', 'none']),
+  Amount: z.string().nullable(),
+  Label: z.string().nullable(),
+  Qualifier: z.string().nullable(),
+  PerUnit: z.string().nullable(),
+  MaxUnits: z.number().nullable(),
+  SubLimitAmount: z.string().nullable(),
+  SubLimitPer: z.string().nullable(),
+})
+
 export const InsuranceBenefitSchema = z.object({
   BenefitCode: z.string().nullable(),
   BenefitDesc: z.string(),
@@ -12,6 +35,7 @@ export const InsuranceBenefitSchema = z.object({
   CoverageName: z.string().optional(),
   DefaultLimitDesc: z.string().optional(),
   DisplaySeqNo: z.string(),
+  Limit: BenefitLimitSchema.optional(),
   LimitModeDesc: z.string().optional(),
   ParentBenefit: z.string().nullable().optional(),
   IMOProductCode: z.string().optional(),
@@ -29,6 +53,9 @@ export const InsurancePlanSchema = z.object({
   CarrierPlanDesc: z.string(),
   CarrierProductCode: z.string(),
   CarrierProductName: z.string(),
+  // Raw IGW insurer code from the card (e.g. "MIC", "OONA") — sent back
+  // as insurer_code at full-quote. Absent on static/local plans.
+  InsurerCode: z.string().optional(),
   Currency: z.string().optional(),
   DiscountAmount: z.string().nullable(),
   DuePremium: z.union([z.number(), z.string()]),
@@ -47,6 +74,8 @@ export const InsurancePlanSchema = z.object({
 export const TravelInsuranceDataSchema = z.object({
   CarrierCode: z.string(),
   ClientRequestId: z.string(),
+  // Raw IGW insurer code for this carrier group (e.g. "MIC", "OONA")
+  InsurerCode: z.string().optional(),
   Plans: z.array(InsurancePlanSchema),
   ProductCode: z.string(),
   ProductVersion: z.string(),

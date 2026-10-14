@@ -49,11 +49,11 @@ export const InsuranceCard = ({
 
         {/* Content */}
         <div className="flex flex-1 flex-col space-y-3 p-6">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="text-xl font-semibold text-foreground">
             {insurance.title}
           </h3>
 
-          <p className="flex-1 text-sm text-gray-600 dark:text-gray-400">
+          <p className="flex-1 text-sm text-muted-foreground">
             {insurance.description}
           </p>
 
@@ -94,7 +94,7 @@ export const InsuranceCard = ({
 
           <div className="relative">
             <div className={cn(
-              "insurances-center z-10 flex gap-1 rounded-sm rounded-bl-xs px-6 py-2 text-xs font-semibold shadow-lg",
+              "items-center z-10 flex gap-1 rounded-sm rounded-bl-xs px-6 py-2 text-xs font-semibold shadow-lg",
               !enabled ? "bg-slate-500 text-white" : "bg-lilac text-white"
             )}>
               {enabled && <span>⭐</span>}
@@ -127,14 +127,14 @@ export const InsuranceCard = ({
         </div>
 
         <div className="z-10 p-8">
-          <div className="insurances-start mb-2 flex justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 lg:text-2xl xl:text-3xl dark:text-gray-100">
+          <div className="items-start mb-2 flex justify-between">
+            <h2 className="text-xl font-semibold text-foreground lg:text-2xl xl:text-3xl">
               {insurance.title}
             </h2>
           </div>
 
           <p className="mb-4">{companyName}</p>
-          <p className="mb-4 line-clamp-4 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mb-4 line-clamp-4 text-sm text-muted-foreground">
             {insurance.description}
           </p>
 

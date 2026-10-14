@@ -7,6 +7,7 @@ import {
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  timeout: 30_000, // 30 s — prevents hanging indefinitely
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,6 +29,15 @@ api.interceptors.response.use(
           getFirstErrorMessage(parsed.data.errors) ?? parsed.data.message
         )
       }
+    }
+
+    // Distinguish timeout from other network failures for clearer feedback
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      throw new Error('The request timed out. Please check your connection and try again.')
+    }
+
+    if (!error.response) {
+      throw new Error('Unable to reach the server. Please check your connection and try again.')
     }
 
     throw new Error('Something went wrong. Please try again.')

@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { subDays } from 'date-fns'
 import { Users, ChevronDown, ChevronUp } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
-import { useCreateQuoteRequest } from '@/app/data/mutations/create-quote-request'
+import { useTravelCompare } from '@/hooks/use-travel-compare'
+import { travelInsuranceSchemaToInitCompareQuote } from '@/utils/mappers/travel-insurance/init-compare-quote'
 import {
   TravelInsuranceFormData,
   travelInsuranceSchema,
@@ -36,7 +37,7 @@ type TravelDetailsFormProps = {
 }
 
 export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
-  const { mutateAsync } = useCreateQuoteRequest()
+  const { compare, status: compareStatus, cards: compareCards, clientRequestId: compareId, error: compareError } = useTravelCompare()
   const { agentCode } = useAgentCodeStore()
   const {
     travelDetails,
@@ -84,8 +85,8 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
   const form = useForm({
     defaultValues: normalizedTravelDetails,
-    onSubmit: async ({ value }) => {
-      await submitCompareQuoteRequest({ value })
+    onSubmit: ({ value }) => {
+      submitCompareQuoteRequest({ value })
     },
     // Run validation on blur (and on submit) to avoid blocking canSubmit while the user types
     validators: {
@@ -133,7 +134,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
     return returnDate
   }
 
-  const submitCompareQuoteRequest = async ({
+  const submitCompareQuoteRequest = ({
     value,
   }: {
     value: TravelInsuranceFormData
@@ -157,30 +158,49 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       updateTravelDetails(value)
       setInsurancePlans(null)
       resetQuoteRefetchCount()
-      
-      // Clear any previous error state before making new request
-      // Don't set status to undefined - just let the new request set it
-      
       setIsSearching(true)
-      await mutateAsync({ values: value, agentCode: agentCode ?? '' })
-      setFormModified(false)
-      setClientRequest({
-        id: 'sync', // sentinel: plans are already in store, no WebSocket needed
-        status: 'success',
-      })
 
-      const coverageOptions = document.getElementById('coverage-options')
-      coverageOptions?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      })
+      // Map form data to IGW payload and kick off the async compare flow.
+      // compare() is fire-and-forget here — state changes are handled by the
+      // useEffect below that watches compareStatus.
+      const requestBody = travelInsuranceSchemaToInitCompareQuote(value, agentCode ?? '')
+      compare(requestBody)
     } catch (err: any) {
       setIsSearching(false)
       const errorMessage = err?.message || 'Unable to load travel insurance plans.'
       setClientRequest({ status: 'error', errorMessage })
-      throw err
     }
   }
+
+  // React to compare-quote hook status changes and sync into the Zustand store.
+  // compareCards is in deps so a later .insurance.plan.received event refreshes
+  // the plan list (the GET returns the cumulative set — safe to replace).
+  const hasScrolledToPlans = useRef(false)
+  useEffect(() => {
+    if (compareStatus === 'idle') return
+    if (compareStatus === 'loading') hasScrolledToPlans.current = false
+
+    if (compareStatus === 'ready' && compareCards) {
+      setInsurancePlans(compareCards)
+      setFormModified(false)
+      setClientRequest({ id: compareId ?? undefined, status: 'success' })
+      setIsSearching(false)
+      if (!hasScrolledToPlans.current) {
+        hasScrolledToPlans.current = true
+        document.getElementById('coverage-options')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        })
+      }
+    } else if (compareStatus === 'error') {
+      setIsSearching(false)
+      setClientRequest({
+        status: 'error',
+        errorMessage: compareError?.message || 'Unable to load travel insurance plans.',
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareStatus, compareCards])
 
   const options = getNormalizedTravelCoverages(TravelCoverageMap)
   const currentValues = useStore(form.store, (state) => state.values)
@@ -221,13 +241,6 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
     clientRequest.status,
   ])
 
-  // Reset isSearching when clientRequest status changes
-  useEffect(() => {
-    if (clientRequest.status === 'error' || clientRequest.status === 'success') {
-      setIsSearching(false)
-    }
-  }, [clientRequest.status])
-
   useEffect(() => {
     // Skip setting form as modified on initial load
     const isInitialLoad =
@@ -250,7 +263,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
         <div className="flex flex-col items-stretch justify-end gap-6 sm:flex-row sm:items-center sm:gap-4">
           <form.Field name="isAnnualMultiTrip">
             {(field) => (
-              <div className="border-muted-foreground/30 flex w-full rounded-full border bg-gray-100 p-1 sm:w-auto dark:bg-gray-950">
+              <div className="border-muted-foreground/30 flex w-full rounded-full border bg-muted p-1 sm:w-auto dark:bg-gray-950">
                 <button
                   type="button"
                   onClick={() => {
@@ -381,7 +394,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                       Destinations
                     </p>
                     {/* Domestic toggle */}
-                    <div className="border-muted-foreground/30 flex rounded-full border bg-gray-100 p-0.5 dark:bg-gray-950">
+                    <div className="border-muted-foreground/30 flex rounded-full border bg-muted p-0.5 dark:bg-gray-950">
                       <button
                         type="button"
                         onClick={() => handleDomesticToggle(false)}
@@ -756,7 +769,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
               setInsurancePlans(null)
               form.handleSubmit()
             }}
-            className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
+            className="bg-primary from-primary to-accent relative h-12 w-full self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-success disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:px-8 dark:text-white"
             size="lg"
           >
             {mounted ? isDetailsFormState.title : 'Search'}

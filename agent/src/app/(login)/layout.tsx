@@ -1,4 +1,5 @@
 import { Footer } from '@/components/layout/footer'
+import { BECOME_AN_AGENT_URL } from '@/constants/app'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -54,7 +55,7 @@ export default function LoginLayout({
               management
             </p>
             <Link
-              href="https://ifrc.intel-soln.com.ph/agent-application"
+              href={BECOME_AN_AGENT_URL}
               className="inline-flex w-fit items-center justify-center rounded-lg border-2 border-white px-6 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-gray-900"
             >
               Become an Agent

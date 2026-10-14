@@ -295,9 +295,8 @@ export default function CheckoutPage() {
 
       const paymentResult = await submitPayment({
         data: {
-          service_code: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
+          // merchant_account_id and service_code are injected server-side by the BFF
           channel: 1,
-          merchant_account_id: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
           merchant_transaction_id: transactionId,
           product_reference_id: String(businessObjectId ?? resolvedProposalNo),
           product_description: `Health Insurance - ${firstItem?.planName ?? ''}`,
@@ -383,18 +382,18 @@ export default function CheckoutPage() {
     const firstItem = items[0]
     const [activeTab, setActiveTab] = useState<'covernote' | 'invoice'>('covernote')
     return (
-      <div className="min-h-screen bg-[#eef2f7] px-4 py-8">
+      <div className="min-h-screen bg-section px-4 py-8">
         <div className="mx-auto max-w-3xl space-y-6">
           {/* Success Header */}
           <div className="space-y-4 text-center">
             <div className="flex justify-center">
-              <div className="rounded-full bg-green-100 p-4">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+              <div className="rounded-full bg-success/10 p-4">
+                <CheckCircle className="h-10 w-10 text-success" />
               </div>
             </div>
             <div className="space-y-2">
               <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
-              <p className="text-lg text-gray-600">Your health insurance policy has been successfully issued.</p>
+              <p className="text-lg text-muted-foreground">Your health insurance policy has been successfully issued.</p>
             </div>
           </div>
 
@@ -402,13 +401,13 @@ export default function CheckoutPage() {
           <div className="flex justify-center gap-2">
             <button
               onClick={() => setActiveTab('covernote')}
-              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === 'covernote' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === 'covernote' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'border border-border text-muted-foreground hover:bg-muted/50'}`}
             >
               Cover Note
             </button>
             <button
               onClick={() => setActiveTab('invoice')}
-              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === 'invoice' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'border border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeTab === 'invoice' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'border border-border text-muted-foreground hover:bg-muted/50'}`}
             >
               Invoice Details
             </button>
@@ -419,25 +418,25 @@ export default function CheckoutPage() {
             <div className="rounded-2xl bg-white p-8 shadow-sm">
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Cover Note</h2>
-                  <p className="text-sm text-gray-500">#{proposalNo}</p>
+                  <h2 className="text-xl font-bold text-foreground">Cover Note</h2>
+                  <p className="text-sm text-muted-foreground">#{proposalNo}</p>
                 </div>
-                <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+                <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
               </div>
               <hr className="mb-6" />
 
               <div className="mb-6 grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-xs font-bold text-gray-400">Policy Number</p>
-                  <p className="font-semibold text-gray-900">{proposalNo || 'Pending'}</p>
+                  <p className="text-xs font-bold text-muted-foreground">Policy Number</p>
+                  <p className="font-semibold text-foreground">{proposalNo || 'Pending'}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-400">Insurance Provider</p>
-                  <p className="font-semibold text-gray-900">{firstItem?.provider || 'N/A'}</p>
+                  <p className="text-xs font-bold text-muted-foreground">Insurance Provider</p>
+                  <p className="font-semibold text-foreground">{firstItem?.provider || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-400">Plan Name</p>
-                  <p className="font-semibold text-gray-900">{firstItem?.planName || 'Health Insurance'}</p>
+                  <p className="text-xs font-bold text-muted-foreground">Plan Name</p>
+                  <p className="font-semibold text-foreground">{firstItem?.planName || 'Health Insurance'}</p>
                 </div>
               </div>
 
@@ -445,29 +444,29 @@ export default function CheckoutPage() {
 
               <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs font-bold text-gray-400">Issued To</p>
-                  <p className="font-semibold text-gray-900">{insuredInfo?.insuredName || fullName}</p>
-                  <p className="text-gray-500">{email}</p>
+                  <p className="text-xs font-bold text-muted-foreground">Issued To</p>
+                  <p className="font-semibold text-foreground">{insuredInfo?.insuredName || fullName}</p>
+                  <p className="text-muted-foreground">{email}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-400">Coverage</p>
-                  <p className="font-semibold text-gray-900">{firstItem?.tierName || 'Standard'}</p>
-                  <p className="text-gray-500">{firstItem?.tierDescription || ''}</p>
+                  <p className="text-xs font-bold text-muted-foreground">Coverage</p>
+                  <p className="font-semibold text-foreground">{firstItem?.tierName || 'Standard'}</p>
+                  <p className="text-muted-foreground">{firstItem?.tierDescription || ''}</p>
                 </div>
               </div>
 
               <hr className="mb-6" />
 
               <div className="mb-6">
-                <h3 className="mb-3 text-sm font-bold text-gray-700">POLICY STATUS</h3>
+                <h3 className="mb-3 text-sm font-bold text-foreground">POLICY STATUS</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-xs text-gray-400">Status</p>
-                    <p className="font-semibold text-green-600">Active</p>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <p className="font-semibold text-success">Active</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Issue Date</p>
-                    <p className="font-semibold text-gray-900">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p>
+                    <p className="text-xs text-muted-foreground">Issue Date</p>
+                    <p className="font-semibold text-foreground">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p>
                   </div>
                 </div>
               </div>
@@ -483,26 +482,26 @@ export default function CheckoutPage() {
             <div className="rounded-2xl bg-white p-8 shadow-sm">
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Invoice</h2>
-                  <p className="text-sm text-gray-500">#{proposalNo}</p>
+                  <h2 className="text-xl font-bold text-foreground">Invoice</h2>
+                  <p className="text-sm text-muted-foreground">#{proposalNo}</p>
                 </div>
-                <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+                <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
               </div>
               <hr className="mb-6" />
 
               <div className="mb-6 grid grid-cols-2 gap-6 text-sm">
                 <div>
-                  <p className="text-xs font-bold text-gray-400">From</p>
-                  <p className="font-semibold text-gray-900">IFRC Digitech Online Payment Gateway</p>
-                  <p className="text-gray-500">6th Floor Padilla Building</p>
-                  <p className="text-gray-500">F. Ortigas Jr. Road, Ortigas Center, Pasig City</p>
-                  <p className="text-gray-500">TEL: +632 8633 5681</p>
-                  <p className="text-gray-500">concierge@ifrcinsurance.com</p>
+                  <p className="text-xs font-bold text-muted-foreground">From</p>
+                  <p className="font-semibold text-foreground">IFRC Digitech Online Payment Gateway</p>
+                  <p className="text-muted-foreground">6th Floor Padilla Building</p>
+                  <p className="text-muted-foreground">F. Ortigas Jr. Road, Ortigas Center, Pasig City</p>
+                  <p className="text-muted-foreground">TEL: +632 8633 5681</p>
+                  <p className="text-muted-foreground">concierge@ifrcinsurance.com</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-400">To</p>
-                  <p className="font-semibold text-gray-900">{insuredInfo?.insuredName || fullName}</p>
-                  <p className="text-gray-500">{email}</p>
+                  <p className="text-xs font-bold text-muted-foreground">To</p>
+                  <p className="font-semibold text-foreground">{insuredInfo?.insuredName || fullName}</p>
+                  <p className="text-muted-foreground">{email}</p>
                 </div>
               </div>
 
@@ -510,18 +509,18 @@ export default function CheckoutPage() {
 
               <table className="mb-4 w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-400">
+                  <tr className="text-left text-muted-foreground">
                     <th className="pb-3 font-medium">DESCRIPTION</th>
                     <th className="pb-3 text-right font-medium">AMOUNT</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-t">
-                    <td className="py-3 text-gray-700">
+                    <td className="py-3 text-foreground">
                       <p className="font-medium">{firstItem?.planName || 'Health Insurance'}</p>
-                      <p className="text-xs text-gray-500">{firstItem?.provider}</p>
+                      <p className="text-xs text-muted-foreground">{firstItem?.provider}</p>
                     </td>
-                    <td className="py-3 text-right text-gray-700">
+                    <td className="py-3 text-right text-foreground">
                       PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -530,27 +529,27 @@ export default function CheckoutPage() {
 
               <div className="flex justify-end border-t pt-3">
                 <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900">Total Amount</p>
-                  <p className="text-lg font-black text-gray-900">PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                  <p className="text-sm font-bold text-foreground">Total Amount</p>
+                  <p className="text-lg font-black text-foreground">PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
                 </div>
               </div>
 
-              <p className="mt-4 text-xs text-gray-500 italic">
+              <p className="mt-4 text-xs text-muted-foreground italic">
                 Note: Policy coverage begins on the effective date. VAT inclusive.
               </p>
 
               <hr className="my-6" />
 
               <div className="mb-4">
-                <h3 className="mb-3 text-sm font-bold text-gray-700">POLICY STATUS</h3>
+                <h3 className="mb-3 text-sm font-bold text-foreground">POLICY STATUS</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-xs text-gray-400">Status</p>
-                    <p className="font-semibold text-green-600">Active</p>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <p className="font-semibold text-success">Active</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Issue Date</p>
-                    <p className="font-semibold text-gray-900">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p>
+                    <p className="text-xs text-muted-foreground">Issue Date</p>
+                    <p className="font-semibold text-foreground">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</p>
                   </div>
                 </div>
               </div>
@@ -579,18 +578,18 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#eef2f7]">
+    <div className="min-h-screen bg-section">
       {/* Header */}
       <div className="bg-white px-6 py-3 shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link href={`/${agentCode}`} className="hover:text-primary">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="font-semibold text-gray-900">Checkout</span>
+            <span className="font-semibold text-foreground">Checkout</span>
           </div>
           <div className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="One Insurance" width={100} height={32} className="h-8 w-auto" />
-            <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto" />
+            <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>
         </div>
       </div>
@@ -599,23 +598,23 @@ export default function CheckoutPage() {
         <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           {/* Left — Gross Premium summary */}
           <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-center text-xl font-bold text-gray-900">Gross Premium</h2>
+            <h2 className="mb-4 text-center text-xl font-bold text-foreground">Gross Premium</h2>
             <hr className="mb-4" />
             <p className="text-muted-foreground mb-1 text-center text-sm">Total Payment</p>
-            <p className="mb-6 text-center text-3xl font-black text-gray-900">
+            <p className="mb-6 text-center text-3xl font-black text-foreground">
               ₱ {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </p>
 
             <div className="rounded-xl border p-4 text-xs">
-              <div className="mb-2 grid grid-cols-[1fr_auto_auto] gap-2 text-gray-400">
+              <div className="mb-2 grid grid-cols-[1fr_auto_auto] gap-2 text-muted-foreground">
                 <span>Item</span><span>Quantity</span><span>Amount</span>
               </div>
               {items.map((item) => (
-                <div key={item.id} className="mb-3 grid grid-cols-[1fr_auto_auto] gap-2 text-gray-700">
+                <div key={item.id} className="mb-3 grid grid-cols-[1fr_auto_auto] gap-2 text-foreground">
                   <div>
                     <p className="font-bold">{item.provider}</p>
                     <p>{item.planName}</p>
-                    <p className="text-gray-400">{item.tierName}: {item.tierSubtitle}</p>
+                    <p className="text-muted-foreground">{item.tierName}: {item.tierSubtitle}</p>
                   </div>
                   <span className="text-center">{item.quantity}</span>
                   <span>₱ {(item.premium * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
@@ -633,7 +632,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="my-4 overflow-hidden">
-              <svg viewBox="0 0 400 12" className="w-full text-gray-200">
+              <svg viewBox="0 0 400 12" className="w-full text-muted-foreground">
                 <path d="M0,6 C50,0 100,12 150,6 C200,0 250,12 300,6 C350,0 400,12 400,6" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
               </svg>
             </div>
@@ -648,19 +647,19 @@ export default function CheckoutPage() {
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="text-primary mb-1 block text-sm font-medium">Full Name <span className="text-red-500">*</span></label>
-                  <Input id="field-fullName" value={fullName} onChange={(e) => { setFullName(e.target.value); setFormErrors(p => ({...p, fullName: ''})) }} placeholder="e.g. Juan Dela Cruz" className={`h-12 rounded-full ${formErrors.fullName ? 'border-red-500' : ''}`} />
-                  {formErrors.fullName && <p className="mt-1 text-xs text-red-500">{formErrors.fullName}</p>}
+                  <label className="text-primary mb-1 block text-sm font-medium">Full Name <span className="text-destructive">*</span></label>
+                  <Input id="field-fullName" value={fullName} onChange={(e) => { setFullName(e.target.value); setFormErrors(p => ({...p, fullName: ''})) }} placeholder="e.g. Juan Dela Cruz" className={`h-12 rounded-full ${formErrors.fullName ? 'border-destructive' : ''}`} />
+                  {formErrors.fullName && <p className="mt-1 text-xs text-destructive">{formErrors.fullName}</p>}
                 </div>
                 <div>
-                  <label className="text-primary mb-1 block text-sm font-medium">Email Address <span className="text-red-500">*</span></label>
-                  <Input id="field-email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors(p => ({...p, email: ''})) }} placeholder="e.g. juan@example.com" className={`h-12 rounded-full ${formErrors.email ? 'border-red-500' : ''}`} />
-                  {formErrors.email && <p className="mt-1 text-xs text-red-500">{formErrors.email}</p>}
+                  <label className="text-primary mb-1 block text-sm font-medium">Email Address <span className="text-destructive">*</span></label>
+                  <Input id="field-email" value={email} onChange={(e) => { setEmail(e.target.value); setFormErrors(p => ({...p, email: ''})) }} placeholder="e.g. juan@example.com" className={`h-12 rounded-full ${formErrors.email ? 'border-destructive' : ''}`} />
+                  {formErrors.email && <p className="mt-1 text-xs text-destructive">{formErrors.email}</p>}
                 </div>
                 <div>
-                  <label className="text-primary mb-1 block text-sm font-medium">Phone Number <span className="text-red-500">*</span></label>
-                  <div className={`flex h-12 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${formErrors.phone ? 'border-red-500' : ''}`}>
-                    <span className="border-r px-3 text-sm text-gray-500">+63</span>
+                  <label className="text-primary mb-1 block text-sm font-medium">Phone Number <span className="text-destructive">*</span></label>
+                  <div className={`flex h-12 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${formErrors.phone ? 'border-destructive' : ''}`}>
+                    <span className="border-r px-3 text-sm text-muted-foreground">+63</span>
                     <Input
                       id="field-phone"
                       value={phone}
@@ -669,16 +668,16 @@ export default function CheckoutPage() {
                       className="h-full flex-1 border-0 shadow-none focus-visible:ring-0"
                     />
                   </div>
-                  {formErrors.phone && <p className="mt-1 text-xs text-red-500">{formErrors.phone}</p>}
+                  {formErrors.phone && <p className="mt-1 text-xs text-destructive">{formErrors.phone}</p>}
                 </div>
                 <div>
-                  <label className="text-primary mb-1 block text-sm font-medium">Place of Birth <span className="text-red-500">*</span></label>
-                  <Input id="field-placeOfBirth" value={placeOfBirth} onChange={(e) => { setPlaceOfBirth(e.target.value); setFormErrors(p => ({...p, placeOfBirth: ''})) }} placeholder="e.g. Manila, Philippines" className={`h-12 rounded-full ${formErrors.placeOfBirth ? 'border-red-500' : ''}`} />
-                  {formErrors.placeOfBirth && <p className="mt-1 text-xs text-red-500">{formErrors.placeOfBirth}</p>}
+                  <label className="text-primary mb-1 block text-sm font-medium">Place of Birth <span className="text-destructive">*</span></label>
+                  <Input id="field-placeOfBirth" value={placeOfBirth} onChange={(e) => { setPlaceOfBirth(e.target.value); setFormErrors(p => ({...p, placeOfBirth: ''})) }} placeholder="e.g. Manila, Philippines" className={`h-12 rounded-full ${formErrors.placeOfBirth ? 'border-destructive' : ''}`} />
+                  {formErrors.placeOfBirth && <p className="mt-1 text-xs text-destructive">{formErrors.placeOfBirth}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-primary mb-1 block text-sm font-medium">ID Type <span className="text-red-500">*</span></label>
+                    <label className="text-primary mb-1 block text-sm font-medium">ID Type <span className="text-destructive">*</span></label>
                     <select
                       value={idTypeCode}
                       onChange={(e) => {
@@ -695,7 +694,7 @@ export default function CheckoutPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-primary mb-1 block text-sm font-medium">ID Number <span className="text-red-500">*</span></label>
+                    <label className="text-primary mb-1 block text-sm font-medium">ID Number <span className="text-destructive">*</span></label>
                     <Input
                       value={idNo}
                       onChange={(e) => {
@@ -703,18 +702,18 @@ export default function CheckoutPage() {
                         setIdNoError(validateIdNo(idTypeCode, e.target.value))
                       }}
                       placeholder={ID_FORMATS[idTypeCode]?.placeholder ?? 'Enter ID Number'}
-                      className={`h-12 rounded-full ${idNoError ? 'border-red-500' : ''}`}
+                      className={`h-12 rounded-full ${idNoError ? 'border-destructive' : ''}`}
                     />
                     {ID_FORMATS[idTypeCode] && (
                       <p className="text-muted-foreground mt-1 text-xs">{ID_FORMATS[idTypeCode].hint}</p>
                     )}
-                    {idNoError && <p className="mt-1 text-xs text-red-500">{idNoError}</p>}
+                    {idNoError && <p className="mt-1 text-xs text-destructive">{idNoError}</p>}
                   </div>
                 </div>
                 <div>
-                  <label className="text-primary mb-1 block text-sm font-medium">Address Line 1 <span className="text-red-500">*</span></label>
-                  <Input id="field-addressLine1" value={addressLine1} onChange={(e) => { setAddressLine1(e.target.value); setFormErrors(p => ({...p, addressLine1: ''})) }} placeholder="e.g. 123 Rizal Street, Barangay San Antonio" className={`h-12 rounded-full ${formErrors.addressLine1 ? 'border-red-500' : ''}`} />
-                  {formErrors.addressLine1 && <p className="mt-1 text-xs text-red-500">{formErrors.addressLine1}</p>}
+                  <label className="text-primary mb-1 block text-sm font-medium">Address Line 1 <span className="text-destructive">*</span></label>
+                  <Input id="field-addressLine1" value={addressLine1} onChange={(e) => { setAddressLine1(e.target.value); setFormErrors(p => ({...p, addressLine1: ''})) }} placeholder="e.g. 123 Rizal Street, Barangay San Antonio" className={`h-12 rounded-full ${formErrors.addressLine1 ? 'border-destructive' : ''}`} />
+                  {formErrors.addressLine1 && <p className="mt-1 text-xs text-destructive">{formErrors.addressLine1}</p>}
                 </div>
                 <div>
                   <div className="mb-1 flex justify-between">
@@ -725,19 +724,19 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-primary mb-1 block text-sm font-medium">Province <span className="text-red-500">*</span></label>
-                    <Input id="field-province" value={province} onChange={(e) => { setProvince(e.target.value); setFormErrors(p => ({...p, province: ''})) }} placeholder="e.g. Metro Manila" className={`h-12 rounded-full ${formErrors.province ? 'border-red-500' : ''}`} />
-                    {formErrors.province && <p className="mt-1 text-xs text-red-500">{formErrors.province}</p>}
+                    <label className="text-primary mb-1 block text-sm font-medium">Province <span className="text-destructive">*</span></label>
+                    <Input id="field-province" value={province} onChange={(e) => { setProvince(e.target.value); setFormErrors(p => ({...p, province: ''})) }} placeholder="e.g. Metro Manila" className={`h-12 rounded-full ${formErrors.province ? 'border-destructive' : ''}`} />
+                    {formErrors.province && <p className="mt-1 text-xs text-destructive">{formErrors.province}</p>}
                   </div>
                   <div>
-                    <label className="text-primary mb-1 block text-sm font-medium">City <span className="text-red-500">*</span></label>
-                    <Input id="field-city" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors(p => ({...p, city: ''})) }} placeholder="e.g. Makati" className={`h-12 rounded-full ${formErrors.city ? 'border-red-500' : ''}`} />
-                    {formErrors.city && <p className="mt-1 text-xs text-red-500">{formErrors.city}</p>}
+                    <label className="text-primary mb-1 block text-sm font-medium">City <span className="text-destructive">*</span></label>
+                    <Input id="field-city" value={city} onChange={(e) => { setCity(e.target.value); setFormErrors(p => ({...p, city: ''})) }} placeholder="e.g. Makati" className={`h-12 rounded-full ${formErrors.city ? 'border-destructive' : ''}`} />
+                    {formErrors.city && <p className="mt-1 text-xs text-destructive">{formErrors.city}</p>}
                   </div>
                   <div>
-                    <label className="text-primary mb-1 block text-sm font-medium">Post Code <span className="text-red-500">*</span></label>
-                    <Input id="field-postCode" value={postCode} onChange={(e) => { setPostCode(e.target.value); setFormErrors(p => ({...p, postCode: ''})) }} placeholder="e.g. 1200" className={`h-12 rounded-full ${formErrors.postCode ? 'border-red-500' : ''}`} />
-                    {formErrors.postCode && <p className="mt-1 text-xs text-red-500">{formErrors.postCode}</p>}
+                    <label className="text-primary mb-1 block text-sm font-medium">Post Code <span className="text-destructive">*</span></label>
+                    <Input id="field-postCode" value={postCode} onChange={(e) => { setPostCode(e.target.value); setFormErrors(p => ({...p, postCode: ''})) }} placeholder="e.g. 1200" className={`h-12 rounded-full ${formErrors.postCode ? 'border-destructive' : ''}`} />
+                    {formErrors.postCode && <p className="mt-1 text-xs text-destructive">{formErrors.postCode}</p>}
                   </div>
                 </div>
               </div>
@@ -753,13 +752,13 @@ export default function CheckoutPage() {
               <div className="mb-5 flex rounded-full border p-0.5">
                 <button
                   onClick={() => setPaymentTab('card')}
-                  className={`flex-1 rounded-full py-2 text-sm font-medium transition ${paymentTab === 'card' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'text-gray-500'}`}
+                  className={`flex-1 rounded-full py-2 text-sm font-medium transition ${paymentTab === 'card' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'text-muted-foreground'}`}
                 >
                   Card
                 </button>
                 <button
                   onClick={() => setPaymentTab('ewallet')}
-                  className={`flex-1 rounded-full py-2 text-sm font-medium transition ${paymentTab === 'ewallet' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'text-gray-500'}`}
+                  className={`flex-1 rounded-full py-2 text-sm font-medium transition ${paymentTab === 'ewallet' ? 'from-primary to-accent bg-gradient-to-r text-white' : 'text-muted-foreground'}`}
                 >
                   E-Wallet
                 </button>
@@ -769,30 +768,30 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-700">Name on Card</label>
-                      <Input id="field-cardFirst" value={cardFirst} onChange={(e) => { setCardFirst(e.target.value); setFormErrors(p => ({...p, cardFirst: ''})) }} placeholder="First Name" className={`rounded-full ${formErrors.cardFirst ? 'border-red-500' : ''}`} />
-                      {formErrors.cardFirst && <p className="mt-1 text-xs text-red-500">{formErrors.cardFirst}</p>}
+                      <label className="mb-1 block text-xs font-semibold text-foreground">Name on Card</label>
+                      <Input id="field-cardFirst" value={cardFirst} onChange={(e) => { setCardFirst(e.target.value); setFormErrors(p => ({...p, cardFirst: ''})) }} placeholder="First Name" className={`rounded-full ${formErrors.cardFirst ? 'border-destructive' : ''}`} />
+                      {formErrors.cardFirst && <p className="mt-1 text-xs text-destructive">{formErrors.cardFirst}</p>}
                     </div>
                     <div className="mt-5">
-                      <Input id="field-cardLast" value={cardLast} onChange={(e) => { setCardLast(e.target.value); setFormErrors(p => ({...p, cardLast: ''})) }} placeholder="Last Name" className={`rounded-full ${formErrors.cardLast ? 'border-red-500' : ''}`} />
-                      {formErrors.cardLast && <p className="mt-1 text-xs text-red-500">{formErrors.cardLast}</p>}
+                      <Input id="field-cardLast" value={cardLast} onChange={(e) => { setCardLast(e.target.value); setFormErrors(p => ({...p, cardLast: ''})) }} placeholder="Last Name" className={`rounded-full ${formErrors.cardLast ? 'border-destructive' : ''}`} />
+                      {formErrors.cardLast && <p className="mt-1 text-xs text-destructive">{formErrors.cardLast}</p>}
                     </div>
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-700">Card Number</label>
-                    <Input id="field-cardNumber" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors(p => ({...p, cardNumber: ''})) }} placeholder="0000 0000 0000 0000" className={`rounded-full ${formErrors.cardNumber ? 'border-red-500' : ''}`} />
-                    {formErrors.cardNumber && <p className="mt-1 text-xs text-red-500">{formErrors.cardNumber}</p>}
+                    <label className="mb-1 block text-xs font-semibold text-foreground">Card Number</label>
+                    <Input id="field-cardNumber" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setFormErrors(p => ({...p, cardNumber: ''})) }} placeholder="0000 0000 0000 0000" className={`rounded-full ${formErrors.cardNumber ? 'border-destructive' : ''}`} />
+                    {formErrors.cardNumber && <p className="mt-1 text-xs text-destructive">{formErrors.cardNumber}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-700">Expiry</label>
-                      <Input id="field-expiry" value={expiry} onChange={(e) => { setExpiry(e.target.value); setFormErrors(p => ({...p, expiry: ''})) }} placeholder="MM/YYYY" className={`rounded-full ${formErrors.expiry ? 'border-red-500' : ''}`} />
-                      {formErrors.expiry && <p className="mt-1 text-xs text-red-500">{formErrors.expiry}</p>}
+                      <label className="mb-1 block text-xs font-semibold text-foreground">Expiry</label>
+                      <Input id="field-expiry" value={expiry} onChange={(e) => { setExpiry(e.target.value); setFormErrors(p => ({...p, expiry: ''})) }} placeholder="MM/YYYY" className={`rounded-full ${formErrors.expiry ? 'border-destructive' : ''}`} />
+                      {formErrors.expiry && <p className="mt-1 text-xs text-destructive">{formErrors.expiry}</p>}
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-700">CVV</label>
-                      <Input id="field-cvv" value={cvv} onChange={(e) => { setCvv(e.target.value); setFormErrors(p => ({...p, cvv: ''})) }} placeholder="CVV" className={`rounded-full ${formErrors.cvv ? 'border-red-500' : ''}`} />
-                      {formErrors.cvv && <p className="mt-1 text-xs text-red-500">{formErrors.cvv}</p>}
+                      <label className="mb-1 block text-xs font-semibold text-foreground">CVV</label>
+                      <Input id="field-cvv" value={cvv} onChange={(e) => { setCvv(e.target.value); setFormErrors(p => ({...p, cvv: ''})) }} placeholder="CVV" className={`rounded-full ${formErrors.cvv ? 'border-destructive' : ''}`} />
+                      {formErrors.cvv && <p className="mt-1 text-xs text-destructive">{formErrors.cvv}</p>}
                     </div>
                   </div>
                 </div>
@@ -803,16 +802,16 @@ export default function CheckoutPage() {
                     <Input value={walletLast} onChange={(e) => setWalletLast(e.target.value)} placeholder="Last Name" className="rounded-full" />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-700">Number</label>
+                    <label className="mb-1 block text-xs font-semibold text-foreground">Number</label>
                     <Input value={walletNumber} onChange={(e) => setWalletNumber(e.target.value)} placeholder="0000 0000 0000 0000" className="rounded-full" />
                   </div>
                   <div className="flex items-center gap-3 py-2">
-                    <div className="h-px flex-1 bg-gray-200" />
-                    <span className="text-xs text-gray-400">OR</span>
-                    <div className="h-px flex-1 bg-gray-200" />
+                    <div className="h-px flex-1 bg-muted" />
+                    <span className="text-xs text-muted-foreground">OR</span>
+                    <div className="h-px flex-1 bg-muted" />
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-700">Scan QR Code</p>
+                    <p className="text-sm font-semibold text-foreground">Scan QR Code</p>
                     <div className="rounded-xl border p-3">
                       <img
                         src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=OneInsurancePayment"

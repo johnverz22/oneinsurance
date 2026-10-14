@@ -175,12 +175,12 @@ export default function Home() {
         {/* Constrained content within a full-bleed section */}
         <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-6 sm:px-8 lg:px-12">
           <div className="max-w-2xl space-y-4">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl xl:text-6xl">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl xl:text-6xl">
               Insurance Made Simple.
               <br />
               Coverage Made Easy.
             </h1>
-            <p className="max-w-md text-base text-slate-700 sm:text-lg lg:text-xl">
+            <p className="max-w-md text-base text-muted-foreground sm:text-lg lg:text-xl">
               Your one-stop shop to compare, choose, and get insured — fast.
             </p>
           </div>
@@ -417,7 +417,7 @@ export default function Home() {
             <h2 className="from-primary to-tertiary bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent lg:text-5xl">
               Frequently Asked Questions
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Find quick and reliable answers to the most frequently asked
               questions.
             </p>
@@ -440,12 +440,12 @@ export default function Home() {
                 <AccordionItem
                   key={index}
                   value={`item-${index}`}
-                  className="data-[state=open]:border-primary rounded-full border-2 border-gray-200 px-6 transition-colors"
+                  className="data-[state=open]:border-primary rounded-full border-2 border-border px-6 transition-colors"
                 >
                   <AccordionTrigger className="text-left text-base font-semibold hover:no-underline">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="pb-4 text-base text-gray-600">
+                  <AccordionContent className="pb-4 text-base text-muted-foreground">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>

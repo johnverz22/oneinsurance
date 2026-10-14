@@ -145,7 +145,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                     key={index}
                     onClick={() => action.onClick(rowData)}
                     className={
-                      action.variant === 'destructive' ? 'text-red-600' : ''
+                      action.variant === 'destructive' ? 'text-destructive' : ''
                     }
                   >
                     {action.icon && <span className="mr-2">{action.icon}</span>}
@@ -276,7 +276,7 @@ export function DataTable<TData extends Record<string, any>, TValue>({
                   className={cn(
                     'bg-background h-16',
                     { 'cursor-pointer': onRowClick },
-                    { 'bg-gray-100 dark:bg-gray-900': index % 2 === 1 }
+                    { 'bg-muted dark:bg-gray-900': index % 2 === 1 }
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (

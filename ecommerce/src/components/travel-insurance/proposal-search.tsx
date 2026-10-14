@@ -402,17 +402,17 @@ export function ProposalSearch({ variant = 'full' }: ProposalSearchProps) {
       )}
 
       {errorMessage && (
-        <Alert className={`${errorType === 'business' ? 'border-orange-200 bg-orange-50' : 'border-red-200 bg-red-50'}`}>
-          <AlertCircle className={`h-4 w-4 ${errorType === 'business' ? 'text-orange-600' : 'text-red-600'}`} />
+        <Alert className={`${errorType === 'business' ? 'border-orange-200 bg-orange-50' : 'border-destructive/50 bg-destructive/10'}`}>
+          <AlertCircle className={`h-4 w-4 ${errorType === 'business' ? 'text-orange-600' : 'text-destructive'}`} />
           <AlertDescription className="flex items-center justify-between">
-            <span className={`${errorType === 'business' ? 'text-orange-800' : 'text-red-800'}`}>
+            <span className={`${errorType === 'business' ? 'text-orange-800' : 'text-destructive'}`}>
               {errorMessage}
             </span>
             <Button
               variant="ghost"
               size="sm"
               onClick={clearError}
-              className={`ml-2 h-6 w-6 p-0 ${errorType === 'business' ? 'text-orange-600 hover:text-orange-800' : 'text-red-600 hover:text-red-800'}`}
+              className={`ml-2 h-6 w-6 p-0 ${errorType === 'business' ? 'text-orange-600 hover:text-orange-800' : 'text-destructive hover:text-destructive'}`}
             >
               <X className="h-4 w-4" />
             </Button>

@@ -71,7 +71,7 @@ export const ApplyForm = () => {
         <form.Field name="firstName">
           {(field) => (
             <div className="space-y-2.5">
-              <Label className="text-gray-500">First Name</Label>
+              <Label className="text-muted-foreground">First Name</Label>
               <Input
                 placeholder="First Name"
                 value={field.state.value}
@@ -87,7 +87,7 @@ export const ApplyForm = () => {
         <form.Field name="lastName">
           {(field) => (
             <div className="space-y-2.5">
-              <Label className="text-gray-500">Last Name</Label>
+              <Label className="text-muted-foreground">Last Name</Label>
               <Input
                 placeholder="Last Name"
                 value={field.state.value}
@@ -104,7 +104,7 @@ export const ApplyForm = () => {
       <form.Field name="email">
         {(field) => (
           <div className="space-y-2.5">
-            <Label className="text-gray-500">Email</Label>
+            <Label className="text-muted-foreground">Email</Label>
             <Input
               type="email"
               placeholder="Email"
@@ -122,7 +122,7 @@ export const ApplyForm = () => {
       <form.Field name="contact_number">
         {(field) => (
           <div className="space-y-2.5">
-            <Label className="text-gray-500">Phone</Label>
+            <Label className="text-muted-foreground">Phone</Label>
             <Input
               placeholder="Phone Number"
               value={field.state.value}
@@ -139,7 +139,7 @@ export const ApplyForm = () => {
       <form.Field name="application_type">
         {(field) => (
           <div className="space-y-2.5">
-            <Label className="text-gray-500">Role</Label>
+            <Label className="text-muted-foreground">Role</Label>
             <Select
               onValueChange={(value) => field.handleChange(value as any)}
               value={field.state.value}
@@ -161,7 +161,7 @@ export const ApplyForm = () => {
       <form.Field name="notes">
         {(field) => (
           <div className="space-y-2.5">
-            <Label className="text-gray-500">Message</Label>
+            <Label className="text-muted-foreground">Message</Label>
             <Textarea
               placeholder="Message"
               value={field.state.value}
@@ -179,13 +179,20 @@ export const ApplyForm = () => {
         selector={(state) => [state.canSubmit, state.isSubmitting]}
       >
         {([canSubmit, isSubmitting]) => (
-          <Button
-            type="submit"
-            disabled={!canSubmit || isSubmitting}
-            className="bg-primary from-primary to-accent relative h-11 w-full self-end rounded-full bg-gradient-to-r via-90% px-12 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto dark:text-white"
-          >
-            {isSubmitting ? 'Submitting…' : 'Submit'}
-          </Button>
+          <div className="space-y-2">
+            <Button
+              type="submit"
+              disabled={!canSubmit || isSubmitting}
+              className="bg-primary from-primary to-accent relative h-11 w-full self-end rounded-full bg-gradient-to-r via-90% px-12 text-sm font-medium text-white shadow-lg hover:bg-success disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto dark:text-white"
+            >
+              {isSubmitting ? 'Submitting…' : 'Submit'}
+            </Button>
+            {isSubmitting && (
+              <p className="text-muted-foreground text-center text-xs">
+                This may take up to a minute. Please don&apos;t close the page.
+              </p>
+            )}
+          </div>
         )}
       </form.Subscribe>
     </form>

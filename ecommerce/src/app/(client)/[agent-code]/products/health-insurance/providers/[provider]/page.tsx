@@ -36,20 +36,20 @@ export default function ProviderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#eef2f7]">
+    <div className="min-h-screen bg-section">
       {/* Header bar */}
       <div className="bg-white px-6 py-3 shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link href={`/${agentCode}`} className="hover:text-primary">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <span>Providers</span>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="font-semibold text-gray-900">{provider.name}</span>
+            <span className="font-semibold text-foreground">{provider.name}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="One Insurance" width={100} height={32} className="h-8 w-auto" />
-            <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto" />
+            <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function ProviderPage() {
               </div>
               <div className="flex flex-col justify-center space-y-4">
                 <Image src={provider.logo} alt={provider.name} width={120} height={48} className="h-12 w-auto object-contain object-left" />
-                <h1 className="text-2xl font-bold text-gray-900">{provider.name}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{provider.name}</h1>
                 <p className="text-muted-foreground text-sm leading-relaxed">{provider.description}</p>
                 <Button
                   variant="outline"
@@ -80,7 +80,7 @@ export default function ProviderPage() {
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <button
               onClick={() => setShowAdviceForm(false)}
-              className="mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
+              className="mb-4 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
             >
               ← Back
             </button>
@@ -127,7 +127,7 @@ export default function ProviderPage() {
                 <div className="mb-2 h-8">
                   <Image src={plan.providerLogo} alt={plan.provider} width={80} height={32} className="h-8 w-auto object-contain object-left" />
                 </div>
-                <h3 className="mb-1 text-base font-bold text-gray-900">{plan.name}</h3>
+                <h3 className="mb-1 text-base font-bold text-foreground">{plan.name}</h3>
                 <p className="text-muted-foreground mb-4 flex-1 text-xs leading-relaxed line-clamp-2">{plan.description}</p>
                 <button
                   onClick={() => router.push(`/${agentCode}/products/health-insurance/providers/${providerSlug}/${plan.slug}`)}

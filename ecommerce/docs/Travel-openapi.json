@@ -1,0 +1,353 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Travel",
+    "description": "Travel insurance: compare quote, then full quote.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/igw/travel/compare-quote/init": {
+      "post": {
+        "summary": "1.1 Init Compare Quote",
+        "responses": {
+          "202": {
+            "description": "Accepted - 202",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Accepted",
+                  "data": {
+                    "ClientRequestId": "870be517-a145-4a25-b8b1-0447513291f4",
+                    "Channel": "870be517-a145-4a25-b8b1-0447513291f4",
+                    "Events": {
+                      "ready": "insurance.plan.received",
+                      "failed": "insurance.plan.failed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected at init - 422",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Travel compare quote requires a main insured traveller."
+                }
+              }
+            }
+          }
+        },
+        "description": "Starts a comparison and returns immediately (202) with a ClientRequestId.\n\nWEBSOCKET (do this next):\n1. Subscribe to the PUBLIC channel named ClientRequestId (Echo: echo.channel(id)).\n2. Listen for '.insurance.plan.received' (ready -> run 1.2) and '.insurance.plan.failed' (payload {client_request_id, code, message}). Note the leading dot.\n3. Safety net: also GET the result once right after subscribing and every ~3s (event can fire before you subscribe).\n\nClientRequestId is the id for the whole flow: the channel, the result GET, and Full Quote.\nA comparison the insurer rejects fails HERE (422 etc.), not later as an event.\n\nTest it by hand: npx wscat -c \"wss://stage-api.oneinsurance.shop/app/<REVERB_APP_KEY>?protocol=7\" then send {\"event\":\"pusher:subscribe\",\"data\":{\"channel\":\"<ClientRequestId>\"}}",
+        "operationId": "11_Init_Compare_Quote",
+        "tags": [
+          "1. Compare Quote"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "ProductCode": "TRAVEL",
+                "ProductVersion": "1.0",
+                "EffectiveDate": "2026-12-01",
+                "ExpiryDate": "2026-12-08",
+                "TripType": "SINGLE",
+                "TravelType": "INDIVIDUAL",
+                "NoOfTravellers": 1,
+                "BranchCode": "HO",
+                "Age": 34,
+                "LGT": 0.75,
+                "PromoCodeList": [],
+                "TravelDetailList": [
+                  {
+                    "TravelCoverageArea": "WORLD",
+                    "PlaceOfOrgin": "PH",
+                    "TravelCountry": "JP",
+                    "DisplaySequence": 1
+                  }
+                ],
+                "PolicyCustomerList": [
+                  {
+                    "DateOfBirth": "1990-03-01"
+                  }
+                ],
+                "PolicyLobList": [
+                  {
+                    "ProductCode": "TRAVEL",
+                    "PolicyRiskList": [
+                      {
+                        "ProductElementCode": "R00001",
+                        "IsMainInsured": "Y",
+                        "DateOfBirth": "1990-03-01",
+                        "IsAdultTraveller": "Y",
+                        "FirstName": "Ram",
+                        "LastName": "Kumar",
+                        "Gender": "M"
+                      }
+                    ]
+                  }
+                ],
+                "AgentCode": "2BCUMAXGAV",
+                "Slug": "ifrc"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/igw/travel/compare-quote/b85b6ff5-0441-4e0c-81c0-69005cbd36f4": {
+      "get": {
+        "summary": "1.2 Get Compare Quote Result",
+        "responses": {
+          "200": {
+            "description": "Ready - 200",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Successful",
+                  "data": [
+                    {
+                      "insurer": {
+                        "name": "Malayan Insurance",
+                        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/malayan.png",
+                        "code": "MIC"
+                      },
+                      "product": {
+                        "code": "MIC-TRAVEL-MASTER",
+                        "name": "Travel Master"
+                      },
+                      "plan": {
+                        "code": "TMPHPC2",
+                        "name": "TM CSL ASIAN W/ COVID 500K",
+                        "sum_insured": "500000.00"
+                      },
+                      "zone": {
+                        "code": "ASIAN",
+                        "name": "Asian"
+                      },
+                      "premium": {
+                        "amount": "258.00",
+                        "currency": "PHP"
+                      },
+                      "coverages": [
+                        {
+                          "category": "Personal Accident Insurance",
+                          "name": "Accidental Death, Dismemberment and Disablement",
+                          "is_optional": false,
+                          "addon_code": null,
+                          "limit": {
+                            "type": "amount",
+                            "amount": "1000000.00",
+                            "sub_limit_amount": null,
+                            "sub_limit_per": null,
+                            "per_unit": null,
+                            "per_unit_size": null,
+                            "max_units": null,
+                            "waiting_period_hours": null,
+                            "notes": null
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Pending - 202",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Pending",
+                  "data": {
+                    "status": "pending"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown or expired id - 404",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Compare quote request not found or expired."
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired at insurer - 410",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Travel compare quote expired. Submit a new request."
+                }
+              }
+            }
+          }
+        },
+        "description": "Fetch the comparison cards. Call it when '.insurance.plan.received' arrives (or poll every ~3s as a fallback).\n\n200 = ready, data is the list of cards\n202 = still running (Retry-After: 2)\n404 = unknown/expired id (kept 1 hour)\n410 = expired at the insurer, search again\n504 = timed out, search again\n\nOn 200 this collection saves the FIRST card's insurer/product/plan codes into variables so 2.1 works. In your app, use the card the user picks.",
+        "operationId": "12_Get_Compare_Quote_Result",
+        "tags": [
+          "1. Compare Quote"
+        ]
+      }
+    },
+    "/api/v1/igw/travel/full-quote": {
+      "post": {
+        "summary": "2.1 Full Quote",
+        "responses": {
+          "201": {
+            "description": "Created - 201",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Successful",
+                  "data": {
+                    "id": "b1f0c2d4-0000-0000-0000-000000000000",
+                    "proposal_number": "MIC-2026-0001",
+                    "status": "draft",
+                    "insurer": {
+                      "code": "MIC",
+                      "name": "Malayan Insurance"
+                    },
+                    "product": {
+                      "code": "MIC-TRAVEL-MASTER",
+                      "name": "Travel Master"
+                    },
+                    "plan": {
+                      "code": "TMPHPC2",
+                      "name": "TM CSL ASIAN W/ COVID 500K"
+                    },
+                    "premium": {
+                      "amount": "258.00",
+                      "currency": "PHP"
+                    },
+                    "travellers": [
+                      {
+                        "is_principal_applicant": true,
+                        "first_name": "Ram",
+                        "last_name": "Kumar",
+                        "date_of_birth": "1990-03-01"
+                      }
+                    ],
+                    "expires_at": "2026-10-14T00:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request still in flight - 409",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "A request with this Idempotency-Key is already being processed."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Comparison not ready or expired - 422",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "No ready comparison result was found with that id.",
+                  "errors": {
+                    "quote_comparison_request_id": [
+                      "No ready comparison result was found with that id."
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Gateway failure - 502",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Travel full quote failed."
+                }
+              }
+            }
+          }
+        },
+        "description": "Create the quote for the picked plan. Run 1.1 and 1.2 first (this uses the saved variables).\n\nFIELDS\n- ClientRequestId: the id from 1.1 (same one used for the websocket and the GET)\n- AgentCode: the selling agent\n- insurer_code / product_code / plan_code: from the picked card (card.insurer.code, card.product.code, card.plan.code)\n- travellers[]: count must equal NoOfTravellers from 1.1; exactly one is_principal_applicant=true\n- CustomField (this API only, not sent to the insurer): PlanName, TravellerLists, IdImages (multipart)\n\nVALIDATION happens at the insurer gateway, not in this API. id_type values and address.country codes must be ones the gateway accepts (ask backend for the list; 'PAS' is only an example).\n\nErrors: 422 + errors{} (keys like 'travellers.0.id_number' contain dots - use bracket access), 422 on quote_comparison_request_id (comparison not ready/expired -> compare again), 409 (same Idempotency-Key still in flight), 502 (insurer/gateway failure).\n\nRETRY: enable Idempotency-Key and reuse the same value, or resend an identical body; either returns the original quote instead of creating a second one.\n\nID IMAGES: switch the body to form-data, send fields as travellers[0][first_name] ... and add CustomField[IdImages][0][file_name|front_id|back_id]. In form-data send booleans as 1/0 (not 'true').",
+        "operationId": "21_Full_Quote",
+        "tags": [
+          "2. Full Quote"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "ClientRequestId": "<<client_request_id>>",
+                "AgentCode": "<<agent_code>>",
+                "insurer_code": "<<insurer_code>>",
+                "product_code": "<<product_code>>",
+                "plan_code": "<<plan_code>>",
+                "travellers": [
+                  {
+                    "is_principal_applicant": true,
+                    "first_name": "Ram",
+                    "middle_name": "K",
+                    "last_name": "Kumar",
+                    "suffix": null,
+                    "date_of_birth": "1990-03-01",
+                    "gender": "male",
+                    "id_type": "PAS",
+                    "id_number": "L8976M98",
+                    "address": {
+                      "line1": "KKK",
+                      "line2": "Manila",
+                      "city": "Manila",
+                      "province": "Metro Manila",
+                      "postal_code": "2922",
+                      "country": "PH"
+                    },
+                    "email": "xyz@gmail.com",
+                    "mobile": "9898765467"
+                  }
+                ],
+                "CustomField": {
+                  "PlanName": "<<plan_name>>",
+                  "TravellerLists": []
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "<<base_url>>"
+    }
+  ],
+  "tags": [
+    {
+      "name": "1. Compare Quote",
+      "description": "Asynchronous: init, wait for the websocket event, then fetch the cards."
+    },
+    {
+      "name": "2. Full Quote",
+      "description": "Create the quote for the picked plan."
+    }
+  ],
+  "x-hoppscotch-folder-tags": "slash"
+}

@@ -81,7 +81,7 @@ export default function TravelInsuranceTermsPage() {
             <li><strong>Address:</strong> 6th Floor Padilla Building, F. Ortigas Jr. Road, Ortigas Center, Pasig City</li>
           </ul>
 
-          <p className="mt-6 text-sm text-gray-600">
+          <p className="mt-6 text-sm text-muted-foreground">
             These Terms and Conditions shall be construed and governed in accordance with the laws of the Republic of the Philippines. We reserve the right to amend these terms at any time, and all revisions shall be communicated through our official channels.
           </p>
         </div>

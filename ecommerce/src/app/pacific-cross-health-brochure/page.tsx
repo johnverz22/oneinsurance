@@ -82,7 +82,7 @@ const benefits = [
     icon: '💵',
     title: 'Lump-sum cash assistance',
     desc: 'In-patient emergency treatment qualifies for lump-sum reimbursement regardless of actual medical cost incurred.',
-    color: 'bg-green-50 text-green-700',
+    color: 'bg-success/10 text-success',
     border: 'border-l-green-500',
   },
   {
@@ -96,7 +96,7 @@ const benefits = [
     icon: '📅',
     title: '1-year validity',
     desc: 'Coverage runs for 1 full year from the Effective Date. If no claim is filed, the policy stays active until expiry.',
-    color: 'bg-amber-50 text-amber-700',
+    color: 'bg-warning/10 text-warning',
     border: 'border-l-amber-500',
   },
 ]
@@ -145,7 +145,7 @@ const faqs = [
 
 function PlanCard({ plan }: { plan: typeof plans[0] }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-border bg-white overflow-hidden">
       <div className={`bg-gradient-to-r ${plan.accentColor} px-5 py-4`}>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -166,22 +166,22 @@ function PlanCard({ plan }: { plan: typeof plans[0] }) {
         {plan.options.length === 1 ? (
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium text-gray-900">{plan.options[0].label}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Up to {plan.options[0].maxBenefit}</p>
+              <p className="text-sm font-medium text-foreground">{plan.options[0].label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Up to {plan.options[0].maxBenefit}</p>
             </div>
             <p className="text-xl font-bold text-primary">₱{plan.options[0].premium}</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 text-[11px] text-gray-400 font-medium pb-2 border-b border-gray-100 mb-1">
+            <div className="grid grid-cols-3 text-[11px] text-muted-foreground font-medium pb-2 border-b border-border mb-1">
               <span>Option</span>
               <span>Max benefit</span>
               <span className="text-right">Premium</span>
             </div>
             {plan.options.map((opt) => (
               <div key={opt.label} className="grid grid-cols-3 items-center py-2 border-b border-gray-50 last:border-0">
-                <span className="text-sm font-medium text-gray-900">{opt.label}</span>
-                <span className="text-sm text-gray-500">{opt.maxBenefit}</span>
+                <span className="text-sm font-medium text-foreground">{opt.label}</span>
+                <span className="text-sm text-muted-foreground">{opt.maxBenefit}</span>
                 <span className="text-sm font-bold text-primary text-right">₱{opt.premium}</span>
               </div>
             ))}
@@ -200,7 +200,7 @@ function FaqItem({ faq, index, open, onToggle }: {
 }) {
   return (
     <div
-      className={`rounded-xl border bg-white overflow-hidden transition-colors ${open ? 'border-primary' : 'border-gray-200'}`}
+      className={`rounded-xl border bg-white overflow-hidden transition-colors ${open ? 'border-primary' : 'border-border'}`}
     >
       <button
         className="w-full flex items-center gap-3 px-4 py-4 text-left"
@@ -212,17 +212,17 @@ function FaqItem({ faq, index, open, onToggle }: {
         >
           {index + 1}
         </span>
-        <span className="flex-1 text-sm font-medium text-gray-900">{faq.q}</span>
+        <span className="flex-1 text-sm font-medium text-foreground">{faq.q}</span>
         <svg
-          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-primary' : 'text-gray-400'}`}
+          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-primary' : 'text-muted-foreground'}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
-        <div className="px-4 pb-4 pl-[52px] border-t border-gray-100 pt-3">
-          <p className="text-sm text-gray-500 leading-relaxed">{faq.a}</p>
+        <div className="px-4 pb-4 pl-[52px] border-t border-border pt-3">
+          <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
         </div>
       )}
     </div>
@@ -233,15 +233,15 @@ export default function PacificCrossHealthBrochurePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       {/* Sticky header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
-          <span className="text-sm font-semibold text-gray-900">Select Prepaid Insurance Plans</span>
+          <span className="text-sm font-semibold text-foreground">Select Prepaid Insurance Plans</span>
         </div>
       </div>
 
@@ -262,10 +262,10 @@ export default function PacificCrossHealthBrochurePage() {
             post-hospitalization medicines — valid for 1 year.
           </p>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-900/60 border border-green-700 px-3 py-1 text-[11px] font-medium text-green-200">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-900/60 border border-success px-3 py-1 text-[11px] font-medium text-green-200">
               📍 Philippine availment only
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-900/50 border border-green-700 px-3 py-1 text-[11px] font-medium text-green-200">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-900/50 border border-success px-3 py-1 text-[11px] font-medium text-green-200">
               📅 Valid for 1 year
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-900/50 border border-amber-700 px-3 py-1 text-[11px] font-medium text-amber-200">
@@ -277,7 +277,7 @@ export default function PacificCrossHealthBrochurePage() {
         {/* ── Important Notes ── */}
         <section className="rounded-xl border-l-4 border-primary bg-primary/5 px-5 py-4 space-y-1.5">
           <h3 className="text-sm font-semibold text-primary">Important notes</h3>
-          <ul className="text-xs text-gray-700 space-y-1 list-disc list-inside leading-relaxed">
+          <ul className="text-xs text-foreground space-y-1 list-disc list-inside leading-relaxed">
             <li><strong>Period of Insurance:</strong> Valid for 1 year from Effective Date — terminated once a claim is approved.</li>
             <li><strong>Waiting Period:</strong> Number of days from purchase before coverage begins.</li>
             <li>You may purchase all 5 plans, but only 1 option per plan per period.</li>
@@ -286,7 +286,7 @@ export default function PacificCrossHealthBrochurePage() {
 
         {/* ── Plans ── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">Available plans</h2>
+          <h2 className="text-xl font-bold text-foreground">Available plans</h2>
 
           {/* Top 2 plans full-width */}
           {plans.slice(0, 2).map((plan) => (
@@ -308,12 +308,12 @@ export default function PacificCrossHealthBrochurePage() {
         <section className="space-y-5">
           <div>
             <p className="text-[10px] font-semibold tracking-widest text-primary uppercase mb-1">Coverage details</p>
-            <h2 className="text-xl font-bold text-gray-900">Plan benefits &amp; limitations</h2>
+            <h2 className="text-xl font-bold text-foreground">Plan benefits &amp; limitations</h2>
           </div>
 
           {/* How it works timeline */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <p className="text-xs font-medium text-gray-500 mb-5 flex items-center gap-1.5">
+          <div className="rounded-xl border border-border bg-white p-5">
+            <p className="text-xs font-medium text-muted-foreground mb-5 flex items-center gap-1.5">
               <span className="text-primary">→</span> How your coverage works
             </p>
             <div className="flex items-start gap-0 overflow-x-auto pb-1">
@@ -322,14 +322,14 @@ export default function PacificCrossHealthBrochurePage() {
                   <div className="flex flex-col items-center w-20 sm:w-24">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg mb-2 ${
                       i === 0 ? 'bg-primary/10' :
-                      i === 2 ? 'bg-green-50' :
-                      i === 3 ? 'bg-amber-50' :
-                      i === 4 ? 'bg-red-50' : 'bg-primary/10'
+                      i === 2 ? 'bg-success/10' :
+                      i === 3 ? 'bg-warning/10' :
+                      i === 4 ? 'bg-destructive/10' : 'bg-primary/10'
                     }`}>
                       {step.icon}
                     </div>
-                    <p className="text-[10px] font-medium text-gray-800 text-center leading-tight">{step.label}</p>
-                    {step.sub && <p className="text-[9px] text-gray-400 text-center mt-0.5">{step.sub}</p>}
+                    <p className="text-[10px] font-medium text-foreground text-center leading-tight">{step.label}</p>
+                    {step.sub && <p className="text-[9px] text-muted-foreground text-center mt-0.5">{step.sub}</p>}
                   </div>
                   {i < timelineSteps.length - 1 && (
                     <div className="w-8 sm:w-12 h-px bg-primary/30 flex-shrink-0 mb-5" />
@@ -342,28 +342,28 @@ export default function PacificCrossHealthBrochurePage() {
           {/* Benefit cards */}
           <div className="grid sm:grid-cols-2 gap-3">
             {benefits.map((b) => (
-              <div key={b.title} className={`rounded-xl border border-gray-200 border-l-4 ${b.border} bg-white p-4 flex gap-3`}>
+              <div key={b.title} className={`rounded-xl border border-border border-l-4 ${b.border} bg-white p-4 flex gap-3`}>
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0 ${b.color}`}>
                   {b.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{b.title}</p>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{b.desc}</p>
+                  <p className="text-sm font-semibold text-foreground">{b.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{b.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Exclusions */}
-          <div className="rounded-xl bg-red-50 border border-red-100 p-4">
-            <p className="text-xs font-semibold text-red-800 mb-3 flex items-center gap-1.5">
+          <div className="rounded-xl bg-destructive/10 border border-red-100 p-4">
+            <p className="text-xs font-semibold text-destructive mb-3 flex items-center gap-1.5">
               <span>🚫</span> Not covered under this plan
             </p>
             <div className="flex flex-wrap gap-2">
               {exclusions.map((ex) => (
                 <span
                   key={ex}
-                  className="inline-block rounded-full bg-white border border-red-200 px-3 py-1 text-[10px] font-medium text-red-700"
+                  className="inline-block rounded-full bg-white border border-destructive/50 px-3 py-1 text-[10px] font-medium text-destructive"
                 >
                   {ex}
                 </span>
@@ -376,7 +376,7 @@ export default function PacificCrossHealthBrochurePage() {
         <section className="space-y-4">
           <div>
             <p className="text-[10px] font-semibold tracking-widest text-primary uppercase mb-1">Need to know</p>
-            <h2 className="text-xl font-bold text-gray-900">Frequently asked questions</h2>
+            <h2 className="text-xl font-bold text-foreground">Frequently asked questions</h2>
           </div>
 
           <div className="space-y-2">
@@ -392,28 +392,28 @@ export default function PacificCrossHealthBrochurePage() {
           </div>
 
           {/* Still have questions */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-gray-200 bg-white p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-border bg-white p-4">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
               ✉️
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">Still have questions?</p>
-              <p className="text-xs text-gray-500 mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
+              <p className="text-sm font-semibold text-foreground">Still have questions?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
             </div>
             <div className="text-right sm:flex-shrink-0">
               <p className="text-sm font-semibold text-primary">client_services@pacificcross.com.ph</p>
-              <p className="text-xs text-gray-500">+63 2 8230-8511</p>
+              <p className="text-xs text-muted-foreground">+63 2 8230-8511</p>
             </div>
           </div>
         </section>
 
         {/* ── Contact / CTA ── */}
-        <section className="rounded-xl border border-gray-200 bg-white p-6 text-center space-y-3">
-          <p className="text-sm text-gray-500">
+        <section className="rounded-xl border border-border bg-white p-6 text-center space-y-3">
+          <p className="text-sm text-muted-foreground">
             For the full list of exclusions, terms, and conditions, please ask for a specimen Policy via email
           </p>
           <p className="text-base font-semibold text-primary">client_services@pacificcross.com.ph</p>
-          <p className="text-sm text-gray-400">Pacific Cross Hotline: +63 2 8230-8511</p>
+          <p className="text-sm text-muted-foreground">Pacific Cross Hotline: +63 2 8230-8511</p>
           <a
             href="/files/pacific-cross-select-er-brochure.pdf"
             target="_blank"

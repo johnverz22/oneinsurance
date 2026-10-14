@@ -304,7 +304,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
     <Card data-testid="health-details-form" className={cn('w-full rounded-md border shadow-lg backdrop-blur-sm bg-white lg:rounded-xl', className)}>
       <CardContent className="px-4 pt-3 pb-6 sm:px-8">
         <div className="mb-3">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Personalized Advice</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">Get Personalized Advice</h2>
           <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
         </div>
 
@@ -367,7 +367,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-primary">Phone Number <span className="text-destructive">*</span></Label>
                 <div className={cn('flex h-12 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30', { 'border-destructive': fieldHasError(field) })}>
-                  <span className="border-r px-3 text-sm text-gray-500">+63</span>
+                  <span className="border-r px-3 text-sm text-muted-foreground">+63</span>
                   <input
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -483,7 +483,7 @@ export function HealthDetailsForm({ className }: HealthDetailsFormProps) {
                 type="submit"
                 disabled={!!isSubmitting}
                 onClick={(e) => { e.preventDefault(); form.handleSubmit() }}
-                className="bg-primary from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
+                className="bg-primary from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-success disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? 'Searching...' : 'Search Plans'}
               </Button>

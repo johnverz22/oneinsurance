@@ -61,7 +61,7 @@ export default function AccountCredentialForm() {
           <h1 className="text-primary text-3xl font-bold tracking-wide sm:text-4xl md:text-5xl lg:text-6xl">
             Welcome!
           </h1>
-          <p className="text-sm font-light tracking-normal text-gray-600 sm:text-base md:text-lg">
+          <p className="text-sm font-light tracking-normal text-muted-foreground sm:text-base md:text-lg">
             Comprehensive Insurance Solutions Tailored for Success
           </p>
         </div>

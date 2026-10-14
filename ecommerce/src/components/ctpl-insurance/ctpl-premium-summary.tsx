@@ -22,7 +22,7 @@ export default function CtplPremiumSummary() {
     <div className="sticky top-24 flex w-full flex-col space-y-6">
       <Card className="bg-background overflow-hidden p-0 shadow-none">
         <CardHeader className="pt-6 pb-4">
-          <h2 className="text-center text-2xl font-black text-gray-900">
+          <h2 className="text-center text-2xl font-black text-foreground">
             Total Premium
           </h2>
           <p className="text-center text-lg sm:text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
@@ -34,24 +34,24 @@ export default function CtplPremiumSummary() {
 
         <CardContent className="space-y-4 px-6 pb-8">
           {/* Insurance Provider */}
-          <div className="rounded-lg border border-gray-300 px-4 py-3">
-            <p className="mb-1 text-sm text-gray-600">Insurance Provider</p>
-            <p className="font-semibold text-gray-900">{providerName}</p>
+          <div className="rounded-lg border border-border px-4 py-3">
+            <p className="mb-1 text-sm text-muted-foreground">Insurance Provider</p>
+            <p className="font-semibold text-foreground">{providerName}</p>
           </div>
 
           {/* Plan */}
-          <div className="rounded-lg border border-gray-300 px-4 py-3">
-            <p className="mb-1 text-sm text-gray-600">Plan</p>
-            <p className="font-semibold uppercase text-gray-900">{planName}</p>
+          <div className="rounded-lg border border-border px-4 py-3">
+            <p className="mb-1 text-sm text-muted-foreground">Plan</p>
+            <p className="font-semibold uppercase text-foreground">{planName}</p>
           </div>
 
           {/* About this premium */}
           <div className="mt-2 space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Info className="h-4 w-4" />
               About this premium
             </div>
-            <p className="text-sm leading-relaxed text-gray-600">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               The total premium already includes the base insurance cost, applicable taxes and fees as determined by the insurance provider.
             </p>
           </div>

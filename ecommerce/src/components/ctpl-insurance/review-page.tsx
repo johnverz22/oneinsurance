@@ -138,7 +138,7 @@ export default function ReviewCoverage() {
           <h1 className="text-lg font-bold text-white md:text-2xl lg:text-3xl xl:text-4xl">
             Your Insurance Plan
           </h1>
-          <p className="text-sm text-gray-300 lg:max-w-2/5 lg:text-right">
+          <p className="text-sm text-muted-foreground lg:max-w-2/5 lg:text-right">
             Take a moment to check the details of your selected coverage.
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function ReviewCoverage() {
         <div className="space-y-8 lg:col-span-2">
           <Card className="overflow-hidden p-0 shadow-none">
             <CardHeader className="bg-primary/10 dark:bg-primary/30 -space-y-2 border-b pt-6">
-              <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg sm:text-2xl font-black text-foreground dark:text-muted-foreground">
                 Main Benefits
               </h2>
               <p className="text-muted-foreground text-sm">
@@ -163,7 +163,7 @@ export default function ReviewCoverage() {
                       key={`${benefit.SubCoverageName}-${index}`}
                       className="flex items-center justify-between border-b pb-2"
                     >
-                      <h3 className="font-bold text-gray-900 dark:text-gray-100">
+                      <h3 className="font-bold text-foreground dark:text-muted-foreground">
                         {benefit.CoverageName ||
                           benefit.SubCoverageName ||
                           benefit.BenefitDesc}
@@ -182,7 +182,7 @@ export default function ReviewCoverage() {
             Object.keys(groupedAddonBenefits).length > 0 && (
               <Card className="overflow-hidden p-0 shadow-none">
                 <CardHeader className="bg-primary/10 dark:bg-primary/30 -space-y-2 border-b pt-6">
-                  <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
+                  <h2 className="text-lg sm:text-2xl font-black text-foreground dark:text-muted-foreground">
                     Select Add-on Benefits
                   </h2>
                 </CardHeader>
@@ -200,12 +200,12 @@ export default function ReviewCoverage() {
                               onChange={(e) =>
                                 handleAddonChange(benefitCode, e.target.checked)
                               }
-                              className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+                              className="text-primary focus:ring-primary h-4 w-4 rounded border-border"
                               id={`addon-checkbox-${benefitCode}`}
                             />
                             <label
                               htmlFor={`addon-checkbox-${benefitCode}`}
-                              className="cursor-pointer font-bold text-gray-900 dark:text-gray-100"
+                              className="cursor-pointer font-bold text-foreground dark:text-muted-foreground"
                             >
                               {benefitGroup.parent.CoverageName}
                             </label>
@@ -221,7 +221,7 @@ export default function ReviewCoverage() {
                                   height={16}
                                   className="text-primary mt-0.5 shrink-0"
                                 />
-                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                <div className="text-sm text-muted-foreground">
                                   <p className="font-medium">
                                     {benefit.BenefitDesc}
                                   </p>
@@ -264,25 +264,25 @@ export default function ReviewCoverage() {
 
             <Card className="mt-4 overflow-hidden p-0 shadow-none">
               <CardHeader className="bg-primary/10 dark:bg-primary/30 -space-y-2 border-b pt-6">
-                <h2 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-gray-100">
+                <h2 className="text-lg sm:text-2xl font-black text-foreground dark:text-muted-foreground">
                   Plan Summary
                 </h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {plan.CarrierProductName} - {plan.CarrierPlanDesc}
                 </p>
               </CardHeader>
               <CardContent className="space-y-6 px-6 py-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-muted-foreground">
                     Carrier Code
                   </span>
-                  <span className="rounded-md bg-gray-100 px-3 py-1 font-mono text-sm font-semibold dark:bg-gray-800">
+                  <span className="rounded-md bg-muted px-3 py-1 font-mono text-sm font-semibold dark:bg-gray-800">
                     {coverageOption.carrierCode}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="mb-4 text-base font-bold text-gray-900 dark:text-gray-100">
+                  <h3 className="mb-4 text-base font-bold text-foreground dark:text-muted-foreground">
                     Cost Breakdown
                   </h3>
                   <div className="space-y-2">
@@ -291,11 +291,11 @@ export default function ReviewCoverage() {
                         key={item.label}
                         className="flex items-center justify-between py-1"
                       >
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm text-muted-foreground">
                           {item.label}
                         </span>
                         <span
-                          className={`text-sm font-semibold ${item.negative ? 'text-red-600' : 'text-gray-900 dark:text-gray-100'}`}
+                          className={`text-sm font-semibold ${item.negative ? 'text-destructive' : 'text-foreground dark:text-muted-foreground'}`}
                         >
                           {item.negative ? '-' : ''}₱
                           {Number.parseFloat(
@@ -310,9 +310,9 @@ export default function ReviewCoverage() {
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-border pt-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    <span className="text-lg font-bold text-foreground dark:text-muted-foreground">
                       Total Premium
                     </span>
                     <span className="text-primary text-lg sm:text-2xl font-bold">
@@ -333,7 +333,7 @@ export default function ReviewCoverage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-red-200 bg-transparent font-semibold"
+                    className="w-full border-destructive/50 bg-transparent font-semibold"
                     onClick={() => decreaseStep()}
                     data-mobile-action="back"
                   >

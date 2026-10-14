@@ -43,20 +43,20 @@ function InvoiceContent() {
   const carrierName = COMPANIES.find(c => c.carrierCode === policyData?.CarrierCode)?.companyName ?? policyData?.CarrierProductName ?? ''
 
   return (
-    <div className="min-h-screen bg-[#eef2f7] px-4 py-8">
+    <div className="min-h-screen bg-section px-4 py-8">
       <div className="mx-auto max-w-3xl">
         {/* Success Banner */}
         {showSuccessBanner && (
           <div className="mb-6 space-y-4 text-center">
             <div className="flex justify-center">
-              <div className="rounded-full bg-green-100 p-4">
-                <CheckCircle className="h-10 w-10 text-green-600" />
+              <div className="rounded-full bg-success/10 p-4">
+                <CheckCircle className="h-10 w-10 text-success" />
               </div>
             </div>
             <div className="space-y-2">
               <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
-              <p className="text-lg text-gray-600">Your health insurance policy has been successfully issued.</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-lg text-muted-foreground">Your health insurance policy has been successfully issued.</p>
+              <p className="text-sm text-muted-foreground">
                 Please note that this serves as a cover note only. The official policy document will be issued directly by the insurance carrier and made available to you shortly.
               </p>
             </div>
@@ -66,9 +66,9 @@ function InvoiceContent() {
         <div className="rounded-2xl bg-white p-8 shadow-sm">
           {/* Invoice header */}
           <div className="mb-6 flex items-center justify-between">
-            <Image src="/images/logo.png" alt="One Insurance" width={120} height={40} className="h-10 w-auto" />
-            <h1 className="text-2xl font-bold text-gray-700">Invoice</h1>
-            <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-10 w-auto" />
+            <h1 className="text-2xl font-bold text-foreground">Invoice</h1>
+            <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>
 
           <hr className="mb-6" />
@@ -76,12 +76,12 @@ function InvoiceContent() {
           {/* Company + billing info */}
           <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="font-semibold text-gray-900">One Insurance</p>
-              <p className="text-gray-500">www.oneinsurance.com</p>
-              <p className="text-gray-500">oneinsurance@gmail.com</p>
-              <p className="text-gray-500">+63912 345 67890</p>
+              <p className="font-semibold text-foreground">One Insurance</p>
+              <p className="text-muted-foreground">www.oneinsurance.com</p>
+              <p className="text-muted-foreground">oneinsurance@gmail.com</p>
+              <p className="text-muted-foreground">+63912 345 67890</p>
             </div>
-            <div className="text-right text-gray-500">
+            <div className="text-right text-muted-foreground">
               <p>Business Address</p>
               <p>City, State</p>
               <p>TIN ID 000 000 000 0000</p>
@@ -91,31 +91,31 @@ function InvoiceContent() {
           <div className="mb-6 grid grid-cols-3 gap-4 text-sm">
             <div>
               <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Billed To</p>
-              <p className="font-semibold text-gray-900">{policyData?.InsuredName ?? name}</p>
-              <p className="text-gray-500">{policyData?.Mobile ?? ''}</p>
-              <p className="text-gray-500">{policyData?.Email ?? ''}</p>
+              <p className="font-semibold text-foreground">{policyData?.InsuredName ?? name}</p>
+              <p className="text-muted-foreground">{policyData?.Mobile ?? ''}</p>
+              <p className="text-muted-foreground">{policyData?.Email ?? ''}</p>
             </div>
             <div>
               <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Invoice Number</p>
-              <p className="font-semibold text-gray-900">{invoiceNumber}</p>
+              <p className="font-semibold text-foreground">{invoiceNumber}</p>
               <div className="mt-3">
                 <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Reference</p>
-                <p className="font-semibold text-gray-900">{invoiceNumber}</p>
+                <p className="font-semibold text-foreground">{invoiceNumber}</p>
               </div>
             </div>
             <div className="text-right">
               <p className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-xs font-bold text-transparent">Invoice of (PHP)</p>
-              <p className="text-2xl font-black text-gray-900">
+              <p className="text-2xl font-black text-foreground">
                 ₱ {displayTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </p>
               <div className="mt-3 grid grid-cols-2 gap-1 text-xs">
                 <div>
                   <p className="from-primary to-accent bg-gradient-to-r bg-clip-text font-bold text-transparent">Invoice Date</p>
-                  <p className="font-semibold text-gray-900">{format(today, 'MMMM dd, yyyy')}</p>
+                  <p className="font-semibold text-foreground">{format(today, 'MMMM dd, yyyy')}</p>
                 </div>
                 <div className="text-right">
                   <p className="from-primary to-accent bg-gradient-to-r bg-clip-text font-bold text-transparent">Due Date</p>
-                  <p className="font-semibold text-gray-900">{format(dueDate, 'MMMM dd, yyyy')}</p>
+                  <p className="font-semibold text-foreground">{format(dueDate, 'MMMM dd, yyyy')}</p>
                 </div>
               </div>
             </div>
@@ -126,7 +126,7 @@ function InvoiceContent() {
           {/* Line items table */}
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400">
+              <tr className="text-left text-muted-foreground">
                 <th className="pb-3 font-medium">Plan</th>
                 <th className="pb-3 text-center font-medium">Quantity</th>
                 <th className="pb-3 text-right font-medium">Amount</th>
@@ -134,11 +134,11 @@ function InvoiceContent() {
             </thead>
             <tbody>
               <tr className="border-t">
-                <td className="py-3 text-gray-700">
+                <td className="py-3 text-foreground">
                   {policyData?.ProductName ?? 'Health Insurance'} — {carrierName}
                 </td>
-                <td className="py-3 text-center text-gray-700">1</td>
-                <td className="py-3 text-right text-gray-700">
+                <td className="py-3 text-center text-foreground">1</td>
+                <td className="py-3 text-right text-foreground">
                   ₱ {displayTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
@@ -151,12 +151,12 @@ function InvoiceContent() {
           <div className="flex justify-end">
             <div className="w-48 space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-700">Subtotal</span>
-                <span className="text-gray-700">₱ {displayTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                <span className="font-semibold text-foreground">Subtotal</span>
+                <span className="text-foreground">₱ {displayTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between border-t pt-1">
-                <span className="font-bold text-gray-900">Total</span>
-                <span className="font-bold text-gray-900">₱ {displayTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                <span className="font-bold text-foreground">Total</span>
+                <span className="font-bold text-foreground">₱ {displayTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>

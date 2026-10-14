@@ -8,12 +8,12 @@ git pull
 echo "\nSUCCESSFULLY PULLED\n"
 echo "\nINSTALLING DEPENDENCIES\n"
 
-yarn install
+npm install
 
 echo "\nSUCCESSFULLY INSTALLED DEPENDENCIES\n"
 echo "\nBUILDING PROJECT\n"
 
-yarn build
+npm run build
 
 echo "\nDONE BUILDING PROJECT\n"
    

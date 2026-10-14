@@ -22,10 +22,10 @@ export function PageLoader() {
           d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
         />
       </svg>
-      <h2 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-200">
+      <h2 className="mb-2 text-lg font-semibold text-foreground dark:text-muted-foreground">
         Loading, please wait...
       </h2>
-      <p className="max-w-xs text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="max-w-xs text-center text-sm text-muted-foreground">
         We’re preparing your experience. This may take a moment.
       </p>
     </div>

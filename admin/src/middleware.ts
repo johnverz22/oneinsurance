@@ -27,7 +27,8 @@ export function middleware(request: NextRequest) {
 // Configure which paths the middleware runs on
 export const config = {
   matcher: [
-    // Apply middleware to specific paths
-    "/:path*",
+    '/hierarchy/:path*',
+    '/leaderboard/:path*',
+    '/teams/:path*',
   ],
 }

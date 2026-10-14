@@ -41,6 +41,7 @@ export function ComboBox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={title}
           className="border-muted-foreground/30 h-12 w-full justify-between rounded-full border"
         >
           {value

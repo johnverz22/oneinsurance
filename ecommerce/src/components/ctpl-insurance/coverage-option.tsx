@@ -75,9 +75,9 @@ export function CTPLCoverageOptionsForm({
           className={`flex flex-col items-center justify-center rounded-lg p-8 shadow-sm`}
         >
           {/* Warning Icon */}
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <svg
-              className="h-8 w-8 text-red-600"
+              className="h-8 w-8 text-destructive"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

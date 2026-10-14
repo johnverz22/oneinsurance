@@ -107,10 +107,10 @@ export function CoverageOfConfirmation({
         <CardContent className="p-0">
           <div className="flex items-start justify-between border-b p-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">
+              <h1 className="text-3xl font-bold text-foreground">
                 Cover Note
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 #{(typeof window !== 'undefined' ? localStorage.getItem('payment_transaction_id') : null) || policyData?.CarrierPolicyNo || 'N/A'}
               </p>
             </div>
@@ -127,22 +127,22 @@ export function CoverageOfConfirmation({
 
           <div className="grid gap-8 border-b p-8 md:grid-cols-3">
             <div>
-              <p className="text-xs font-medium text-gray-500">Policy Number</p>
-              <p className="mt-1 text-sm text-gray-800">
+              <p className="text-xs font-medium text-muted-foreground">Policy Number</p>
+              <p className="mt-1 text-sm text-foreground">
                 {policyData?.CarrierPolicyNo || 'N/A'}
               </p>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-gray-500">Insurance Provider</p>
-              <p className="mt-1 text-sm font-semibold text-gray-800">
+              <p className="text-xs font-medium text-muted-foreground">Insurance Provider</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
                 {carrierName}
               </p>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-gray-500">Plan Name</p>
-              <p className="mt-1 text-sm text-gray-800">
+              <p className="text-xs font-medium text-muted-foreground">Plan Name</p>
+              <p className="mt-1 text-sm text-foreground">
                 {coverageOption.selectedPlan?.CarrierPlanDesc ||
                   quoteData.CarrierPlanCode}
               </p>
@@ -151,20 +151,20 @@ export function CoverageOfConfirmation({
 
           <div className="grid gap-8 border-b p-8 md:grid-cols-2">
             <div>
-              <p className="mb-3 text-xs font-medium text-gray-500">
+              <p className="mb-3 text-xs font-medium text-muted-foreground">
                 Issued To
               </p>
               <div className="text-sm">
                 {quoteData.PolicyCustomerList?.map((customer, i) => (
                   <div key={i} className="mb-2">
-                    <p className="font-bold text-gray-800">
+                    <p className="font-bold text-foreground">
                       {(customer.FirstName + ' ' + customer.LastName).toUpperCase()}
                     </p>
-                    <p className="text-gray-600">{customer.AddressLine1}</p>
-                    <p className="text-gray-600">{customer.AddressLine2}</p>
-                    <p className="text-gray-600">{customer.PostCode}</p>
-                    <p className="text-gray-600">{customer.Email}</p>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">{customer.AddressLine1}</p>
+                    <p className="text-muted-foreground">{customer.AddressLine2}</p>
+                    <p className="text-muted-foreground">{customer.PostCode}</p>
+                    <p className="text-muted-foreground">{customer.Email}</p>
+                    <p className="text-muted-foreground">
                       (+63) {travelersInfo[i].mobileNumber}
                     </p>
                   </div>
@@ -173,10 +173,10 @@ export function CoverageOfConfirmation({
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-medium text-gray-500">
+              <p className="mb-3 text-xs font-medium text-muted-foreground">
                 Travel Details
               </p>
-              <div className="text-sm text-gray-800">
+              <div className="text-sm text-foreground">
                 <p>
                   <span className="font-semibold">Destination/s:</span>{' '}
                   {destinations}
@@ -201,10 +201,10 @@ export function CoverageOfConfirmation({
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="pb-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                  <th className="pb-3 text-left text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                     Coverage Name
                   </th>
-                  <th className="pb-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                  <th className="pb-3 text-right text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                     Sum Insured
                   </th>
                 </tr>
@@ -213,12 +213,12 @@ export function CoverageOfConfirmation({
                 {coverageList.map((coverage, index) => (
                   <tr
                     key={index}
-                    className="border-b border-gray-100 last:border-b-0"
+                    className="border-b border-border last:border-b-0"
                   >
-                    <td className="py-4 text-sm font-medium text-gray-800">
+                    <td className="py-4 text-sm font-medium text-foreground">
                       {coverage.coverageName}
                     </td>
-                    <td className="py-4 text-right text-sm text-gray-600">
+                    <td className="py-4 text-right text-sm text-muted-foreground">
                       {!isNaN(Number(coverage.sumInsured))
                         ? `${coverage.sumInsured.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         : coverage.sumInsured}
@@ -228,35 +228,35 @@ export function CoverageOfConfirmation({
               </tbody>
             </table>
 
-            <p className="mt-4 text-xs text-gray-500 italic">
+            <p className="mt-4 text-xs text-muted-foreground italic">
               Note: Benefits are subject to the terms and conditions of the
               policy. Please ensure your travel coverage is valid within the
               period stated below.
             </p>
           </div>
 
-          <div className="bg-gray-50 p-8">
-            <h3 className="mb-4 text-xs font-bold tracking-wide text-gray-700 uppercase">
+          <div className="bg-muted/50 p-8">
+            <h3 className="mb-4 text-xs font-bold tracking-wide text-foreground uppercase">
               Policy Details
             </h3>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <div>
-                <p className="text-xs font-medium text-gray-500">Status</p>
+                <p className="text-xs font-medium text-muted-foreground">Status</p>
                 <p className="mt-1 text-sm font-semibold text-emerald-600">
                   Active
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">Issue Date</p>
-                <p className="mt-1 text-sm text-gray-800">
+                <p className="text-xs font-medium text-muted-foreground">Issue Date</p>
+                <p className="mt-1 text-sm text-foreground">
                   {format(new Date(), 'MMM dd, yyyy')}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500">
+                <p className="text-xs font-medium text-muted-foreground">
                   Coverage Period
                 </p>
-                <p className="mt-1 text-sm text-gray-800">
+                <p className="mt-1 text-sm text-foreground">
                   {format(new Date(quoteData.EffectiveDate), 'MMM dd, yyyy')} -{' '}
                   {format(new Date(quoteData.ExpiryDate), 'MMM dd, yyyy')}
                 </p>
@@ -264,14 +264,14 @@ export function CoverageOfConfirmation({
             </div>
           </div>
 
-          <div className="border-t bg-gray-50 p-6 text-center">
-            <p className="text-sm text-gray-600 italic">
+          <div className="border-t bg-muted/50 p-6 text-center">
+            <p className="text-sm text-muted-foreground italic">
               Thank you for choosing One Insurance. Stay protected and travel
               with confidence!
             </p>
           </div>
 
-          <div className="flex gap-4 border-t bg-gray-50 p-8">
+          <div className="flex gap-4 border-t bg-muted/50 p-8">
             <GenerateAndDownloadCoverNote cocData={COC_DATA} />
           </div>
         </CardContent>

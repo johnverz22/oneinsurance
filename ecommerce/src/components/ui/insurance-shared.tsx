@@ -87,15 +87,16 @@ export function PlansLoadingState({ count = 3 }: { count?: number }) {
 // ─── Price Display (PHP amount + label, inline) ───────────────────────────────
 interface PriceDisplayProps {
   amount: number
+  currency?: string
   label?: string
   className?: string
 }
 
-export function PriceDisplay({ amount, label = 'Premium', className }: PriceDisplayProps) {
+export function PriceDisplay({ amount, currency = 'PHP', label = 'Premium', className }: PriceDisplayProps) {
   return (
     <div className={cn('flex flex-col items-center', className)}>
       <div className="flex items-baseline gap-1 mb-1">
-        <span className="text-primary text-xs font-semibold">PHP</span>
+        <span className="text-primary text-xs font-semibold">{currency}</span>
         <span className="text-foreground text-xl font-black sm:text-2xl">
           {amount.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </span>
@@ -146,9 +147,9 @@ export function SortFilterSidebar({
                 <button
                   type="button"
                   onClick={() => onSortChange(option.key)}
-                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  <span className={`h-2.5 w-2.5 rounded-full border ${currentSort === option.key ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                  <span className={`h-2.5 w-2.5 rounded-full border ${currentSort === option.key ? 'border-success bg-success' : 'border-input bg-background'}`} />
                   {option.label}
                 </button>
               </li>
@@ -166,9 +167,9 @@ export function SortFilterSidebar({
                   <button
                     type="button"
                     onClick={() => onProviderToggle?.(provider.code)}
-                    className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <span className={`h-2.5 w-2.5 rounded-full border ${provider.isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
+                    <span className={`h-2.5 w-2.5 rounded-full border ${provider.isActive ? 'border-success bg-success' : 'border-input bg-background'}`} />
                     {provider.name}
                   </button>
                 </li>
@@ -183,8 +184,8 @@ export function SortFilterSidebar({
             <h4 className="text-foreground mb-2 text-sm font-bold">By coverages</h4>
             <ul className="space-y-1.5">
               {coverages.map((coverage) => (
-                <li key={coverage} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-green-600" />
+                <li key={coverage} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 shrink-0 rounded-full bg-success" />
                   <span className="line-clamp-2">{coverage}</span>
                 </li>
               ))}
@@ -206,25 +207,33 @@ export function SectionDescription({ children, className }: { children: React.Re
 }
 
 // ─── No Plans Available State ─────────────────────────────────────────────────
-export function NoPlanState({ onModifySearch }: { onModifySearch?: () => void }) {
+interface NoPlanStateProps {
+  title?: string
+  message?: string
+  onModifySearch?: () => void
+}
+
+export function NoPlanState({
+  title = 'No Plans Available',
+  message = 'No insurance plans are available for your selected criteria. Please try different details or contact your agent for assistance.',
+  onModifySearch,
+}: NoPlanStateProps) {
   return (
     <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
-      <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-700 dark:bg-gray-900">
+      <div className="mx-auto max-w-lg rounded-2xl border bg-card p-8 text-center shadow-sm">
         <div className="mb-4 flex justify-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-            <svg className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+            <svg className="h-7 w-7 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
         </div>
-        <h3 className="mb-2 text-lg font-bold text-foreground">No Plans Available</h3>
-        <p className="mb-4 text-sm text-muted-foreground">
-          No insurance plans are available for your selected criteria. Please try different details or contact your agent for assistance.
-        </p>
+        <h3 className="mb-2 text-lg font-bold text-foreground">{title}</h3>
+        <p className="mb-4 text-sm text-muted-foreground">{message}</p>
         {onModifySearch && (
           <button
             onClick={onModifySearch}
-            className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="rounded-full bg-muted px-6 py-2.5 text-sm font-medium text-foreground hover:bg-muted/70"
           >
             Modify Search
           </button>

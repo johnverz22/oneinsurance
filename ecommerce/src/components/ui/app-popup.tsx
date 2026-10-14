@@ -51,7 +51,7 @@ export const AppPopup: React.FC = () => {
                   }}
                   className={`flex-1 rounded-2xl px-6 py-4 text-lg font-semibold transition-all ${
                     item.variant === 'success'
-                      ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-muted text-foreground hover:bg-muted'
                       : 'bg-rose-500 text-white hover:bg-rose-600'
                   }`}
                 >

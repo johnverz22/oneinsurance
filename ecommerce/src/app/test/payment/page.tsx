@@ -65,9 +65,8 @@ export default function TestPaymentPage() {
   }
 
   const paymentConfig: PaymentRequestConfig = {
-    merchantAccountId: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
+    // merchant_account_id and service_code are injected server-side by the BFF
     merchantTransactionId: generateTransactionId(),
-    serviceCode: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
     productReferenceId: 'TEST-REF-001',
     productDescription: 'Payment Integration Test',
     amount,
@@ -182,7 +181,7 @@ export default function TestPaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-muted/50 p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="rounded-lg border-2 border-dashed border-orange-300 bg-orange-50 p-4">
@@ -213,9 +212,8 @@ export default function TestPaymentPage() {
                   className="w-40"
                 />
               </div>
-              <div className="text-sm text-gray-500">
-                <p>Merchant: {paymentConfig.merchantAccountId}</p>
-                <p>Service: {paymentConfig.serviceCode}</p>
+              <div className="text-sm text-muted-foreground">
+                <p>Amount: ₱{amount.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -231,13 +229,13 @@ export default function TestPaymentPage() {
               </CardHeader>
               <CardContent>
                 {selectedBrand && (
-                  <div className="mb-4 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-3">
+                  <div className="mb-4 flex items-center justify-between rounded-lg border border-success/50 bg-success/10 p-3">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-success" />
                       <div className="flex items-center gap-2">
                         <img src={selectedBrand.image} alt={selectedBrand.value} className="h-6 w-10 object-contain" />
                         <span className="font-medium">{selectedBrand.value}</span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted-foreground">
                           ({selectedBrand.is_card ? 'Card' : 'Digital'})
                         </span>
                       </div>
@@ -278,7 +276,7 @@ export default function TestPaymentPage() {
           <div className="space-y-4">
             {!selectedBrand ? (
               <Card className="flex min-h-[400px] items-center justify-center">
-                <div className="text-center text-gray-400">
+                <div className="text-center text-muted-foreground">
                   <ArrowRight className="mx-auto mb-3 h-12 w-12 rotate-180" />
                   <p className="font-medium">Select a payment method to begin</p>
                 </div>
@@ -314,9 +312,9 @@ export default function TestPaymentPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="max-h-60 overflow-y-auto rounded bg-gray-900 p-3 font-mono text-xs text-green-400">
+            <div className="max-h-60 overflow-y-auto rounded bg-gray-900 p-3 font-mono text-xs text-success">
               {logs.length === 0 ? (
-                <p className="text-gray-500">No activity yet. Select a brand and submit a payment to see logs.</p>
+                <p className="text-muted-foreground">No activity yet. Select a brand and submit a payment to see logs.</p>
               ) : (
                 logs.map((log, i) => <div key={i}>{log}</div>)
               )}

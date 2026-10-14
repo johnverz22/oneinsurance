@@ -27,18 +27,18 @@ export default function CartPage() {
   const grandTotal = items.reduce((sum, i) => sum + i.premium * i.quantity, 0)
 
   return (
-    <div className="min-h-screen bg-[#eef2f7]">
+    <div className="min-h-screen bg-section">
       {/* Header */}
       <div className="bg-white px-6 py-3 shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link href={`/${agentCode}`} className="hover:text-primary">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="font-semibold text-gray-900">Cart</span>
+            <span className="font-semibold text-foreground">Cart</span>
           </div>
           <div className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="One Insurance" width={100} height={32} className="h-8 w-auto" />
-            <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto" />
+            <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>
         </div>
       </div>
@@ -76,8 +76,8 @@ export default function CartPage() {
               >
                 <div className="flex items-center gap-4 p-4">
                   {/* Check */}
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-green-500">
-                    <div className="h-3 w-3 rounded-full bg-green-500" />
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-success">
+                    <div className="h-3 w-3 rounded-full bg-success" />
                   </div>
 
                   {/* Image */}
@@ -92,32 +92,32 @@ export default function CartPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900">{item.planName}</h3>
-                    <p className="text-xs text-gray-500">{item.tierName}: {item.tierSubtitle}</p>
+                    <h3 className="font-bold text-foreground">{item.planName}</h3>
+                    <p className="text-xs text-muted-foreground">{item.tierName}: {item.tierSubtitle}</p>
                     <p className="text-muted-foreground mt-0.5 text-xs line-clamp-2">{item.tierDescription}</p>
                   </div>
 
                   {/* Premium badge */}
                   <div className="shrink-0">
-                    <span className="rounded-full bg-yellow-400 px-3 py-1 text-sm font-bold text-gray-800">
+                    <span className="rounded-full bg-yellow-400 px-3 py-1 text-sm font-bold text-foreground">
                       ₱ {item.premium.toLocaleString()}.00
                     </span>
                   </div>
 
                   {/* Quantity */}
                   <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-xs text-gray-500">Quantity</span>
+                    <span className="text-xs text-muted-foreground">Quantity</span>
                     <div className="flex items-center gap-1 rounded-full border px-2 py-1">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-gray-500 hover:text-gray-800">−</button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-muted-foreground hover:text-foreground">−</button>
                       <span className="w-5 text-center text-sm">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-gray-500 hover:text-gray-800">+</button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-muted-foreground hover:text-foreground">+</button>
                     </div>
                   </div>
 
                   {/* Remove (swipe reveal) */}
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white transition"
+                    className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -129,26 +129,26 @@ export default function CartPage() {
           {/* Summary */}
           <div className="space-y-4">
             <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <h2 className="mb-4 text-center text-xl font-bold text-gray-900">Gross Premium</h2>
+              <h2 className="mb-4 text-center text-xl font-bold text-foreground">Gross Premium</h2>
               <hr className="mb-4" />
               <p className="text-muted-foreground mb-1 text-center text-sm">Total Payment</p>
-              <p className="mb-6 text-center text-3xl font-black text-gray-900">
+              <p className="mb-6 text-center text-3xl font-black text-foreground">
                 ₱ {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
               </p>
 
               {/* Line items */}
               <div className="rounded-xl border p-4 text-xs">
-                <div className="mb-2 grid grid-cols-[1fr_auto_auto] gap-2 text-gray-400">
+                <div className="mb-2 grid grid-cols-[1fr_auto_auto] gap-2 text-muted-foreground">
                   <span>Item</span>
                   <span>Quantity</span>
                   <span>Amount</span>
                 </div>
                 {items.map((item) => (
-                  <div key={item.id} className="mb-3 grid grid-cols-[1fr_auto_auto] gap-2 text-gray-700">
+                  <div key={item.id} className="mb-3 grid grid-cols-[1fr_auto_auto] gap-2 text-foreground">
                     <div>
                       <p className="font-bold">{item.provider}</p>
                       <p>{item.planName}</p>
-                      <p className="text-gray-400">{item.tierName}: {item.tierSubtitle}</p>
+                      <p className="text-muted-foreground">{item.tierName}: {item.tierSubtitle}</p>
                     </div>
                     <span className="text-center">{item.quantity}</span>
                     <span>₱ {(item.premium * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
@@ -180,7 +180,7 @@ export default function CartPage() {
 
               {/* Wavy divider */}
               <div className="my-4 overflow-hidden">
-                <svg viewBox="0 0 400 12" className="w-full text-gray-200">
+                <svg viewBox="0 0 400 12" className="w-full text-muted-foreground">
                   <path d="M0,6 C50,0 100,12 150,6 C200,0 250,12 300,6 C350,0 400,12 400,6" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" />
                 </svg>
               </div>

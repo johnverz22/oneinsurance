@@ -9,8 +9,8 @@ export default function NotFound() {
           <Image
             src="/images/logo.png"
             alt="One Insurance"
-            width={140}
-            height={45}
+            width={256}
+            height={63}
             className="h-10 w-auto"
             priority
           />
@@ -20,8 +20,8 @@ export default function NotFound() {
           <Image
             src="/images/IFRC.png"
             alt="IFRC Logo"
-            width={1920}
-            height={1240}
+            width={1290}
+            height={800}
             className="h-full w-full object-contain"
           />
         </div>

@@ -48,7 +48,7 @@ export default function ProductsPage() {
             </div>
             <Button
               type="button"
-              className="bg-primary from-primary to-accent relative h-10 w-full flex-1/2 self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-auto lg:max-w-48 dark:text-white"
+              className="bg-primary from-primary to-accent relative h-10 w-full flex-1/2 self-end rounded-full bg-gradient-to-r via-90% px-6 text-sm font-medium text-white shadow-lg hover:bg-success disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-auto lg:max-w-48 dark:text-white"
               size="lg"
             >
               <ArrowDownUp />

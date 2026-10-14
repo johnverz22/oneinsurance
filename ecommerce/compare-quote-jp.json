@@ -1,0 +1,3834 @@
+{
+  "success": true,
+  "message": "Successful",
+  "data": [
+    {
+      "insurer": {
+        "name": "Malayan Insurance",
+        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/QDrFNM5GKcUFRJgzvURqm81Ov12hqEckD6pw2GAI.png",
+        "code": "MIC"
+      },
+      "product": {
+        "code": "MIC-TRAVEL-MASTER",
+        "name": "Travel Master"
+      },
+      "plan": {
+        "code": "TMPHPC2",
+        "name": "TM CSL ASIAN W/ COVID 500K",
+        "sum_insured": "500000.00"
+      },
+      "zone": {
+        "code": "ASIAN",
+        "name": "Asian"
+      },
+      "premium": {
+        "amount": "408.00",
+        "currency": "PHP"
+      },
+      "coverages": [
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Accidental Death, Dismemberment and Disablement",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Unprovoked Murder and Assault",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Sabotage and Terrorism",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Burial Benefit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Due to accidental death."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Coronavirus-19, Sickness and Accidents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "500000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Hospital Cash Allowance — Coronavirus-19",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 7,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 7 days."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Hospital Cash Allowance — Sickness and Accidents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 10,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 10 days."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Cashless Hospitalization",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "included",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Available to all international destinations; valid to all Schengen states."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Follow-up Care",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "included",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Liability",
+          "name": "Personal Liability",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Recovery of Travel Expenses",
+          "name": "Emergency Trip Cancellation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Recovery of Travel Expenses",
+          "name": "Emergency Trip Termination",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Cash",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Travel Documents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "20000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": "5000.00",
+            "sub_limit_per": "item",
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Checked-in baggage only."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Baggage Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Flight Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "hour",
+            "per_unit_size": 6,
+            "max_units": 60,
+            "waiting_period_hours": null,
+            "notes": "For every 6 hours delay, up to 60 hours per occurrence."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Damage of Checked-in Baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Laptop",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Strikes and Aircraft Hijacking",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 10,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 10 days per occurrence."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Damage to Laptop",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Emergency Medical Repatriation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Emergency Medical Evacuation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Return of Mortal Remains",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Care for Unattended Minors",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Compassionate Visit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Value-Added Feature",
+          "name": "Car Rental Protection",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "500000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Value-Added Feature",
+          "name": "Sports Activities Extension",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "100000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to."
+          }
+        }
+      ]
+    },
+    {
+      "insurer": {
+        "name": "Malayan Insurance",
+        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/QDrFNM5GKcUFRJgzvURqm81Ov12hqEckD6pw2GAI.png",
+        "code": "MIC"
+      },
+      "product": {
+        "code": "MIC-TRAVEL-MASTER",
+        "name": "Travel Master"
+      },
+      "plan": {
+        "code": "TMPHPC5",
+        "name": "TM CSL ASIAN W/ COVID 1.5M",
+        "sum_insured": "1500000.00"
+      },
+      "zone": {
+        "code": "ASIAN",
+        "name": "Asian"
+      },
+      "premium": {
+        "amount": "678.00",
+        "currency": "PHP"
+      },
+      "coverages": [
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Accidental Death, Dismemberment and Disablement",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Unprovoked Murder and Assault",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Sabotage and Terrorism",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Burial Benefit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Due to accidental death."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Coronavirus-19, Sickness and Accidents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1500000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Hospital Cash Allowance — Coronavirus-19",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "3000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 7,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 7 days."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Hospital Cash Allowance — Sickness and Accidents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 10,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 10 days."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Cashless Hospitalization",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "included",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Available to all international destinations; valid to all Schengen states."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Follow-up Care",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "included",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Liability",
+          "name": "Personal Liability",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Recovery of Travel Expenses",
+          "name": "Emergency Trip Cancellation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Recovery of Travel Expenses",
+          "name": "Emergency Trip Termination",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Cash",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Travel Documents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "20000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": "5000.00",
+            "sub_limit_per": "item",
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Checked-in baggage only."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Baggage Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Flight Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "hour",
+            "per_unit_size": 6,
+            "max_units": 60,
+            "waiting_period_hours": null,
+            "notes": "For every 6 hours delay, up to 60 hours per occurrence."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Damage of Checked-in Baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Laptop",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Strikes and Aircraft Hijacking",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 10,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 10 days per occurrence."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Damage to Laptop",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Emergency Medical Repatriation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Emergency Medical Evacuation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Return of Mortal Remains",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Care for Unattended Minors",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Compassionate Visit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Value-Added Feature",
+          "name": "Car Rental Protection",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "500000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Value-Added Feature",
+          "name": "Sports Activities Extension",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "100000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to."
+          }
+        }
+      ]
+    },
+    {
+      "insurer": {
+        "name": "Malayan Insurance",
+        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/QDrFNM5GKcUFRJgzvURqm81Ov12hqEckD6pw2GAI.png",
+        "code": "MIC"
+      },
+      "product": {
+        "code": "MIC-TRAVEL-MASTER",
+        "name": "Travel Master"
+      },
+      "plan": {
+        "code": "TMPHPC8",
+        "name": "TM CSL ASIAN W/ COVID 2.5M",
+        "sum_insured": "2500000.00"
+      },
+      "zone": {
+        "code": "ASIAN",
+        "name": "Asian"
+      },
+      "premium": {
+        "amount": "1035.00",
+        "currency": "PHP"
+      },
+      "coverages": [
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Accidental Death, Dismemberment and Disablement",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Unprovoked Murder and Assault",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Sabotage and Terrorism",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Accident Insurance",
+          "name": "Burial Benefit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Due to accidental death."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Coronavirus-19, Sickness and Accidents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "2500000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Hospital Cash Allowance — Coronavirus-19",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "4000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 7,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 7 days."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Hospital Cash Allowance — Sickness and Accidents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 10,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 10 days."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Cashless Hospitalization",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "included",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Available to all international destinations; valid to all Schengen states."
+          }
+        },
+        {
+          "category": "Emergency Medical Treatment",
+          "name": "Follow-up Care",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "included",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Personal Liability",
+          "name": "Personal Liability",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Recovery of Travel Expenses",
+          "name": "Emergency Trip Cancellation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Recovery of Travel Expenses",
+          "name": "Emergency Trip Termination",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Cash",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Travel Documents",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "20000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "50000.00",
+            "sub_limit_amount": "5000.00",
+            "sub_limit_per": "item",
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Checked-in baggage only."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Baggage Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Flight Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "hour",
+            "per_unit_size": 6,
+            "max_units": 60,
+            "waiting_period_hours": null,
+            "notes": "For every 6 hours delay, up to 60 hours per occurrence."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Damage of Checked-in Baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Loss of Laptop",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "10000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Strikes and Aircraft Hijacking",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "1000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": "day",
+            "per_unit_size": null,
+            "max_units": 10,
+            "waiting_period_hours": null,
+            "notes": "Per day, up to 10 days per occurrence."
+          }
+        },
+        {
+          "category": "Travel Inconvenience Benefits",
+          "name": "Damage to Laptop",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "5000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Emergency Medical Repatriation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Emergency Medical Evacuation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Return of Mortal Remains",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Care for Unattended Minors",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Travel Assistance Benefits",
+          "name": "Compassionate Visit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "unlimited",
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Value-Added Feature",
+          "name": "Car Rental Protection",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "500000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": null
+          }
+        },
+        {
+          "category": "Value-Added Feature",
+          "name": "Sports Activities Extension",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": "amount",
+            "amount": "100000.00",
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to."
+          }
+        }
+      ]
+    },
+    {
+      "insurer": {
+        "name": "Oona Insurance",
+        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/CTP5lgFLWdyoSiRvZuMWHgyAhbQ5eDKF13lG7jtd.png",
+        "code": "OONA"
+      },
+      "product": {
+        "code": "OONA-TRAVEL",
+        "name": "Oona Travel Insurance"
+      },
+      "plan": {
+        "code": "TRVL-WORLD-01",
+        "name": "World Premium",
+        "sum_insured": "1000000"
+      },
+      "zone": {
+        "code": "INTERNATIONAL",
+        "name": "International"
+      },
+      "premium": {
+        "amount": "2492.86",
+        "currency": "PHP"
+      },
+      "coverages": [
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Medical Expenses & Hospitalization",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 1,000,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Emergency Medical Evacuation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "0"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Return of Mortal Remains",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "0"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Escort of dependent child",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Relay of Urgent Messages",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Emergency and Accidental Dental Expenses",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 10,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Delivery of medicines",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Compassionate Visit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Travel cost plus up to Php 5,000/day, max. Php 50,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Car Rental Excess Protection",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "First Medical Assistance",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "25000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Referral / Appointment of Local Medical Specialist",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Connection Services",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Long distance Medical Information Service",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Advance of bail bond",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "50000"
+          }
+        },
+        {
+          "category": "Cancellation",
+          "name": "Trip Cancellation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Cancellation",
+          "name": "Trip Curtailment",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "100000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Delayed Departure",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Missed Connecting Flight",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Aircraft Hijacking",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 5,000/day, max of 10 days"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Flight diversion (for each 12 hour delay)",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Loss of Travel Documents abroad",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "100000"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Baggage Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Compensation for in-flight loss of checked-in baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 60,000 subject to limit of Php 7,500/item"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Compensation for Loss or stolen luggage / Personal effects not checked-in",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 50,000 subject to limit of Php 5,000/item"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Location & forwarding of luggage and personal effects",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Weather & Foreign Exchange Info Services",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Interpreter Referral",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Embassy and Consular Information",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Inoculation and Visa Requirement Information",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Personal Liability",
+          "name": "Personal Liability",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "1000000"
+          }
+        },
+        {
+          "category": "Personal Accident",
+          "name": "Personal Accident",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "1000000"
+          }
+        },
+        {
+          "category": "Sports Equipment",
+          "name": "Compensation for in-flight damage of checked-in sports equipment",
+          "is_optional": true,
+          "addon_code": "sports_equipment",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000 subject to limit of 7,500/item"
+          }
+        },
+        {
+          "category": "Hazardous Sports",
+          "name": "Medical Expense & Hospitalization",
+          "is_optional": true,
+          "addon_code": "hazardous_sports",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 1,000,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Emergency Medical Expenses including Cabin Confinement",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 1,000,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Emergency Medical Repatriation",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Repatriation of Mortal Remains",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Cancellation",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 150,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Curtailment",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 100,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Delay Departure",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 10,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Compensation for Cabin",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000 subject to limit of 7,500/item"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Medical Treatment / Expenses due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 1,000,000"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Repatriation of Mortal Remains",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Trip Cancellation due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Trip Curtailment due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000"
+          }
+        }
+      ]
+    },
+    {
+      "insurer": {
+        "name": "Oona Insurance",
+        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/CTP5lgFLWdyoSiRvZuMWHgyAhbQ5eDKF13lG7jtd.png",
+        "code": "OONA"
+      },
+      "product": {
+        "code": "OONA-TRAVEL",
+        "name": "Oona Travel Insurance"
+      },
+      "plan": {
+        "code": "TRVL-WORLD-02",
+        "name": "World Business",
+        "sum_insured": "2500000"
+      },
+      "zone": {
+        "code": "INTERNATIONAL",
+        "name": "International"
+      },
+      "premium": {
+        "amount": "3287.77",
+        "currency": "PHP"
+      },
+      "coverages": [
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Medical Expenses & Hospitalization",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 2,500,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Emergency Medical Evacuation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "0"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Return of Mortal Remains",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "0"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Escort of dependent child",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Relay of Urgent Messages",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Emergency and Accidental Dental Expenses",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 10,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Delivery of medicines",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Compassionate Visit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Travel cost plus up to Php 5,000/day, max. Php 50,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Car Rental Excess Protection",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "300000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "First Medical Assistance",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "25000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Referral / Appointment of Local Medical Specialist",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Connection Services",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Long distance Medical Information Service",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Advance of bail bond",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "50000"
+          }
+        },
+        {
+          "category": "Cancellation",
+          "name": "Trip Cancellation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Cancellation",
+          "name": "Trip Curtailment",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Delayed Departure",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Missed Connecting Flight",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Aircraft Hijacking",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 5,000/day, max of 10 days"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Flight diversion (for each 12 hour delay)",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Loss of Travel Documents abroad",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Baggage Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Compensation for in-flight loss of checked-in baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 60,000 subject to limit of Php 7,500/item"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Compensation for Loss or stolen luggage / Personal effects not checked-in",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 50,000 subject to limit of Php 5,000/item"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Location & forwarding of luggage and personal effects",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Weather & Foreign Exchange Info Services",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Interpreter Referral",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Embassy and Consular Information",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Inoculation and Visa Requirement Information",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Personal Liability",
+          "name": "Personal Liability",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "2500000"
+          }
+        },
+        {
+          "category": "Personal Accident",
+          "name": "Personal Accident",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "2500000"
+          }
+        },
+        {
+          "category": "Sports Equipment",
+          "name": "Compensation for in-flight damage of checked-in sports equipment",
+          "is_optional": true,
+          "addon_code": "sports_equipment",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000 subject to limit of 7,500/item"
+          }
+        },
+        {
+          "category": "Hazardous Sports",
+          "name": "Medical Expense & Hospitalization",
+          "is_optional": true,
+          "addon_code": "hazardous_sports",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 2,500,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Emergency Medical Expenses including Cabin Confinement",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 2,500,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Emergency Medical Repatriation",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Repatriation of Mortal Remains",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Cancellation",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 150,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Curtailment",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 150,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Delay Departure",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 10,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Compensation for Cabin",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000 subject to limit of 7,500/item"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Medical Treatment / Expenses due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 2,500,000"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Repatriation of Mortal Remains",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Trip Cancellation due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Trip Curtailment due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000"
+          }
+        }
+      ]
+    },
+    {
+      "insurer": {
+        "name": "Oona Insurance",
+        "logo_url": "https://stage-ifrc-igw.oneinsurance.shop/storage/insurer-logos/CTP5lgFLWdyoSiRvZuMWHgyAhbQ5eDKF13lG7jtd.png",
+        "code": "OONA"
+      },
+      "product": {
+        "code": "OONA-TRAVEL",
+        "name": "Oona Travel Insurance"
+      },
+      "plan": {
+        "code": "TRVL-WORLD-03",
+        "name": "World First",
+        "sum_insured": "5000000"
+      },
+      "zone": {
+        "code": "INTERNATIONAL",
+        "name": "International"
+      },
+      "premium": {
+        "amount": "7125.72",
+        "currency": "PHP"
+      },
+      "coverages": [
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Medical Expenses & Hospitalization",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 5,000,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Emergency Medical Evacuation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "0"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Return of Mortal Remains",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "0"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Escort of dependent child",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Relay of Urgent Messages",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Emergency and Accidental Dental Expenses",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 10,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Delivery of medicines",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Compassionate Visit",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Travel cost plus up to Php 5,000/day, max. Php 50,000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Car Rental Excess Protection",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "300000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "First Medical Assistance",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "25000"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Referral / Appointment of Local Medical Specialist",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Connection Services",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Long distance Medical Information Service",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Medical & Emergency Expenses",
+          "name": "Advance of bail bond",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "50000"
+          }
+        },
+        {
+          "category": "Cancellation",
+          "name": "Trip Cancellation",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Cancellation",
+          "name": "Trip Curtailment",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Delayed Departure",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "40000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Missed Connecting Flight",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "40000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Aircraft Hijacking",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 5,000/day, max of 10 days"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Flight diversion (for each 12 hour delay)",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "40000"
+          }
+        },
+        {
+          "category": "Travel Inconveniences",
+          "name": "Loss of Travel Documents abroad",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "150000"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Baggage Delay",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "10000"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Compensation for in-flight loss of checked-in baggage",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 60,000 subject to limit of Php 7,500/item"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Compensation for Loss or stolen luggage / Personal effects not checked-in",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to Php 50,000 subject to limit of Php 5,000/item"
+          }
+        },
+        {
+          "category": "Personal Belongings & Baggage",
+          "name": "Location & forwarding of luggage and personal effects",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Weather & Foreign Exchange Info Services",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Interpreter Referral",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Embassy and Consular Information",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Pre-trip Assistance",
+          "name": "Inoculation and Visa Requirement Information",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost (Provide Assistance only)"
+          }
+        },
+        {
+          "category": "Personal Liability",
+          "name": "Personal Liability",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "4000000"
+          }
+        },
+        {
+          "category": "Personal Accident",
+          "name": "Personal Accident",
+          "is_optional": false,
+          "addon_code": null,
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "4000000"
+          }
+        },
+        {
+          "category": "Sports Equipment",
+          "name": "Compensation for in-flight damage of checked-in sports equipment",
+          "is_optional": true,
+          "addon_code": "sports_equipment",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000 subject to limit of 7,500/item"
+          }
+        },
+        {
+          "category": "Hazardous Sports",
+          "name": "Medical Expense & Hospitalization",
+          "is_optional": true,
+          "addon_code": "hazardous_sports",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 5,000,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Emergency Medical Expenses including Cabin Confinement",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 4,000,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Emergency Medical Repatriation",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Repatriation of Mortal Remains",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Cancellation",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 150,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Curtailment",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 150,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Cruise Delay Departure",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 10,000"
+          }
+        },
+        {
+          "category": "Cruise Cover",
+          "name": "Compensation for Cabin",
+          "is_optional": true,
+          "addon_code": "cruise",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000 subject to limit of 7,500/item"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Medical Treatment / Expenses due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 2,500,000"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Repatriation of Mortal Remains",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Actual Cost"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Trip Cancellation due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000"
+          }
+        },
+        {
+          "category": "COVID-19 Coverage",
+          "name": "Trip Curtailment due to COVID-19",
+          "is_optional": true,
+          "addon_code": "covid19",
+          "limit": {
+            "type": null,
+            "amount": null,
+            "sub_limit_amount": null,
+            "sub_limit_per": null,
+            "per_unit": null,
+            "per_unit_size": null,
+            "max_units": null,
+            "waiting_period_hours": null,
+            "notes": "Up to 60,000"
+          }
+        }
+      ]
+    }
+  ]
+}

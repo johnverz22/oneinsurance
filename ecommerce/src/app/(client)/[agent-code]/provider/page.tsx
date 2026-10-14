@@ -86,7 +86,7 @@ export default function ProviderPage() {
                     />
                   </div>
                   <p
-                    className="text-left text-sm leading-tight font-semibold text-gray-800 transition-colors duration-300 group-hover:text-blue-600 lg:text-base"
+                    className="text-left text-sm leading-tight font-semibold text-foreground transition-colors duration-300 group-hover:text-blue-600 lg:text-base"
                     dangerouslySetInnerHTML={{ __html: company.description }}
                   />
                 </div>
@@ -97,7 +97,7 @@ export default function ProviderPage() {
 
         {/* Call to Action */}
         {/* <div className="mt-12 text-center lg:mt-16">
-          <p className="mb-6 text-gray-600">
+          <p className="mb-6 text-muted-foreground">
             Want to become a provider partner?
           </p>
           <Link

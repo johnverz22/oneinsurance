@@ -2,7 +2,6 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
-@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -40,6 +39,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-rating: var(--rating);
+  --color-section: var(--section);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -54,15 +59,21 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.4617 0.1016 140.56);
   --tertiary: oklch(0.7562 0.1434 65.45);
-  --lilac: oklch(0.6197 0.1374 141.32);
+  --lilac: oklch(0.5 0.1374 141.32);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.82 0 0);
+  --muted-foreground: oklch(0.51 0 0);
   --accent: oklch(0.7579 0.1246 129.44);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.48 0.15 145);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.55 0.12 78);
+  --warning-foreground: oklch(0.26 0.02 60);
+  --rating: oklch(0.83 0.162 84.6);
+  --section: oklch(0.953 0.011 243);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -105,6 +116,12 @@
   --accent: oklch(0.7579 0.1246 129.44);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.696 0.17 162.48);
+  --success-foreground: oklch(0.145 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.145 0 0);
+  --rating: oklch(0.83 0.162 84.6);
+  --section: oklch(0.255 0.006 285.885);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -125,10 +142,10 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50 font-open-sans font-semibold tracking-tight;
+    @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-open-sans font-normal tracking-tight;
   }
 }
 

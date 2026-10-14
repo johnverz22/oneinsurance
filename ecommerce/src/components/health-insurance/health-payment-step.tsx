@@ -155,10 +155,9 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
 
       const isCard = selectedBrand.is_card
 
+      // merchant_account_id and service_code are injected server-side by the BFF
       const paymentConfig: PaymentRequestConfig = {
-        merchantAccountId: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
         merchantTransactionId: generateTransactionId(),
-        serviceCode: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
         productReferenceId: proposalNo,
         productDescription: `Health Insurance - ${items[0]?.planName ?? ''}`,
         amount: grandTotal,
@@ -223,7 +222,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
     setShowInlineInvoice(true)
   }
 
-  const err = (key: string) => errors[key] ? <p className="mt-1 text-xs text-red-500">{errors[key]}</p> : null
+  const err = (key: string) => errors[key] ? <p className="mt-1 text-xs text-destructive">{errors[key]}</p> : null
 
   // Inline success with Cover Note & Invoice (like travel insurance)
   if (showInlineInvoice) {
@@ -233,12 +232,12 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
       <div className="mx-auto max-w-3xl space-y-6 py-8">
         <div className="space-y-4 text-center">
           <div className="flex justify-center">
-            <div className="rounded-full bg-green-100 p-4">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+            <div className="rounded-full bg-success/10 p-4">
+              <CheckCircle className="h-10 w-10 text-success" />
             </div>
           </div>
           <h1 className="text-primary text-3xl font-bold">Payment Successful!</h1>
-          <p className="text-lg text-gray-600">Your health insurance policy has been successfully issued.</p>
+          <p className="text-lg text-muted-foreground">Your health insurance policy has been successfully issued.</p>
         </div>
 
         {/* Tabs — Cover Note / Invoice Details */}
@@ -272,7 +271,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
             </h2>
           </div>
           <div className="flex flex-col items-start gap-1 sm:items-end">
-            <p className="text-sm font-medium text-gray-400">Total Amount</p>
+            <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
             <p className="text-primary text-lg sm:text-2xl font-black">
               ₱{grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </p>
@@ -348,7 +347,7 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
                     </div>
                     <div>
                       <p className="text-base font-semibold">Pay with {selectedBrand.value}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Shield className="h-3 w-3" />Secure payment processing
                       </div>
                     </div>
@@ -366,12 +365,12 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
                   <CardContent className="space-y-4">
                     <div className="space-y-1.5">
                       <Label>Card Number</Label>
-                      <Input value={cardNumber} onChange={(e) => { setCardNumber(formatCardNumber(e.target.value)); setErrors(p => ({...p, cardNumber: ''})) }} placeholder="1234 5678 9012 3456" maxLength={19} className={`h-11 ${errors.cardNumber ? 'border-red-500' : ''}`} />
+                      <Input value={cardNumber} onChange={(e) => { setCardNumber(formatCardNumber(e.target.value)); setErrors(p => ({...p, cardNumber: ''})) }} placeholder="1234 5678 9012 3456" maxLength={19} className={`h-11 ${errors.cardNumber ? 'border-destructive' : ''}`} />
                       {err('cardNumber')}
                     </div>
                     <div className="space-y-1.5">
                       <Label>Card Holder Name</Label>
-                      <Input value={cardholderName} onChange={(e) => { setCardholderName(e.target.value.toUpperCase()); setErrors(p => ({...p, cardholderName: ''})) }} placeholder="JUAN DELA CRUZ" className={`h-11 uppercase ${errors.cardholderName ? 'border-red-500' : ''}`} />
+                      <Input value={cardholderName} onChange={(e) => { setCardholderName(e.target.value.toUpperCase()); setErrors(p => ({...p, cardholderName: ''})) }} placeholder="JUAN DELA CRUZ" className={`h-11 uppercase ${errors.cardholderName ? 'border-destructive' : ''}`} />
                       {err('cardholderName')}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -379,20 +378,20 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
                         <Label>Expires On</Label>
                         <div className="grid grid-cols-2 gap-2">
                           <Select value={expiryMonth} onValueChange={(v) => { setExpiryMonth(v); setErrors(p => ({...p, expiryMonth: ''})) }}>
-                            <SelectTrigger className={`h-11 ${errors.expiryMonth ? 'border-red-500' : ''}`}><SelectValue placeholder="MM" /></SelectTrigger>
+                            <SelectTrigger className={`h-11 ${errors.expiryMonth ? 'border-destructive' : ''}`}><SelectValue placeholder="MM" /></SelectTrigger>
                             <SelectContent>{MONTHS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                           </Select>
                           <Select value={expiryYear} onValueChange={(v) => { setExpiryYear(v); setErrors(p => ({...p, expiryYear: ''})) }}>
-                            <SelectTrigger className={`h-11 ${errors.expiryYear ? 'border-red-500' : ''}`}><SelectValue placeholder="YYYY" /></SelectTrigger>
+                            <SelectTrigger className={`h-11 ${errors.expiryYear ? 'border-destructive' : ''}`}><SelectValue placeholder="YYYY" /></SelectTrigger>
                             <SelectContent>{YEARS.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
                           </Select>
                         </div>
                         {err('expiryMonth')}
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="flex items-center gap-1">CVV <Shield className="h-3 w-3 text-gray-400" /></Label>
+                        <Label className="flex items-center gap-1">CVV <Shield className="h-3 w-3 text-muted-foreground" /></Label>
                         <div className="relative">
-                          <Input value={cvv} onChange={(e) => { setCvv(e.target.value); setErrors(p => ({...p, cvv: ''})) }} type={showCvv ? 'text' : 'password'} placeholder="123" maxLength={4} className={`h-11 pr-10 ${errors.cvv ? 'border-red-500' : ''}`} />
+                          <Input value={cvv} onChange={(e) => { setCvv(e.target.value); setErrors(p => ({...p, cvv: ''})) }} type={showCvv ? 'text' : 'password'} placeholder="123" maxLength={4} className={`h-11 pr-10 ${errors.cvv ? 'border-destructive' : ''}`} />
                           <Button type="button" variant="ghost" size="sm" className="absolute top-0 right-0 h-full px-3" onClick={() => setShowCvv(!showCvv)}>
                             {showCvv ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
@@ -411,24 +410,24 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>First Name</Label>
-                      <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setErrors(p => ({...p, firstName: ''})) }} placeholder="Juan" className={`h-11 ${errors.firstName ? 'border-red-500' : ''}`} />
+                      <Input value={firstName} onChange={(e) => { setFirstName(e.target.value); setErrors(p => ({...p, firstName: ''})) }} placeholder="Juan" className={`h-11 ${errors.firstName ? 'border-destructive' : ''}`} />
                       {err('firstName')}
                     </div>
                     <div className="space-y-1.5">
                       <Label>Last Name</Label>
-                      <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setErrors(p => ({...p, lastName: ''})) }} placeholder="Dela Cruz" className={`h-11 ${errors.lastName ? 'border-red-500' : ''}`} />
+                      <Input value={lastName} onChange={(e) => { setLastName(e.target.value); setErrors(p => ({...p, lastName: ''})) }} placeholder="Dela Cruz" className={`h-11 ${errors.lastName ? 'border-destructive' : ''}`} />
                       {err('lastName')}
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Email Address</Label>
-                    <Input value={email} onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: ''})) }} type="email" placeholder="juan@example.com" className={`h-11 ${errors.email ? 'border-red-500' : ''}`} />
+                    <Input value={email} onChange={(e) => { setEmail(e.target.value); setErrors(p => ({...p, email: ''})) }} type="email" placeholder="juan@example.com" className={`h-11 ${errors.email ? 'border-destructive' : ''}`} />
                     {err('email')}
                   </div>
                   <div className="space-y-1.5">
                     <Label>Phone Number (Optional)</Label>
                     <div className="relative">
-                      <div className="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">+63</div>
+                      <div className="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">+63</div>
                       <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9XX XXX XXXX" className="h-11 pl-12" />
                     </div>
                   </div>
@@ -449,23 +448,23 @@ export function HealthPaymentStep({ personalInfo, agentCode }: Props) {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>State/Province/Region</Label>
-                      <Input value={province} onChange={(e) => { setProvince(e.target.value); setErrors(p => ({...p, province: ''})) }} placeholder="Metro Manila" className={`h-11 ${errors.province ? 'border-red-500' : ''}`} />
+                      <Input value={province} onChange={(e) => { setProvince(e.target.value); setErrors(p => ({...p, province: ''})) }} placeholder="Metro Manila" className={`h-11 ${errors.province ? 'border-destructive' : ''}`} />
                       {err('province')}
                     </div>
                     <div className="space-y-1.5">
                       <Label>City/Municipality</Label>
-                      <Input value={city} onChange={(e) => { setCity(e.target.value); setErrors(p => ({...p, city: ''})) }} placeholder="Manila" className={`h-11 ${errors.city ? 'border-red-500' : ''}`} />
+                      <Input value={city} onChange={(e) => { setCity(e.target.value); setErrors(p => ({...p, city: ''})) }} placeholder="Manila" className={`h-11 ${errors.city ? 'border-destructive' : ''}`} />
                       {err('city')}
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Postal Code</Label>
-                    <Input value={postalCode} onChange={(e) => { setPostalCode(e.target.value.replace(/\D/g,'')); setErrors(p => ({...p, postalCode: ''})) }} placeholder="1000" className={`h-11 ${errors.postalCode ? 'border-red-500' : ''}`} inputMode="numeric" />
+                    <Input value={postalCode} onChange={(e) => { setPostalCode(e.target.value.replace(/\D/g,'')); setErrors(p => ({...p, postalCode: ''})) }} placeholder="1000" className={`h-11 ${errors.postalCode ? 'border-destructive' : ''}`} inputMode="numeric" />
                     {err('postalCode')}
                   </div>
                   <div className="space-y-1.5">
                     <Label>Address Line 1</Label>
-                    <Input value={addressLine1} onChange={(e) => { setAddressLine1(e.target.value); setErrors(p => ({...p, addressLine1: ''})) }} placeholder="123 Main Street" className={`h-11 ${errors.addressLine1 ? 'border-red-500' : ''}`} />
+                    <Input value={addressLine1} onChange={(e) => { setAddressLine1(e.target.value); setErrors(p => ({...p, addressLine1: ''})) }} placeholder="123 Main Street" className={`h-11 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
                     {err('addressLine1')}
                   </div>
                   <div className="space-y-1.5">

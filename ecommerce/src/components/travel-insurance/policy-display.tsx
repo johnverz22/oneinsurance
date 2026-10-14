@@ -129,7 +129,7 @@ export function PolicyDisplay() {
               Your Policy Details
             </h1>
           </div>
-          <p className="text-sm text-gray-300 lg:max-w-2/5 lg:text-right">
+          <p className="text-sm text-muted-foreground lg:max-w-2/5 lg:text-right">
             Here's a summary of your travel insurance policy details. Please
             review the information carefully before proceeding.
           </p>

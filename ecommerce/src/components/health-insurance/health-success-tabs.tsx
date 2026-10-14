@@ -68,8 +68,8 @@ export function HealthSuccessTabs({
               {/* Header */}
               <div className="flex items-start justify-between border-b p-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800">Cover Note</h1>
-                  <p className="text-sm text-gray-600">#{policyNo || 'N/A'}</p>
+                  <h1 className="text-3xl font-bold text-foreground">Cover Note</h1>
+                  <p className="text-sm text-muted-foreground">#{policyNo || 'N/A'}</p>
                 </div>
                 <div className="relative h-16 w-40">
                   <Image
@@ -84,34 +84,34 @@ export function HealthSuccessTabs({
               {/* Policy Info */}
               <div className="grid gap-8 border-b p-8 md:grid-cols-3">
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Policy Number</p>
-                  <p className="mt-1 text-sm text-gray-800">{policyNo || 'N/A'}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Policy Number</p>
+                  <p className="mt-1 text-sm text-foreground">{policyNo || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Insurance Provider</p>
-                  <p className="mt-1 text-sm font-semibold text-gray-800">{provider}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Insurance Provider</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{provider}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Plan Name</p>
-                  <p className="mt-1 text-sm text-gray-800">{planName}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Plan Name</p>
+                  <p className="mt-1 text-sm text-foreground">{planName}</p>
                 </div>
               </div>
 
               {/* Issued To */}
               <div className="grid gap-8 border-b p-8 md:grid-cols-2">
                 <div>
-                  <p className="mb-3 text-xs font-medium text-gray-500">Issued To</p>
+                  <p className="mb-3 text-xs font-medium text-muted-foreground">Issued To</p>
                   <div className="text-sm">
-                    <p className="font-bold text-gray-800">{insuredName.toUpperCase()}</p>
-                    <p className="text-gray-600">{email}</p>
+                    <p className="font-bold text-foreground">{insuredName.toUpperCase()}</p>
+                    <p className="text-muted-foreground">{email}</p>
                     {insuredInfo?.mobile && (
-                      <p className="text-gray-600">(+63) {insuredInfo.mobile}</p>
+                      <p className="text-muted-foreground">(+63) {insuredInfo.mobile}</p>
                     )}
                   </div>
                 </div>
                 <div>
-                  <p className="mb-3 text-xs font-medium text-gray-500">Policy Details</p>
-                  <div className="text-sm text-gray-800">
+                  <p className="mb-3 text-xs font-medium text-muted-foreground">Policy Details</p>
+                  <div className="text-sm text-foreground">
                     <p>
                       <span className="font-semibold">Type:</span> Health Insurance
                     </p>
@@ -137,21 +137,21 @@ export function HealthSuccessTabs({
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="pb-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                        <th className="pb-3 text-left text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Coverage Name
                         </th>
-                        <th className="pb-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                        <th className="pb-3 text-right text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                           Limit
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {benefits.map((benefit, index) => (
-                        <tr key={index} className="border-b border-gray-100 last:border-b-0">
-                          <td className="py-4 text-sm font-medium text-gray-800">
+                        <tr key={index} className="border-b border-border last:border-b-0">
+                          <td className="py-4 text-sm font-medium text-foreground">
                             {benefit.BenefitDesc || benefit.CoverageName}
                           </td>
-                          <td className="py-4 text-right text-sm text-gray-600">
+                          <td className="py-4 text-right text-sm text-muted-foreground">
                             {benefit.DefaultLimitDesc || 'Included'}
                           </td>
                         </tr>
@@ -159,40 +159,40 @@ export function HealthSuccessTabs({
                     </tbody>
                   </table>
 
-                  <p className="mt-4 text-xs text-gray-500 italic">
+                  <p className="mt-4 text-xs text-muted-foreground italic">
                     Note: Benefits are subject to the terms and conditions of the policy.
                   </p>
                 </div>
               )}
 
               {/* Policy Status */}
-              <div className="bg-gray-50 p-8">
-                <h3 className="mb-4 text-xs font-bold tracking-wide text-gray-700 uppercase">
+              <div className="bg-muted/50 p-8">
+                <h3 className="mb-4 text-xs font-bold tracking-wide text-foreground uppercase">
                   Policy Status
                 </h3>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Status</p>
+                    <p className="text-xs font-medium text-muted-foreground">Status</p>
                     <p className="mt-1 text-sm font-semibold text-emerald-600">Active</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Issue Date</p>
-                    <p className="mt-1 text-sm text-gray-800">
+                    <p className="text-xs font-medium text-muted-foreground">Issue Date</p>
+                    <p className="mt-1 text-sm text-foreground">
                       {format(new Date(), 'MMM dd, yyyy')}
                     </p>
                   </div>
                   {insuredInfo?.effectiveDate && (
                     <div>
-                      <p className="text-xs font-medium text-gray-500">Effective Date</p>
-                      <p className="mt-1 text-sm text-gray-800">
+                      <p className="text-xs font-medium text-muted-foreground">Effective Date</p>
+                      <p className="mt-1 text-sm text-foreground">
                         {format(new Date(insuredInfo.effectiveDate), 'MMM dd, yyyy')}
                       </p>
                     </div>
                   )}
                   {insuredInfo?.expiryDate && (
                     <div>
-                      <p className="text-xs font-medium text-gray-500">Expiry Date</p>
-                      <p className="mt-1 text-sm text-gray-800">
+                      <p className="text-xs font-medium text-muted-foreground">Expiry Date</p>
+                      <p className="mt-1 text-sm text-foreground">
                         {format(new Date(insuredInfo.expiryDate), 'MMM dd, yyyy')}
                       </p>
                     </div>
@@ -200,8 +200,8 @@ export function HealthSuccessTabs({
                 </div>
               </div>
 
-              <div className="border-t bg-gray-50 p-6 text-center">
-                <p className="text-sm text-gray-600 italic">
+              <div className="border-t bg-muted/50 p-6 text-center">
+                <p className="text-sm text-muted-foreground italic">
                   Thank you for choosing One Insurance. Stay protected and healthy!
                 </p>
               </div>
@@ -216,8 +216,8 @@ export function HealthSuccessTabs({
               {/* Header */}
               <div className="flex items-start justify-between border-b p-8">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800">Invoice</h1>
-                  <p className="text-sm text-gray-600">#{policyNo || 'N/A'}</p>
+                  <h1 className="text-3xl font-bold text-foreground">Invoice</h1>
+                  <p className="text-sm text-muted-foreground">#{policyNo || 'N/A'}</p>
                 </div>
                 <div className="relative h-16 w-40">
                   <Image
@@ -232,42 +232,42 @@ export function HealthSuccessTabs({
               {/* Policy / Provider / Payment */}
               <div className="grid gap-8 border-b p-8 md:grid-cols-3">
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Policy Number</p>
-                  <p className="mt-1 text-sm text-gray-800">{policyNo || 'N/A'}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Policy Number</p>
+                  <p className="mt-1 text-sm text-foreground">{policyNo || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Insurance Provider</p>
-                  <p className="mt-1 text-sm font-semibold text-gray-800">{provider}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Insurance Provider</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{provider}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-gray-500">Plan Name</p>
-                  <p className="mt-1 text-sm text-gray-800">{planName}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Plan Name</p>
+                  <p className="mt-1 text-sm text-foreground">{planName}</p>
                 </div>
               </div>
 
               {/* From / To */}
               <div className="grid gap-8 border-b p-8 md:grid-cols-2">
                 <div>
-                  <p className="mb-3 text-xs font-medium text-gray-500">From</p>
+                  <p className="mb-3 text-xs font-medium text-muted-foreground">From</p>
                   <div className="text-sm">
-                    <p className="font-bold text-gray-800">
+                    <p className="font-bold text-foreground">
                       IFRC Digitech Online Payment Gateway
                     </p>
-                    <p className="text-gray-600">6th Floor Padilla Building</p>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">6th Floor Padilla Building</p>
+                    <p className="text-muted-foreground">
                       F. Ortigas Jr. Road, Ortigas Center, Pasig City
                     </p>
-                    <p className="text-gray-600">TEL: +632 8633 5681</p>
-                    <p className="text-gray-600">concierge@ifrcinsurance.com</p>
+                    <p className="text-muted-foreground">TEL: +632 8633 5681</p>
+                    <p className="text-muted-foreground">concierge@ifrcinsurance.com</p>
                   </div>
                 </div>
                 <div>
-                  <p className="mb-3 text-xs font-medium text-gray-500">To</p>
+                  <p className="mb-3 text-xs font-medium text-muted-foreground">To</p>
                   <div className="text-sm">
-                    <p className="font-bold text-gray-800">{insuredName.toUpperCase()}</p>
-                    <p className="text-gray-600">{email}</p>
+                    <p className="font-bold text-foreground">{insuredName.toUpperCase()}</p>
+                    <p className="text-muted-foreground">{email}</p>
                     {insuredInfo?.mobile && (
-                      <p className="text-gray-600">(+63) {insuredInfo.mobile}</p>
+                      <p className="text-muted-foreground">(+63) {insuredInfo.mobile}</p>
                     )}
                   </div>
                 </div>
@@ -278,25 +278,25 @@ export function HealthSuccessTabs({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="pb-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                      <th className="pb-3 text-left text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Description
                       </th>
-                      <th className="pb-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                      <th className="pb-3 text-right text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                         Amount
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item, index) => (
-                      <tr key={index} className="border-b border-gray-100">
+                      <tr key={index} className="border-b border-border">
                         <td className="py-4">
-                          <p className="text-sm font-medium text-gray-800">
+                          <p className="text-sm font-medium text-foreground">
                             {item.planName} - {item.tierName}
                           </p>
-                          <p className="text-xs font-semibold text-gray-600">{item.provider}</p>
-                          <p className="text-xs text-gray-500">Health Insurance</p>
+                          <p className="text-xs font-semibold text-muted-foreground">{item.provider}</p>
+                          <p className="text-xs text-muted-foreground">Health Insurance</p>
                         </td>
-                        <td className="py-4 text-right text-sm text-gray-600">
+                        <td className="py-4 text-right text-sm text-muted-foreground">
                           PHP {(item.premium * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                         </td>
                       </tr>
@@ -307,46 +307,46 @@ export function HealthSuccessTabs({
                 {/* Total */}
                 <div className="mt-6 flex justify-end">
                   <div className="flex items-center justify-between gap-12">
-                    <span className="text-base font-bold text-gray-800">Total Amount</span>
-                    <span className="text-base font-bold text-gray-800">
+                    <span className="text-base font-bold text-foreground">Total Amount</span>
+                    <span className="text-base font-bold text-foreground">
                       PHP {grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
 
-                <p className="mt-4 text-xs text-gray-500 italic">
+                <p className="mt-4 text-xs text-muted-foreground italic">
                   Note: Policy coverage begins on the effective date. VAT inclusive.
                 </p>
               </div>
 
               {/* Policy Status */}
-              <div className="bg-gray-50 p-8">
-                <h3 className="mb-4 text-xs font-bold tracking-wide text-gray-700 uppercase">
+              <div className="bg-muted/50 p-8">
+                <h3 className="mb-4 text-xs font-bold tracking-wide text-foreground uppercase">
                   Policy Status
                 </h3>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Status</p>
+                    <p className="text-xs font-medium text-muted-foreground">Status</p>
                     <p className="mt-1 text-sm font-semibold text-emerald-600">Active</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Issue Date</p>
-                    <p className="mt-1 text-sm text-gray-800">
+                    <p className="text-xs font-medium text-muted-foreground">Issue Date</p>
+                    <p className="mt-1 text-sm text-foreground">
                       {format(new Date(), 'MMM dd, yyyy')}
                     </p>
                   </div>
                   {insuredInfo?.effectiveDate && (
                     <div>
-                      <p className="text-xs font-medium text-gray-500">Effective Date</p>
-                      <p className="mt-1 text-sm text-gray-800">
+                      <p className="text-xs font-medium text-muted-foreground">Effective Date</p>
+                      <p className="mt-1 text-sm text-foreground">
                         {format(new Date(insuredInfo.effectiveDate), 'MMM dd, yyyy')}
                       </p>
                     </div>
                   )}
                   {insuredInfo?.expiryDate && (
                     <div>
-                      <p className="text-xs font-medium text-gray-500">Expiry Date</p>
-                      <p className="mt-1 text-sm text-gray-800">
+                      <p className="text-xs font-medium text-muted-foreground">Expiry Date</p>
+                      <p className="mt-1 text-sm text-foreground">
                         {format(new Date(insuredInfo.expiryDate), 'MMM dd, yyyy')}
                       </p>
                     </div>
@@ -354,8 +354,8 @@ export function HealthSuccessTabs({
                 </div>
               </div>
 
-              <div className="border-t bg-gray-50 p-6 text-center">
-                <p className="text-sm text-gray-600 italic">
+              <div className="border-t bg-muted/50 p-6 text-center">
+                <p className="text-sm text-muted-foreground italic">
                   Thank you for choosing One Insurance. Stay protected and healthy!
                 </p>
               </div>

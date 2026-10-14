@@ -50,7 +50,7 @@ export const PlanPaymentReview = ({
     <div className="sticky top-24 flex w-full flex-col space-y-6">
       <Card className="bg-background overflow-hidden p-0 shadow-none">
         <CardHeader className="pt-6 pb-4">
-          <h2 className="text-center text-2xl font-black text-gray-900 dark:text-gray-100">
+          <h2 className="text-center text-2xl font-black text-foreground dark:text-muted-foreground">
             Total Premium
           </h2>
           <p className="text-center text-2xl font-bold md:text-3xl lg:text-4xl mt-2">
@@ -60,30 +60,30 @@ export const PlanPaymentReview = ({
         
         <CardContent className="space-y-4 px-6 pb-8">
           {/* Insurance Provider Section */}
-          <div className="rounded-lg border border-gray-300 px-4 py-3">
-            <div className="text-sm text-gray-600 mb-1">Insurance Provider</div>
-            <div className="font-semibold text-gray-900 dark:text-gray-100">
+          <div className="rounded-lg border border-border px-4 py-3">
+            <div className="text-sm text-muted-foreground mb-1">Insurance Provider</div>
+            <div className="font-semibold text-foreground dark:text-muted-foreground">
               {provider.companyName}
             </div>
           </div>
 
           {/* Plan Section */}
-          <div className="rounded-lg border border-gray-300 px-4 py-3">
-            <div className="text-sm text-gray-600 mb-1">Plan</div>
-            <div className="font-semibold text-gray-900 dark:text-gray-100 uppercase">
+          <div className="rounded-lg border border-border px-4 py-3">
+            <div className="text-sm text-muted-foreground mb-1">Plan</div>
+            <div className="font-semibold text-foreground dark:text-muted-foreground uppercase">
               {plan.CarrierPlanDesc}
             </div>
           </div>
 
           {/* Add-Ons Section */}
           {addedAddonBenefits && addedAddonBenefits.length > 0 && (
-            <div className="rounded-lg border border-gray-300 px-4 py-3">
-              <div className="text-sm text-gray-600 mb-1">Add-Ons</div>
+            <div className="rounded-lg border border-border px-4 py-3">
+              <div className="text-sm text-muted-foreground mb-1">Add-Ons</div>
               <div className="space-y-1">
                 {addedAddonBenefits.map((addon, index) => (
                   <div
                     key={index}
-                    className="font-semibold text-gray-900 dark:text-gray-100 uppercase"
+                    className="font-semibold text-foreground dark:text-muted-foreground uppercase"
                   >
                     {addon.BenefitDesc}
                   </div>
@@ -94,11 +94,11 @@ export const PlanPaymentReview = ({
 
           {/* Info Section */}
           <div className="mt-6 space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground dark:text-muted-foreground">
               <Info className="h-4 w-4" />
               About this premium
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               The total premium already includes the base insurance cost, selected add-ons, carrier pricing adjustments, and applicable taxes and fees as determined by the insurance provider.
             </p>
           </div>

@@ -4,10 +4,18 @@ import Image from 'next/image'
 import { useRouter, useParams } from 'next/navigation'
 import { Suspense, useEffect, useState, useRef } from 'react'
 import { PageLoader } from '@/components/page-loader'
-import { Button } from '@/components/ui/button'
 import { FAQsSection } from '@/components/faqs-section'
 import { useCtplInsuranceStateStore } from '@/store/ctpl-store'
-import { Star, Shield, Car, CheckCircle2, Loader2, TriangleAlert } from 'lucide-react'
+import { Shield, Car, CheckCircle2 } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { StarRating } from '@/components/ui/star-rating'
+import {
+  PlanCardSkeleton,
+  NoPlanState,
+  SortFilterSidebar,
+  PriceDisplay,
+  PrimaryActionButton,
+} from '@/components/ui/insurance-shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
@@ -31,7 +39,7 @@ const CTPL_FAQS = [
 // browsers; a custom SVG chevron is drawn via background-image, with right padding
 // so option text never overlaps it.
 const VEHICLE_SELECT_CLASS =
-  "h-10 w-full appearance-none rounded-full border bg-white bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")] bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pl-4 pr-9 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
+  "h-10 w-full appearance-none rounded-full border bg-white bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E\")] bg-[length:16px] bg-[right_0.75rem_center] bg-no-repeat pl-4 pr-9 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
 
 export default function CtplInsurancePage() {
   return (
@@ -328,12 +336,12 @@ function CtplInsurance() {
           {/* Mobile-only brand logo — header is hidden on mobile by MobileProductNav */}
           <div className="absolute top-4 left-3 z-10 md:hidden">
             <a href={`/${agentCode}`} className="flex cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
-              <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-7 w-auto" priority />
+              <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-7 w-auto" priority />
             </a>
           </div>
         </div>
         <div className="absolute top-0 right-3 max-h-16 max-w-16 rounded-b-xl bg-white px-2 py-1.5 sm:right-8 sm:max-h-24 sm:max-w-24 sm:rounded-b-2xl sm:px-3 sm:py-2 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
-          <Image src="/images/IFRC.png" alt="IFRC Logo" width={1920} height={1240} className="h-full w-full object-contain" />
+          <Image src="/images/IFRC.png" alt="IFRC Logo" width={1290} height={800} className="h-full w-full object-contain" />
         </div>
         <div className="absolute inset-0 mx-auto -mt-6 flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-4 text-white lg:-mt-16">
           <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl lg:text-5xl xl:text-6xl">Motor Insurance</h1>
@@ -343,7 +351,7 @@ function CtplInsurance() {
       </div>
 
       {/* Main Card - always visible, overlaps hero */}
-      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
+      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-border bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
         <style>{`
           @media (max-width: 767px) {
             [data-testid="motor-details-form"] {
@@ -360,8 +368,8 @@ function CtplInsurance() {
         <div data-testid="motor-details-form" className="rounded-md bg-white shadow-lg backdrop-blur-sm overflow-hidden lg:rounded-xl">
           {/* Header */}
           <div className="px-4 pt-3 pb-6 sm:px-8">
-            <h2 className="text-2xl font-black text-gray-900">Choose Your Insurance Type</h2>
-            <p className="text-sm text-gray-500 mt-1">Select the coverage that fits your needs</p>
+            <h2 className="text-2xl font-black text-foreground">Choose Your Insurance Type</h2>
+            <p className="text-sm text-muted-foreground mt-1">Select the coverage that fits your needs</p>
 
             {/* Bigger card-style toggle — taller with icon, title, description, select button */}
             <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4">
@@ -370,20 +378,20 @@ function CtplInsurance() {
                 className={`group relative flex flex-col items-center gap-2 sm:gap-3 rounded-2xl border-2 p-4 sm:p-8 transition-all text-center ${
                   insuranceType === 'CTPL'
                     ? 'border-primary bg-primary/5 shadow-md'
-                    : 'border-gray-200 bg-gray-50 hover:border-primary/40 hover:bg-gray-100'
+                    : 'border-border bg-muted/50 hover:border-primary/40 hover:bg-muted'
                 }`}
               >
                 <div className={`flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-full ${insuranceType === 'CTPL' ? 'bg-primary/10' : 'bg-blue-50'}`}>
                   <Shield className={`h-5 w-5 sm:h-7 sm:w-7 ${insuranceType === 'CTPL' ? 'text-primary' : 'text-blue-400'}`} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-gray-900">CTPL Insurance</h3>
-                  <p className="mt-0.5 text-xs sm:text-sm text-gray-500">Required by law for all vehicles</p>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">CTPL Insurance</h3>
+                  <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground">Required by law for all vehicles</p>
                 </div>
                 <span className={`mt-1 sm:mt-2 rounded-full border px-3 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   insuranceType === 'CTPL'
                     ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
-                    : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
+                    : 'border-border text-muted-foreground group-hover:border-primary group-hover:text-primary'
                 }`}>
                   {insuranceType === 'CTPL' ? 'Selected ✓' : 'Select CTPL'}
                 </span>
@@ -394,20 +402,20 @@ function CtplInsurance() {
                 className={`group relative flex flex-col items-center gap-2 sm:gap-3 rounded-2xl border-2 p-4 sm:p-8 transition-all text-center ${
                   insuranceType === 'COMPREHENSIVE'
                     ? 'border-primary bg-primary/5 shadow-md'
-                    : 'border-gray-200 bg-gray-50 hover:border-primary/40 hover:bg-gray-100'
+                    : 'border-border bg-muted/50 hover:border-primary/40 hover:bg-muted'
                 }`}
               >
-                <div className={`flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-green-50'}`}>
-                  <Car className={`h-5 w-5 sm:h-7 sm:w-7 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-green-400'}`} />
+                <div className={`flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-full ${insuranceType === 'COMPREHENSIVE' ? 'bg-primary/10' : 'bg-success/10'}`}>
+                  <Car className={`h-5 w-5 sm:h-7 sm:w-7 ${insuranceType === 'COMPREHENSIVE' ? 'text-primary' : 'text-success'}`} />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-gray-900">Comprehensive</h3>
-                  <p className="mt-0.5 text-xs sm:text-sm text-gray-500">Complete vehicle protection</p>
+                  <h3 className="text-sm sm:text-base font-bold text-foreground">Comprehensive</h3>
+                  <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground">Complete vehicle protection</p>
                 </div>
                 <span className={`mt-1 sm:mt-2 rounded-full border px-3 sm:px-5 py-1 sm:py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   insuranceType === 'COMPREHENSIVE'
                     ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
-                    : 'border-gray-300 text-gray-600 group-hover:border-primary group-hover:text-primary'
+                    : 'border-border text-muted-foreground group-hover:border-primary group-hover:text-primary'
                 }`}>
                   {insuranceType === 'COMPREHENSIVE' ? 'Selected ✓' : 'Select Comprehensive'}
                 </span>
@@ -417,9 +425,9 @@ function CtplInsurance() {
 
           {/* Comprehensive Form - expands inside the card */}
           {insuranceType === 'COMPREHENSIVE' && showComprehensiveForm && (
-            <div className="border-t border-gray-100 bg-gray-50 px-4 py-5 sm:px-8">
-              <h3 className="mb-1 font-bold text-gray-800">Vehicle Details</h3>
-              <p className="mb-4 text-xs text-gray-500">Provide your vehicle info to get Comprehensive plans</p>
+            <div className="border-t border-border bg-muted/50 px-4 py-5 sm:px-8">
+              <h3 className="mb-1 font-bold text-foreground">Vehicle Details</h3>
+              <p className="mb-4 text-xs text-muted-foreground">Provide your vehicle info to get Comprehensive plans</p>
               <div className="grid gap-3 sm:grid-cols-2">
 
                 {/* Vehicle Type */}
@@ -428,7 +436,7 @@ function CtplInsurance() {
                   <select
                     value={comprehensiveForm.vehicleType}
                     onChange={e => handleComprehensiveFieldChange('vehicleType', e.target.value)}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleType ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleType ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">Select Vehicle Type</option>
                     {[{ value: 'MOTORCYCLE', label: 'Motorcycle' }, { value: 'PRIVATECAR', label: 'Private Car' }, { value: 'COMMERCIAL', label: 'Commercial' }, { value: 'LTO', label: 'LTO' }].map(o => (
@@ -445,7 +453,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.vehicleMake}
                     onChange={e => handleComprehensiveFieldChange('vehicleMake', e.target.value)}
                     disabled={!comprehensiveForm.vehicleType || loadingField === 'vehicleMake'}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleMake ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleMake ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">{loadingField === 'vehicleMake' ? 'Loading...' : 'Select Make'}</option>
                     {makeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -460,7 +468,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.vehicleModel}
                     onChange={e => handleComprehensiveFieldChange('vehicleModel', e.target.value)}
                     disabled={!comprehensiveForm.vehicleMake || loadingField === 'vehicleModel'}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleModel ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleModel ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">{loadingField === 'vehicleModel' ? 'Loading...' : 'Select Model'}</option>
                     {modelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -475,7 +483,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.bodyType}
                     onChange={e => handleComprehensiveFieldChange('bodyType', e.target.value)}
                     disabled={!comprehensiveForm.vehicleModel || loadingField === 'bodyType'}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.bodyType ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.bodyType ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">{loadingField === 'bodyType' ? 'Loading...' : 'Select Body Type'}</option>
                     {bodyTypeOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -490,7 +498,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.modelYear}
                     onChange={e => handleComprehensiveFieldChange('modelYear', e.target.value)}
                     disabled={!comprehensiveForm.bodyType || loadingField === 'modelYear'}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.modelYear ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.modelYear ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">{loadingField === 'modelYear' ? 'Loading...' : 'Select Year'}</option>
                     {yearOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -505,7 +513,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.subModel}
                     onChange={e => handleComprehensiveFieldChange('subModel', e.target.value)}
                     disabled={!comprehensiveForm.modelYear || loadingField === 'subModel'}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.subModel ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.subModel ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">{loadingField === 'subModel' ? 'Loading...' : 'Select Sub Model'}</option>
                     {subModelOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -520,7 +528,7 @@ function CtplInsurance() {
                     value={comprehensiveForm.vehicleUsage}
                     onChange={e => handleComprehensiveFieldChange('vehicleUsage', e.target.value)}
                     disabled={!comprehensiveForm.subModel || loadingField === 'vehicleUsage'}
-                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleUsage ? 'border-red-400' : 'border-gray-200'}`}
+                    className={`${VEHICLE_SELECT_CLASS} ${comprehensiveFormErrors.vehicleUsage ? 'border-destructive' : 'border-border'}`}
                   >
                     <option value="">{loadingField === 'vehicleUsage' ? 'Loading...' : 'Select Usage'}</option>
                     {usageOptions.map(o => <option key={o.code} value={o.code}>{o.label}</option>)}
@@ -532,24 +540,25 @@ function CtplInsurance() {
                 <div>
                   <label className="mb-1 block text-sm font-medium text-primary">Sum Insured <span className="text-destructive">*</span></label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">₱</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₱</span>
                     <input
                       type="number" placeholder="100000" min="10000"
                       value={comprehensiveForm.sumInsured}
                       onChange={e => handleComprehensiveFieldChange('sumInsured', e.target.value)}
-                      className={`w-full rounded-full border bg-white pl-7 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.sumInsured ? 'border-red-400' : 'border-gray-200'}`}
+                      className={`w-full rounded-full border bg-white pl-7 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 ${comprehensiveFormErrors.sumInsured ? 'border-destructive' : 'border-border'}`}
                     />
                   </div>
                   {comprehensiveFormErrors.sumInsured && <p className="mt-0.5 text-xs text-destructive">{comprehensiveFormErrors.sumInsured}</p>}
                 </div>
               </div>
               <div className="mt-4 flex justify-end">
-                <Button
-                  className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-8 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+                <PrimaryActionButton
+                  size="lg"
+                  className="px-8 text-sm"
                   onClick={handleSearchComprehensivePlans}
                 >
                   Search Plans
-                </Button>
+                </PrimaryActionButton>
               </div>
             </div>
           )}
@@ -561,7 +570,7 @@ function CtplInsurance() {
 
       {/* Plans section */}
       {insuranceType && !showComprehensiveForm && (
-        <div id="motor-plans" className="w-full mt-8 border-t border-gray-100">
+        <div id="motor-plans" className="w-full mt-8 border-t border-border">
           <div className="mx-auto w-full max-w-7xl px-4 py-8">
             {isLoadingPlans && plans.length === 0 ? (
               <>
@@ -589,22 +598,7 @@ function CtplInsurance() {
                   <div className="flex flex-1 flex-col gap-4">
                     <Skeleton className="h-4 w-56" />
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="flex w-full overflow-hidden rounded-xl border">
-                        <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[120px] rounded-none" />
-                        <div className="flex flex-1 flex-col justify-center p-4 sm:p-5 gap-3">
-                          <Skeleton className="h-5 w-[55%]" />
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-                            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                          </div>
-                        </div>
-                        <div className="flex w-[140px] sm:w-[160px] md:w-[180px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
-                          <Skeleton className="h-7 w-16" />
-                          <Skeleton className="h-3 w-12" />
-                          <Skeleton className="h-8 w-full rounded-full" />
-                        </div>
-                      </div>
+                      <PlanCardSkeleton key={i} />
                     ))}
                     <p className="text-muted-foreground text-center text-sm">
                       Searching for the best plans for you...
@@ -622,70 +616,40 @@ function CtplInsurance() {
             </div>
 
             {!isLoadingPlans && plansError && plans.length === 0 && (
-              <div className="flex min-h-[40vh] items-center justify-center px-4 py-16">
-                <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-                  <div className="mb-4 flex justify-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-                      <TriangleAlert className="h-7 w-7 text-gray-400" />
-                    </div>
-                  </div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-800">No Plans Available</h3>
-                  <p className="mb-4 text-sm text-gray-500">
-                    {plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('lob')
-                      ? "Motor insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
-                      : plansError}
-                  </p>
-                  <button
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200"
-                  >
-                    Modify Search
-                  </button>
-                </div>
-              </div>
+              <NoPlanState
+                message={
+                  plansError.toLowerCase().includes('agent') || plansError.toLowerCase().includes('lob')
+                    ? "Motor insurance plans are not currently available through this link. This may be because the service is not yet enabled for this agent."
+                    : plansError
+                }
+                onModifySearch={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              />
             )}
 
             {plans.length > 0 && (
               <div className="flex gap-6 pb-8">
                 {/* Left sidebar filters */}
-                <aside className="hidden w-[200px] shrink-0 lg:block">
-                  <div className="sticky top-4 space-y-6">
-                    <div>
-                      <h4 className="text-foreground mb-2 text-sm font-bold">Sorted by</h4>
-                      <ul className="space-y-1.5">
-                        <li>
-                          <button type="button" onClick={() => setMotorSortBy('lowest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-                            <span className={`h-2.5 w-2.5 rounded-full border ${motorSortBy === 'lowest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
-                            Lowest premium
-                          </button>
-                        </li>
-                        <li>
-                          <button type="button" onClick={() => setMotorSortBy('highest')} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-                            <span className={`h-2.5 w-2.5 rounded-full border ${motorSortBy === 'highest' ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
-                            Highest sum insured
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="text-foreground mb-2 text-sm font-bold">By providers</h4>
-                      <ul className="space-y-1.5">
-                        {Array.from(new Set(plans.map((p: any) => p.CarrierCode))).map((code: any) => {
-                          const company = COMPANIES.find((c) => c.carrierCode === code)
-                          const isActive = motorSelectedProviders.length === 0 || motorSelectedProviders.includes(code)
-                          return (
-                            <li key={code}>
-                              <button type="button" onClick={() => setMotorSelectedProviders(prev => prev.includes(code) ? prev.filter((c: string) => c !== code) : [...prev, code])} className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200">
-                                <span className={`h-2.5 w-2.5 rounded-full border ${isActive ? 'border-green-600 bg-green-600' : 'border-gray-300 bg-white'}`} />
-                                {company?.companyName || code}
-                              </button>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    </div>
-                  </div>
-                </aside>
+                <SortFilterSidebar
+                  sortOptions={[
+                    { key: 'lowest', label: 'Lowest premium' },
+                    { key: 'highest', label: 'Highest sum insured' },
+                  ]}
+                  currentSort={motorSortBy}
+                  onSortChange={(key) => setMotorSortBy(key as 'lowest' | 'highest')}
+                  providers={Array.from(new Set(plans.map((p: any) => p.CarrierCode as string))).map((code) => {
+                    const company = COMPANIES.find((c) => c.carrierCode === code)
+                    return {
+                      code,
+                      name: company?.companyName || code,
+                      isActive: motorSelectedProviders.length === 0 || motorSelectedProviders.includes(code),
+                    }
+                  })}
+                  onProviderToggle={(code) =>
+                    setMotorSelectedProviders((prev) =>
+                      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+                    )
+                  }
+                />
 
                 {/* Plan cards */}
                 <div className="flex flex-1 flex-col gap-4">
@@ -711,7 +675,7 @@ function CtplInsurance() {
                   const benefitsWithAmounts = benefits.filter((b: any) => b.Silimit || b.DefaultLimitDesc).slice(0, 3)
 
                   return (
-                    <div key={index} className="bg-background relative flex w-full flex-col rounded-xl overflow-hidden transition-all shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:shadow-md mb-3 sm:flex-row">
+                    <Card key={index} variant="interactive" className="relative mb-3 w-full gap-0 overflow-hidden py-0 transition-all sm:flex-row">
                       {/* Left brand block */}
                       <div
                         className="flex h-[100px] w-full shrink-0 items-center justify-center overflow-hidden sm:h-auto sm:w-[140px] sm:rounded-l-xl md:w-[160px] lg:w-[180px]"
@@ -764,7 +728,7 @@ function CtplInsurance() {
                           <div className="space-y-1">
                             {benefits.slice(0, 3).map((b: any, i: number) => (
                               <div key={i} className="flex items-start gap-2">
-                                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
+                                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                                 <span className="text-foreground text-xs font-medium">{b.BenefitDesc}</span>
                               </div>
                             ))}
@@ -772,7 +736,7 @@ function CtplInsurance() {
                         ) : null}
                         {benefits.length > 3 && (
                           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
-                            <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-border dark:border-gray-700 bg-background px-4 py-1 text-xs font-medium text-foreground">
                               View more ›
                             </span>
                           </div>
@@ -780,23 +744,17 @@ function CtplInsurance() {
                       </div>
 
                       {/* Right price + button */}
-                      <div className="flex w-full shrink-0 flex-col items-center justify-center border-t border-gray-100 dark:border-gray-800 p-4 sm:w-[140px] sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
-                        <div className="flex items-baseline gap-1 mb-1">
-                          <span className="text-primary text-xs font-semibold">PHP</span>
-                          <span className="text-foreground text-lg font-black sm:text-xl lg:text-2xl">
-                            {premium.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                          </span>
-                        </div>
-                        <span className="text-primary mb-3 text-xs font-medium">Premium</span>
-                        <Button
+                      <div className="flex w-full shrink-0 flex-col items-center justify-center border-t border-border dark:border-gray-800 p-4 sm:w-[140px] sm:border-l sm:border-t-0 md:w-[160px] lg:w-[180px]">
+                        <PriceDisplay amount={premium} label="Premium" className="mb-3" />
+                        <PrimaryActionButton
                           size="sm"
-                          className="w-full rounded-full from-primary to-accent bg-gradient-to-r px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+                          className="h-8 w-full px-4 text-xs font-semibold"
                           onClick={() => handleBuyNow(plan)}
                         >
                           Apply Now
-                        </Button>
+                        </PrimaryActionButton>
                       </div>
-                    </div>
+                    </Card>
                   )
                 })}
                 </div>
@@ -811,8 +769,8 @@ function CtplInsurance() {
       {/* Testimonials — hidden on mobile (low priority) */}
       <div className="mx-auto mt-16 hidden w-full max-w-7xl px-4 md:block">
         <div className="mb-6">
-          <h2 className="text-2xl font-black text-gray-900">What Our Customers Say</h2>
-          <p className="text-sm text-gray-500">Real stories from real Filipino families we've protected</p>
+          <h2 className="text-2xl font-black text-foreground">What Our Customers Say</h2>
+          <p className="text-sm text-muted-foreground">Real stories from real Filipino families we've protected</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
@@ -821,9 +779,9 @@ function CtplInsurance() {
             { name: 'Mark Rivera', role: 'Engineer', text: 'Great service! The online process was seamless and the coverage is comprehensive.' },
             { name: 'Carlo Fernandez', role: 'Teacher', text: 'I renewed my CTPL here and it was so much faster than going to the office. Salamat!' },
           ].map((t, i) => (
-            <div key={i} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-3">
-              <div className="flex">{[...Array(5)].map((_, j) => <Star key={j} className="h-4 w-4" stroke="0.5" fill="#FFA500" />)}</div>
-              <p className="text-sm text-gray-600 italic">"{t.text}"</p>
+            <div key={i} className="rounded-2xl border bg-card p-5 shadow-sm space-y-3">
+              <StarRating rating={5} />
+              <p className="text-sm text-muted-foreground italic">"{t.text}"</p>
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={`https://avatar.iran.liara.run/public/${i % 2 === 0 ? 'boy' : 'girl'}/${i + 1}`} />
@@ -831,7 +789,7 @@ function CtplInsurance() {
                 </Avatar>
                 <div>
                   <p className="text-sm font-bold">{t.name}</p>
-                  <p className="text-xs text-gray-400">{t.role}</p>
+                  <p className="text-xs text-muted-foreground">{t.role}</p>
                 </div>
               </div>
             </div>
@@ -840,7 +798,7 @@ function CtplInsurance() {
       </div>
 
       {/* FAQs — hidden on mobile (low priority) */}
-      <section className="mt-16 hidden w-full bg-[#eef2f7] py-16 md:block">
+      <section className="mt-16 hidden w-full bg-section py-16 md:block">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-3 md:gap-12">
             <div className="space-y-4">

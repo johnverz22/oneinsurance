@@ -1,0 +1,36 @@
+[
+  {
+    "trigger": "init_response",
+    "body": {
+      "success": true,
+      "message": "Accepted",
+      "data": {
+        "ClientRequestId": "a106afc8-5534-40a0-957d-6dfe661e3a32",
+        "Channel": "a106afc8-5534-40a0-957d-6dfe661e3a32",
+        "Events": {
+          "ready": "insurance.plan.received",
+          "failed": "insurance.plan.failed"
+        }
+      }
+    }
+  },
+  {
+    "event": "pusher:connection_established",
+    "socket_id": "400393332.279607938"
+  },
+  {
+    "event": "pusher_internal:subscription_succeeded",
+    "channel": "a106afc8-5534-40a0-957d-6dfe661e3a32",
+    "data": {}
+  },
+  {
+    "event": "insurance.plan.received",
+    "channel": "a106afc8-5534-40a0-957d-6dfe661e3a32",
+    "data": {
+      "cache_key": "igw_compare_quote_a106afc8-5534-40a0-957d-6dfe661e3a32"
+    }
+  },
+  {
+    "event": "pusher:pong"
+  }
+]

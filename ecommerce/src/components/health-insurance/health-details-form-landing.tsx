@@ -178,7 +178,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
     <Card className={cn('w-full rounded-2xl border-0 shadow-2xl bg-white', className)}>
       <CardContent className="px-6 pt-6 pb-7 sm:px-8">
         <div className="mb-5">
-          <h2 className="text-xl font-bold text-gray-900">Get Personalized Advice</h2>
+          <h2 className="text-xl font-bold text-foreground">Get Personalized Advice</h2>
           <p className="text-muted-foreground text-sm">Let our experts recommend the best plan for you</p>
         </div>
 
@@ -186,7 +186,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="firstName">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">First Name <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">First Name <span className="text-destructive">*</span></Label>
                 <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="e.g. Juan" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
@@ -195,7 +195,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="lastName">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Last Name <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Last Name <span className="text-destructive">*</span></Label>
                 <Input value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="e.g. dela Cruz" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
@@ -204,7 +204,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="email">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Email Address <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Email Address <span className="text-destructive">*</span></Label>
                 <Input type="email" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} placeholder="e.g. juan@email.com" className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
@@ -216,9 +216,9 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="mobile">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Phone Number <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Phone Number <span className="text-destructive">*</span></Label>
                 <div className={cn('flex h-11 items-center overflow-hidden rounded-full border bg-white focus-within:ring-2 focus-within:ring-primary/30', { 'border-destructive': fieldHasError(field) })}>
-                  <span className="border-r px-3 text-sm text-gray-500">+63</span>
+                  <span className="border-r px-3 text-sm text-muted-foreground">+63</span>
                   <input
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -234,7 +234,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="dateOfBirth">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Date of Birth <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Date of Birth <span className="text-destructive">*</span></Label>
                 <Input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
@@ -246,7 +246,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="genderCode">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Gender <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Gender <span className="text-destructive">*</span></Label>
                 <Select onValueChange={(v) => field.handleChange(v as 'M' | 'F')} value={field.state.value}>
                   <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
                     <SelectValue placeholder="Select Gender" />
@@ -263,7 +263,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="isSmoker">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Do you smoke? <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Do you smoke? <span className="text-destructive">*</span></Label>
                 <Select onValueChange={(v) => field.handleChange(v as 'Y' | 'N')} value={field.state.value}>
                   <SelectTrigger className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })}>
                     <SelectValue placeholder="Select Smoking Status" />
@@ -283,7 +283,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
           <form.Field name="effectiveDate">
             {(field) => (
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Coverage Start Date <span className="text-red-500">*</span></Label>
+                <Label className="text-sm font-medium">Coverage Start Date <span className="text-destructive">*</span></Label>
                 <Input type="date" value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} className={cn('h-11 rounded-full', { 'border-destructive': fieldHasError(field) })} />
                 <FieldInfo field={field} />
               </div>
@@ -295,7 +295,7 @@ export function HealthDetailsFormLanding({ className }: { className?: string }) 
               return (
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">Expiry Date</Label>
-                  <Input type="date" value={getExp(effectiveDate)} readOnly className="h-11 rounded-full bg-gray-50" />
+                  <Input type="date" value={getExp(effectiveDate)} readOnly className="h-11 rounded-full bg-muted/50" />
                 </div>
               )
             }}

@@ -52,19 +52,19 @@ export default function PaymentBrands({
 
   if (error) {
     return (
-      <div className="mx-4 rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-        <AlertCircle className="mx-auto mb-3 h-12 w-12 text-red-500" />
-        <h3 className="mb-2 text-lg font-semibold text-red-800">
+      <div className="mx-4 rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
+        <AlertCircle className="mx-auto mb-3 h-12 w-12 text-destructive" />
+        <h3 className="mb-2 text-lg font-semibold text-destructive">
           Oops! Something went wrong
         </h3>
-        <p className="mb-4 text-sm text-red-600">
+        <p className="mb-4 text-sm text-destructive">
           {error instanceof Error
             ? error.message
             : 'Failed to load payment options. Please try again.'}
         </p>
         <button
           onClick={() => refetch()}
-          className="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
+          className="inline-flex items-center rounded-md bg-destructive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-destructive focus:ring-2 focus:ring-destructive focus:ring-offset-2 focus:outline-none"
         >
           <AlertCircle className="mr-2 h-4 w-4" />
           Try Again
@@ -75,14 +75,14 @@ export default function PaymentBrands({
 
   if (filteredBrands.length === 0) {
     return (
-      <div className="mx-4 rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-          <CreditCard className="h-8 w-8 text-gray-400" />
+      <div className="mx-4 rounded-lg border border-border bg-muted/50 p-8 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+          <CreditCard className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="mb-2 text-lg font-semibold text-gray-800">
+        <h3 className="mb-2 text-lg font-semibold text-foreground">
           No payment options available
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Please check back later or contact support if this persists.
         </p>
       </div>
@@ -93,10 +93,10 @@ export default function PaymentBrands({
     <div className={cn('w-full space-y-4', className)}>
       {/* Header Section - hidden on mobile since page already has header */}
       <div className="hidden sm:block text-center">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-foreground">
           Choose Your Payment Method
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Secure and encrypted payment options
         </p>
       </div>
@@ -118,7 +118,7 @@ export default function PaymentBrands({
                 'aspect-square w-full',
                 selectedBrand?.value === brand.value
                   ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
-                  : 'hover:border-primary/60 border-gray-200 hover:bg-gray-50',
+                  : 'hover:border-primary/60 border-border hover:bg-muted/50',
                 'focus:ring-primary focus:ring-2 focus:ring-offset-2 focus:outline-none'
               )}
               onClick={() => handleBrandClick(brand)}
@@ -160,9 +160,9 @@ export default function PaymentBrands({
                   {/* Fallback icon */}
                   <div className="fallback-icon absolute inset-0 flex items-center justify-center">
                     {brand.is_card ? (
-                      <CreditCard className="h-8 w-8 text-gray-400" />
+                      <CreditCard className="h-8 w-8 text-muted-foreground" />
                     ) : (
-                      <Smartphone className="h-8 w-8 text-gray-400" />
+                      <Smartphone className="h-8 w-8 text-muted-foreground" />
                     )}
                   </div>
                 </div>

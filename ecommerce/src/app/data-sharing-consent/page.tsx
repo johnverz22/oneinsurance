@@ -10,7 +10,7 @@ export default function DataSharingConsentPage() {
       <div className="flex flex-col items-center justify-center space-y-6 px-4 py-10 pt-30 sm:px-10 md:px-[10%] lg:px-[20%]">
         <h1 className="text-xl font-black md:text-3xl">Data Sharing Consent Agreement</h1>
         <div className="px-4 text-justify text-sm md:max-w-2xl md:text-base space-y-4">
-          <p className="text-gray-700">
+          <p className="text-foreground">
             This Data Sharing Consent Agreement ("Agreement") outlines how your personal information will be collected, used, shared, and protected in accordance with the Data Privacy Act of 2012 (Republic Act No. 10173) and its implementing rules and regulations.
           </p>
 
@@ -177,12 +177,12 @@ export default function DataSharingConsentPage() {
             </p>
           </div>
 
-          <p className="mt-6 text-sm text-gray-600">
+          <p className="mt-6 text-sm text-muted-foreground">
             <strong>Effective Date:</strong> January 1, 2024<br />
             <strong>Last Updated:</strong> January 1, 2024
           </p>
 
-          <p className="mt-4 text-sm text-gray-600">
+          <p className="mt-4 text-sm text-muted-foreground">
             This Data Sharing Consent Agreement is governed by and construed in accordance with the laws of the Republic of the Philippines, particularly the Data Privacy Act of 2012 (Republic Act No. 10173) and its implementing rules and regulations.
           </p>
         </div>

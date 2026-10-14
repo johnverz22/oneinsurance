@@ -56,9 +56,9 @@ export default function CtplReviewPage() {
   }
 
   const row = (label: string, value: string) => (
-    <div className="flex justify-between border-b border-gray-100 py-2 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-semibold text-gray-900">{value || '—'}</span>
+    <div className="flex justify-between border-b border-border py-2 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold text-foreground">{value || '—'}</span>
     </div>
   )
 
@@ -170,64 +170,64 @@ export default function CtplReviewPage() {
       {/* Premium Summary */}
       <Card className="overflow-hidden shadow-none">
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-xl font-bold text-gray-800 text-center">Premium Summary</h2>
+          <h2 className="text-xl font-bold text-foreground text-center">Premium Summary</h2>
           <div className="text-center">
-            <p className="text-sm text-gray-500">Total Payment</p>
-            <p className="text-4xl font-black text-gray-900">₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+            <p className="text-sm text-muted-foreground">Total Payment</p>
+            <p className="text-4xl font-black text-foreground">₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
           </div>
           
           {/* Premium Breakdown */}
-          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2">
-            <p className="text-xs text-gray-400">Premium Breakdown</p>
+          <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-2">
+            <p className="text-xs text-muted-foreground">Premium Breakdown</p>
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Net Premium</span>
-                <span className="font-semibold text-gray-900">₱ {netPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                <span className="text-muted-foreground">Net Premium</span>
+                <span className="font-semibold text-foreground">₱ {netPremium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
               </div>
               {taxes > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Taxes & Fees</span>
-                  <span className="font-semibold text-gray-900">₱ {taxes.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                  <span className="text-muted-foreground">Taxes & Fees</span>
+                  <span className="font-semibold text-foreground">₱ {taxes.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
                 </div>
               )}
-              <div className="border-t border-gray-200 pt-1 mt-1 flex justify-between text-sm font-bold">
-                <span className="text-gray-800">Total Premium</span>
-                <span className="text-gray-900">₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+              <div className="border-t border-border pt-1 mt-1 flex justify-between text-sm font-bold">
+                <span className="text-foreground">Total Premium</span>
+                <span className="text-foreground">₱ {premium.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>
 
           {/* Plan Details */}
-          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
-            <p className="text-xs text-gray-400">Selected {insuranceType} Plan</p>
-            <p className="font-bold text-gray-900">{selectedVehicle?.title}</p>
-            <p className="text-xs text-gray-500">{fullQuoteResponse?.CarrierName || 'Insurance Provider'}</p>
+          <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-1">
+            <p className="text-xs text-muted-foreground">Selected {insuranceType} Plan</p>
+            <p className="font-bold text-foreground">{selectedVehicle?.title}</p>
+            <p className="text-xs text-muted-foreground">{fullQuoteResponse?.CarrierName || 'Insurance Provider'}</p>
           </div>
 
           {/* Policy Period */}
-          <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-            <p className="text-xs text-gray-400 mb-1">Policy Period</p>
-            <p className="text-sm font-semibold text-gray-800">
+          <div className="rounded-xl border border-border bg-muted/50 p-4">
+            <p className="text-xs text-muted-foreground mb-1">Policy Period</p>
+            <p className="text-sm font-semibold text-foreground">
               {format(duration.effectiveDate, 'MMMM d, yyyy')} – {format(duration.expiryDate, 'MMMM d, yyyy')}
             </p>
           </div>
 
           {/* Promo Code */}
-          <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 p-3">
-            <input placeholder="Get a Promo Code" className="flex-1 bg-transparent text-sm outline-none text-gray-600 placeholder:text-gray-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 p-3">
+            <input placeholder="Get a Promo Code" className="flex-1 bg-transparent text-sm outline-none text-muted-foreground placeholder:text-muted-foreground" />
             <button className="text-sm font-semibold text-orange-500">Apply</button>
           </div>
         </CardContent>
       </Card>
 
       {/* Terms */}
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white p-4">
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-white p-4">
         <Checkbox
           checked={agreed}
           onCheckedChange={v => { setAgreed(!!v); setAgreeError('') }}
           className="data-[state=checked]:border-primary data-[state=checked]:bg-primary mt-0.5 h-4 w-4"
         />
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-foreground">
           I hereby confirm that I have carefully read, reviewed and understand the said plans and limitations applicable to this product, including the General Exclusions, and I accept that I agree to all of the policy terms.
         </span>
       </label>

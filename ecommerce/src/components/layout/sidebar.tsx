@@ -117,7 +117,7 @@ export const AppSidebar = ({
                     defaultOpen
                     className="group/collapsible text-foreground"
                   >
-                    <div className="flex items-center gap-2 px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-2 px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground dark:text-slate-400">
                       <span>{navigation.label}</span>
                       <span className="h-px flex-1 bg-border" aria-hidden="true" />
                     </div>

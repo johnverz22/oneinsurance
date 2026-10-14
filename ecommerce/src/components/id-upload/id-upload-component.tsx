@@ -154,7 +154,7 @@ export function IdUploadComponent({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileImage className="h-5 w-5" />
-          Upload Valid ID <span className="text-red-500">*</span>
+          Upload Valid ID <span className="text-destructive">*</span>
         </CardTitle>
         <p className="text-muted-foreground text-sm">
           Upload clear photos of both the front and back of your valid ID.
@@ -166,7 +166,7 @@ export function IdUploadComponent({
           {/* Front ID Upload */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-primary">
-              Front of ID <span className="text-red-500">*</span>
+              Front of ID <span className="text-destructive">*</span>
             </h3>
             {!frontFile ? (
               <div
@@ -191,7 +191,7 @@ export function IdUploadComponent({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="relative w-full overflow-hidden rounded-lg border bg-gray-50" style={{ height: '160px', maxHeight: '160px' }}>
+                <div className="relative w-full overflow-hidden rounded-lg border bg-muted/50" style={{ height: '160px', maxHeight: '160px' }}>
                   {frontPreviewUrl ? (
                     <img src={frontPreviewUrl} alt="Front ID Preview"
                       style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
@@ -215,13 +215,13 @@ export function IdUploadComponent({
                       </div>
                     )}
                     {ocrStatus === 'done' && (
-                      <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                      <div className="flex items-center gap-2 rounded-md border border-success/50 bg-success/10 px-3 py-2 text-sm text-success">
                         <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
                         <span>ID scanned — fields auto-filled below. Please review.</span>
                       </div>
                     )}
                     {ocrStatus === 'error' && ocrError && (
-                      <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                      <div className="flex items-center gap-2 rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-sm text-warning">
                         <AlertCircle className="h-4 w-4 flex-shrink-0" />
                         <span>{ocrError}</span>
                       </div>
@@ -268,7 +268,7 @@ export function IdUploadComponent({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="relative w-full overflow-hidden rounded-lg border bg-gray-50" style={{ height: '160px', maxHeight: '160px' }}>
+                <div className="relative w-full overflow-hidden rounded-lg border bg-muted/50" style={{ height: '160px', maxHeight: '160px' }}>
                   {backPreviewUrl ? (
                     <img src={backPreviewUrl} alt="Back ID Preview"
                       style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
@@ -287,7 +287,7 @@ export function IdUploadComponent({
         </div>
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">{error}</div>
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>
         )}
       </CardContent>
     </Card>

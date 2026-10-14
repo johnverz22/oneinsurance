@@ -72,11 +72,11 @@ export default function PlanDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#eef2f7]">
+    <div className="min-h-screen bg-section">
       {/* Header bar */}
       <div className="bg-white px-6 py-3 shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Link href={`/${agentCode}`} className="hover:text-primary">Home</Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <span>Providers</span>
@@ -85,7 +85,7 @@ export default function PlanDetailPage() {
               {provider.name}
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="font-semibold text-gray-900">{plan.name}</span>
+            <span className="font-semibold text-foreground">{plan.name}</span>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -95,12 +95,12 @@ export default function PlanDetailPage() {
             >
               <ShoppingCart className="h-4 w-4" /> View Cart
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-white">
                   {cartCount}
                 </span>
               )}
             </Button>
-            <Image src="/images/IFRC.png" alt="IFRC" width={60} height={40} className="h-10 w-auto" />
+            <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>
         </div>
       </div>
@@ -127,9 +127,9 @@ export default function PlanDetailPage() {
             </div>
             <div className="flex flex-col justify-center space-y-4">
               <Image src={plan.providerLogo} alt={plan.provider} width={100} height={40} className="h-10 w-auto object-contain object-left" />
-              <h1 className="text-2xl font-bold text-gray-900">{plan.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{plan.name}</h1>
               <p className="text-muted-foreground text-sm leading-relaxed">{plan.fullDescription}</p>
-              <div className="space-y-1 text-sm text-gray-700">
+              <div className="space-y-1 text-sm text-foreground">
                 <p><span className="font-medium">Issue Age:</span> {plan.issueAge}</p>
                 <p><span className="font-medium">Waiting Period:</span> {plan.waitingPeriod}</p>
               </div>
@@ -139,7 +139,7 @@ export default function PlanDetailPage() {
 
         {/* Tagline */}
         <div className="rounded-2xl bg-white px-6 py-8 text-center shadow-sm">
-          <h2 className="text-xl font-bold text-gray-900 md:text-2xl">{plan.tagline}</h2>
+          <h2 className="text-xl font-bold text-foreground md:text-2xl">{plan.tagline}</h2>
           <p className="text-muted-foreground mt-2 text-sm">
             {plan.name} provides essential healthcare protection for common medical needs, offering practical benefits, convenient coverage, and dependable support to keep you healthy through life's everyday moments.
           </p>
@@ -155,19 +155,19 @@ export default function PlanDetailPage() {
               <h3 className="from-primary to-accent mb-1 bg-gradient-to-r bg-clip-text text-center text-2xl font-black text-transparent">
                 {tier.name}
               </h3>
-              <p className="mb-1 text-center text-base font-bold text-gray-900">{tier.subtitle}</p>
+              <p className="mb-1 text-center text-base font-bold text-foreground">{tier.subtitle}</p>
               <p className="text-muted-foreground mb-4 text-center text-xs">{tier.description}</p>
               <div className="mb-2 flex items-center justify-between rounded-lg bg-yellow-400 px-4 py-2">
-                <span className="text-sm font-medium text-gray-800">Premium</span>
-                <span className="font-bold text-gray-900">₱ {tier.premium.toLocaleString()}.00</span>
+                <span className="text-sm font-medium text-foreground">Premium</span>
+                <span className="font-bold text-foreground">₱ {tier.premium.toLocaleString()}.00</span>
               </div>
-              <div className="mb-5 flex items-center justify-between rounded-lg bg-green-500 px-4 py-2">
+              <div className="mb-5 flex items-center justify-between rounded-lg bg-success px-4 py-2">
                 <span className="text-sm font-medium text-white">Maximum Benefit Limit</span>
                 <span className="font-bold text-white">₱ {tier.maxBenefit.toLocaleString()}.00</span>
               </div>
               <ul className="mb-6 flex-1 space-y-2">
                 {tier.benefits.map((b, j) => (
-                  <li key={j} className="flex items-start gap-2 text-sm text-gray-700">
+                  <li key={j} className="flex items-start gap-2 text-sm text-foreground">
                     <Check className="text-primary mt-0.5 h-4 w-4 shrink-0" />
                     {b}
                   </li>
@@ -175,16 +175,16 @@ export default function PlanDetailPage() {
               </ul>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500">Qty</span>
+                  <span className="text-xs text-muted-foreground">Qty</span>
                   <div className="flex items-center gap-1 rounded-full border px-2 py-1">
                     <button
                       onClick={() => setQuantities((q) => { const n = [...q]; n[i] = Math.max(0, n[i] - 1); return n })}
-                      className="text-gray-500 hover:text-gray-800"
+                      className="text-muted-foreground hover:text-foreground"
                     >−</button>
                     <span className="w-5 text-center text-sm">{quantities[i]}</span>
                     <button
                       onClick={() => setQuantities((q) => { const n = [...q]; n[i] = n[i] + 1; return n })}
-                      className="text-gray-500 hover:text-gray-800"
+                      className="text-muted-foreground hover:text-foreground"
                     >+</button>
                   </div>
                 </div>

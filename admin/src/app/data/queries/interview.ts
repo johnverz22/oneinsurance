@@ -2,7 +2,6 @@ import { useAuthStore } from '@/store/auth-store'
 import { InterviewPaginatedResponse } from '@/types/interview'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { headers } from 'next/headers'
 import { handleApiError } from '@/utils/handle-api-error'
 
 export function useGetInterviews(page: number = 1) {

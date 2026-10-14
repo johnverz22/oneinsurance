@@ -131,7 +131,7 @@ export function Stepper({
               key={index}
               className={cn(
                 'h-1.5 flex-1 rounded-full transition-colors',
-                index <= currentStep ? 'bg-primary' : 'bg-gray-200'
+                index <= currentStep ? 'bg-primary' : 'bg-muted'
               )}
             />
           ))}

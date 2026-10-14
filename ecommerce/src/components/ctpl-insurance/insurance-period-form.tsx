@@ -67,7 +67,7 @@ export default function CTPLPeriodForm() {
         <h3 className="text-base font-semibold md:text-lg">
           How Long Is Your Coverage?
         </h3>
-        <p className="text-xs font-light text-gray-500 md:text-base dark:text-gray-400">
+        <p className="text-xs font-light text-muted-foreground md:text-base dark:text-muted-foreground">
           Select the period that best fits your driving needs and keeps your
           vehicle protected.
         </p>
@@ -116,7 +116,7 @@ export default function CTPLPeriodForm() {
 
       <div className="flex flex-col items-center justify-between gap-2 lg:flex-row">
         {expiryDate ? (
-          <div className="flex w-full items-center justify-between rounded-md border border-green-500 bg-green-500/30 px-3 py-2 text-sm font-light">
+          <div className="flex w-full items-center justify-between rounded-md border border-success bg-success/30 px-3 py-2 text-sm font-light">
             <p className="text-sm font-light">
               Insurance will expire on {format(expiryDate, 'MMMM dd, yyyy')}
             </p>

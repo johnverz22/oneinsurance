@@ -59,9 +59,9 @@ export function HealthReviewPage({ personalInfo }: Props) {
   }
 
   const row = (label: string, value: string) => (
-    <div className="flex justify-between border-b border-gray-100 py-2 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="max-w-[60%] text-right text-sm font-semibold text-gray-900">{value || '—'}</span>
+    <div className="flex justify-between border-b border-border py-2 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="max-w-[60%] text-right text-sm font-semibold text-foreground">{value || '—'}</span>
     </div>
   )
 
@@ -71,7 +71,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
       {proposalNo && (
         <Card className="overflow-hidden shadow-none">
           <CardContent className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-lg font-semibold text-gray-700">Proposal Number</h3>
+            <h3 className="text-lg font-semibold text-foreground">Proposal Number</h3>
             <div className="flex items-center gap-3">
               <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 overflow-hidden">
                 <p className="text-sm font-bold tracking-wider text-primary sm:text-lg truncate">{proposalNo}</p>
@@ -101,7 +101,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
               <div className="min-w-0 flex-1 space-y-2">
                 <h3 className="text-foreground text-left text-lg font-bold uppercase tracking-wide sm:text-xl break-words">{item.planName}</h3>
                 {fullQuoteData?.carrierProductName && (
-                  <p className="text-sm text-gray-600">{fullQuoteData.carrierProductName}</p>
+                  <p className="text-sm text-muted-foreground">{fullQuoteData.carrierProductName}</p>
                 )}
               </div>
               <div className="shrink-0">
@@ -120,7 +120,7 @@ export function HealthReviewPage({ personalInfo }: Props) {
                     {fullQuoteData.coverages.map((cov, idx) => (
                       <div key={idx} className="grid grid-cols-2 items-center gap-3">
                         <h4 className="text-sm font-medium">{cov.coverageName}</h4>
-                        <small className="text-right text-sm text-gray-700">
+                        <small className="text-right text-sm text-foreground">
                           Php {cov.sumInsured.toLocaleString('en-PH')}
                         </small>
                       </div>
@@ -133,19 +133,19 @@ export function HealthReviewPage({ personalInfo }: Props) {
             {/* Effective / Expiry / Insured row */}
             {/* Insured / Dates / Duration — row layout */}
             <div className="space-y-0">
-              <div className="flex items-center justify-between border-b border-gray-100 py-3">
-                <span className="text-sm font-medium text-gray-700">Insured</span>
-                <span className="text-sm font-semibold text-gray-900 uppercase">{insuredInfo?.insuredName || `${personalInfo.firstName} ${personalInfo.lastName}`.trim()}</span>
+              <div className="flex items-center justify-between border-b border-border py-3">
+                <span className="text-sm font-medium text-foreground">Insured</span>
+                <span className="text-sm font-semibold text-foreground uppercase">{insuredInfo?.insuredName || `${personalInfo.firstName} ${personalInfo.lastName}`.trim()}</span>
               </div>
               {insuredInfo?.effectiveDate && (
-                <div className="flex items-center justify-between border-b border-gray-100 py-3">
-                  <span className="text-sm font-medium text-gray-700">Effective Date</span>
-                  <span className="text-sm font-semibold text-gray-900">{new Date(fullQuoteData?.effectiveDate || insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <div className="flex items-center justify-between border-b border-border py-3">
+                  <span className="text-sm font-medium text-foreground">Effective Date</span>
+                  <span className="text-sm font-semibold text-foreground">{new Date(fullQuoteData?.effectiveDate || insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between border-b border-gray-100 py-3">
-                <span className="text-sm font-medium text-gray-700">Expiration Date</span>
-                <span className="text-sm font-semibold text-gray-900">
+              <div className="flex items-center justify-between border-b border-border py-3">
+                <span className="text-sm font-medium text-foreground">Expiration Date</span>
+                <span className="text-sm font-semibold text-foreground">
                   {fullQuoteData?.expiryDate
                     ? new Date(fullQuoteData.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
                     : insuredInfo?.expiryDate
@@ -154,8 +154,8 @@ export function HealthReviewPage({ personalInfo }: Props) {
                 </span>
               </div>
               <div className="flex items-center justify-between py-3">
-                <span className="text-sm font-medium text-gray-700">Duration</span>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-medium text-foreground">Duration</span>
+                <span className="text-sm font-semibold text-foreground">
                   {(() => {
                     const start = fullQuoteData?.effectiveDate || insuredInfo?.effectiveDate
                     const end = fullQuoteData?.expiryDate || insuredInfo?.expiryDate

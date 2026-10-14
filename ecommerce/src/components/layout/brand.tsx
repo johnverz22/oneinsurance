@@ -13,8 +13,9 @@ export const Brand = ({ className, href = '/', ...props }: BrandProps) => {
         <Image
           src="/images/logo.png"
           alt="brand-logo"
-          width={150}
-          height={100}
+          width={256}
+          height={63}
+          className="h-9 w-auto"
         />
       </h1>
     </Link>

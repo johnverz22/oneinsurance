@@ -99,7 +99,7 @@ export function ReviewCoverage() {
             onClick={() => setIsPlanExpanded(!isPlanExpanded)}
           >
             <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
-            <button className="lg:hidden text-gray-500" type="button">
+            <button className="lg:hidden text-muted-foreground" type="button">
               {isPlanExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </button>
           </CardHeader>
@@ -180,7 +180,7 @@ export function ReviewCoverage() {
                           </div>
                           <label
                             htmlFor={`addon-checkbox-${benefitCode}`}
-                            className="cursor-pointer font-bold text-gray-900 dark:text-gray-100"
+                            className="cursor-pointer font-bold text-foreground dark:text-muted-foreground"
                           >
                             {benefitGroup.parent.CoverageName}
                           </label>
@@ -197,7 +197,7 @@ export function ReviewCoverage() {
                                   height={16}
                                   className="text-primary mt-0.5 shrink-0"
                                 />
-                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                <div className="text-sm text-muted-foreground">
                                   <p className="font-medium">
                                     {benefit.BenefitDesc}
                                   </p>
@@ -224,7 +224,7 @@ export function ReviewCoverage() {
                             className={`flex items-center gap-2 self-end rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                               localSelectedAddons.includes(benefitCode)
                                 ? 'bg-primary !border-primary from-primary to-accent relative flex items-center justify-center self-end rounded-full bg-gradient-to-r via-90% text-white'
-                                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                : 'border-border bg-white text-foreground hover:bg-muted/50'
                             } `}
                           >
                             {localSelectedAddons.includes(benefitCode)
@@ -242,20 +242,20 @@ export function ReviewCoverage() {
         </Card>
 
         {/* Mobile-only: Premium summary (replaces sidebar on mobile) */}
-        <div className="lg:hidden rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+        <div className="lg:hidden rounded-xl border border-border bg-white p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Insurance Provider</span>
-            <span className="text-sm font-semibold text-gray-900">{provider.companyName}</span>
+            <span className="text-sm text-muted-foreground">Insurance Provider</span>
+            <span className="text-sm font-semibold text-foreground">{provider.companyName}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Plan</span>
-            <span className="text-sm font-semibold text-gray-900 uppercase text-right max-w-[60%]">{plan.CarrierPlanDesc}</span>
+            <span className="text-sm text-muted-foreground">Plan</span>
+            <span className="text-sm font-semibold text-foreground uppercase text-right max-w-[60%]">{plan.CarrierPlanDesc}</span>
           </div>
-          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-            <span className="text-sm font-bold text-gray-700">Total Premium</span>
+          <div className="flex items-center justify-between border-t border-border pt-3">
+            <span className="text-sm font-bold text-foreground">Total Premium</span>
             <span className="text-lg font-black text-primary">₱{Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
           </div>
-          <p className="text-xs text-gray-500 flex items-start gap-1">
+          <p className="text-xs text-muted-foreground flex items-start gap-1">
             <Info className="h-3 w-3 mt-0.5 shrink-0" />
             The total premium includes base cost, add-ons, and applicable taxes.
           </p>

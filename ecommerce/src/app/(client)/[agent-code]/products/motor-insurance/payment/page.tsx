@@ -60,12 +60,12 @@ function CtplPaymentContent() {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
         <div className="mx-auto max-w-md rounded-2xl bg-white p-8 text-center shadow-2xl">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+              <CheckCircle className="h-10 w-10 text-success" />
             </div>
           </div>
-          <h2 className="mb-3 text-2xl font-black text-gray-900">Payment Successful!</h2>
-          <p className="mb-6 text-sm text-gray-600">
+          <h2 className="mb-3 text-2xl font-black text-foreground">Payment Successful!</h2>
+          <p className="mb-6 text-sm text-muted-foreground">
             Your policy details have been confirmed and recorded in our system. Please note that this serves as a confirmation of coverage only. The official policy document, which is the legally binding proof of coverage, will be issued directly by the insurance carrier and made available to you shortly.
           </p>
           <div className="flex gap-3">
@@ -82,45 +82,45 @@ function CtplPaymentContent() {
   }
 
   return (
-    <div className="relative w-full bg-[#F3F5FC] min-h-screen pb-10">
+    <div className="relative w-full bg-section min-h-screen pb-10">
       {/* Header */}
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div role="button" tabIndex={0} onClick={() => router.push(`/${agentCode}`)} className="inline-flex cursor-pointer items-center gap-3 rounded-tl-full rounded-br-full bg-white px-13 py-1 shadow-lg">
-          <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-10 w-auto" priority />
+          <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-10 w-auto" priority />
         </div>
-        <Image src="/images/IFRC.png" alt="IFRC" width={120} height={40} className="h-8 w-auto sm:h-10" priority />
+        <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-8 w-auto sm:h-10" priority />
       </div>
 
       <div className="mx-auto mt-6 max-w-7xl px-4">
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Left — Premium Summary */}
           <div className="rounded-2xl bg-white p-6 shadow-sm space-y-4">
-            <h3 className="text-xl font-bold text-gray-800 text-center">Gross Premium</h3>
+            <h3 className="text-xl font-bold text-foreground text-center">Gross Premium</h3>
             <div className="text-center">
-              <p className="text-sm text-gray-500">Total Payment</p>
-              <p className="text-4xl font-black text-gray-900">₱ {price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+              <p className="text-sm text-muted-foreground">Total Payment</p>
+              <p className="text-4xl font-black text-foreground">₱ {price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-1">
-              <p className="text-xs text-gray-400">Selected CTPL Plan</p>
-              <p className="font-bold text-gray-900">{selectedVehicle?.title}</p>
-              <p className="text-xs text-gray-500">Ride Hailing Included</p>
-              <p className="text-sm text-gray-600 pt-1">₱ {price.toLocaleString()}</p>
+            <div className="rounded-xl border border-border bg-muted/50 p-4 space-y-1">
+              <p className="text-xs text-muted-foreground">Selected CTPL Plan</p>
+              <p className="font-bold text-foreground">{selectedVehicle?.title}</p>
+              <p className="text-xs text-muted-foreground">Ride Hailing Included</p>
+              <p className="text-sm text-muted-foreground pt-1">₱ {price.toLocaleString()}</p>
             </div>
-            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-              <p className="text-xs text-gray-400 mb-1">Policy Period</p>
-              <p className="text-sm font-semibold text-gray-800">
+            <div className="rounded-xl border border-border bg-muted/50 p-4">
+              <p className="text-xs text-muted-foreground mb-1">Policy Period</p>
+              <p className="text-sm font-semibold text-foreground">
                 {format(today, 'MMMM d, yyyy')} – {format(policyExpiry, 'MMMM d, yyyy')}
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 p-3">
-              <input placeholder="Get a Promo Code" className="flex-1 bg-transparent text-sm outline-none text-gray-600 placeholder:text-gray-400" />
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 p-3">
+              <input placeholder="Get a Promo Code" className="flex-1 bg-transparent text-sm outline-none text-muted-foreground placeholder:text-muted-foreground" />
               <button className="text-sm font-semibold text-orange-500">Apply</button>
             </div>
           </div>
 
           {/* Right — Payment Method */}
           <div className="rounded-2xl bg-white p-6 shadow-sm space-y-5">
-            <h3 className="text-xl font-bold text-gray-800">Payment Method</h3>
+            <h3 className="text-xl font-bold text-foreground">Payment Method</h3>
 
             {/* Filter tabs */}
             <div className="flex gap-2">
@@ -132,7 +132,7 @@ function CtplPaymentContent() {
                     'rounded-full border px-4 py-1.5 text-sm font-medium transition-all',
                     filter === f
                       ? 'from-primary to-accent border-transparent bg-gradient-to-r text-white'
-                      : 'border-gray-200 text-gray-600 hover:border-primary/50'
+                      : 'border-border text-muted-foreground hover:border-primary/50'
                   )}
                 >
                   {f === 'all' ? 'All' : f === 'cards' ? 'Cards' : 'E-Wallet'}
@@ -150,11 +150,11 @@ function CtplPaymentContent() {
                     'flex flex-col items-center justify-center gap-1.5 rounded-xl border p-3 transition-all',
                     selectedBrand?.label === brand.label
                       ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
-                      : 'border-gray-200 hover:border-primary/40'
+                      : 'border-border hover:border-primary/40'
                   )}
                 >
                   <div className="flex h-8 w-16 items-center justify-center">
-                    <span className="text-xs font-bold text-gray-700">{brand.label}</span>
+                    <span className="text-xs font-bold text-foreground">{brand.label}</span>
                   </div>
                 </button>
               ))}
@@ -165,25 +165,25 @@ function CtplPaymentContent() {
               <div className="space-y-4 border-t pt-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-gray-700">First Name</Label>
+                    <Label className="text-sm font-medium text-foreground">First Name</Label>
                     <Input value={cardFirstName} onChange={e => setCardFirstName(e.target.value)} placeholder="First Name" className="h-11 rounded-full" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-gray-700">Last Name</Label>
+                    <Label className="text-sm font-medium text-foreground">Last Name</Label>
                     <Input value={cardLastName} onChange={e => setCardLastName(e.target.value)} placeholder="Last Name" className="h-11 rounded-full" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm font-medium text-gray-700">Card Number</Label>
+                  <Label className="text-sm font-medium text-foreground">Card Number</Label>
                   <Input value={cardNumber} onChange={e => setCardNumber(e.target.value)} placeholder="0000 0000 0000 0000" className="h-11 rounded-full" maxLength={19} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-gray-700">Expiry</Label>
+                    <Label className="text-sm font-medium text-foreground">Expiry</Label>
                     <Input value={expiry} onChange={e => setExpiry(e.target.value)} placeholder="MM/YY" className="h-11 rounded-full" maxLength={5} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-sm font-medium text-gray-700">CVV</Label>
+                    <Label className="text-sm font-medium text-foreground">CVV</Label>
                     <Input value={cvv} onChange={e => setCvv(e.target.value)} placeholder="CVV" className="h-11 rounded-full" maxLength={4} type="password" />
                   </div>
                 </div>
@@ -193,7 +193,7 @@ function CtplPaymentContent() {
             {/* E-wallet fields */}
             {selectedBrand && !selectedBrand.isCard && (
               <div className="space-y-3 border-t pt-4">
-                <p className="text-sm text-gray-600">You will be redirected to <span className="font-semibold">{selectedBrand.label}</span> to complete your payment.</p>
+                <p className="text-sm text-muted-foreground">You will be redirected to <span className="font-semibold">{selectedBrand.label}</span> to complete your payment.</p>
               </div>
             )}
 

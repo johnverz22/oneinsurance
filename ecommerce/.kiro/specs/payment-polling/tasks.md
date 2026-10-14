@@ -267,7 +267,7 @@ This plan outlines the implementation of a polling-based payment verification sy
   - Open `package.json`
   - Remove `laravel-echo` package
   - Remove `pusher-js` package
-  - Run `npm install` or `yarn install` to update lockfile
+  - Run `npm install` to update lockfile
   - _Requirements: 9.5_
 
 - [ ] 10.3 Update environment variables documentation

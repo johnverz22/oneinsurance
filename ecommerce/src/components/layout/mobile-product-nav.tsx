@@ -58,7 +58,7 @@ export function MobileProductNav({
   }
 
   const tabClass =
-    'flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 text-slate-400 transition-transform hover:text-slate-700 active:scale-95 dark:text-slate-500 dark:hover:text-slate-300'
+    'flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 text-slate-400 transition-transform hover:text-muted-foreground active:scale-95 dark:text-muted-foreground dark:hover:text-slate-300'
 
   return (
     <>
@@ -75,7 +75,7 @@ export function MobileProductNav({
       </div>
 
       {/* --- MOBILE: Fixed Bottom Navigation --- */}
-      <div className="pb-safe fixed bottom-0 left-0 z-50 flex w-full justify-between border-t border-slate-200 bg-white/95 px-6 py-2 shadow-sm backdrop-blur-lg md:hidden dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="pb-safe fixed bottom-0 left-0 z-50 flex w-full justify-between border-t border-border bg-white/95 px-6 py-2 shadow-sm backdrop-blur-lg md:hidden dark:border-slate-800 dark:bg-slate-900/95">
         <button onClick={() => router.push('/')} className={tabClass}>
           <Home size={22} />
           <span className="text-[10px] font-medium">Home</span>

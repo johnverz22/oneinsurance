@@ -1,8 +1,4 @@
-import { IssueQuoteRequest } from '@/types/travel-insurance/policy-types'
-import {
-  IssueQuoteResponseSchema,
-  IssueQuoteResponse,
-} from '@/types/travel-insurance/policy-types'
+import { IssueQuoteRequest, IssueQuoteResponseSchema, IssueQuoteResponse } from '@/types/travel-insurance/policy-types'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 
@@ -18,11 +14,7 @@ export function useIssueQuoteRequest() {
         const response = await axios.post(
           `/api/travel-insurance/issue-quote`,
           issueQuoteRequest,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
+          { headers: { 'Content-Type': 'application/json' } }
         )
         responseData = response.data
       } catch (err: any) {
@@ -31,63 +23,35 @@ export function useIssueQuoteRequest() {
           err?.response?.data?.error ||
           err?.message ||
           'Issue quote request failed'
-        console.error('Issue quote HTTP error:', err?.response?.data || err)
+        console.error(
+          '[issue-quote] HTTP error:',
+          'status:', err?.response?.status,
+          'data:', err?.response?.data || err
+        )
         throw new Error(backendMessage)
       }
 
       const parsed = IssueQuoteResponseSchema.safeParse(responseData)
       if (!parsed.success) {
-        // Could be backend returning { message: "Successful", data: {} } with empty data
         const raw = responseData as any
-        const hasEmptyData = raw?.data && typeof raw.data === 'object' && Object.keys(raw.data).length === 0
-        if (hasEmptyData) {
-          console.error('Issue quote returned empty data object:', responseData)
-          throw new Error(raw?.message || 'Issue quote returned no policy data')
-        }
-        console.error('Issue quote response parse error:', parsed.error, 'Raw response:', responseData)
-        const backendMessage = raw?.message || raw?.error || 'Unexpected response from issue quote'
-        throw new Error(backendMessage)
+        console.error('[issue-quote] parse error:', parsed.error, 'raw:', responseData)
+        throw new Error(raw?.message || raw?.error || 'Unexpected response from issue quote')
       }
 
-      const issueQuoteData = parsed.data as IssueQuoteResponse
+      const result = parsed.data as IssueQuoteResponse
 
-      if (!issueQuoteData.success) {
-        const backendMessage = issueQuoteData.message || 'Issue quote returned unsuccessful'
-        console.error('Issue quote unsuccessful:', issueQuoteData)
-        throw new Error(backendMessage)
+      if (!result.success) {
+        console.error('[issue-quote] unsuccessful:', result)
+        throw new Error(result.message || 'Issue quote returned unsuccessful')
       }
 
-      // Validate that data is actually a full policy object
-      const policyData = issueQuoteData.data
-      if (!policyData?.PolicyId) {
-        const backendMessage = issueQuoteData.message
-        const isBackendMisleading = backendMessage?.toLowerCase() === 'successful'
-        const errorMessage = isBackendMisleading
-          ? 'Policy issuance is pending. Your payment was received — please contact support with your proposal number.'
-          : backendMessage || 'Issue quote returned no policy data'
-        console.error('Issue quote returned no valid policy data:', issueQuoteData)
-        throw new Error(errorMessage)
+      if (!result.data?.policy_no) {
+        // Issued but no policy_no yet — insurer may still be processing
+        console.warn('[issue-quote] success but no policy_no:', result)
       }
 
-      // Update localStorage proposal with policy_number after successful payment
-      if (issueQuoteData.data?.ProposalNo) {
-        try {
-          const proposalKey = `proposal_${issueQuoteData.data.ProposalNo}`
-          const existingProposal = localStorage.getItem(proposalKey)
-          if (existingProposal) {
-            const proposalData = JSON.parse(existingProposal)
-            proposalData.policy_number = issueQuoteData.data.CarrierPolicyNo || issueQuoteData.data.PolicyNo
-            proposalData.PolicyNo = issueQuoteData.data.PolicyNo
-            proposalData.CarrierPolicyNo = issueQuoteData.data.CarrierPolicyNo
-            localStorage.setItem(proposalKey, JSON.stringify(proposalData))
-            console.log('Updated proposal in localStorage with policy_number:', proposalData.policy_number)
-          }
-        } catch (storageError) {
-          console.warn('Failed to update proposal in localStorage:', storageError)
-        }
-      }
-
-      return issueQuoteData
+      console.log('[issue-quote] issued OK — policy_no:', result.data?.policy_no, 'proposal:', result.data?.proposal_number)
+      return result
     },
     retry: false,
   })

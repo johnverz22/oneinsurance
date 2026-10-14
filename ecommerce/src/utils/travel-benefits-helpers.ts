@@ -37,6 +37,10 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
   'baggage & travel documents': { label: 'Travel Inconvenience', icon: 'Luggage', order: 3 },
   'trip protection': { label: 'Trip Protection', icon: 'Plane', order: 4 },
   'emergency medical': { label: 'Medical', icon: 'HeartPulse', order: 1 },
+  // Normalized Pacific Cross sub-categories → canonical
+  'baggage delay': { label: 'Travel Inconvenience', icon: 'Luggage', order: 3 },
+  'trip cancellation': { label: 'Trip Protection', icon: 'Plane', order: 4 },
+  'flight delay': { label: 'Travel Inconvenience', icon: 'Luggage', order: 3 },
 }
 
 const DEFAULT_CATEGORY_CONFIG: CategoryConfig = {
@@ -49,6 +53,58 @@ export function getCategoryConfig(rawCategory: string): CategoryConfig {
   const key = rawCategory.toLowerCase().trim()
   return CATEGORY_CONFIG[key] ?? { ...DEFAULT_CATEGORY_CONFIG, label: rawCategory }
 }
+
+/**
+ * Infer canonical category from a benefit when CoverageName/SubCoverageName is
+ * missing or non-canonical (e.g. Pacific Cross benefits without CoverageName).
+ * Keeps taxonomy consistent across providers for apple-to-apples comparison.
+ */
+export function getCanonicalConfigForBenefit(benefit: InsuranceBenefit): CategoryConfig {
+  const raw = (benefit.CoverageName || benefit.SubCoverageName || '').toLowerCase().trim()
+  if (raw && CATEGORY_CONFIG[raw]) return CATEGORY_CONFIG[raw]
+
+  // Keyword inference from BenefitDesc / BenefitCode fall-backs
+  const desc = (benefit.BenefitDesc || '').toLowerCase()
+  if (!desc) return DEFAULT_CATEGORY_CONFIG
+
+  if (/(medical|hospital|dental|covid|pre-existing|in-patient|out-patient|burial|implant|recreational)/.test(desc)) {
+    return CATEGORY_CONFIG['emergency medical treatment']
+  }
+  if (/accident/.test(desc)) {
+    return CATEGORY_CONFIG['personal accident insurance']
+  }
+  if (/(baggage|flight delay|missed connecting|strikes|hijacking|gadget|theft of cash|loss of travel|mobile phone|sporting equipment)/.test(desc)) {
+    return CATEGORY_CONFIG['travel inconvenience benefits']
+  }
+  if (/(trip cancellation|trip termination|trip postponement|alternative means|staff replacement|terrorism)/.test(desc)) {
+    return CATEGORY_CONFIG['recovery of travel expenses']
+  }
+  if (/emergency assistance/.test(desc)) {
+    return CATEGORY_CONFIG['travel assistance benefits']
+  }
+  if (/personal liability/.test(desc)) {
+    return CATEGORY_CONFIG['personal liability']
+  }
+  if (/(land vehicle rental|land vehicle rental excess)/.test(desc)) {
+    return CATEGORY_CONFIG['value-added feature']
+  }
+
+  // If raw exists but not in map, bucket as Other rather than creating many distinct rows
+  if (raw) return { ...DEFAULT_CATEGORY_CONFIG, label: raw }
+
+  return DEFAULT_CATEGORY_CONFIG
+}
+
+/** Ordered list of canonical categories for comparison matrix (one consistent taxonomy) */
+export const CANONICAL_CATEGORY_ORDER: CategoryConfig[] = [
+  CATEGORY_CONFIG['emergency medical treatment'],
+  CATEGORY_CONFIG['personal accident insurance'],
+  CATEGORY_CONFIG['travel inconvenience benefits'],
+  CATEGORY_CONFIG['recovery of travel expenses'],
+  CATEGORY_CONFIG['travel assistance benefits'],
+  CATEGORY_CONFIG['personal liability'],
+  CATEGORY_CONFIG['value-added feature'],
+]
 
 // ─── grouped category type used by the UI ───────────────────────────────────
 
@@ -85,24 +141,85 @@ export function groupBenefitsByCategory(plan: InsurancePlan): BenefitCategory[] 
     .sort((a, b) => a.config.order - b.config.order || a.key.localeCompare(b.key))
 }
 
+/** Normalized grouping — always maps to the canonical taxonomy for matrix comparison */
+export function groupBenefitsByCanonical(plan: InsurancePlan): Map<string, InsuranceBenefit[]> {
+  const source: InsuranceBenefit[] = [
+    ...(plan.MainBenefits ?? []),
+    ...(plan.AddonBenefits ?? []),
+  ]
+  const map = new Map<string, InsuranceBenefit[]>()
+  for (const b of source) {
+    const cfg = getCanonicalConfigForBenefit(b)
+    const label = cfg.label
+    if (!map.has(label)) map.set(label, [])
+    map.get(label)!.push(b)
+  }
+  return map
+}
+
+/** All canonical rows that actually appear in any of the given plans (apples-to-apples) */
+export function getComparisonRowConfigs(plans: InsurancePlan[]): CategoryConfig[] {
+  const present = new Set<string>()
+  for (const plan of plans) {
+    for (const [label] of groupBenefitsByCanonical(plan)) {
+      present.add(label)
+    }
+  }
+  // Keep canonical order, but only rows that exist in at least one plan
+  const ordered = CANONICAL_CATEGORY_ORDER.filter((c) => present.has(c.label))
+  // Any "Other" buckets that slipped through (inferred raw) → append at end sorted
+  const others = Array.from(present)
+    .filter((l) => !CANONICAL_CATEGORY_ORDER.some((c) => c.label === l))
+    .sort()
+    .map((l) => ({ label: l, icon: 'Circle', order: 99 }) as CategoryConfig)
+  return [...ordered, ...others]
+}
+
 // ─── limit display helper ────────────────────────────────────────────────────
 
 export type LimitDisplay =
-  | { kind: 'amount'; value: string }
-  | { kind: 'badge'; label: string }
+  | { kind: 'amount'; value: string; qualifier?: string }
+  | { kind: 'badge'; label: string; qualifier?: string }
+  | { kind: 'text'; text: string }
   | { kind: 'none' }
 
 /**
  * Resolves how a benefit's limit should be displayed.
- * - Silimit present → formatted PHP amount
- * - DefaultLimitDesc present (Included / Unlimited) → badge label
- * - otherwise → none
+ *
+ * Prefers the normalized `Limit` object emitted by the compare-quote mapper:
+ *  - amount → formatted PHP amount, optional qualifier sub-line
+ *  - label  → badge chip ("Included" / "Unlimited" / short text like "Actual Cost")
+ *  - text   → longer free text (rendered wrapped, not as a chip)
+ *  - none   → —
+ *
+ * Falls back to the legacy InsureMo fields for data without `Limit`
+ * (Pacific Cross static plans, CTPL, proposal loads): Silimit holds the amount
+ * and DefaultLimitDesc the label, where '0' is the sentinel meaning
+ * "use Silimit".
  */
 export function resolveLimitDisplay(benefit: InsuranceBenefit): LimitDisplay {
-  if (benefit.Silimit) {
+  const limit = benefit.Limit
+  if (limit) {
+    switch (limit.Kind) {
+      case 'amount':
+        return limit.Amount
+          ? { kind: 'amount', value: limit.Amount, qualifier: limit.Qualifier ?? undefined }
+          : { kind: 'none' }
+      case 'label':
+        return limit.Label
+          ? { kind: 'badge', label: limit.Label, qualifier: limit.Qualifier ?? undefined }
+          : { kind: 'none' }
+      case 'text':
+        return limit.Label ? { kind: 'text', text: limit.Label } : { kind: 'none' }
+      default:
+        return { kind: 'none' }
+    }
+  }
+
+  if (benefit.Silimit && benefit.Silimit !== '0') {
     return { kind: 'amount', value: benefit.Silimit }
   }
-  if (benefit.DefaultLimitDesc) {
+  if (benefit.DefaultLimitDesc && benefit.DefaultLimitDesc !== '0') {
     return { kind: 'badge', label: benefit.DefaultLimitDesc }
   }
   return { kind: 'none' }

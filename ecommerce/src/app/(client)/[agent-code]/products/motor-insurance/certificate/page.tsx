@@ -23,23 +23,23 @@ export default function CtplCertificatePage() {
 
   const row = (label: string, value: string) => (
     <div className="flex justify-between py-1">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-semibold text-gray-900">{value || '—'}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold text-foreground">{value || '—'}</span>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-[#F3F5FC] py-10 px-4">
+    <div className="min-h-screen bg-section py-10 px-4">
       <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Image src="/images/logo.png" alt="One Insurance" width={120} height={40} className="h-8 w-auto" />
+          <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto" />
           <div className="text-center">
             <h1 className="text-2xl font-black text-primary">Cover Note</h1>
-            <p className="text-sm text-gray-600">Sum Insured Coverage</p>
-            <span className="mt-1 inline-block rounded-full bg-green-500 px-4 py-1 text-xs font-bold text-white">Active Policy</span>
+            <p className="text-sm text-muted-foreground">Sum Insured Coverage</p>
+            <span className="mt-1 inline-block rounded-full bg-success px-4 py-1 text-xs font-bold text-white">Active Policy</span>
           </div>
-          <Image src="/images/IFRC.png" alt="IFRC" width={80} height={30} className="h-8 w-auto" />
+          <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-8 w-auto" />
         </div>
 
         <hr className="mb-6" />
@@ -100,7 +100,7 @@ export default function CtplCertificatePage() {
         {/* Coverage Period */}
         <div className="mb-8">
           <h3 className="text-primary mb-3 font-bold">Coverage Period</h3>
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-foreground">
             {format(today, 'MMMM d, yyyy')} to {format(expiry, 'MMMM d, yyyy')}
           </p>
         </div>

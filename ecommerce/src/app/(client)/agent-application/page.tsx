@@ -58,8 +58,8 @@ const PLATFORM_FEATURES = [
 
 const FEATURE_COLORS = {
   green: {
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-600 dark:text-green-400',
+    bg: 'bg-success/10 dark:bg-green-900/30',
+    text: 'text-success dark:text-success',
   },
   orange: {
     bg: 'bg-orange-100 dark:bg-orange-900/30',
@@ -78,8 +78,8 @@ const FEATURE_COLORS = {
     text: 'text-purple-600 dark:text-purple-400',
   },
   red: {
-    bg: 'bg-red-100 dark:bg-red-900/30',
-    text: 'text-red-600 dark:text-red-400',
+    bg: 'bg-destructive/10 dark:bg-red-900/30',
+    text: 'text-destructive dark:text-destructive',
   },
 } as const
 
@@ -224,7 +224,7 @@ const AgentApplicationPage = () => {
             </div>
           </div>
 
-          <div className="mt-6 rounded-lg border-l-4 border-red-700 bg-red-50 p-4 text-sm text-red-600">
+          <div className="mt-6 rounded-lg border-l-4 border-red-700 bg-destructive/10 p-4 text-sm text-destructive">
             <strong>Important:</strong> Overrider commissions are deducted from
             their upline&apos;s share. This ensures proper commission
             distribution while maintaining the overall percentage structure.

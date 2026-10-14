@@ -8,7 +8,7 @@ export const FieldInfo = ({ field }: { field: AnyFieldApi }) => {
     <>
       {field.state.meta.isTouched && !field.state.meta.isValid ? (
         <div className="flex w-full items-center gap-2">
-          <X className="h-2.5 w-2.5 shrink-0 text-red-400" />
+          <X className="h-2.5 w-2.5 shrink-0 text-destructive" />
           <p className="text-destructive text-xs">{error.message}</p>
         </div>
       ) : null}

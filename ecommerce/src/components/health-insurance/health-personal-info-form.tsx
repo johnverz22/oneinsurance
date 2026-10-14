@@ -224,12 +224,12 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
   }
 
   const err = (field: string) => errors[field] ? (
-    <p className="mt-1 text-xs text-red-500">{errors[field]}</p>
+    <p className="mt-1 text-xs text-destructive">{errors[field]}</p>
   ) : null
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
-      <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
+      <h2 className="text-lg sm:text-2xl font-bold text-foreground">
         Personal Information
       </h2>
 
@@ -246,7 +246,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       {/* Name Row */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-1.5">
-          <Label className="text-primary">First Name <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">First Name <span className="text-destructive">*</span></Label>
           <Input id="hpi-firstName" value={data.firstName} onChange={e => set('firstName', e.target.value)} placeholder="e.g. Juan" className={`h-12 ${errors.firstName ? 'border-destructive' : ''}`} />
           {err('firstName')}
         </div>
@@ -258,7 +258,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
           <Input value={data.middleName} onChange={e => set('middleName', e.target.value)} placeholder="e.g. Santos" className="h-12" />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">Last Name <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Last Name <span className="text-destructive">*</span></Label>
           <Input id="hpi-lastName" value={data.lastName} onChange={e => set('lastName', e.target.value)} placeholder="e.g. dela Cruz" className={`h-12 ${errors.lastName ? 'border-destructive' : ''}`} />
           {err('lastName')}
         </div>
@@ -281,7 +281,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">Gender <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Gender <span className="text-destructive">*</span></Label>
           <div className="border-muted-foreground/30 flex w-full items-center justify-center gap-2 rounded-full border p-1">
             <div
               className={`w-full rounded-full p-2 text-center cursor-pointer ${data.gender === 'M' ? 'from-primary to-lilac bg-gradient-to-r text-white' : ''}`}
@@ -298,12 +298,12 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       {/* DOB + Email */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-primary">Date of Birth <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Date of Birth <span className="text-destructive">*</span></Label>
           <Input id="hpi-dateOfBirth" type="date" value={data.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)} className={`h-12 ${errors.dateOfBirth ? 'border-destructive' : ''}`} />
           {err('dateOfBirth')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">Email <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Email <span className="text-destructive">*</span></Label>
           <Input id="hpi-email" type="email" value={data.email} onChange={e => set('email', e.target.value)} placeholder="e.g. juan@email.com" className={`h-12 ${errors.email ? 'border-destructive' : ''}`} />
           {err('email')}
         </div>
@@ -312,15 +312,15 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       {/* Mobile + ID Type */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-primary">Mobile Number <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Mobile Number <span className="text-destructive">*</span></Label>
           <div className={`flex h-12 items-center overflow-hidden rounded-md border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${errors.phone ? 'border-destructive' : ''}`}>
-            <span className="border-r px-3 text-sm text-gray-500">+63</span>
+            <span className="border-r px-3 text-sm text-muted-foreground">+63</span>
             <Input id="hpi-phone" value={data.phone} onChange={e => set('phone', e.target.value)} placeholder="9171234567" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
           </div>
           {err('phone')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">ID Type <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">ID Type <span className="text-destructive">*</span></Label>
           <Select value={data.idTypeCode} onValueChange={v => { set('idTypeCode', v); set('idNo', '') }}>
             <SelectTrigger className="h-12 w-full">
               <SelectValue placeholder="Select ID Type" />
@@ -334,7 +334,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
 
       {/* ID Number */}
       <div className="space-y-1.5">
-        <Label className="text-primary">ID Number <span className="text-red-500">*</span></Label>
+        <Label className="text-primary">ID Number <span className="text-destructive">*</span></Label>
         <Input id="hpi-idNo" value={data.idNo} onChange={e => set('idNo', e.target.value)} placeholder={idType.hint} className={`h-12 ${errors.idNo ? 'border-destructive' : ''}`} />
         <p className="text-muted-foreground text-xs">{idType.hint}</p>
         {err('idNo')}
@@ -343,7 +343,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       {/* Province + City + ZIP */}
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-1.5">
-          <Label className="text-primary">State / Province <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">State / Province <span className="text-destructive">*</span></Label>
           <Select
             value={selectedProvinceCode}
             onValueChange={v => {
@@ -365,7 +365,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
           {err('province')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">City / Municipality <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">City / Municipality <span className="text-destructive">*</span></Label>
           <Select
             value={selectedCityCode}
             onValueChange={v => {
@@ -388,7 +388,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
           {err('city')}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-primary">ZIP Code <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">ZIP Code <span className="text-destructive">*</span></Label>
           <Input id="hpi-postCode" value={data.postCode} onChange={e => set('postCode', e.target.value)} placeholder="e.g. 1000" className={`h-12 ${errors.postCode ? 'border-destructive' : ''}`} />
           {err('postCode')}
         </div>
@@ -397,7 +397,7 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
       {/* Address Lines */}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-primary">Address Line 1 <span className="text-red-500">*</span></Label>
+          <Label className="text-primary">Address Line 1 <span className="text-destructive">*</span></Label>
           <Input id="hpi-addressLine1" value={data.addressLine1} onChange={e => set('addressLine1', e.target.value)} placeholder="e.g. House/Unit/Street" className={`h-12 ${errors.addressLine1 ? 'border-destructive' : ''}`} />
           {err('addressLine1')}
         </div>
@@ -412,23 +412,23 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
 
       {/* Place of Birth */}
       <div className="space-y-1.5">
-        <Label className="text-primary">Place of Birth <span className="text-red-500">*</span></Label>
+        <Label className="text-primary">Place of Birth <span className="text-destructive">*</span></Label>
         <Input id="hpi-placeOfBirth" value={data.placeOfBirth} onChange={e => set('placeOfBirth', e.target.value)} placeholder="e.g. Manila, Philippines" className={`h-12 ${errors.placeOfBirth ? 'border-destructive' : ''}`} />
         {err('placeOfBirth')}
       </div>
 
       {/* COVID + Data Sharing */}
       <div className="space-y-3">
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white p-4">
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-white p-4">
           <Checkbox
             checked={data.isCovidVaccinated}
             onCheckedChange={v => onChange({ ...data, isCovidVaccinated: !!v })}
             className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4"
           />
-          <span className="text-sm text-gray-700">I am fully vaccinated against COVID-19</span>
+          <span className="text-sm text-foreground">I am fully vaccinated against COVID-19</span>
         </label>
 
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white p-4">
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-white p-4">
           <Checkbox
             checked={data.isDataSharingConsent}
             onCheckedChange={v => {
@@ -437,15 +437,15 @@ export function HealthPersonalInfoForm({ data, onChange, errors, onErrorsChange,
             }}
             className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-4 w-4"
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-foreground">
             I agree to the{' '}
             <Link href="/data-sharing-consent" target="_blank" className="text-primary font-medium underline underline-offset-4">
               Data Sharing Consent Agreement
             </Link>{' '}
-            <span className="text-red-500">*</span>
+            <span className="text-destructive">*</span>
           </span>
         </label>
-        {errors.isDataSharingConsent && <p className="text-xs text-red-500">{errors.isDataSharingConsent}</p>}
+        {errors.isDataSharingConsent && <p className="text-xs text-destructive">{errors.isDataSharingConsent}</p>}
       </div>
 
       {/* Actions */}

@@ -22,7 +22,7 @@ export default function ComingSoonPage() {
             <h1 className="from-primary to-tertiary bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent sm:text-5xl lg:text-6xl">
               Coming Soon
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600 sm:text-xl dark:text-gray-400">
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl dark:text-muted-foreground">
               We're working hard to bring you something amazing. This feature
               will be available soon!
             </p>
@@ -35,7 +35,7 @@ export default function ComingSoonPage() {
                 <Bell className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-semibold">Get Notified</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Be the first to know when we launch
               </p>
             </div>
@@ -45,7 +45,7 @@ export default function ComingSoonPage() {
                 <Calendar className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-semibold">Coming Soon</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 New features in development
               </p>
             </div>
@@ -55,7 +55,7 @@ export default function ComingSoonPage() {
                 <Clock className="text-primary h-6 w-6" />
               </div>
               <h3 className="font-semibold">Stay Tuned</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Exciting updates on the way
               </p>
             </div>
@@ -77,7 +77,7 @@ export default function ComingSoonPage() {
 
           {/* Additional Info */}
           {/* <div className="pt-8">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Have questions?{' '}
               <Link
                 href="/"

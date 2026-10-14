@@ -65,8 +65,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           dragActive
             ? 'border-blue-400 bg-blue-50'
             : error
-              ? 'border-red-300 bg-red-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-destructive bg-destructive/10'
+              : 'border-border hover:border-gray-400'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -81,7 +81,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         />
         <div className="text-center">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             stroke="currentColor"
             fill="none"
             viewBox="0 0 48 48"
@@ -94,13 +94,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             />
           </svg>
           <div className="mt-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               <span className="font-medium text-blue-600 hover:text-blue-500">
                 Click to upload
               </span>{' '}
               or drag and drop
             </p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               PNG, JPG, GIF, PDF, DOC, DOCX, TXT, XLS, XLSX up to 10MB each
             </p>
           </div>
@@ -109,18 +109,18 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
       {value.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-medium text-foreground">
             Uploaded Files ({value.length}/10)
           </h4>
           {value.map((file: FileData, index: number) => (
             <div
               key={index}
-              className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+              className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
             >
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
                   <svg
-                    className="h-5 w-5 text-gray-400"
+                    className="h-5 w-5 text-muted-foreground"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -132,10 +132,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                   </svg>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">
+                  <p className="truncate text-sm font-medium text-foreground">
                     {file.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {formatFileSize(file.size)}
                   </p>
                 </div>
@@ -143,7 +143,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               <button
                 type="button"
                 onClick={() => removeFile(index)}
-                className="ml-4 flex-shrink-0 text-red-400 hover:text-red-600"
+                className="ml-4 flex-shrink-0 text-destructive hover:text-destructive"
               >
                 <svg
                   className="h-5 w-5"
@@ -162,7 +162,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   )
 }

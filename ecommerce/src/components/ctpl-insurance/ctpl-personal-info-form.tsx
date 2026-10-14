@@ -219,10 +219,10 @@ export default function CtplPersonalInfoForm() {
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
-      <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
+      <h2 className="text-lg sm:text-2xl font-bold text-foreground">
         Personal Information
       </h2>
-      <p className="text-sm text-gray-500">Upload your ID to automatically fill in the fields below.</p>
+      <p className="text-sm text-muted-foreground">Upload your ID to automatically fill in the fields below.</p>
 
       <IdUploadComponent
         initialFrontFile={null}
@@ -282,7 +282,7 @@ export default function CtplPersonalInfoForm() {
         <div className="space-y-1.5">
           <Label className="text-primary">Phone Number <span className="text-destructive">*</span></Label>
           <div className={`flex h-12 items-center overflow-hidden rounded-md border bg-white focus-within:ring-2 focus-within:ring-primary/30 ${errors.mobileNumber ? 'border-destructive' : ''}`}>
-            <span className="border-r px-3 text-sm text-gray-500">+63</span>
+            <span className="border-r px-3 text-sm text-muted-foreground">+63</span>
             <Input value={form.mobileNumber} onChange={e => set('mobileNumber', e.target.value)} placeholder="9171234567" className="h-full flex-1 border-0 shadow-none focus-visible:ring-0" />
           </div>
           {err('mobileNumber')}
@@ -366,12 +366,12 @@ export default function CtplPersonalInfoForm() {
 
       {/* Actions */}
       <div className="hidden items-center justify-between pt-2 lg:flex">
-        <Button variant="ghost" className="rounded-full px-8 text-gray-700 font-medium" onClick={decreaseStep} disabled={isSubmitting} data-mobile-action="back">
+        <Button variant="ghost" className="rounded-full px-8 text-foreground font-medium" onClick={decreaseStep} disabled={isSubmitting} data-mobile-action="back">
           Back
         </Button>
         <Button
           size="lg"
-          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
+          className="bg-primary from-primary to-accent h-12 rounded-full bg-gradient-to-r via-90% px-10 text-sm font-medium text-white shadow-lg hover:bg-success disabled:pointer-events-none disabled:opacity-50"
           onClick={handleNext}
           disabled={isSubmitting}
           data-mobile-action="next"
@@ -389,8 +389,8 @@ export default function CtplPersonalInfoForm() {
 
       {/* API Error */}
       {apiError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-600">{apiError}</p>
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <p className="text-sm text-destructive">{apiError}</p>
         </div>
       )}
     </div>

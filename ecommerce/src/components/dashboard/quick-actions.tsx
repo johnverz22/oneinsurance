@@ -30,10 +30,10 @@ export const QuickActions: FC = () => {
       <CardContent className="grid gap-4 lg:grid-cols-4">
         {/* New Application */}
         <button
-          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-[#F8F5EF] p-4 text-center transition-colors"
+          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-muted p-4 text-center transition-colors"
           onClick={() => handleNewApplicationButtonClick()}
         >
-          <div className={`rounded-full bg-[#B4975A] p-3`}>
+          <div className={`rounded-full bg-primary p-3`}>
             <FilePlus2 className="h-6 w-6 text-white" />
           </div>
           <span className="text-sm font-medium text-black">
@@ -43,10 +43,10 @@ export const QuickActions: FC = () => {
 
         {/* Add Client */}
         <button
-          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-[#F8F5EF] p-4 text-center transition-colors"
+          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-muted p-4 text-center transition-colors"
           onClick={() => handleAddClientButtonClick()}
         >
-          <div className={`t00 rounded-full bg-[#B4975A] p-3`}>
+          <div className={`rounded-full bg-primary p-3`}>
             <UserPlus className="h-6 w-6 text-white" />
           </div>
           <span className="text-sm font-medium text-black">Add Client</span>
@@ -54,10 +54,10 @@ export const QuickActions: FC = () => {
 
         {/* Upload Document */}
         <button
-          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-[#F8F5EF] p-4 text-center transition-colors"
+          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-muted p-4 text-center transition-colors"
           onClick={() => handleUploadDocumentButtonClick()}
         >
-          <div className={`rounded-full bg-[#B4975A] p-3`}>
+          <div className={`rounded-full bg-primary p-3`}>
             <Upload className="h-6 w-6 text-white" />
           </div>
           <span className="text-sm font-medium text-black">
@@ -67,10 +67,10 @@ export const QuickActions: FC = () => {
 
         {/* Generate Report */}
         <button
-          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-[#F8F5EF] p-4 text-center transition-colors"
+          className="flex flex-col items-center justify-center space-y-2 rounded-lg bg-muted p-4 text-center transition-colors"
           onClick={() => handleGenerateReportButtonClick()}
         >
-          <div className={`rounded-full bg-[#B4975A] p-3`}>
+          <div className={`rounded-full bg-primary p-3`}>
             <FileBarChart className="h-6 w-6 text-white" />
           </div>
           <span className="text-sm font-medium text-black">

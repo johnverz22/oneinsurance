@@ -51,7 +51,7 @@ export function HealthPlanDetailsStep() {
             ) : null}
           </div>
           <div>
-            <h3 className="text-lg font-black uppercase text-gray-900">{item.planName}</h3>
+            <h3 className="text-lg font-black uppercase text-foreground">{item.planName}</h3>
           </div>
           <div className="ml-auto shrink-0">
             <span className="rounded-full bg-orange-400 px-4 py-2 text-sm font-bold text-white">
@@ -66,24 +66,24 @@ export function HealthPlanDetailsStep() {
         {insuredInfo && (
           <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="space-y-2 py-1">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Insured Name</p>
+              <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Insured Name</p>
               <p className="text-primary dark:text-accent text-base font-bold uppercase">{insuredInfo.insuredName}</p>
             </div>
             <div className="space-y-2 py-1">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth</p>
+              <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Date of Birth</p>
               <p className="text-primary dark:text-accent text-base font-bold">{insuredInfo.dateOfBirth}</p>
             </div>
             <div className="space-y-2 py-1">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Gender</p>
+              <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Gender</p>
               <p className="text-primary dark:text-accent text-base font-bold">{insuredInfo.genderCode === 'M' ? 'Male' : 'Female'}</p>
             </div>
             <div className="space-y-2 py-1">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Smoker</p>
+              <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Smoker</p>
               <p className="text-primary dark:text-accent text-base font-bold">{insuredInfo.isSmoker === 'Y' ? 'Yes' : 'No'}</p>
             </div>
             {insuredInfo.effectiveDate && (
               <div className="space-y-2 py-1">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Coverage Start</p>
+                <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Coverage Start</p>
                 <p className="text-primary dark:text-accent text-base font-bold">
                   {new Date(insuredInfo.effectiveDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </p>
@@ -91,7 +91,7 @@ export function HealthPlanDetailsStep() {
             )}
             {insuredInfo.effectiveDate && (
               <div className="space-y-2 py-1">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Expiration Date</p>
+                <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Expiration Date</p>
                 <p className="text-primary dark:text-accent text-base font-bold">
                   {insuredInfo.expiryDate
                     ? new Date(insuredInfo.expiryDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -101,7 +101,7 @@ export function HealthPlanDetailsStep() {
             )}
             {insuredInfo.effectiveDate && insuredInfo.expiryDate && (
               <div className="space-y-2 py-1">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Duration</p>
+                <p className="text-sm font-medium text-foreground dark:text-muted-foreground">Duration</p>
                 <p className="text-primary dark:text-accent text-base font-bold">
                   {(() => {
                     const days = Math.round((new Date(insuredInfo.expiryDate).getTime() - new Date(insuredInfo.effectiveDate).getTime()) / (1000 * 60 * 60 * 24))
@@ -117,14 +117,14 @@ export function HealthPlanDetailsStep() {
         {benefits.length > 0 && (
           <>
             <hr className="mb-4" />
-            <h4 className="mb-3 text-sm font-bold text-gray-700">Key Benefits</h4>
+            <h4 className="mb-3 text-sm font-bold text-foreground">Key Benefits</h4>
             <ul className="space-y-2">
               {benefits.map((b, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <svg className="text-primary mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-700">{b}</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-foreground">{b}</span>
                 </li>
               ))}
             </ul>

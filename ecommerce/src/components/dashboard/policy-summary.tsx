@@ -28,7 +28,7 @@ export const SummaryCard: FC<SummaryCardProps> = ({
 }) => (
   <Card className="bg-card flex-1 gap-2">
     <CardHeader>
-      <CardTitle className="flex flex-wrap items-center gap-2 text-base font-bold text-[#B4975A]">
+      <CardTitle className="flex flex-wrap items-center gap-2 text-base font-bold text-primary">
         {Icon && <Icon className="size-6 shrink-0" />} {title}
       </CardTitle>
     </CardHeader>

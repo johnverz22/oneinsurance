@@ -215,12 +215,51 @@ export const FullQuoteResponseSchema = createResponseSchema(
 )
 export type FullQuoteResponse = z.infer<typeof FullQuoteResponseSchema>
 
-export const IssueQuoteResponseSchema = z.object({
-  success: z.boolean().optional(),
-  message: z.string().optional(),
-  data: z.union([TravelPolicyDataSchema, z.null(), z.undefined()]).optional(),
+// ---------------------------------------------------------------------------
+// Issue Quote v2 — new flat response shape
+// ---------------------------------------------------------------------------
+
+export const IssueQuoteTravellerSchema = z.object({
+  is_principal_applicant: z.boolean().optional(),
+  first_name: z.string(),
+  last_name: z.string(),
+  date_of_birth: z.string().optional(),
+  certificate_number: z.string().nullable().optional(),
 })
+
+export const IssueQuoteDataSchema = z.object({
+  id: z.string().optional(),
+  proposal_number: z.string(),
+  status: z.string().optional(),
+  policy_no: z.string().nullable().optional(),
+  certificate_url: z.string().nullable().optional(),
+  other_details: z.record(z.unknown()).optional(),
+  issued_at: z.string().optional(),
+  insurer: z
+    .object({
+      code: z.string().optional(),
+      name: z.string().optional(),
+    })
+    .optional(),
+  premium: z
+    .object({
+      amount: z.string().optional(),
+      currency: z.string().optional(),
+    })
+    .optional(),
+  travellers: z.array(IssueQuoteTravellerSchema).optional(),
+})
+
+export const IssueQuoteResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string().optional(),
+  data: IssueQuoteDataSchema.nullable().optional(),
+  errors: z.record(z.array(z.string())).optional(),
+})
+
 export type IssueQuoteResponse = z.infer<typeof IssueQuoteResponseSchema>
+export type IssueQuoteData = z.infer<typeof IssueQuoteDataSchema>
+export type IssueQuoteTraveller = z.infer<typeof IssueQuoteTravellerSchema>
 
 // For requests
 export interface FullQuoteRequest {
@@ -247,17 +286,10 @@ export interface FullQuoteRequest {
 }
 
 export type IssueQuoteRequest = {
-  ProposalNo: string
-  PolicyPaymentInfoList?: Array<{
-    PaymentReferenceNo: string
-    PaymentDate: string
-    Amount: string
-    PaymentMode: string
-    PaymentStatus: string
-    IsInstallment: string
-  }>
+  proposal_number: string
   CustomField?: {
     PlanName?: string
+    PaymentBrand?: string
     [key: string]: any
   }
 }

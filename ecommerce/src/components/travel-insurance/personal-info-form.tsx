@@ -40,17 +40,19 @@ import { getSortedTravelerErrors } from '@/utils/travel-helpers'
 // Loading it with ssr:false keeps the entire WASM stack out of the SSR bundle.
 const IdUploadWithOcr = dynamic(
   () => import('@/components/id-upload/id-upload-with-ocr'),
-  { ssr: false, loading: () => <div className="h-40 w-full animate-pulse rounded-lg bg-gray-100" /> }
+  { ssr: false, loading: () => <div className="h-40 w-full animate-pulse rounded-lg bg-muted" /> }
 )
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   FullQuoteResponse,
   FullQuoteResponseSchema,
 } from '@/types/travel-insurance/policy-types'
-import { FullQuoteResponseValidationErrorSchema } from '@/types/travel-insurance/error-travel-response'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useSignInStateStore } from '@/store/signin-store'
-import { mapTravelInsuranceStoreToFullQuoteRequest } from '@/utils/travel-insurance-mapper'
+import {
+  igwFullQuoteToPolicyData,
+  mapToIgwFullQuoteRequest,
+} from '@/utils/mappers/travel-insurance/full-quote'
 import { useFullQuoteRequest } from '@/app/data/mutations/full-quote-request'
 import { CircleCheck, OctagonAlert } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -65,6 +67,7 @@ export function PersonalInfoForm() {
     travelDetails,
     travelersInfo,
     coverageOption,
+    clientRequest,
     nextStep,
     prevStep,
     updateTravelersInfo,
@@ -94,21 +97,15 @@ export function PersonalInfoForm() {
     },
     onSubmit: async ({ value }) => {
       updateTravelersInfo(value.travelers)
-      const fullQuoteRequestBody = mapTravelInsuranceStoreToFullQuoteRequest(
-        {
-          travelDetails,
-          coverageOption,
-          travelersInfo: value.travelers,
-          customFields: {},
-        },
-        agentCode!,
-        // Pass KYC profile only if user has valid email and name
-        signinState.email && 
-        signinState.email.trim() !== '' && 
-        signinState.firstName && 
+
+      // Pass KYC profile only if user has valid email and name
+      const kycProfile =
+        signinState.email &&
+        signinState.email.trim() !== '' &&
+        signinState.firstName &&
         signinState.firstName.trim() !== '' &&
         signinState.firstName !== 'Juan' && // Not default value
-        signinState.lastName && 
+        signinState.lastName &&
         signinState.lastName.trim() !== '' &&
         signinState.lastName !== 'Dela Cruz' // Not default value
         ? {
@@ -124,6 +121,15 @@ export function PersonalInfoForm() {
           zipCode: signinState.zipCode,
           address: signinState.address,
         } : undefined
+
+      const fullQuoteRequestBody = mapToIgwFullQuoteRequest(
+        {
+          travelDetails,
+          coverageOption,
+          travelersInfo: value.travelers,
+        },
+        clientRequest.id ?? '',
+        agentCode!
       )
 
       const fullQuoteResponse = await mutateAsync({
@@ -137,26 +143,49 @@ export function PersonalInfoForm() {
           })),
       })
 
-      if (
-        FullQuoteResponseValidationErrorSchema.safeParse(fullQuoteResponse)
-          .success
-      ) {
-        const error =
-          FullQuoteResponseValidationErrorSchema.safeParse(fullQuoteResponse)
+      if (!fullQuoteResponse?.success || !fullQuoteResponse.data) {
+        // 422 responses carry errors{} keyed by field path
+        // (e.g. "travellers.0.id_number") — surface them all.
+        const fieldErrors = fullQuoteResponse?.errors
+          ? Object.entries(fullQuoteResponse.errors)
+              .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
+              .join('\n')
+          : null
         alert(
-          `Validation Error. Code: ${error.data?.data.ValidateResult.ErrorMessage.at(0)?.code} ${error.data?.data.ValidateResult.ErrorMessage.at(0)?.message}`
+          fieldErrors
+            ? `${fullQuoteResponse?.message ?? 'Validation failed'}\n${fieldErrors}`
+            : fullQuoteResponse?.message || 'Failed to create quote.'
         )
         return
       }
 
-      if (!fullQuoteResponse?.success) {
-        alert(fullQuoteResponse?.message)
-        return
+      // The IGW response is thin — synthesize the TravelPolicyData shape the
+      // review page, payment step and PDF expect, from response + store data.
+      const policyData = igwFullQuoteToPolicyData(fullQuoteResponse.data, {
+        travelDetails,
+        coverageOption,
+        travelersInfo: value.travelers,
+        kycProfile,
+      })
+
+      const apiResponse: FullQuoteResponse = {
+        success: true,
+        message: fullQuoteResponse.message,
+        data: policyData,
       }
 
-      FullQuoteResponseSchema.parse(fullQuoteResponse)
+      FullQuoteResponseSchema.parse(apiResponse)
 
-      setApiResponse(fullQuoteResponse as FullQuoteResponse)
+      try {
+        localStorage.setItem(
+          `proposal_${policyData.ProposalNo}`,
+          JSON.stringify(policyData)
+        )
+      } catch (storageError) {
+        console.warn('Failed to save proposal to localStorage:', storageError)
+      }
+
+      setApiResponse(apiResponse)
       nextStep()
     },
     validators: {
@@ -355,7 +384,7 @@ export function PersonalInfoForm() {
                       <div className="relative">
                         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                           <TabsList
-                            className="h-auto w-max min-w-full justify-start gap-2 rounded-none border-b border-gray-200 bg-transparent p-0"
+                            className="h-auto w-max min-w-full justify-start gap-2 rounded-none border-b border-border bg-transparent p-0"
                             style={{
                               display: 'inline-flex',
                             }}
@@ -372,7 +401,7 @@ export function PersonalInfoForm() {
                                   key={index}
                                   value={`traveler-${index}`}
                                   className={cn(
-                                    'data-[state=active]:border-b-primary data-[state=active]:text-primary flex-shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-3 pt-0 pb-3 text-sm font-semibold text-gray-400 shadow-none transition-colors hover:text-gray-600 data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none',
+                                    'data-[state=active]:border-b-primary data-[state=active]:text-primary flex-shrink-0 rounded-none border-b-2 border-transparent bg-transparent px-3 pt-0 pb-3 text-sm font-semibold text-muted-foreground shadow-none transition-colors hover:text-muted-foreground data-[state=active]:border-b-2 data-[state=active]:bg-transparent data-[state=active]:shadow-none',
                                     {
                                       'data-[state=active]:text-destructive data-[state=active]:border-b-destructive':
                                         hasError,
@@ -502,7 +531,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          First Name <span className="text-red-500">*</span>
+                                          First Name <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                           value={nameField.state.value}
@@ -563,7 +592,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Last Name <span className="text-red-500">*</span>
+                                          Last Name <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                           value={lastNameField.state.value}
@@ -632,7 +661,7 @@ export function PersonalInfoForm() {
                                   children={(field) => (
                                     <div className="space-y-2">
                                       <Label className="text-primary block">
-                                        Gender <span className="text-red-500">*</span>
+                                        Gender <span className="text-destructive">*</span>
                                       </Label>
                                       <div className="border-muted-foreground/30 flex w-full items-center justify-center gap-2 rounded-full border p-1">
                                         <div
@@ -672,7 +701,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Date of Birth <span className="text-red-500">*</span>
+                                          Date of Birth <span className="text-destructive">*</span>
                                         </Label>
                                         <div>
                                           <DateTimePicker
@@ -711,7 +740,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Email <span className="text-red-500">*</span>
+                                          Email <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                           value={emailField.state.value}
@@ -741,7 +770,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Mobile Number <span className="text-red-500">*</span>
+                                          Mobile Number <span className="text-destructive">*</span>
                                         </Label>
                                         <div className="dark:bg-input/30 border-muted-foreground/30 flex items-center gap-2 rounded-full border pl-2">
                                           <span>+63</span>
@@ -773,7 +802,7 @@ export function PersonalInfoForm() {
                                   children={(field) => (
                                     <div className="w-full space-y-2">
                                       <Label className="text-primary block">
-                                        ID Type <span className="text-red-500">*</span>
+                                        ID Type <span className="text-destructive">*</span>
                                       </Label>
 
                                       <Select
@@ -815,7 +844,7 @@ export function PersonalInfoForm() {
                                       <div className="w-full space-y-2">
                                         <div className="flex justify-between">
                                           <Label className="text-primary block">
-                                            ID Number <span className="text-red-500">*</span>
+                                            ID Number <span className="text-destructive">*</span>
                                           </Label>
                                           {idType && (
                                             <p className="text-muted-foreground text-xs">
@@ -850,7 +879,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          State / Province <span className="text-red-500">*</span>
+                                          State / Province <span className="text-destructive">*</span>
                                         </Label>
                                         <Select
                                           value={provinceField.state.value}
@@ -893,7 +922,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          City / Municipality <span className="text-red-500">*</span>
+                                          City / Municipality <span className="text-destructive">*</span>
                                         </Label>
                                         <Select
                                           value={cityField.state.value}
@@ -952,7 +981,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          ZIP Code <span className="text-red-500">*</span>
+                                          ZIP Code <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                           value={zipField.state.value}
@@ -977,7 +1006,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Address Line 1 <span className="text-red-500">*</span>
+                                          Address Line 1 <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                           maxLength={45}
@@ -1002,7 +1031,7 @@ export function PersonalInfoForm() {
                                     return (
                                       <div className="space-y-2">
                                         <Label className="text-primary block">
-                                          Address Line 2 <span className="text-red-500">*</span>
+                                          Address Line 2 <span className="text-destructive">*</span>
                                         </Label>
                                         <Input
                                           value={l2Field.state.value ?? ''}
@@ -1022,7 +1051,7 @@ export function PersonalInfoForm() {
                               </div>
 
                               {/* COVID Vaccination Status */}
-                              <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                              <div className="mt-6 rounded-lg border border-border bg-muted/50 p-4">
                                 <form.Field
                                   name={`travelers[${index}].isCovidVaccinated`}
                                   children={(field) => (
@@ -1049,7 +1078,7 @@ export function PersonalInfoForm() {
                               </div>
 
                               {/* Data Sharing Consent Agreement */}
-                              <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                              <div className="mt-4 rounded-lg border border-border bg-muted/50 p-4">
                                 <form.Field
                                   name={`travelers[${index}].is_data_sharing_consent`}
                                   children={(field) => {
@@ -1079,7 +1108,7 @@ export function PersonalInfoForm() {
                                             >
                                               Data Sharing Consent Agreement
                                             </a>
-                                            {' '}<span className="text-red-500">*</span>
+                                            {' '}<span className="text-destructive">*</span>
                                           </label>
                                         </div>
                                         <FieldInfo field={field} />
@@ -1337,7 +1366,7 @@ export function PersonalInfoForm() {
             </div>
           </Card>
 
-          <div className="sticky bottom-0 hidden items-center justify-center gap-3 bg-[#F3F5FC] px-1.5 py-6 lg:flex lg:justify-start lg:px-0">
+          <div className="sticky bottom-0 hidden items-center justify-center gap-3 bg-section px-1.5 py-6 lg:flex lg:justify-start lg:px-0">
             <Button
               type="button"
               size="lg"

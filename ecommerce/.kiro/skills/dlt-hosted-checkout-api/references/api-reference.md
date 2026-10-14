@@ -143,7 +143,7 @@ This endpoint supports Hosted Checkout only. **Never send:** PAN, CVV/CVC, card 
 | Parameter | Mandatory | Type | Notes |
 |---|---|---|---|
 | product_name | No | String, max 80 | Short label |
-| product_description | No | String, max 120 | Concise description |
+| product_description | No | String, max 120 | Concise description. **Treat as required in practice** — DLT returns HTTP 500 when this field is omitted, despite the schema marking it optional. Always send a non-empty value. |
 | product_reference_id | No | String, max 100 | Merchant-owned reference; DLT does not store inventory |
 
 **Payor details**

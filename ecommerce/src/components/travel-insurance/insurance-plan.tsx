@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   Infinity,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { PriceDisplay, PrimaryActionButton } from '@/components/ui/insurance-shared'
 import {
   groupBenefitsByCategory,
   resolveLimitDisplay,
@@ -46,7 +47,6 @@ function CategoryIcon({ name, className }: { name: string; className?: string })
 
 // ─── limit helpers ────────────────────────────────────────────────────────────
 
-/** Short formatted string for a benefit limit — used in compact chips */
 function formatLimitShort(benefit: InsuranceBenefit): string | null {
   const display = resolveLimitDisplay(benefit)
   if (display.kind === 'amount') {
@@ -56,10 +56,10 @@ function formatLimitShort(benefit: InsuranceBenefit): string | null {
     return `₱${n.toLocaleString('en-PH')}`
   }
   if (display.kind === 'badge') return display.label
+  if (display.kind === 'text') return display.text
   return null
 }
 
-/** Full badge used in the expanded detail rows */
 function LimitBadge({ benefit }: { benefit: InsuranceBenefit }) {
   const display = resolveLimitDisplay(benefit)
 
@@ -78,7 +78,7 @@ function LimitBadge({ benefit }: { benefit: InsuranceBenefit }) {
         'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none',
         isUnlimited
           ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300'
-          : 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
+          : 'bg-success/10 text-success dark:bg-green-950 dark:text-green-300'
       )}>
         {isUnlimited ? <Infinity className="h-2.5 w-2.5" /> : <CheckCircle2 className="h-2.5 w-2.5" />}
         {display.label}
@@ -86,49 +86,56 @@ function LimitBadge({ benefit }: { benefit: InsuranceBenefit }) {
     )
   }
 
+  if (display.kind === 'text') {
+    // Longer free-text limits (e.g. "Travel cost plus up to Php 5,000/day…")
+    // don't fit a chip — render as wrapped text
+    return (
+      <span className="text-foreground text-[11px] font-medium leading-tight">
+        {display.text}
+      </span>
+    )
+  }
+
   return <span className="text-muted-foreground text-xs">—</span>
 }
 
-// ─── collapsed: compact highlight chips ──────────────────────────────────────
+// ─── collapsed: 3-column benefit snapshot (matches old UI style) ──────────────
 
-/**
- * Picks one representative "headline" benefit per category to show as a chip.
- * Prefers the benefit with the highest numeric Silimit; falls back to first.
- */
-function pickHighlight(cat: BenefitCategory): InsuranceBenefit {
-  return cat.benefits.reduce((best, b) => {
-    const bestN = Number(best.Silimit ?? 0)
-    const bN = Number(b.Silimit ?? 0)
-    return bN > bestN ? b : best
-  }, cat.benefits[0])
-}
+function CollapsedBenefits({ categories }: { categories: BenefitCategory[] }) {
+  // Pick the top benefit from each category — max 6 to fit 2 rows of 3
+  const highlights = categories.slice(0, 6).map((cat) => {
+    const top = cat.benefits.reduce((best, b) => {
+      return Number(b.Silimit ?? 0) > Number(best.Silimit ?? 0) ? b : best
+    }, cat.benefits[0])
+    return { cat, benefit: top }
+  })
 
-function CollapsedHighlights({ categories }: { categories: BenefitCategory[] }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 sm:px-4">
-      {categories.map((cat) => {
-        const highlight = pickHighlight(cat)
-        const limitStr = formatLimitShort(highlight)
+    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
+      {highlights.map(({ cat, benefit }, i) => {
+        const limitStr = formatLimitShort(benefit)
+        const display = resolveLimitDisplay(benefit)
+        const isUnlimited = display.kind === 'badge' && display.label.toLowerCase() === 'unlimited'
+        const isIncluded = display.kind === 'badge' && display.label.toLowerCase() === 'included'
         return (
-          <div
-            key={cat.key}
-            className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-muted/40 px-2 py-1 text-[11px]"
-          >
-            <CategoryIcon name={cat.config.icon} className="h-3 w-3 text-primary shrink-0" />
-            <span className="text-muted-foreground">{cat.config.label}</span>
-            {limitStr && (
-              <>
-                <span className="text-border">·</span>
-                <span className={cn(
-                  'font-semibold',
-                  limitStr === 'Unlimited' ? 'text-blue-600 dark:text-blue-400' :
-                  limitStr === 'Included' ? 'text-green-700 dark:text-green-400' :
-                  'text-foreground'
-                )}>
-                  {limitStr}
-                </span>
-              </>
-            )}
+          <div key={i} className="min-w-0 flex items-start gap-1.5">
+            <CategoryIcon
+              name={cat.config.icon}
+              className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5"
+            />
+            <div className="min-w-0">
+              <p className={cn(
+                'text-sm font-bold leading-tight',
+                isUnlimited ? 'text-blue-600 dark:text-blue-400' :
+                isIncluded  ? 'text-success dark:text-success' :
+                'text-foreground'
+              )}>
+                {limitStr ?? '—'}
+              </p>
+              <p className="text-muted-foreground text-xs leading-tight line-clamp-1">
+                {cat.config.label}
+              </p>
+            </div>
           </div>
         )
       })}
@@ -136,12 +143,12 @@ function CollapsedHighlights({ categories }: { categories: BenefitCategory[] }) 
   )
 }
 
-// ─── expanded: full category detail grid ─────────────────────────────────────
+// ─── expanded: 2-column category detail ──────────────────────────────────────
 
 function CategorySection({ category }: { category: BenefitCategory }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 mb-1.5">
+      <div className="flex items-center gap-1.5 mb-1">
         <CategoryIcon name={category.config.icon} className="h-3 w-3 text-primary shrink-0" />
         <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
           {category.config.label}
@@ -207,52 +214,55 @@ export function TravelInsurancePlan({
   const brandColors = CARRIER_BRAND_COLORS[carrierCode] || { bg: '#374151', text: '#ffffff', invertLogo: false }
   const logoSrc = brandColors.planCardLogo || provider?.image
 
-  const ApplyButton = ({ className }: { className?: string }) => (
-    <Button
-      type="button"
-      size="sm"
-      className={cn(
-        'rounded-full from-primary to-accent bg-gradient-to-r font-semibold text-white hover:opacity-90',
-        className
-      )}
-      disabled={!isAvailable}
-      onClick={() => {
-        if (redirectUrl) window.open(redirectUrl, '_blank')
-        else onSelectPlan(plan, carrierCode)
-      }}
-    >
-      Apply Now
-    </Button>
-  )
+  const handleAction = () => {
+    if (redirectUrl) window.open(redirectUrl, '_blank')
+    else onSelectPlan(plan, carrierCode)
+  }
 
   return (
-    <div className="relative mb-2">
-      <div
+    <div className={cn('relative mb-2')}>
+      <Card
+        variant="interactive"
         className={cn(
-          'bg-background w-full rounded-xl overflow-hidden border border-border/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200',
-          isSelected && 'ring-2 ring-primary border-primary'
+          'w-full gap-0 border-border/60 py-0 transition-all duration-200 hover:border-primary/30',
+          isSelected && 'border-primary ring-2 ring-primary'
         )}
       >
-        {/* ══════════ CARD HEADER ═════════════════════════════════════════════ */}
-        <div className="flex items-center gap-3 px-3 py-2.5 sm:px-4 sm:py-3 border-b border-border/40">
-          {/* logo */}
-          <div className="h-10 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center shadow-sm">
+
+        {/* ══════════ COLLAPSED: original 3-panel layout ══════════════════════ */}
+        <div className={cn('flex w-full min-h-[120px]', expanded && 'border-b border-border/40')}>
+
+          {/* Left: logo block — fixed size so card height is driven by middle column, not logo padding */}
+          <div className="flex w-[120px] shrink-0 items-center justify-center overflow-hidden sm:w-[160px] md:w-[180px]">
             {logoSrc ? (
               <Image
                 src={logoSrc}
                 alt={provider?.companyName || carrierCode}
-                className={cn('h-full w-full object-contain', carrierCode === 'PACIFIC' ? 'p-1' : 'p-2')}
-                width={64}
-                height={40}
+                className={cn(
+                  'h-full w-full object-contain',
+                  carrierCode === 'PACIFIC' ? 'p-2 sm:p-3' : 'p-4 sm:p-6'
+                )}
+                width={180}
+                height={120}
+              />
+            ) : provider ? (
+              <Image
+                src={provider.image}
+                alt={provider.companyName}
+                className="h-full w-full object-cover"
+                width={180}
+                height={120}
               />
             ) : (
-              <span className="text-[10px] font-bold uppercase text-center text-foreground px-1">{carrierCode}</span>
+              <span className="text-foreground text-center text-sm font-bold uppercase leading-tight tracking-wide px-3">
+                {carrierCode}
+              </span>
             )}
           </div>
 
-          {/* plan name */}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-foreground text-sm font-bold uppercase tracking-wide leading-snug line-clamp-1">
+          {/* Middle: plan name + benefit snapshot */}
+          <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
+            <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
               {plan.CarrierPlanDesc}
               {carrierCode === 'PACIFIC' && (
                 <a
@@ -260,41 +270,48 @@ export function TravelInsurancePlan({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="ml-1.5 inline-block align-middle rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-medium normal-case tracking-normal text-primary hover:bg-primary/10 transition-colors"
+                  className="ml-2 inline-block align-middle rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-medium normal-case tracking-normal text-primary hover:bg-primary/10 transition-colors"
                 >
                   Brochure
                 </a>
               )}
             </h3>
-            {provider && (
-              <p className="text-muted-foreground text-[10px] mt-0.5">{provider.companyName}</p>
+
+            {categories.length > 0 && (
+              <div className="mt-3">
+                <CollapsedBenefits categories={categories} />
+              </div>
             )}
           </div>
 
-          {/* price + button */}
-          <div className="shrink-0 flex items-center gap-2.5">
-            <div className="text-right">
-              <p className="text-muted-foreground text-[9px] uppercase tracking-wider font-medium leading-none mb-0.5">Premium</p>
-              <div className="flex items-baseline gap-0.5 justify-end">
-                <span className="text-primary text-[10px] font-semibold">{currency || plan.Currency || 'PHP'}</span>
-                <span className="text-foreground text-lg font-black leading-none">
-                  {Number(plan.DuePremium).toLocaleString('en-PH', { maximumFractionDigits: 0 })}
+          {/* Right: price + button — self-stretch fills full row height so justify-between always splits evenly */}
+          <div className="flex w-[140px] shrink-0 flex-col items-center justify-between gap-1 self-stretch border-l border-border/40 p-4 sm:w-[160px] md:w-[180px]">
+            <PriceDisplay
+              amount={Number(plan.DuePremium)}
+              currency={currency || plan.Currency || 'PHP'}
+              label="Premium"
+            />
+            <div className="flex w-full flex-col items-center gap-1">
+              <PrimaryActionButton
+                size="sm"
+                className="h-8 w-full px-4 text-xs font-semibold"
+                disabled={!isAvailable}
+                onClick={handleAction}
+              >
+                Apply Now
+              </PrimaryActionButton>
+              {redirectUrl && (
+                <span className="text-muted-foreground text-center text-[10px]">
+                  via Pacific Cross secure site
                 </span>
-              </div>
+              )}
             </div>
-            <ApplyButton className="px-4 text-xs h-8" />
           </div>
         </div>
 
-        {/* ══════════ COLLAPSED: highlight chips ══════════════════════════════ */}
-        {!expanded && categories.length > 0 && (
-          <CollapsedHighlights categories={categories} />
-        )}
-
         {/* ══════════ EXPANDED: full category detail ══════════════════════════ */}
         {expanded && categories.length > 0 && (
-          <div className="border-t border-border/40 p-3 sm:p-4">
-            {/* Split categories into two balanced columns */}
+          <div className="p-3 sm:p-4">
             {(() => {
               const mid = Math.ceil(categories.length / 2)
               const left = categories.slice(0, mid)
@@ -320,21 +337,23 @@ export function TravelInsurancePlan({
           </div>
         )}
 
-        {/* ══════════ EXPAND / COLLAPSE TOGGLE ════════════════════════════════ */}
+        {/* ══════════ EXPAND TOGGLE ════════════════════════════════════════════ */}
         {categories.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center justify-center gap-1 border-t border-border/40 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-primary hover:bg-muted/30 transition-colors"
-          >
-            {expanded ? (
-              <><ChevronUp className="h-3 w-3" /> Hide details</>
-            ) : (
-              <><ChevronDown className="h-3 w-3" /> View {totalBenefits} benefits across {categories.length} categories</>
-            )}
-          </button>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-white px-4 py-1 text-xs font-medium text-muted-foreground shadow-sm hover:border-primary/40 hover:bg-muted/50 hover:text-primary dark:bg-slate-900 dark:hover:bg-slate-800 transition-colors"
+            >
+              {expanded ? (
+                <>View less <ChevronUp className="h-3 w-3" /></>
+              ) : (
+                <>View {totalBenefits} benefits <ChevronDown className="h-3 w-3" /></>
+              )}
+            </button>
+          </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

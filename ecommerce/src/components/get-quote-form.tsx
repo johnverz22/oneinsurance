@@ -434,7 +434,7 @@ export default function GetQuoteForm() {
 const inputStyle = 'rounded-sm border-[1px] border-grey-200 p-2 text-base'
 
 const Asterisk = () => {
-  return <span className="font-bold text-red-800">*</span>
+  return <span className="font-bold text-destructive">*</span>
 }
 
 const FieldLabel = ({ htmlFor, label }: { htmlFor: string; label: string }) => {

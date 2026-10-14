@@ -1,256 +1,194 @@
-import { PaymentSubmitRequest, PaymentBrand, DeviceInfo } from '@/types/payment'
+// ---------------------------------------------------------------------------
+// Payment mappers — DLT Hosted Checkout v4.0
+//
+// All payment types (card and e-wallet) go through exactly the same submit
+// flow.  The browser collects billing details only — no card number, no CVV,
+// no 3DS device block.  Card entry happens on the DLT-hosted page.
+// ---------------------------------------------------------------------------
 
-// Form data interfaces matching the forms
-export interface CardPaymentFormData {
-  cardNumber: string
-  cardholderName: string
-  expiryMonth: string
-  expiryYear: string
-  ccv: string
+import { PaymentSubmitRequest, PaymentBrand } from '@/types/payment'
+
+// ---------------------------------------------------------------------------
+// Billing-details form data (collected by HostedCheckoutForm for all brands)
+// ---------------------------------------------------------------------------
+export interface BillingFormData {
   firstName: string
   lastName: string
   email: string
-  phone?: string
+  phone: string
   addressLineOne: string
-  addressLineTwo?: string
+  addressLineTwo: string
   cityMunicipality: string
   stateProvinceRegion: string
   postalCode: string
   country: string
 }
 
-export interface DigitalPaymentFormData {
-  phoneNumber?: string
-  firstName: string
-  lastName: string
-  email: string
-  addressLineOne: string
-  addressLineTwo?: string
-  cityMunicipality: string
-  stateProvinceRegion: string
-  postalCode: string
-  country: string
-}
-
-// Additional payment details needed for the request
+// ---------------------------------------------------------------------------
+// Payment configuration passed in from the parent component.
+// merchant_account_id, service_code, channel, and time_offset are all
+// injected server-side by the BFF — never included here.
+// ---------------------------------------------------------------------------
 export interface PaymentRequestConfig {
-  merchantAccountId: string
   merchantTransactionId: string
-  serviceCode: string // DLT v1.3+ — issued by DLT (e.g. "APN-COLLECTION")
   productReferenceId?: string
+  /** Short label, max 80 chars */
+  productName?: string
+  /** Concise description, max 120 chars. Treat as required — DLT 500s without it. */
   productDescription: string
-  amount: number
-  currency: string
-  successUrl?: string // DLT v3.0 — e-wallet redirect on success
-  failureUrl?: string // DLT v3.0 — e-wallet redirect on failure
+  /**
+   * Decimal string e.g. "1299.00", or a number (pesos) which will be coerced.
+   * Use pesosToDltString() to build the canonical string form.
+   */
+  amount: string | number
+  currency?: string
+  /** Full URL, e.g. https://app.example.com/[agent]/products/travel-insurance/avail?status=success */
+  successUrl?: string
+  failureUrl?: string
 }
 
-// Device information utilities
-const getDeviceInfo = (): DeviceInfo => {
-  const screen = window.screen
-  const navigator = window.navigator
+// ---------------------------------------------------------------------------
+// Money helpers
+//
+// Amount travels as a decimal string throughout.  Never use parseFloat on it.
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert a PHP peso integer (e.g. 1 299 pesos) to the DLT decimal string
+ * format: "1299.00".  Input is integer pesos (not cents).
+ */
+export function pesosToDltString(pesos: number): string {
+  if (!Number.isFinite(pesos) || pesos < 0) return '0.00'
+  // Use integer arithmetic to avoid floating-point drift
+  const cents = Math.round(pesos * 100)
+  return (cents / 100).toFixed(2)
+}
+
+/**
+ * Convert an integer-cents value to DLT decimal string.
+ */
+export function centsToDltString(cents: number): string {
+  if (!Number.isFinite(cents) || cents < 0) return '0.00'
+  return (Math.round(cents) / 100).toFixed(2)
+}
+
+// ---------------------------------------------------------------------------
+// Unified Hosted Checkout request mapper
+//
+// Works for every brand (card or e-wallet) — there is no branching.
+// ---------------------------------------------------------------------------
+export function mapToHostedCheckoutRequest(
+  formData: BillingFormData,
+  selectedBrand: PaymentBrand,
+  config: PaymentRequestConfig
+): PaymentSubmitRequest {
+  // Coerce number to decimal string (peso value → "1299.00")
+  const amount =
+    typeof config.amount === 'number'
+      ? pesosToDltString(config.amount)
+      : config.amount
 
   return {
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    browser_color_depth: screen.colorDepth.toString(),
-    browser_language: navigator.language,
-    browser_screen_height: screen.height.toString(),
-    browser_screen_width: screen.width.toString(),
-    os: getOperatingSystem(),
-    browser_accept_header:
-      'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    user_agent: navigator.userAgent,
-    browser_javascript_enabled: true,
-    browser_java_enabled: navigator.javaEnabled() || false,
-    accept_content:
-      'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    merchant_transaction_id: config.merchantTransactionId,
+    amount,
+    currency: config.currency ?? 'PHP',
+
+    payment_brand: selectedBrand.value,
+    payment_brand_code: selectedBrand.code,
+
+    product_name: (config.productName ?? config.productDescription).substring(0, 80) || 'Insurance',
+    product_description: config.productDescription.substring(0, 120) || 'Product Payment',
+    product_reference_id: config.productReferenceId,
+
+    first_name: formData.firstName.trim(),
+    last_name: formData.lastName.trim(),
+    email: formData.email.trim().toLowerCase(),
+    phone: formData.phone.replace(/\s/g, ''),
+
+    address_line_one: formData.addressLineOne.trim(),
+    address_line_two: formData.addressLineTwo.trim() || 'N/A',
+    city_municipality: formData.cityMunicipality.trim(),
+    state_province_region: formData.stateProvinceRegion.trim(),
+    country_code: (formData.country || 'PH').toUpperCase(),
+    postal_code: formData.postalCode.trim(),
+
+    success_url: config.successUrl,
+    failure_url: config.failureUrl,
   }
 }
 
-const getOperatingSystem = (): string => {
-  const userAgent = window.navigator.userAgent
+// ---------------------------------------------------------------------------
+// Billing-form validation
+// ---------------------------------------------------------------------------
+export function validateBillingForm(formData: BillingFormData): string[] {
+  const errors: string[] = []
+  if (!formData.firstName.trim()) errors.push('First name is required')
+  if (!formData.lastName.trim()) errors.push('Last name is required')
+  if (!formData.email.trim()) errors.push('Email is required')
+  if (!formData.phone.trim()) errors.push('Phone number is required')
+  if (!formData.addressLineOne.trim()) errors.push('Address Line 1 is required')
+  if (!formData.addressLineTwo.trim()) errors.push('Address Line 2 is required')
+  if (!formData.cityMunicipality.trim()) errors.push('City/Municipality is required')
+  if (!formData.stateProvinceRegion.trim()) errors.push('State/Province/Region is required')
+  if (!formData.postalCode.trim()) errors.push('Postal code is required')
+  if (!formData.country.trim()) errors.push('Country is required')
 
-  if (userAgent.includes('Windows')) return 'Windows'
-  if (userAgent.includes('Mac')) return 'macOS'
-  if (userAgent.includes('Linux')) return 'Linux'
-  if (userAgent.includes('Android')) return 'Android'
-  if (userAgent.includes('iOS')) return 'iOS'
-
-  return 'Unknown'
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (formData.email && !emailRe.test(formData.email)) {
+    errors.push('Please enter a valid email address')
+  }
+  return errors
 }
 
-// Get formatted timezone offset like "+8:00" or "-5:00"
-const getFormattedTimezoneOffset = (): string => {
-  const offsetMinutes = new Date().getTimezoneOffset()
-  const offsetHours = Math.abs(offsetMinutes) / 60
-  const hours = Math.floor(offsetHours)
-  const minutes = Math.abs(offsetMinutes) % 60
-
-  // getTimezoneOffset returns positive for timezones behind UTC, so we flip the sign
-  const sign = offsetMinutes <= 0 ? '+' : '-'
-
-  return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-}
-
-// Generate unique transaction ID
+// ---------------------------------------------------------------------------
+// Legacy generateTransactionId — kept so existing callers don't break during
+// the migration.  Prefer the server-side GET /api/payment/transaction-id route
+// which uses crypto.randomBytes for ~75 bits of entropy.
+// ---------------------------------------------------------------------------
 export const generateTransactionId = (): string => {
-  const timestamp = Date.now()
-  const random = Math.random().toString(36).substring(2, 8)
-  return `TEST${timestamp}${random}`.toUpperCase()
+  const ts = Date.now()
+  const rnd = Math.random().toString(36).substring(2, 8)
+  return `TXN${ts}${rnd}`.toUpperCase()
 }
 
-// Card payment mapper
+// ---------------------------------------------------------------------------
+// v3.0 legacy shims — kept for health/CTPL payment steps that haven't been
+// migrated to Hosted Checkout yet.  These types and mappers still produce a
+// valid PaymentSubmitRequest shape (minus card fields, which the BFF strips
+// before forwarding to DLT v4.0 anyway).
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use BillingFormData. Kept for health/CTPL migration. */
+export type CardPaymentFormData = BillingFormData & {
+  cardholderName: string
+  cardNumber: string
+  expiryMonth: string
+  expiryYear: string
+  ccv: string
+}
+
+/** @deprecated Use BillingFormData. Kept for health/CTPL migration. */
+export type DigitalPaymentFormData = BillingFormData & {
+  phoneNumber?: string
+}
+
+/**
+ * @deprecated Use mapToHostedCheckoutRequest.
+ * Produces a submit payload — the BFF strips card fields before calling DLT v4.0.
+ */
 export const mapCardPaymentToRequest = (
   formData: CardPaymentFormData,
   selectedBrand: PaymentBrand,
   config: PaymentRequestConfig
-): PaymentSubmitRequest => {
-  const deviceInfo = getDeviceInfo()
+): PaymentSubmitRequest =>
+  mapToHostedCheckoutRequest(formData, selectedBrand, config)
 
-  // Clean card number and convert to number
-  const cleanCardNumber = formData.cardNumber.replace(/\s/g, '')
-
-  return {
-    service_code: config.serviceCode,
-    channel: 1, // 1 = API (direct integration)
-    merchant_account_id: config.merchantAccountId,
-    merchant_transaction_id: config.merchantTransactionId,
-    product_reference_id: config.productReferenceId,
-    product_name: config.productDescription || 'Insurance',
-    product_description: config.productDescription || 'Product Payment',
-    first_name: formData.firstName.trim(),
-    last_name: formData.lastName.trim(),
-    email: formData.email.trim().toLowerCase(),
-    phone: `${formData.phone?.replace(/\s/g, '')}` || '',
-    address_line_one: formData.addressLineOne.trim(),
-    address_line_two: formData.addressLineTwo?.trim() || '',
-    city_municipality: formData.cityMunicipality.trim(),
-    state_province_region: formData.stateProvinceRegion.trim(),
-    country_code: formData.country.trim() || 'PH',
-    postal_code: formData.postalCode.trim(),
-    is_card_payment: true,
-    card_holder_name: formData.cardholderName.trim().toUpperCase(),
-    card_number: cleanCardNumber,
-    expiration_month: formData.expiryMonth.padStart(2, '0'),
-    expiration_year: formData.expiryYear.slice(-2).padStart(2, '0'),
-    ccv: parseInt(formData.ccv, 10),
-    payment_brand_code: selectedBrand.code,
-    payment_brand: selectedBrand.value,
-    amount: config.amount,
-    currency: config.currency,
-    time_offset: getFormattedTimezoneOffset(),
-    device: deviceInfo,
-  }
-}
-
-// Digital payment mapper
+/**
+ * @deprecated Use mapToHostedCheckoutRequest.
+ */
 export const mapDigitalPaymentToRequest = (
   formData: DigitalPaymentFormData,
   selectedBrand: PaymentBrand,
   config: PaymentRequestConfig
-): PaymentSubmitRequest => {
-  return {
-    service_code: config.serviceCode,
-    channel: 1, // 1 = API (direct integration)
-    merchant_account_id: config.merchantAccountId,
-    merchant_transaction_id: config.merchantTransactionId,
-    product_reference_id: config.productReferenceId,
-    product_name: config.productDescription || 'Insurance',
-    product_description: config.productDescription || 'Product Payment',
-    first_name: formData.firstName.trim(),
-    last_name: formData.lastName.trim(),
-    email: formData.email.trim().toLowerCase(),
-    phone: `${formData.phoneNumber?.replace(/\s/g, '')}` || '',
-    address_line_one: formData.addressLineOne.trim(),
-    address_line_two: formData.addressLineTwo?.trim() || '',
-    city_municipality: formData.cityMunicipality.trim(),
-    state_province_region: formData.stateProvinceRegion.trim(),
-    country_code: formData.country.trim() || 'PH',
-    postal_code: formData.postalCode.trim(),
-    is_card_payment: false,
-    payment_brand_code: selectedBrand.code,
-    payment_brand: selectedBrand.value,
-    amount: config.amount,
-    currency: config.currency,
-    success_url: config.successUrl,
-    failure_url: config.failureUrl,
-    time_offset: getFormattedTimezoneOffset(),
-    // device block omitted — only required for card payments per DLT spec
-  }
-}
-
-// Validation helpers
-export const validateCardPaymentForm = (
-  formData: CardPaymentFormData
-): string[] => {
-  const errors: string[] = []
-
-  // Required field validation
-  if (!formData.firstName.trim()) errors.push('First name is required')
-  if (!formData.lastName.trim()) errors.push('Last name is required')
-  if (!formData.email.trim()) errors.push('Email is required')
-  if (!formData.addressLineOne.trim()) errors.push('Address is required')
-  if (!formData.cityMunicipality.trim())
-    errors.push('City/Municipality is required')
-  if (!formData.stateProvinceRegion.trim())
-    errors.push('State/Province/Region is required')
-  if (!formData.postalCode.trim()) errors.push('Postal code is required')
-
-  // Card specific validation
-  if (!formData.cardNumber.replace(/\s/g, ''))
-    errors.push('Card number is required')
-  if (!formData.cardholderName.trim())
-    errors.push('Cardholder name is required')
-  if (!formData.expiryMonth) errors.push('Expiry month is required')
-  if (!formData.expiryYear) errors.push('Expiry year is required')
-  if (!formData.ccv) errors.push('CVV is required')
-
-  // Expiration format validation
-  if (formData.expiryMonth) {
-    const month = parseInt(formData.expiryMonth, 10)
-    if (month < 1 || month > 12) {
-      errors.push('Please enter a valid month (01-12)')
-    }
-  }
-  if (formData.expiryYear) {
-    const year = parseInt(formData.expiryYear, 10)
-    const currentYear = new Date().getFullYear()
-    const fullYear = year < 100 ? 2000 + year : year
-    if (fullYear < currentYear) {
-      errors.push('Card expiration year cannot be in the past')
-    }
-  }
-
-  // Email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (formData.email && !emailRegex.test(formData.email)) {
-    errors.push('Please enter a valid email address')
-  }
-
-  return errors
-}
-
-export const validateDigitalPaymentForm = (
-  formData: DigitalPaymentFormData
-): string[] => {
-  const errors: string[] = []
-
-  // Required field validation
-  if (!formData.firstName.trim()) errors.push('First name is required')
-  if (!formData.lastName.trim()) errors.push('Last name is required')
-  if (!formData.email.trim()) errors.push('Email is required')
-  if (!formData.addressLineOne.trim()) errors.push('Address is required')
-  if (!formData.cityMunicipality.trim())
-    errors.push('City/Municipality is required')
-  if (!formData.stateProvinceRegion.trim())
-    errors.push('State/Province/Region is required')
-  if (!formData.postalCode.trim()) errors.push('Postal code is required')
-
-  // Email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (formData.email && !emailRegex.test(formData.email)) {
-    errors.push('Please enter a valid email address')
-  }
-
-  return errors
-}
+): PaymentSubmitRequest =>
+  mapToHostedCheckoutRequest(formData, selectedBrand, config)

@@ -84,17 +84,17 @@ export const ClientActivity: FC = () => {
         <ul className="space-y-4">
           {clientActivityData.map((activity) => (
             <li key={activity.id} className="flex items-center space-x-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 font-bold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted font-bold text-muted-foreground dark:bg-gray-700 dark:text-muted-foreground">
                 {activity.avatar}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                <p className="text-sm font-medium text-foreground dark:text-muted-foreground">
                   {activity.name}{' '}
-                  <span className="font-normal text-gray-500 dark:text-gray-400">
+                  <span className="font-normal text-muted-foreground">
                     {activity.action}
                   </span>
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   {activity.time}
                 </p>
               </div>
@@ -111,12 +111,12 @@ export const ClientActivity: FC = () => {
                   <MoreVertical className="h-4 w-4" />
                 </Button>
                 {openMenuId === activity.id && (
-                  <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                  <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-border bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
                     <ul className="py-1">
                       <li>
                         <a
                           href="#"
-                          className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                          className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-gray-700"
                         >
                           <User className="mr-2 h-4 w-4" /> View Client
                         </a>
@@ -124,7 +124,7 @@ export const ClientActivity: FC = () => {
                       <li>
                         <a
                           href="#"
-                          className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"
+                          className="flex w-full items-center px-4 py-2 text-sm text-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-gray-700"
                         >
                           <MessageSquare className="mr-2 h-4 w-4" /> Send
                           Message
@@ -133,7 +133,7 @@ export const ClientActivity: FC = () => {
                       <li>
                         <a
                           href="#"
-                          className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50"
+                          className="flex w-full items-center px-4 py-2 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/50"
                         >
                           <XCircle className="mr-2 h-4 w-4" /> Dismiss
                         </a>

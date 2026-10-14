@@ -79,7 +79,7 @@
     "@types/react-date-range": "^1.4.10",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3",
+    "eslint-config-next": "^14.2.35",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "shadcn-ui": "^0.9.5",
@@ -100,5 +100,6 @@
     "protobufjs@7.6.5": true,
     "sqlite3@6.0.1": true,
     "unrs-resolver@1.11.1": true
-  }
+  },
+  "packageManager": "npm@11.0.0"
 }

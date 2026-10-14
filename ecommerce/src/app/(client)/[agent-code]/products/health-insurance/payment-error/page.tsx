@@ -46,19 +46,19 @@ export default function HealthPaymentErrorPage() {
       <div className="mx-auto max-w-2xl">
         <Card className="mb-6">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <AlertCircle className="h-8 w-8 text-green-600" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+              <AlertCircle className="h-8 w-8 text-success" />
             </div>
             <CardTitle className="text-2xl">Payment Has Been Accepted</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 text-center">
-            <p className="text-lg text-gray-700">
+            <p className="text-lg text-foreground">
               Use your proposal number for reference when contacting support.
             </p>
 
             {resolvedProposalNo && (
               <div className="rounded-lg border-2 border-primary bg-primary/5 p-6">
-                <p className="mb-2 text-sm font-medium text-gray-600">Proposal Number</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Proposal Number</p>
                 <p className="text-3xl font-bold text-primary">{resolvedProposalNo}</p>
               </div>
             )}
@@ -69,13 +69,13 @@ export default function HealthPaymentErrorPage() {
                   <Download className="mr-2 h-5 w-5" />
                   Download Proposal PDF
                 </Button>
-                <p className="mt-3 text-sm text-gray-500">Download your proposal document for your records</p>
+                <p className="mt-3 text-sm text-muted-foreground">Download your proposal document for your records</p>
               </div>
             )}
 
-            <div className="mt-8 rounded-lg border bg-gray-50 p-4">
-              <p className="mb-2 text-sm font-medium text-gray-700">Need Help?</p>
-              <div className="space-y-1 text-sm text-gray-600">
+            <div className="mt-8 rounded-lg border bg-muted/50 p-4">
+              <p className="mb-2 text-sm font-medium text-foreground">Need Help?</p>
+              <div className="space-y-1 text-sm text-muted-foreground">
                 <div className="flex items-center justify-center gap-2">
                   <Phone className="h-4 w-4" />
                   <span>+63 (2) 8123-4567</span>

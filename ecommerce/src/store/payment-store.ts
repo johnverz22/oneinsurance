@@ -5,15 +5,13 @@ import { createJSONStorage, persist, StateStorage } from 'zustand/middleware'
 // ---------------------------------------------------------------------------
 // AES-GCM encryption using the browser's built-in Web Crypto API.
 // Node.js `crypto` cannot be used here because this store runs in the browser.
-// The encryption key is derived from NEXT_PUBLIC_MERCHANT_ACCOUNT_ID, which
-// is a non-secret public value — the goal is obfuscation of sessionStorage,
-// not cryptographic protection of secrets.
+// A fixed application key is used to obfuscate sessionStorage contents.
+// This is not cryptographic secret protection — the goal is to prevent plain-
+// text tokens sitting in sessionStorage in easily readable form.
 // ---------------------------------------------------------------------------
 
 async function getKey(): Promise<CryptoKey> {
-  const raw = new TextEncoder().encode(
-    process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID ?? 'one-insurance-default'
-  )
+  const raw = new TextEncoder().encode('one-insurance-payment-store-key')
   // Import the raw bytes as a base key for PBKDF2-style derivation.
   // Using a fixed salt is acceptable here since we're not protecting secrets.
   const baseKey = await crypto.subtle.importKey('raw', raw, 'PBKDF2', false, [

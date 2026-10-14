@@ -1,7 +1,7 @@
 # OneInsurance Monorepo — Project Context
 
 ## Monorepo Overview
-This repository contains three independent Next.js applications, managed by Yarn 4.9.2 (Berry). Each app has its own package.json and node_modules (no shared workspaces/turborepo).
+This repository contains three independent Next.js applications, managed by npm. Each app has its own package.json and node_modules (no shared workspaces/turborepo).
 
 1. **admin**: Next.js 15 App. Administrator operations (commissions, applicants, reports). Port 5000 (`oneinsurance-admin` in PM2).
 2. **agent**: Next.js 15 App. Agent portal (sales, clients, quotations). Port 4000 (`oneinsurance-agent` in PM2).
@@ -22,5 +22,5 @@ This repository contains three independent Next.js applications, managed by Yarn
 - **Styling**: Tailwind utility classes. Use `cn()` from `src/lib/utils` for class merging. No inline styles.
 
 ## Common Commands
-Use Yarn prefix commands (e.g. `cd admin && yarn dev`).
+Use npm commands (e.g. `cd admin && npm run dev`).
 Deploy is via GitHub Actions -> SSH -> PM2 restart.

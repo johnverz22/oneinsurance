@@ -40,7 +40,7 @@ tell the user how to upgrade and stop. Don't fall back to grepping
 source or to a weaker probe — this skill assumes both views are live
 at the versions above.
 
-- Upgrade Next.js: `pnpm next upgrade` (or `npx next upgrade`).
+- Upgrade Next.js: `npm run build` or `npx next upgrade` (always use npm, never yarn/pnpm).
   Docs: https://nextjs.org/docs/app/getting-started/upgrading
   (version-16 guide:
   https://nextjs.org/docs/app/guides/upgrading/version-16)

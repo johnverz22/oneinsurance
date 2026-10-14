@@ -233,7 +233,18 @@ export default function AvailTravelInsurance() {
         console.log('✅ Skipping session validation - loading from proposal via URL')
         return
       }
-      
+
+      // Skip validation if returning from DLT payment redirect
+      // DLT appends ?status=success|failure&txn= or ?reference_id= to the return URL
+      const isPaymentReturn =
+        searchParams.get('status') ||
+        searchParams.get('txn') ||
+        searchParams.get('reference_id')
+      if (isPaymentReturn) {
+        console.log('✅ Skipping session validation - returning from payment redirect')
+        return
+      }
+
       // Check if user has completed initial steps (has clientRequest.id and selectedPlan)
       const hasValidSession = clientRequest?.id && coverageOption?.selectedPlan
 
@@ -243,7 +254,7 @@ export default function AvailTravelInsurance() {
         return
       }
     }
-  }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router, agentCode, proposalNumber])
+  }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router, agentCode, proposalNumber, searchParams])
 
   const steps = [
     {
@@ -273,17 +284,17 @@ export default function AvailTravelInsurance() {
   }
 
   return (
-    <div className="relative min-h-screen lg:min-h-0 w-full bg-[#F3F5FC]">
+    <div className="relative min-h-screen lg:min-h-0 w-full bg-section">
       {/* ── Header ── */}
-      <div className="sticky top-0 z-20 border-b border-gray-200/60 bg-white shadow-sm lg:relative lg:z-auto lg:border-0 lg:bg-[#F3F5FC] lg:shadow-none">
+      <div className="sticky top-0 z-20 border-b border-border/60 bg-white shadow-sm lg:relative lg:z-auto lg:border-0 lg:bg-section lg:shadow-none">
         {/* Logo bar */}
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 lg:pt-5 lg:pb-2">
           <a href={`/${agentCode}`} className="flex items-center">
             <Image
               src="/images/logo.png"
               alt="One Insurance"
-              width={140}
-              height={45}
+              width={256}
+              height={63}
               className="h-7 w-auto lg:h-9"
               priority
             />
@@ -291,8 +302,8 @@ export default function AvailTravelInsurance() {
           <Image
             src="/images/IFRC.png"
             alt="IFRC"
-            width={80}
-            height={40}
+            width={1290}
+            height={800}
             className="h-8 w-auto opacity-80 lg:h-10"
             priority
           />
@@ -329,7 +340,7 @@ export default function AvailTravelInsurance() {
 
       {/* ── Mobile bottom action bar (steps 1–3) ── */}
       {step >= 1 && step <= 3 && coverageOption.selectedPlan && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-white px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-3">
             {/* Left: Cancel (step 1) or Back (steps 2–3) */}
             <button
@@ -344,14 +355,14 @@ export default function AvailTravelInsurance() {
                   else setStep(step - 1)
                 }
               }}
-              className="shrink-0 rounded-full border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700"
+              className="shrink-0 rounded-full border border-border bg-white px-4 py-2.5 text-xs font-semibold text-foreground"
             >
               {step === 1 ? 'Cancel' : 'Back'}
             </button>
 
             {/* Center: premium */}
             <div className="flex-1 text-center">
-              <p className="text-[10px] text-gray-500 leading-none">Total Premium</p>
+              <p className="text-[10px] text-muted-foreground leading-none">Total Premium</p>
               <p className="text-sm font-black text-primary leading-tight">
                 ₱{(
                   step >= 3 && apiResponse?.data?.DuePremium

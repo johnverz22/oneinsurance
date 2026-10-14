@@ -28,7 +28,7 @@ export const CommissionOverview: FC = () => {
       </CardHeader>
       <CardContent className="flex items-center justify-between space-y-6">
         <div className="mb-1 flex flex-col gap-1.5 text-base">
-          <div className="flex w-full gap-4 text-[#B4975A]">
+          <div className="flex w-full gap-4 text-primary">
             <p className="w-20">Released:</p>
             <span>
               PHP{' '}
@@ -36,7 +36,7 @@ export const CommissionOverview: FC = () => {
             </span>
           </div>
 
-          <div className="flex w-full gap-4 text-gray-600 dark:text-gray-300">
+          <div className="flex w-full gap-4 text-muted-foreground">
             <p className="w-20">Upcoming:</p>
             <span>
               PHP{' '}
@@ -46,7 +46,7 @@ export const CommissionOverview: FC = () => {
             </span>
           </div>
 
-          <div className="flex w-full gap-4 text-red-600 dark:text-red-300">
+          <div className="flex w-full gap-4 text-destructive dark:text-red-300">
             <p className="w-20">Pending:</p>
             <span>
               PHP{' '}
@@ -55,22 +55,22 @@ export const CommissionOverview: FC = () => {
           </div>
         </div>
         <div className="flex flex-col">
-          <p className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+          <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">
             PHP
             {totalThisMonth.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Total this Month
           </p>
         </div>
       </CardContent>
       <CardContent>
-        <div className="h-2.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+        <div className="h-2.5 w-full rounded-full bg-muted dark:bg-gray-700">
           <div
-            className="h-2.5 rounded-full bg-green-500"
+            className="h-2.5 rounded-full bg-success"
             style={{ width: `${releasedPercentage}%` }}
           />
         </div>

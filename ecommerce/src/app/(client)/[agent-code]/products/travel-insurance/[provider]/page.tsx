@@ -83,13 +83,13 @@ function ProviderTravelInsurancePageContent() {
             onClick={() => router.push(`/${agentCode}`)}
             className="absolute top-8 left-4 z-10 cursor-pointer gap-3 rounded-tl-full rounded-br-full bg-white px-12 py-1 shadow-lg lg:left-28 xl:left-32"
           >
-            <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-10 w-auto" priority />
+            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-10 w-auto" priority />
           </div>
           <div className="absolute inset-0 bg-black/80 dark:bg-black/30" />
         </div>
 
         <div className="absolute top-0 right-4 max-h-24 max-w-24 rounded-b-2xl bg-white px-3 py-2 sm:right-8 sm:max-h-32 sm:max-w-32 sm:px-4 sm:py-3 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
-          <Image src="/images/IFRC.png" alt="IFRC Logo" width={1920} height={1240} className="h-full w-full object-contain" />
+          <Image src="/images/IFRC.png" alt="IFRC Logo" width={1290} height={800} className="h-full w-full object-contain" />
         </div>
 
         <div className="absolute inset-0 mx-auto -mt-8 flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-4 text-white lg:-mt-16">

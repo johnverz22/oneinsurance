@@ -58,13 +58,13 @@ const HealthInsurance = () => {
           {/* Mobile-only brand logo — header is hidden on mobile by MobileProductNav */}
           <div className="absolute top-4 left-3 z-10 md:hidden">
             <a href={`/${agentCode}`} className="flex cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
-              <Image src="/images/logo.png" alt="One Insurance" width={140} height={45} className="h-7 w-auto" priority />
+              <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-7 w-auto" priority />
             </a>
           </div>
         </div>
 
         <div className="absolute top-0 right-3 max-h-16 max-w-16 rounded-b-xl bg-white px-2 py-1.5 sm:right-8 sm:max-h-24 sm:max-w-24 sm:rounded-b-2xl sm:px-3 sm:py-2 md:right-12 md:max-h-36 md:max-w-36 md:px-6 md:py-4 lg:right-20 lg:max-h-40 lg:max-w-40 lg:px-8 lg:py-4">
-          <Image src="/images/IFRC.png" alt="IFRC Logo" width={1920} height={1240} className="h-full w-full object-contain" />
+          <Image src="/images/IFRC.png" alt="IFRC Logo" width={1290} height={800} className="h-full w-full object-contain" />
         </div>
 
         <div className="absolute inset-0 mx-auto -mt-8 flex h-full w-full max-w-7xl flex-col justify-center space-y-2.5 px-4 text-white lg:-mt-16">
@@ -82,7 +82,7 @@ const HealthInsurance = () => {
       </div>
 
       {/* Get Personalized Advice form — scrolls to plans on submit */}
-      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-slate-100 bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
+      <div className="relative z-20 mx-auto -mt-24 flex w-full max-w-7xl flex-col rounded-t-3xl border-t border-border bg-white px-5 pb-4 pt-6 shadow-2xl dark:border-slate-800 dark:bg-background md:-mt-28 md:gap-8 md:rounded-none md:border-0 md:bg-transparent md:px-4 md:pt-0 md:shadow-none lg:-mt-40 lg:gap-12">
         <style>{`
           @media (max-width: 767px) {
             [data-testid="health-details-form"] {
@@ -115,7 +115,7 @@ const HealthInsurance = () => {
       </div>
 
       {/* FAQs — hidden on mobile (low priority) */}
-      <section className="hidden w-full bg-[#eef2f7] py-16 md:block">
+      <section className="hidden w-full bg-section py-16 md:block">
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid gap-8 md:grid-cols-3 md:gap-12">
             <div className="space-y-4">

@@ -201,10 +201,9 @@ export default function CtplPaymentStep() {
   }, [])
 
   // Create payment configuration
+  // merchant_account_id and service_code are injected server-side by the BFF
   const paymentConfig: PaymentRequestConfig = {
-    merchantAccountId: process.env.NEXT_PUBLIC_MERCHANT_ACCOUNT_ID || 'MER941055560216',
     merchantTransactionId: generateTransactionId(),
-    serviceCode: process.env.NEXT_PUBLIC_PAYMENT_SERVICE_CODE || 'APN-COLLECTION',
     productReferenceId: `${fullQuoteResponse?.BusinessObjectId}` || 'MOTOR-INSURANCE',
     productDescription: fullQuoteResponse?.ProductCode || 'Motor Insurance',
     amount: premium,
@@ -332,7 +331,7 @@ export default function CtplPaymentStep() {
             </h2>
           </div>
           <div className="flex flex-col items-start gap-1 sm:items-end">
-            <p className="text-sm font-medium text-gray-400">Total Amount</p>
+            <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
             <p className="text-primary text-lg sm:text-2xl font-black">
               ₱
               {premium.toLocaleString('en-PH', {
@@ -430,7 +429,7 @@ export default function CtplPaymentStep() {
                           continue
                         </p>
                       </div>
-                      <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <CreditCard className="h-4 w-4" />
                           <span>Cards</span>
@@ -445,7 +444,7 @@ export default function CtplPaymentStep() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Shield className="h-4 w-4" />
                     <span>Complete your payment securely</span>
                   </div>
@@ -513,11 +512,11 @@ function CardPaymentProcessingDialog({
       <DialogContent className="flex flex-col items-center justify-center gap-4 py-10">
         <Loader2 className="h-14 w-14 animate-spin text-primary mb-2" />
         {message ? (
-          <h2 className="text-lg font-semibold text-gray-800">{message}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{message}</h2>
         ) : (
           <>
-            <h2 className="text-lg font-semibold text-gray-800">Processing your payment...</h2>
-            <p className="max-w-xs text-center text-gray-500">
+            <h2 className="text-lg font-semibold text-foreground">Processing your payment...</h2>
+            <p className="max-w-xs text-center text-muted-foreground">
               Please wait while we process your payment. Do not close or refresh this window.
             </p>
           </>

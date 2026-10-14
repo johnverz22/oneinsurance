@@ -98,11 +98,11 @@ export function HealthProposalSearch() {
           </div>
 
           {errorMessage && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
+            <Alert className="border-destructive/50 bg-destructive/10">
+              <AlertCircle className="h-4 w-4 text-destructive" />
               <AlertDescription className="flex items-center justify-between">
-                <span className="text-red-800">{errorMessage}</span>
-                <Button variant="ghost" size="sm" onClick={() => setErrorMessage(null)} className="ml-2 h-6 w-6 p-0 text-red-600">
+                <span className="text-destructive">{errorMessage}</span>
+                <Button variant="ghost" size="sm" onClick={() => setErrorMessage(null)} className="ml-2 h-6 w-6 p-0 text-destructive">
                   <X className="h-4 w-4" />
                 </Button>
               </AlertDescription>
