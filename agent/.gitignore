@@ -43,3 +43,6 @@ yarn-error.log*
 next-env.d.ts
 
 certificates
+
+# SQLite database — runtime artifact, must not be committed
+auth.db

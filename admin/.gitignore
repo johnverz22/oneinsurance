@@ -43,3 +43,6 @@ next-env.d.ts
 
 certificates
 *.md
+
+# SQLite database — runtime artifact, must not be committed
+auth.db
