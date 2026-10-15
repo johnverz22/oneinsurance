@@ -85,7 +85,7 @@ const FEATURE_COLORS = {
 
 const AgentApplicationPage = () => {
   return (
-    <div className="relative mx-auto">
+    <main className="relative mx-auto">
       <Header isNavigationVisible={false} />
 
       <section className="relative">
@@ -231,7 +231,7 @@ const AgentApplicationPage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   )
 }
 

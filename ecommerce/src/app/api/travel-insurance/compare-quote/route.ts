@@ -21,9 +21,21 @@ interface IgwCoverageLimit {
 interface IgwCoverage {
   category: string
   name: string
-  is_optional: boolean
+  // The docs describe `is_optional`, but live responses don't send it —
+  // optionality is actually signaled by `addon_code` being non-null
+  // (perfectly correlated with `is_included: false` where present).
+  // Keep is_optional as a fallback in case an insurer does send it.
+  is_optional?: boolean
+  is_included?: boolean
   addon_code: string | null
+  // OONA-only: the carrier's own code for the addon group (not forwarded anywhere yet).
+  insurer_addon_code?: string | null
   limit: IgwCoverageLimit
+}
+
+/** True when a coverage is part of a purchasable add-on rather than the base plan. */
+function isAddonCoverage(c: IgwCoverage): boolean {
+  return c.addon_code != null || c.is_optional === true
 }
 
 interface IgwPlanItem {
@@ -200,33 +212,74 @@ function mapIgwResponseToInternal(igw: IgwCompareQuoteResponse) {
     ProductCode: items[0].product.code,
     ProductVersion: '1.0',
     Plans: items.map((item) => {
-      const mapCoverage = (c: IgwCoverage, idx: number) => {
-        const { limit, silimit, defaultLimitDesc, limitModeDesc } = normalizeLimit(c.limit)
-        return {
-          BenefitCode: c.addon_code ?? `${item.plan.code}-${idx}`,
-          BenefitDesc: c.name,
-          BenefitType: c.is_optional ? 'ADDON' : 'MAIN',
-          CoverageName: c.category,
-          SubCoverageName: c.name,
-          DisplaySeqNo: String(idx + 1),
-          Silimit: silimit,
-          DefaultLimitDesc: defaultLimitDesc,
-          // normalized limit for the plan UI; LimitModeDesc carries the qualifier
-          // note for legacy renderers ("Per day, up to 7 days.", "subject to limit of…")
-          Limit: limit,
-          LimitModeDesc: limitModeDesc,
-          IsMainBenefit: c.is_optional ? 'N' : 'Y',
+      const mainBenefits = item.coverages
+        .filter((c) => !isAddonCoverage(c))
+        .map((c, idx) => {
+          const { limit, silimit, defaultLimitDesc, limitModeDesc } = normalizeLimit(c.limit)
+          return {
+            BenefitCode: `${item.plan.code}-${idx}`,
+            BenefitDesc: c.name,
+            BenefitType: 'MAIN',
+            CoverageName: c.category,
+            SubCoverageName: c.name,
+            DisplaySeqNo: String(idx + 1),
+            ParentBenefit: null,
+            Silimit: silimit,
+            DefaultLimitDesc: defaultLimitDesc,
+            // normalized limit for the plan UI; LimitModeDesc carries the qualifier
+            // note for legacy renderers ("Per day, up to 7 days.", "subject to limit of…")
+            Limit: limit,
+            LimitModeDesc: limitModeDesc,
+            IsMainBenefit: 'Y',
+            IsApplicable: 'Y',
+          }
+        })
+
+      // Group addon coverages by `addon_code` — that's the purchasable unit
+      // (e.g. "cruise" bundles 7 coverages under one toggle). Coverages that
+      // are optional but carry no addon_code (is_optional fallback) each get
+      // their own single-coverage group so they still render as a selectable
+      // unit. BenefitCode on the *parent* row is the group key — that's what
+      // selectedAddonBenefits stores and what UI toggles act on.
+      const addonGroups = new Map<string, { category: string; coverages: IgwCoverage[] }>()
+      item.coverages.filter(isAddonCoverage).forEach((c, idx) => {
+        const key = c.addon_code ?? `${item.plan.code}-addon-${idx}`
+        if (!addonGroups.has(key)) addonGroups.set(key, { category: c.category, coverages: [] })
+        addonGroups.get(key)!.coverages.push(c)
+      })
+
+      const addonBenefits = Array.from(addonGroups.entries()).flatMap(([code, group]) => {
+        const parent = {
+          BenefitCode: code,
+          BenefitDesc: group.category,
+          BenefitType: 'ADDON',
+          CoverageName: group.category,
+          SubCoverageName: group.category,
+          DisplaySeqNo: '0',
+          ParentBenefit: null,
+          IsMainBenefit: 'N',
           IsApplicable: 'Y',
         }
-      }
-
-      const mainBenefits = item.coverages
-        .filter((c) => !c.is_optional)
-        .map((c, idx) => mapCoverage(c, idx))
-
-      const addonBenefits = item.coverages
-        .filter((c) => c.is_optional)
-        .map((c, idx) => mapCoverage(c, idx))
+        const children = group.coverages.map((c, idx) => {
+          const { limit, silimit, defaultLimitDesc, limitModeDesc } = normalizeLimit(c.limit)
+          return {
+            BenefitCode: `${code}-${idx}`,
+            BenefitDesc: c.name,
+            BenefitType: 'ADDON',
+            CoverageName: c.category,
+            SubCoverageName: c.name,
+            DisplaySeqNo: String(idx + 1),
+            ParentBenefit: code,
+            Silimit: silimit,
+            DefaultLimitDesc: defaultLimitDesc,
+            Limit: limit,
+            LimitModeDesc: limitModeDesc,
+            IsMainBenefit: 'N',
+            IsApplicable: 'Y',
+          }
+        })
+        return [parent, ...children]
+      })
 
       return {
         CarrierPlanCode: item.plan.code,

@@ -336,7 +336,7 @@ function CtplInsurance() {
           {/* Mobile-only brand logo — header is hidden on mobile by MobileProductNav */}
           <div className="absolute top-4 left-3 z-10 md:hidden">
             <a href={`/${agentCode}`} className="flex cursor-pointer rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
-              <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-7 w-auto" priority />
+              <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-7 w-auto" priority />
             </a>
           </div>
         </div>

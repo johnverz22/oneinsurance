@@ -3,7 +3,6 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
-  ArrowLeft,
   ArrowRight,
   CalendarDays,
   MapPin,
@@ -26,6 +25,7 @@ import {
   PageIntro,
 } from '@/components/travel-insurance/journey-layout'
 import { CoverageOptionsForm } from '@/components/travel-insurance/coverage-options-form'
+import { TripStickyBar } from '@/components/travel-insurance/trip-sticky-bar'
 import { TRAVEL_JOURNEY_STEPS } from '@/constants/travel-journey'
 import { useTravelCompare } from '@/hooks/use-travel-compare'
 import { travelInsuranceSchemaToInitCompareQuote } from '@/utils/mappers/travel-insurance/init-compare-quote'
@@ -70,6 +70,7 @@ function TravelPlansPageContent() {
     setClientRequest,
     setFormModified,
     resetQuoteRefetchCount,
+    updateCoverageOption,
   } = useTravelInsuranceStore()
   const { resetApiResponse } = useFullQuoteResponseStore()
   const {
@@ -117,6 +118,9 @@ function TravelPlansPageContent() {
     }
 
     resetApiResponse()
+    // Returning to the plan list clears add-on selections — they belong to
+    // the previously chosen plan and are re-picked on the details step.
+    updateCoverageOption({ selectedAddonBenefits: [] })
     if (insurancePlans?.data?.length) return
     startSearch()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -209,8 +213,13 @@ function TravelPlansPageContent() {
       steps={TRAVEL_JOURNEY_STEPS}
       currentStep={0}
       highestVisitedStep={0}
+      headerClassName="relative"
+      className="pb-8 lg:pb-12"
     >
       <>
+        {/* Mobile/tablet pinned trip bar — journey header scrolls away, this stays */}
+        <TripStickyBar onBack={goToSearch} onApply={startSearch} />
+
         {(isSearching || isEmpty) && (
           <JourneyContainer className="mb-6 space-y-4 sm:space-y-6">
             <PageIntro
@@ -240,45 +249,6 @@ function TravelPlansPageContent() {
           <CoverageOptionsForm onRetry={startSearch} summary={summaryBar} />
         )}
       </>
-      {hasPlans && (
-        <div className="border-border bg-card fixed right-0 bottom-0 left-0 z-30 border-t px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
-          <div className="mx-auto flex max-w-7xl items-center gap-3">
-            <button
-              type="button"
-              onClick={goToSearch}
-              className="border-border bg-card text-foreground shrink-0 rounded-full border px-4 py-2.5 text-xs font-semibold"
-            >
-              <ArrowLeft className="mr-1 inline size-3.5" />
-              Back
-            </button>
-            <div className="min-w-0 flex-1 text-center">
-              <p className="text-muted-foreground text-[10px] leading-none">
-                Your trip
-              </p>
-              <p className="text-primary truncate text-sm leading-tight font-black">
-                {titleCase(
-                  travelDetails.travelDetailList[0]?.PlaceOfOrgin ?? ''
-                )}{' '}
-                →{' '}
-                {travelDetails.travelDetailList
-                  .map((d) => titleCase(d.TravelCountry))
-                  .join(', ')}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                document
-                  .getElementById('plan-list')
-                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }
-              className="from-primary to-lilac text-primary-foreground shrink-0 rounded-full bg-gradient-to-r px-5 py-2.5 text-xs font-semibold"
-            >
-              View Plans
-            </button>
-          </div>
-        </div>
-      )}
     </JourneyLayout>
   )
 }

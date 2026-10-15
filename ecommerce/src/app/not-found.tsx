@@ -9,8 +9,8 @@ export default function NotFound() {
           <Image
             src="/images/logo.png"
             alt="One Insurance"
-            width={256}
-            height={63}
+            width={2172}
+            height={724}
             className="h-10 w-auto"
             priority
           />

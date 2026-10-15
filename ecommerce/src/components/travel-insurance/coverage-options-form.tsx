@@ -6,13 +6,26 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PlanCardSkeleton } from '@/components/ui/insurance-shared'
 import { PageIntro } from '@/components/travel-insurance/journey-layout'
 import { InsurancePlan } from '@/types/plan'
 import { TravelInsurancePlan } from './insurance-plan'
 import ServerOffline from '../server-offline'
 import { Input } from '../ui/input'
 import { useDebounce } from '@/hooks/use-debounce'
-import { LayoutList, Table2, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { LayoutList, Table2, PanelLeftClose, PanelLeft, HeartPulse, ShieldPlus, Globe2, ArrowUpDown } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { toPHP } from '@/utils/fx'
+import {
+  getCanonicalConfigForBenefit,
+  resolveLimitDisplay,
+} from '@/utils/travel-benefits-helpers'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { storePlanName } from '@/utils/custom-fields-storage'
@@ -22,6 +35,36 @@ import pacificCrossPlansData from '@/constants/pacific-cross-travel-plans.json'
 import pacificCrossAsiaPlansData from '@/constants/pacific-cross-travel-plans-asia.json'
 import pacificCrossDomesticPlansData from '@/constants/pacific-cross-travel-plans-domestic.json'
 import { TierComparisonMatrix } from './tier-comparison-matrix'
+
+type SortKey = 'match' | 'lowest' | 'highest' | 'addons' | 'discounts'
+type QuickFilter = 'medical' | 'covid' | 'schengen'
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'match', label: 'Best match' },
+  { value: 'lowest', label: 'Lowest price' },
+  { value: 'highest', label: 'Highest coverage' },
+  { value: 'addons', label: 'With add-ons' },
+  { value: 'discounts', label: 'With discounts' },
+]
+
+/** Highest medical-category benefit limit, normalized to PHP. */
+function maxMedicalPHP(plan: any): number {
+  const benefits = [
+    ...(plan.Plan.MainBenefits || []),
+    ...(plan.Plan.AddonBenefits || []),
+  ]
+  return Math.max(
+    0,
+    ...benefits
+      .filter((b: any) => getCanonicalConfigForBenefit(b).label === 'Medical')
+      .map((b: any) => {
+        const d = resolveLimitDisplay(b)
+        return d.kind === 'amount'
+          ? toPHP(Number(d.value), plan.Plan.Currency)
+          : 0
+      })
+  )
+}
 
 function ServerConnectionIssue() {
   return (
@@ -93,9 +136,10 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
   const [hasReachedLimit, setHasReachedLimit] = useState(false)
   const [searchFilter, setSearchFilter] = useState('')
   const debouncedSearchFilter = useDebounce(searchFilter, 300)
-  const [sortBy, setSortBy] = useState<'lowest' | 'highest' | 'addons' | 'discounts'>('lowest')
+  const [sortBy, setSortBy] = useState<SortKey>('match')
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const [selectedCoverages, setSelectedCoverages] = useState<string[]>([])
+  const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([])
   const [viewMode, setViewMode] = useState<'list' | 'compare'>('list')
   const [showFilters, setShowFilters] = useState(true)
 
@@ -126,6 +170,29 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
     )
     scrollToPlans()
   }
+
+  const toggleQuickFilter = (filter: QuickFilter) => {
+    setQuickFilters((prev) =>
+      prev.includes(filter) ? prev.filter((f) => f !== filter) : [...prev, filter]
+    )
+    scrollToPlans()
+  }
+
+  const clearFilters = () => {
+    setSearchFilter('')
+    setSelectedProviders([])
+    setSelectedCoverages([])
+    setQuickFilters([])
+    setSortBy('match')
+  }
+
+  const filtersActive =
+    !!debouncedSearchFilter ||
+    selectedProviders.length > 0 ||
+    selectedCoverages.length > 0 ||
+    quickFilters.length > 0 ||
+    sortBy === 'addons' ||
+    sortBy === 'discounts'
 
   const allTravelPlans = useMemo(() => {
     // Dynamic plans from WebSocket (Malayan, Oona, etc.)
@@ -208,6 +275,23 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
         return selectedCoverages.some((c) => planCoverages.includes(c))
       })
       .filter((plan: any) => {
+        // Mobile quick-filter chips — AND across active chips
+        if (quickFilters.length === 0) return true
+        const allBenefits = [...(plan.Plan.MainBenefits || []), ...(plan.Plan.AddonBenefits || [])]
+        return quickFilters.every((f) => {
+          if (f === 'medical') return maxMedicalPHP(plan) >= 1_000_000
+          if (f === 'covid')
+            return allBenefits.some((b: any) =>
+              /covid/i.test(`${b.BenefitDesc} ${b.CoverageName || ''} ${b.SubCoverageName || ''}`)
+            )
+          if (f === 'schengen')
+            return /schengen/i.test(
+              `${plan.Plan.CarrierPlanDesc} ${plan.Plan.Zone?.code || ''} ${plan.Plan.Zone?.name || ''}`
+            )
+          return true
+        })
+      })
+      .filter((plan: any) => {
         // Filter by add-ons: only show plans that actually have AddonBenefits with data
         if (sortBy === 'addons') {
           return plan.Plan.AddonBenefits && plan.Plan.AddonBenefits.length > 0
@@ -220,14 +304,22 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
         return true
       })
       .sort((a: any, b: any) => {
+        // 'match' — preserve the order the insurer/API returned
+        if (sortBy === 'match') return 0
         if (sortBy === 'lowest') {
-          return Number(a.Plan.DuePremium) - Number(b.Plan.DuePremium)
+          // Premiums may be quoted in USD/EUR — compare on PHP-normalized values
+          return (
+            toPHP(Number(a.Plan.DuePremium), a.Plan.Currency) -
+            toPHP(Number(b.Plan.DuePremium), b.Plan.Currency)
+          )
         }
         if (sortBy === 'addons') {
-          // Among plans with add-ons, sort by number of add-ons descending
-          const aAddons = (a.Plan.AddonBenefits || []).length
-          const bAddons = (b.Plan.AddonBenefits || []).length
-          return bAddons - aAddons
+          // Among plans with add-ons, sort by number of distinct add-on
+          // groups descending (AddonBenefits is flattened parent + children
+          // rows — only parent rows, ParentBenefit === null, are groups).
+          const countGroups = (p: any) =>
+            (p.Plan.AddonBenefits || []).filter((b: any) => b.ParentBenefit == null).length
+          return countGroups(b) - countGroups(a)
         }
         if (sortBy === 'discounts') {
           // Among discounted plans, sort by discount amount descending
@@ -235,14 +327,21 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
           const bDiscount = Number(b.Plan.Discount || b.Plan.DiscountAmount || 0)
           return bDiscount - aDiscount
         }
-        // highest sum insured — use the max Silimit from MainBenefits or AddonBenefits
+        // highest coverage — max benefit limit, PHP-normalized per plan currency
         const getMaxSi = (plan: any) => {
           const allBenefits = [...(plan.MainBenefits || []), ...(plan.AddonBenefits || [])]
-          return Math.max(0, ...allBenefits.map((b: any) => Number(b.Silimit || 0)))
+          return Math.max(
+            0,
+            ...allBenefits.map((b: any) => {
+              const d = resolveLimitDisplay(b)
+              const raw = d.kind === 'amount' ? Number(d.value) : Number(b.Silimit || 0)
+              return toPHP(raw, plan.Currency)
+            })
+          )
         }
         return getMaxSi(b.Plan) - getMaxSi(a.Plan)
       })
-  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages, travelDetails.travelDetailList, providerFilter])
+  }, [insurancePlans?.data, debouncedSearchFilter, sortBy, selectedProviders, selectedCoverages, quickFilters, travelDetails.travelDetailList, providerFilter])
 
   // Get available providers from loaded plans
   const availableProviders = useMemo(() => {
@@ -304,8 +403,23 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
     
     storePlanName(plan.CarrierPlanDesc)
     updateCustomFields(customFields)
-    updateCoverageOption({ selectedPlan: plan, carrierCode })
-    
+
+    // Keep only add-on selections whose group code exists on the newly
+    // selected plan — switching insurers clears them; switching between
+    // plans that share the same add-on groups keeps them.
+    const newPlanAddonCodes = new Set(
+      (plan.AddonBenefits ?? [])
+        .filter((b) => b.ParentBenefit == null && b.BenefitCode != null)
+        .map((b) => b.BenefitCode)
+    )
+    updateCoverageOption({
+      selectedPlan: plan,
+      carrierCode,
+      selectedAddonBenefits: (coverageOption.selectedAddonBenefits ?? []).filter(
+        (code) => newPlanAddonCodes.has(code)
+      ),
+    })
+
     router.push(`/${agentCode}/products/travel-insurance/avail`)
   }
 
@@ -445,49 +559,80 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
               />
               {summary}
 
-              {/* Mobile-only horizontal sort pills */}
-              <div className="flex sm:hidden gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
-                {(
-                  [
-                    { value: 'lowest', label: '↓ Lowest Price' },
-                    { value: 'highest', label: '↑ Sum Insured' },
-                    { value: 'addons', label: '✦ With Add-ons' },
-                    { value: 'discounts', label: '% Discounts' },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setSortBy(opt.value)}
-                    className={cn(
-                      'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                      sortBy === opt.value
-                        ? 'border-primary bg-primary text-white'
-                        : 'border-border bg-card text-muted-foreground'
-                    )}
+              {/* Mobile-only: sort control + horizontally scrollable filter chips */}
+              <div className="flex items-center gap-2 sm:hidden">
+                <Select
+                  value={sortBy}
+                  onValueChange={(v) => setSortBy(v as SortKey)}
+                >
+                  <SelectTrigger
+                    aria-label="Sort plans"
+                    className="min-h-11 w-auto shrink-0 gap-1.5 rounded-full px-3.5 text-xs font-medium"
                   >
-                    {opt.label}
-                  </button>
-                ))}
-                {!providerFilter && availableProviders.map((code: string) => {
-                  const company = COMPANIES.find((c) => c.carrierCode === code)
-                  const isActive = selectedProviders.includes(code)
-                  return (
-                    <button
-                      key={code}
-                      type="button"
-                      onClick={() => toggleProvider(code)}
-                      className={cn(
-                        'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                        isActive
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-border bg-card text-muted-foreground'
-                      )}
-                    >
-                      {company?.companyName || code}
-                    </button>
-                  )
-                })}
+                    <ArrowUpDown className="size-3.5 shrink-0" aria-hidden />
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <div
+                  className="scrollbar-none -mx-1 flex flex-1 gap-2 overflow-x-auto px-1 pb-1"
+                  role="group"
+                  aria-label="Plan filters"
+                >
+                  {(
+                    [
+                      { key: 'medical' as QuickFilter, label: 'Medical ₱1M+', icon: HeartPulse },
+                      { key: 'covid' as QuickFilter, label: 'COVID cover', icon: ShieldPlus },
+                      { key: 'schengen' as QuickFilter, label: 'Schengen', icon: Globe2 },
+                    ] as const
+                  ).map((chip) => {
+                    const isActive = quickFilters.includes(chip.key)
+                    return (
+                      <button
+                        key={chip.key}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => toggleQuickFilter(chip.key)}
+                        className={cn(
+                          'inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-xs font-medium whitespace-nowrap motion-safe:transition-colors',
+                          isActive
+                            ? 'border-primary bg-primary text-white'
+                            : 'border-border bg-card text-muted-foreground'
+                        )}
+                      >
+                        <chip.icon className="size-3.5" aria-hidden />
+                        {chip.label}
+                      </button>
+                    )
+                  })}
+                  {!providerFilter && availableProviders.map((code: string) => {
+                    const company = COMPANIES.find((c) => c.carrierCode === code)
+                    const isActive = selectedProviders.includes(code)
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => toggleProvider(code)}
+                        className={cn(
+                          'inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-xs font-medium whitespace-nowrap motion-safe:transition-colors',
+                          isActive
+                            ? 'border-primary bg-primary text-white'
+                            : 'border-border bg-card text-muted-foreground'
+                        )}
+                      >
+                        {company?.companyName || code}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </>
           )}
@@ -531,22 +676,7 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
             <div className="flex flex-1 flex-col gap-4">
               <Skeleton className="h-4 w-56" />
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex w-full overflow-hidden rounded-xl border">
-                  <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[120px] rounded-none" />
-                  <div className="flex flex-1 flex-col justify-center p-4 sm:p-5 gap-3">
-                    <Skeleton className="h-5 w-[55%]" />
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                      <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
-                    </div>
-                  </div>
-                  <div className="flex w-[140px] sm:w-[160px] md:w-[180px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
-                    <Skeleton className="h-7 w-16" />
-                    <Skeleton className="h-3 w-12" />
-                    <Skeleton className="h-8 w-full rounded-full" />
-                  </div>
-                </div>
+                <PlanCardSkeleton key={i} />
               ))}
               <p className="text-muted-foreground text-center text-sm">
                 Searching for the best plans for you...
@@ -614,14 +744,7 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
                   <div>
                     <h4 className="text-foreground mb-2 text-xs font-bold uppercase tracking-wide">Sort by</h4>
                     <ul className="space-y-1">
-                      {(
-                        [
-                          { value: 'lowest', label: 'Lowest premium' },
-                          { value: 'highest', label: 'Highest sum insured' },
-                          { value: 'addons', label: 'With add-ons' },
-                          { value: 'discounts', label: 'With discounts' },
-                        ] as const
-                      ).map((opt) => (
+                      {SORT_OPTIONS.map((opt) => (
                         <li key={opt.value}>
                           <button
                             type="button"
@@ -722,6 +845,8 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
                 showFilters ? 'lg:pl-5' : 'lg:pl-6'
               )}
             >
+              {/* h2 anchors the h3 plan names — keeps heading order valid */}
+              <h2 className="sr-only">Available plans</h2>
               {/* Toolbar: search inline with List/Compare toggle */}
               <div className="flex items-center gap-2">
                 {/* Expand-filters button — desktop only, shown when sidebar is hidden */}
@@ -741,6 +866,7 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
                   <Input
                     className="h-9 w-full"
                     placeholder="Search plans…"
+                    aria-label="Search plans"
                     value={searchFilter}
                     onChange={handleSearchInputChange}
                   />
@@ -779,13 +905,33 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
                 {/* Mobile search — full width, visible only on small screens */}
                 <div className="flex lg:hidden flex-1 min-w-0">
                   <Input
-                    className="h-9 w-full"
+                    className="h-11 w-full"
                     placeholder="Search plans…"
+                    aria-label="Search plans"
                     value={searchFilter}
                     onChange={handleSearchInputChange}
                   />
                 </div>
               </div>
+
+              {/* Filtered-out empty state — plans exist but none match */}
+              {allTravelPlans.length === 0 && (
+                <div className="border-border bg-card flex flex-col items-center gap-3 rounded-xl border px-6 py-12 text-center">
+                  <h3 className="text-foreground text-base font-bold">
+                    No plans match your filters
+                  </h3>
+                  <p className="text-muted-foreground max-w-xs text-sm">
+                    Try removing a filter or searching for something else.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    className="border-border bg-muted text-foreground hover:bg-muted/70 focus-visible:ring-ring inline-flex min-h-11 items-center rounded-full border px-6 text-sm font-medium outline-none focus-visible:ring-2"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              )}
 
               {viewMode === 'list' ? (
                 <div className="flex flex-col gap-2">

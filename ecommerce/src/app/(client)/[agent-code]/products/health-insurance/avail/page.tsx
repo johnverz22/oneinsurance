@@ -139,7 +139,7 @@ function HealthAvailContent() {
             onClick={() => router.push(`/${agentCode}`)}
             className="inline-flex cursor-pointer items-center gap-3 rounded-tl-full rounded-br-full bg-white px-4 py-1 shadow-lg sm:px-13"
           >
-            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-5 w-auto sm:h-10" priority />
+            <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-5 w-auto sm:h-10" priority />
           </div>
           <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-4 w-auto sm:h-10" priority />
         </div>

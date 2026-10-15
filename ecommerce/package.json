@@ -47,6 +47,7 @@
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-fade": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
+    "flag-icons": "^7.5.0",
     "isomorphic-dompurify": "^2.27.0",
     "jspdf": "^4.2.1",
     "laravel-echo": "^2.2.4",

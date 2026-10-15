@@ -33,7 +33,7 @@ export default function CtplCertificatePage() {
       <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto" />
+          <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-8 w-auto" />
           <div className="text-center">
             <h1 className="text-2xl font-black text-primary">Cover Note</h1>
             <p className="text-sm text-muted-foreground">Sum Insured Coverage</p>

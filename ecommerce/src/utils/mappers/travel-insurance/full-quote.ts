@@ -35,6 +35,14 @@ export interface IgwFullQuoteTraveller {
   }
   email: string
   mobile: string
+  /**
+   * Add-on group codes chosen on the plan-details step (compare-quote
+   * `coverages[].addon_code`, e.g. "cruise", "covid19"). Verified against
+   * staging 2026-10-15: the gateway applies them per traveller and reprices
+   * the quote — the response echoes them back on travellers[].selected_addons
+   * and premium.amount includes them. Applied to every traveller.
+   */
+  selected_addons: string[]
 }
 
 export interface IgwTravellerListEntry {
@@ -72,7 +80,13 @@ export interface IgwFullQuoteResponse {
     product: { code: string; name: string }
     plan: { code: string; name: string }
     premium: { amount: string; currency: string }
-    travellers: unknown[]
+    travellers: Array<{
+      is_principal_applicant: boolean
+      first_name: string
+      last_name: string
+      date_of_birth: string
+      selected_addons?: string[]
+    }>
     expires_at: string
   }
   errors?: Record<string, string[]>
@@ -143,6 +157,9 @@ export function mapToIgwFullQuoteRequest(
       },
       email: t.email,
       mobile: t.mobileNumber,
+      // Add-on group codes picked on the plan-details step — the gateway
+      // applies these per traveller and reprices the quote.
+      selected_addons: state.coverageOption.selectedAddonBenefits ?? [],
     })
   )
 

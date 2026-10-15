@@ -77,7 +77,7 @@ function ProviderTravelInsurancePageContent() {
             onClick={() => router.push(`/${agentCode}/products/travel-insurance`)}
             className="absolute top-8 left-4 z-10 cursor-pointer gap-3 rounded-tl-full rounded-br-full bg-white px-12 py-1 shadow-lg lg:left-28 xl:left-32"
           >
-            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-10 w-auto" priority />
+            <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-10 w-auto" priority />
           </div>
           <div className="absolute inset-0 bg-black/80 dark:bg-black/30" />
         </div>

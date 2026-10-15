@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { COMPANIES } from '@/constants/companies'
-import { CheckIcon, ChevronDown, ChevronUp, Info, Loader2Icon, ShieldCheck } from 'lucide-react'
+import { ChevronDown, ChevronUp, Info, Loader2Icon, ShieldCheck } from 'lucide-react'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { DownloadPDFButton } from './travel-policy-pdf'
@@ -18,6 +18,7 @@ import {
   parseLimit,
 } from '@/utils/travel-benefits-helpers'
 import { PlanHeaderStrip } from './plan-header-strip'
+import { TravelAddonsSection, AddonGroup } from './travel-addons-section'
 import { TravelDetailsSummary } from './travel-details-summary'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { cn } from '@/lib/utils'
@@ -49,8 +50,19 @@ export function ReviewCoverage() {
   }
 
   const plan = coverageOption.selectedPlan!
-  const groupedMainBenefits = groupBenefits(plan)
   const { groupedAddonBenefits } = groupPlanBenefits(plan)
+
+  const addonGroups: AddonGroup[] = useMemo(
+    () =>
+      Object.entries(groupedAddonBenefits)
+        .filter(([, group]) => group.children.length > 0)
+        .map(([code, group]) => ({
+          code,
+          category: group.parent.CoverageName || group.parent.BenefitDesc,
+          benefits: group.children,
+        })),
+    [groupedAddonBenefits]
+  )
 
   const group = groupBenefits(plan)
   const { benefits, hasMore } = getHighlightedBenefits(group, true)
@@ -152,91 +164,25 @@ export function ReviewCoverage() {
             </div>
           </CardContent>
 
-          {groupedAddonBenefits &&
-            Object.keys(groupedAddonBenefits).length > 0 && (
-              <div className="border-t-muted-foreground/10 space-y-6 border-t px-6 py-6">
-                <h2 className="text-primary text-lg font-semibold sm:text-xl">
-                  Travel add-ons
-                </h2>
-                <div className="grid gap-3">
-                  {Object.entries(groupedAddonBenefits).map(
-                    ([benefitCode, benefitGroup]) => (
-                      <Card key={benefitCode} className="space-y-3">
-                        <CardHeader className="flex items-center gap-3">
-                          <div className="bg-primary from-primary to-accent relative flex h-12 w-12 items-center justify-center self-end rounded-full bg-gradient-to-r via-90% text-center text-white">
-                            <ShieldCheck />
-                          </div>
-                          <label
-                            htmlFor={`addon-checkbox-${benefitCode}`}
-                            className="cursor-pointer font-bold text-foreground dark:text-muted-foreground"
-                          >
-                            {benefitGroup.parent.CoverageName}
-                          </label>
-                        </CardHeader>
-                        <CardContent className="flex h-full flex-col">
-                          <div className="h-full space-y-2 pb-6">
-                            {benefitGroup.children.map((benefit, index) => (
-                              <div
-                                className="flex items-start gap-2"
-                                key={`${benefit.BenefitCode}-${index}`}
-                              >
-                                <CheckIcon
-                                  width={16}
-                                  height={16}
-                                  className="text-primary mt-0.5 shrink-0"
-                                />
-                                <div className="text-sm text-muted-foreground flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-4">
-                                  <p className="font-medium">
-                                    {benefit.BenefitDesc}
-                                  </p>
-                                  <p className="text-primary font-semibold sm:whitespace-nowrap">
-                                    {benefit.DefaultLimitDesc !== '0'
-                                      ? benefit.DefaultLimitDesc
-                                      : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
-                                    {benefit.LimitModeDesc && ` · ${benefit.LimitModeDesc}`}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleAddonChange(
-                                benefitCode,
-                                !localSelectedAddons.includes(benefitCode)
-                              )
-                            }
-                            className={`flex items-center gap-2 self-end rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                              localSelectedAddons.includes(benefitCode)
-                                ? 'bg-primary !border-primary from-primary to-accent relative flex items-center justify-center self-end rounded-full bg-gradient-to-r via-90% text-white'
-                                : 'border-border bg-white text-foreground hover:bg-muted/50'
-                            } `}
-                          >
-                            {localSelectedAddons.includes(benefitCode)
-                              ? '✓'
-                              : '+'}
-                            &nbsp;Add to trip
-                          </button>
-                        </CardContent>
-                      </Card>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
+          <TravelAddonsSection
+            groups={addonGroups}
+            selected={localSelectedAddons}
+            onToggle={handleAddonChange}
+            currency={plan.Currency}
+          />
         </Card>
 
         {/* Mobile-only: Premium summary (replaces sidebar on mobile) */}
-        <div className="lg:hidden rounded-xl border border-border bg-white p-4 space-y-3">
+        <div className="lg:hidden rounded-xl border border-border bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-foreground">Total premium</span>
             <span className="text-lg font-black text-primary">₱{Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
           </div>
           <p className="text-xs text-muted-foreground flex items-start gap-1">
             <Info className="h-3 w-3 mt-0.5 shrink-0" />
-            The total premium includes base cost, add-ons, and applicable taxes.
+            {addonGroups.length > 0
+              ? 'Premium reflects the base plan — selected add-ons are priced in when your quote is created.'
+              : 'The total premium includes base cost and applicable taxes.'}
           </p>
         </div>
 

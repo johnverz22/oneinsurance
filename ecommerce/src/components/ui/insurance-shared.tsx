@@ -39,32 +39,55 @@ export function PrimaryActionButton({ children, size = 'md', className, ...props
 }
 
 // ─── Plan Card Skeleton (loading state for plan cards) ────────────────────────
+// Mirrors the plan card's responsive structure: vertically stacked on mobile
+// (< sm), 3-panel row on desktop.
 export function PlanCardSkeleton() {
   return (
-    <div className="flex w-full overflow-hidden rounded-xl border">
-      <Skeleton className="w-[140px] sm:w-[160px] md:w-[180px] h-[140px] rounded-none" />
-      <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
-        <Skeleton className="h-5 w-[60%] mb-3" />
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-          <div>
-            <Skeleton className="h-4 w-20 mb-1" />
-            <Skeleton className="h-3 w-28" />
-          </div>
-          <div>
-            <Skeleton className="h-4 w-20 mb-1" />
-            <Skeleton className="h-3 w-28" />
-          </div>
-          <div>
-            <Skeleton className="h-4 w-20 mb-1" />
-            <Skeleton className="h-3 w-28" />
+    <div className="w-full overflow-hidden rounded-xl border">
+      {/* Mobile: stacked skeleton matching the real card's rows */}
+      <div className="flex flex-col gap-3 p-4 sm:hidden">
+        {/* Logo tile (centered) */}
+        <div className="flex h-14 items-center justify-center rounded-lg border border-border py-2">
+          <Skeleton className="h-10 w-36 min-[390px]:h-12" />
+        </div>
+        {/* Plan name + price (centered pair) */}
+        <div className="flex flex-col items-center gap-1.5">
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-3 w-48" />
+        </div>
+        {/* Headline coverage chip */}
+        <Skeleton className="mx-auto h-6 w-36 rounded-full" />
+        {/* Key benefit rows */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-4/5" />
+        </div>
+        {/* Accordion toggle */}
+        <Skeleton className="h-11 w-full rounded-full" />
+        {/* Apply Now CTA + caption */}
+        <div className="space-y-1.5">
+          <Skeleton className="h-12 w-full rounded-full" />
+          <Skeleton className="mx-auto h-3 w-36" />
+        </div>
+      </div>
+      {/* Desktop: 3-panel row */}
+      <div className="hidden w-full sm:flex">
+        <Skeleton className="w-[160px] md:w-[180px] h-[120px] rounded-none" />
+        <div className="flex flex-1 flex-col justify-center p-4 sm:p-5 gap-3">
+          <Skeleton className="h-5 w-[55%]" />
+          <div className="grid grid-cols-3 gap-x-4 gap-y-2">
+            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
+            <div><Skeleton className="h-4 w-16 mb-1" /><Skeleton className="h-3 w-24" /></div>
           </div>
         </div>
-        <Skeleton className="h-3 w-16 mt-2" />
-      </div>
-      <div className="flex w-[130px] sm:w-[150px] shrink-0 flex-col items-center justify-center border-l p-4">
-        <Skeleton className="h-8 w-20 mb-2" />
-        <Skeleton className="h-3 w-14 mb-3" />
-        <Skeleton className="h-9 w-full rounded-full" />
+        <div className="flex w-[160px] md:w-[180px] shrink-0 flex-col items-center justify-center border-l p-4 gap-2">
+          <Skeleton className="h-7 w-16" />
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-8 w-full rounded-full" />
+        </div>
       </div>
     </div>
   )

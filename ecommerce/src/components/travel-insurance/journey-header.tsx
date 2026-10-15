@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { cn } from '@/lib/utils'
 import { JourneyStepper } from '@/components/travel-insurance/journey-stepper'
 import { JOURNEY_PARTNER_CAPTION } from '@/constants/travel-journey'
 
@@ -10,6 +11,7 @@ type JourneyHeaderProps = {
   currentStep: number
   highestVisitedStep?: number
   onStepChange?: (step: number) => void
+  className?: string
 }
 
 export function JourneyHeader({
@@ -17,9 +19,10 @@ export function JourneyHeader({
   steps,
   currentStep,
   onStepChange,
+  className,
 }: JourneyHeaderProps) {
   return (
-    <header className="border-border bg-card sticky top-0 z-20 border-b sm:relative sm:z-auto">
+    <header className={cn('border-border bg-card sticky top-0 z-20 border-b sm:relative sm:z-auto', className)}>
       <div>
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6">
           <a
@@ -29,8 +32,8 @@ export function JourneyHeader({
             <Image
               src="/images/logo.png"
               alt="One Insurance"
-              width={256}
-              height={63}
+              width={2172}
+              height={724}
               className="h-7 w-auto sm:h-9 lg:h-10"
               priority
             />

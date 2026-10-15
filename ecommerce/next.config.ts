@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Hide the on-screen dev indicator so it can't overlap the mobile UI.
+  devIndicators: false,
+
   // rewrites: async () => [
   //   {
   //     source: '/api/:path*',
@@ -10,6 +13,7 @@ const nextConfig: NextConfig = {
   // reactStrictMode: false,
 
   images: {
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: 'https',

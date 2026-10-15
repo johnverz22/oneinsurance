@@ -879,7 +879,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                           : 'opacity-50 [&_svg]:invisible'
                       )}
                     >
-                      <CheckIcon className="h-4 w-4" />
+                      <CheckIcon className="text-primary-foreground h-4 w-4" />
                     </div>
                     <span>
                       (Select All
@@ -915,7 +915,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                                 : 'opacity-50 [&_svg]:invisible'
                             )}
                           >
-                            <CheckIcon className="h-4 w-4" />
+                            <CheckIcon className="text-primary-foreground h-4 w-4" />
                           </div>
                           {option.icon && (
                             <option.icon className="text-muted-foreground mr-2 h-4 w-4" />
@@ -949,7 +949,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                               : 'opacity-50 [&_svg]:invisible'
                           )}
                         >
-                          <CheckIcon className="h-4 w-4" />
+                          <CheckIcon className="text-primary-foreground h-4 w-4" />
                         </div>
                         {option.icon && (
                           <option.icon className="text-muted-foreground mr-2 h-4 w-4" />

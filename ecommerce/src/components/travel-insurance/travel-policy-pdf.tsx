@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  logo: { width: 80, height: 40 },
+  logo: { width: 120, height: 40 },
   companyInfo: { fontSize: 8, maxWidth: '60%' },
   title: {
     textAlign: 'center',

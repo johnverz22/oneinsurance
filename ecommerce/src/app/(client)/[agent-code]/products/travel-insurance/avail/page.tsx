@@ -330,7 +330,6 @@ export default function AvailTravelInsurance() {
 
   return (
     <JourneyLayout
-      fill={paymentBusy}
       className={paymentBusy ? 'pb-8 lg:pb-12' : undefined}
       agentCode={agentCode}
       steps={steps}

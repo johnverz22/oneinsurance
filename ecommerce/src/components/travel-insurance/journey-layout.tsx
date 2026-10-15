@@ -6,18 +6,22 @@ import { cn } from '@/lib/utils'
 type JourneyLayoutProps = React.ComponentProps<typeof JourneyHeader> & {
   children: React.ReactNode
   className?: string
-  fill?: boolean
+  /** Forwarded to the journey <header> (e.g. to un-pin it on pages with their own sticky bar). */
+  headerClassName?: string
 }
 
 export function JourneyLayout({
   children,
   className,
-  fill,
+  headerClassName,
   ...headerProps
 }: JourneyLayoutProps) {
   return (
-    <div className={cn('bg-section relative min-h-screen w-full', !fill && 'lg:min-h-0')}>
-      <JourneyHeader {...headerProps} />
+    // min-h-screen on every breakpoint — journey pages render no site footer,
+    // so a short step (e.g. payment with nothing selected) must still paint
+    // the section background to the bottom of the viewport.
+    <div className={cn('bg-section relative min-h-screen w-full')}>
+      <JourneyHeader {...headerProps} className={headerClassName} />
       <div className={cn('pt-4 pb-28 sm:pt-6 lg:pb-12', className)}>
         {children}
       </div>

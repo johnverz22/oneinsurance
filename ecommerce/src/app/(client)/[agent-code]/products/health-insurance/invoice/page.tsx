@@ -66,7 +66,7 @@ function InvoiceContent() {
         <div className="rounded-2xl bg-white p-8 shadow-sm">
           {/* Invoice header */}
           <div className="mb-6 flex items-center justify-between">
-            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-10 w-auto" />
+            <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-10 w-auto" />
             <h1 className="text-2xl font-bold text-foreground">Invoice</h1>
             <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>

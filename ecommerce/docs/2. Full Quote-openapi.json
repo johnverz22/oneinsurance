@@ -1,0 +1,206 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "2. Full Quote",
+    "description": "Create the quote for the picked plan, then (staging only) record a test payment so it can be issued.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/travel/full-quote": {
+      "post": {
+        "summary": "2.1 Full Quote",
+        "responses": {
+          "200": {
+            "description": "OONA Full-quote"
+          },
+          "201": {
+            "description": "Created - 201",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Successful",
+                  "data": {
+                    "id": "b1f0c2d4-0000-0000-0000-000000000000",
+                    "proposal_number": "MIC-TMPHPC2-261013-000001",
+                    "status": "draft",
+                    "insurer": {
+                      "code": "MIC",
+                      "name": "Malayan Insurance"
+                    },
+                    "product": {
+                      "code": "MIC-TRAVEL-MASTER",
+                      "name": "Travel Master"
+                    },
+                    "plan": {
+                      "code": "TMPHPC2",
+                      "name": "TM CSL ASIAN W/ COVID 500K"
+                    },
+                    "premium": {
+                      "amount": "258.00",
+                      "currency": "PHP"
+                    },
+                    "travellers": [
+                      {
+                        "is_principal_applicant": true,
+                        "first_name": "Ram",
+                        "last_name": "Kumar",
+                        "date_of_birth": "1990-03-01"
+                      }
+                    ],
+                    "expires_at": "2026-10-14T00:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request still in flight - 409",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "A request with this Idempotency-Key is already being processed."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Comparison not ready or expired - 422",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "No ready comparison result was found with that id.",
+                  "errors": {
+                    "quote_comparison_request_id": [
+                      "No ready comparison result was found with that id."
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Gateway failure - 502",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Travel full quote failed."
+                }
+              }
+            }
+          }
+        },
+        "description": "Create the quote for the picked plan. Run 1.1 and 1.2 first (this uses the saved variables).\n\nFIELDS\n- ClientRequestId: the id from 1.1 (same one used for the websocket and the GET)\n- AgentCode: the selling agent\n- insurer_code / product_code / plan_code: from the picked card (card.insurer.code, card.product.code, card.plan.code)\n- travellers[]: count must equal NoOfTravellers from 1.1; exactly one is_principal_applicant=true\n- CustomField (this API only, not sent to the insurer): PlanName, TravellerLists, IdImages (multipart)\n\nVALIDATION happens at the insurer gateway, not in this API. id_type values and address.country codes must be ones the gateway accepts (ask backend for the list; 'PAS' is only an example).\n\nErrors: 422 + errors{} (keys like 'travellers.0.id_number' contain dots - use bracket access), 422 on quote_comparison_request_id (comparison not ready/expired -> compare again), 409 (same Idempotency-Key still in flight), 502 (insurer/gateway failure).\n\nRETRY: enable Idempotency-Key and reuse the same value, or resend an identical body; either returns the original quote instead of creating a second one.\n\nID IMAGES: switch the body to form-data, send fields as travellers[0][first_name] ... and add CustomField[IdImages][0][file_name|front_id|back_id]. In form-data send booleans as 1/0 (not 'true').",
+        "operationId": "21_Full_Quote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "ClientRequestId": "<<client_request_id>>",
+                "AgentCode": "<<agent_code>>",
+                "insurer_code": "<<insurer_code>>",
+                "product_code": "<<product_code>>",
+                "plan_code": "<<plan_code>>",
+                "travellers": [
+                  {
+                    "is_principal_applicant": true,
+                    "first_name": "Ram",
+                    "middle_name": "K",
+                    "last_name": "Kumar",
+                    "suffix": null,
+                    "date_of_birth": "1990-03-01",
+                    "gender": "male",
+                    "id_type": "PAS",
+                    "id_number": "L8976M98",
+                    "address": {
+                      "line1": "KKK",
+                      "line2": "Manila",
+                      "city": "Manila",
+                      "province": "Metro Manila",
+                      "postal_code": "2922",
+                      "country": "PH"
+                    },
+                    "email": "xyz@gmail.com",
+                    "mobile": "9898765467"
+                  }
+                ],
+                "CustomField": {
+                  "PlanName": "<<plan_name>>",
+                  "TravellerLists": []
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/set-merchant": {
+      "post": {
+        "summary": "2.2 Record Payment (test only)",
+        "responses": {
+          "200": {
+            "description": "Recorded - 200",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Merchant payment completed successfully."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed or already completed - 400",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Merchant payment failed. Please try again."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong token - 401",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": false,
+                  "message": "Unauthorized access"
+                }
+              }
+            }
+          }
+        },
+        "description": "TEST ONLY (staging). In production the checkout (DLT) calls this endpoint itself after the customer pays. It records the payment against the proposal so that 3.1 Issue Quote can run. Do NOT call it from the real front end.\n\nRun after 2.1 (uses proposal_number and premium_amount saved there). The amount must equal the quoted premium, or the insurer rejects the issue.\n\nNeeds the X-DLT-TOKEN secret (set the dlt_token variable; ask backend).\n\ntransaction_status_code must be OK.00.00 for the payment to count as successful. other_reference.other_reference_1 carries the proposal number.\n\nErrors: 401 wrong or missing X-DLT-TOKEN; 400 payment failed, or the transaction is already completed.",
+        "operationId": "22_Record_Payment_test_only",
+        "parameters": [
+          {
+            "name": "X-DLT-TOKEN",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "<<dlt_token>>",
+            "description": "Shared secret of the checkout callback. Ask backend."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": "{\n  \"merchant_transaction_id\": \"TEST-<<proposal_number>>\",\n  \"amount\": <<premium_amount>>,\n  \"transaction_status\": \"Success\",\n  \"transaction_status_code\": \"OK.00.00\",\n  \"transaction_date\": \"<<payment_date>>\",\n  \"customer_id\": \"TEST-CUSTOMER\",\n  \"other_reference\": {\n    \"other_reference_1\": \"<<proposal_number>>\"\n  }\n}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "<<base_url>>"
+    }
+  ]
+}

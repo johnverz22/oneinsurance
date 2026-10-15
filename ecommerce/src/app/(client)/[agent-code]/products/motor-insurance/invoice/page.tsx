@@ -25,7 +25,7 @@ export default function CtplInvoicePage() {
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto mb-2" />
+            <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-8 w-auto mb-2" />
             <p className="text-xs text-muted-foreground">www.oneinsurance.com</p>
             <p className="text-xs text-muted-foreground">oneinsurance@gmail.com</p>
             <p className="text-xs text-muted-foreground">+63912 345 6789</p>

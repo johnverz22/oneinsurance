@@ -5,6 +5,7 @@ import { TabsContent } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CountryFlag } from '@/components/ui/country-flag'
 
 interface TravelDestinationProps {
   travelCoverageMap: Record<
@@ -93,7 +94,7 @@ export function TravelDestinationSelection({
                           }
                         )}
                       />
-                      {country.flag}
+                      <CountryFlag flag={country.flag} />
                     </div>
 
                     <span className="w-full text-left">{country.name}</span>

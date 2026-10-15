@@ -89,7 +89,7 @@ export const PlanPaymentReview = ({
           {/* Add-Ons Section */}
           {addedAddonBenefits && addedAddonBenefits.length > 0 && (
             <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-              <div className="text-xs text-muted-foreground mb-0.5">Add-Ons</div>
+              <div className="text-xs text-muted-foreground mb-0.5">Add-Ons selected</div>
               <div className="space-y-1">
                 {addedAddonBenefits.map((addon, index) => (
                   <div
@@ -110,7 +110,9 @@ export const PlanPaymentReview = ({
               About this premium
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              The total premium already includes the base insurance cost, selected add-ons, carrier pricing adjustments, and applicable taxes and fees as determined by the insurance provider.
+              {stage === 'initial' && addedAddonBenefits && addedAddonBenefits.length > 0
+                ? 'The premium shown reflects the base plan — your total is updated to include selected add-ons when your quote is created.'
+                : 'The total premium already includes the base insurance cost, selected add-ons, carrier pricing adjustments, and applicable taxes and fees as determined by the insurance provider.'}
             </p>
           </div>
         </CardContent>

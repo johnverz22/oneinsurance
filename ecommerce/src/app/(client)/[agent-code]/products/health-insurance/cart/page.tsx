@@ -37,7 +37,7 @@ export default function CartPage() {
             <span className="font-semibold text-foreground">Cart</span>
           </div>
           <div className="flex items-center gap-2">
-            <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-8 w-auto" />
+            <Image src="/images/logo.png" alt="One Insurance" width={2172} height={724} className="h-8 w-auto" />
             <Image src="/images/IFRC.png" alt="IFRC" width={1290} height={800} className="h-10 w-auto" />
           </div>
         </div>

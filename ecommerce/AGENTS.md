@@ -11,3 +11,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Design System (this app only)
 
 This app uses a unified design system — semantic Tailwind v4 tokens (`text-muted-foreground`, `bg-section`, `text-success`, `text-warning`, `fill-rating`) plus shared primitives (`Card` variants, `StarRating`, `PriceDisplay`, `PrimaryActionButton`, `PlanCardSkeleton`, `NoPlanState`, `SortFilterSidebar`, `Stepper`, `MetricCard`, `InsuranceBanner`). Never use raw palette classes (`text-gray-*`, `bg-slate-*`, `text-green-*`) or hardcoded hex — see `.agents/skills/design-system/SKILL.md` and `docs/ui_audit.md` for the full rules.
+
+## Local verify quirks (Windows)
+
+- `node`/`npm` aren't on the agent shell PATH — prepend
+  `export PATH="/c/Program Files/nodejs:/c/Users/larry/AppData/Roaming/npm:$PATH"`.
+- `/_next/mcp` is live when `next dev` runs (compile/error checks);
+  `agent-browser` CLI is installed globally for DOM/screenshot checks.
+- A valid agent code for manual testing: `VbiKN9PpML`
+  (`/<agent-code>/products/travel-insurance/...`). The plans page
+  rehydrates `travel-insurance-form` from sessionStorage; it must contain
+  `travelDetails.travelDetailList[0].TravelCountry` (a code like
+  `THAILAND`, not `JAPAN` — that value is cleared on rehydrate) or it
+  redirects back to the landing page.
