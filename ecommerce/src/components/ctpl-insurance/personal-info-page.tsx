@@ -26,6 +26,7 @@ import { mapCptlStateToInitCompareRequest } from '@/utils/mappers/cptl-insurance
 import { toast } from 'sonner'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import axios from 'axios'
+import { cn } from '@/lib/utils'
 import { getZipCodeByCityCode } from '@/utils/address-util'
 
 export default function PersonalInformationPage() {
@@ -487,13 +488,21 @@ export default function PersonalInformationPage() {
                     children={(field) => (
                       <div className="space-y-2">
                         <Label className="block">Mobile Number</Label>
-                        <div className="flex items-center gap-2 pl-2">
-                          <span>+63</span>
+                        <div
+                          className={cn(
+                            'dark:bg-input/30 flex items-center gap-2 rounded-full border pl-4 transition-[color,box-shadow]',
+                            field.state.meta.isTouched && !field.state.meta.isValid
+                              ? 'border-destructive ring-destructive/30 dark:ring-destructive/40 ring-[3px]'
+                              : 'border-muted-foreground/30 focus-within:border-primary focus-within:ring-primary/30 focus-within:ring-[3px]'
+                          )}
+                        >
+                          <span className="text-muted-foreground">+63</span>
                           <Input
                             value={field.state.value}
                             onChange={(e) => field.handleChange(e.target.value)}
                             onBlur={field.handleBlur}
-                            className="h-12"
+                            aria-invalid={!!field.state.meta.isTouched && !field.state.meta.isValid}
+                            className="h-12 rounded-l-none border-0 bg-transparent pl-0 shadow-none ring-0 focus-visible:border-0 focus-visible:ring-0 aria-invalid:border-0 aria-invalid:ring-0 dark:bg-transparent"
                             placeholder="9171234567"
                           />
                         </div>

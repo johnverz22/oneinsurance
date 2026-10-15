@@ -61,6 +61,10 @@ export const transformToInvoiceData = (
     payment: {
       basePremium: basePremium,
       method: paymentMethod.value || '',
+      breakdown: {
+        base: Number(quoteData?.BeforeVatPremium) || 0,
+        lgt: Number(quoteData?.LGT) || 0,
+      },
     },
     status: {
       issueDate: format(new Date(), 'MMMM dd, yyyy'),

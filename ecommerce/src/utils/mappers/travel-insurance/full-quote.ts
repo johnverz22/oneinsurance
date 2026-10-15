@@ -28,6 +28,8 @@ export interface IgwFullQuoteTraveller {
     line2: string | null
     city: string
     province: string
+    city_code: string
+    province_code: string
     postal_code: string
     country: string
   }
@@ -51,6 +53,7 @@ export interface IgwFullQuoteRequest {
   insurer_code: string
   product_code: string
   plan_code: string
+  client_email: string
   travellers: IgwFullQuoteTraveller[]
   CustomField: {
     PlanName: string
@@ -133,6 +136,8 @@ export function mapToIgwFullQuoteRequest(
         line2: t.address.line2 || null,
         city: t.address.city,
         province: t.address.province,
+        city_code: t.address.city,
+        province_code: t.address.province,
         postal_code: t.address.zipCode,
         country: 'PH',
       },
@@ -165,6 +170,7 @@ export function mapToIgwFullQuoteRequest(
     insurer_code: plan.InsurerCode ?? '',
     product_code: plan.CarrierProductCode,
     plan_code: plan.CarrierPlanCode,
+    client_email: state.travelersInfo[0]?.email ?? '',
     travellers,
     CustomField: {
       PlanName: plan.CarrierPlanDesc,

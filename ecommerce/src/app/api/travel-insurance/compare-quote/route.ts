@@ -67,12 +67,8 @@ const INSURER_NAME_TO_CARRIER_CODE: Record<string, string> = {
  *
  * Add a code here once the backend team confirms full-quote support for that
  * insurer (test with POST /api/v1/travel/full-quote and verify a 201 back).
- *
- * Known status (Oct 2026):
- *   MIC  — Malayan Insurance ✅ supported
- *   OONA — Oona Insurance    ❌ not yet supported (backend returns 422)
  */
-const FULL_QUOTE_SUPPORTED_INSURERS = new Set(['MIC'])
+const FULL_QUOTE_SUPPORTED_INSURERS = new Set(['MIC', 'OONA'])
 
 function insurerNameToCarrierCode(insurerName: string): string {
   const key = insurerName.toLowerCase()

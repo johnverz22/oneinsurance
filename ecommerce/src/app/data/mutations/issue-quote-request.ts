@@ -2,6 +2,22 @@ import { IssueQuoteRequest, IssueQuoteResponseSchema, IssueQuoteResponse } from 
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 
+export class IssueQuoteError extends Error {
+  status?: number
+  constructor(message: string, status?: number) {
+    super(message)
+    this.name = 'IssueQuoteError'
+    this.status = status
+  }
+}
+
+/** 5xx and network failures carry no useful detail for the customer — show a plain-language message instead. */
+function resolveIssueQuoteMessage(status: number | undefined, backendMessage?: string) {
+  if (!status) return 'We couldn’t reach our servers. Check your connection and try again.'
+  if (status >= 500) return 'We couldn’t reach the insurer to create your policy. Your payment is safe.'
+  return backendMessage || 'We couldn’t create your policy this time.'
+}
+
 export function useIssueQuoteRequest() {
   return useMutation({
     mutationFn: async ({
@@ -18,17 +34,14 @@ export function useIssueQuoteRequest() {
         )
         responseData = response.data
       } catch (err: any) {
-        const backendMessage =
-          err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          'Issue quote request failed'
-        console.error(
-          '[issue-quote] HTTP error:',
-          'status:', err?.response?.status,
-          'data:', err?.response?.data || err
-        )
-        throw new Error(backendMessage)
+        const status: number | undefined = err?.response?.status
+        const data = err?.response?.data
+        const backendMessage: string | undefined =
+          (typeof data?.message === 'string' && data.message) ||
+          (typeof data?.error === 'string' && data.error) ||
+          undefined
+        console.warn('[issue-quote] HTTP error', { status, message: backendMessage ?? err?.message, data })
+        throw new IssueQuoteError(resolveIssueQuoteMessage(status, backendMessage), status)
       }
 
       const parsed = IssueQuoteResponseSchema.safeParse(responseData)

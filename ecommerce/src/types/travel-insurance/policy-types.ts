@@ -287,6 +287,9 @@ export interface FullQuoteRequest {
 
 export type IssueQuoteRequest = {
   proposal_number: string
+  payment: {
+    reference: string
+  }
   CustomField?: {
     PlanName?: string
     PaymentBrand?: string

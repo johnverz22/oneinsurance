@@ -6,7 +6,10 @@ import { TravelInsuranceApiResponse } from '@/types/plan'
 import { InitTravelInsuranceRequest } from '@/types/travel-insurance/travel-insurance-request'
 
 const MAX_WAIT_MS = 60_000   // give up after 60 s
-const FALLBACK_POLL_MS = 3_000  // safety-net poll if the WS event is missed
+// The channel id only exists after init returns, so a plan.received event can
+// fire before we subscribe. Poll quickly at first (results often land within a
+// second or two) and back off, instead of waiting a flat 3 s.
+const POLL_DELAYS_MS = [300, 500, 700, 1_000, 1_000, 1_500, 2_000]
 
 export type TravelCompareStatus = 'idle' | 'loading' | 'ready' | 'error'
 
@@ -121,7 +124,7 @@ export function useTravelCompare(): UseTravelCompareReturn {
 
       if (r.ok) {
         ready = true
-        clearInterval(poll)       // results are in — no need to keep polling
+        clearTimeout(pollTimer)   // results are in — no need to keep polling
         setCards(j)               // GET returns the full cumulative list
         setStatus('ready')
         // Stay subscribed: a later plan.received event triggers a refetch,
@@ -159,8 +162,17 @@ export function useTravelCompare(): UseTravelCompareReturn {
     // ── 4. Immediate GET (catches events that fired before subscribe) ─────────
     fetchResult()
 
-    // Fallback poll in case the WS event is missed
-    const poll = setInterval(fetchResult, FALLBACK_POLL_MS)
+    // Fallback poll in case the WS event is missed (self-rescheduling so
+    // requests never overlap and the early checks are fast)
+    let pollTimer: ReturnType<typeof setTimeout>
+    let attempt = 0
+    const schedulePoll = () => {
+      pollTimer = setTimeout(async () => {
+        await fetchResult()
+        if (!done && !ready) schedulePoll()
+      }, POLL_DELAYS_MS[Math.min(attempt++, POLL_DELAYS_MS.length - 1)])
+    }
+    schedulePoll()
 
     // Hard timeout — errors out if nothing arrived, otherwise just closes the channel
     const timeout = setTimeout(() => {
@@ -173,7 +185,7 @@ export function useTravelCompare(): UseTravelCompareReturn {
     }, MAX_WAIT_MS)
 
     function teardown() {
-      clearInterval(poll)
+      clearTimeout(pollTimer)
       clearTimeout(timeout)
       try { getEcho().leave(id) } catch { /* ignore if echo not initialised */ }
     }

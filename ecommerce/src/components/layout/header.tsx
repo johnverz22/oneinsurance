@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Bell, User } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/toggle'
 import {
@@ -71,6 +72,13 @@ export const Header = ({
     : []
 
   const {agentCode} = useAgentCodeStore()
+  const pathname = usePathname()
+  const isTravelSubPage = !!pathname?.includes('/products/travel-insurance/')
+  const brandHref = agentCode
+    ? isTravelSubPage
+      ? `/${agentCode}/products/travel-insurance`
+      : `/${agentCode}`
+    : '/'
 
   // Desktop (lg) top-nav layout:
   // - Promote the first 3 "Products" sub-items to top-level menu items
@@ -134,10 +142,10 @@ export const Header = ({
           {showBrand &&
             (isTransparent ? (
               <div className="rounded-tl-full rounded-br-full bg-white px-6 py-1 shadow-lg">
-                <Brand href={agentCode ? `/${agentCode}` : '/'} />
+                <Brand href={brandHref} />
               </div>
             ) : (
-              <Brand href={agentCode ? `/${agentCode}` : '/'} />
+              <Brand href={brandHref} />
             ))}
         </div>
 

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FieldInfo } from '@/components/ui/form'
+import { fieldHasError } from '@/utils/form'
 import { ArrowRight, Shield } from 'lucide-react'
 import { PaymentBrand } from '@/types/payment'
 import { cn, toTitleCase } from '@/lib/utils'
@@ -82,6 +83,7 @@ interface HostedCheckoutFormProps {
   onSubmit: (paymentRequest: ReturnType<typeof mapToHostedCheckoutRequest>) => void
   isLoading?: boolean
   className?: string
+  compactActions?: boolean
   paymentConfig: PaymentRequestConfig
   fullQuoteResponse: FullQuoteResponse['data']
 }
@@ -91,6 +93,7 @@ export function HostedCheckoutForm({
   onSubmit,
   isLoading = false,
   className,
+  compactActions = false,
   paymentConfig,
   fullQuoteResponse,
 }: HostedCheckoutFormProps) {
@@ -120,10 +123,10 @@ export function HostedCheckoutForm({
   return (
     <div className={cn('mx-auto max-w-4xl space-y-3 lg:space-y-6', className)}>
       {/* Selected brand header */}
-      <Card className="border-primary/20 bg-primary/5 shadow-none hidden lg:block">
+      <Card className={cn("border-primary/20 bg-primary/5 shadow-none hidden", !compactActions && "lg:block")}>
         <CardHeader className="pb-4">
           <CardTitle className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex h-8 w-12 items-center justify-center rounded border bg-white">
+            <div className="flex h-8 w-12 items-center justify-center rounded border bg-card">
               <img src={selectedBrand.image} alt={selectedBrand.value} className="h-full w-full object-contain" />
             </div>
             <div>
@@ -142,7 +145,7 @@ export function HostedCheckoutForm({
         className="space-y-6"
       >
         {/* Personal Details */}
-        <Card className="bg-background overflow-hidden shadow-none">
+        <Card className="bg-card border-border overflow-hidden shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-primary text-base font-bold">Personal Details</CardTitle>
           </CardHeader>
@@ -151,10 +154,10 @@ export function HostedCheckoutForm({
               <form.Field name="firstName">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor={field.name}>First Name</Label>
-                    <Input id={field.name} name={field.name} value={field.state.value}
+                    <Label htmlFor={field.name} className="text-primary block">First Name</Label>
+                    <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                       onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="John" className="h-11 text-base" autoComplete="given-name" />
+                      placeholder="John" className="h-12" autoComplete="given-name" />
                     <FieldInfo field={field} />
                   </div>
                 )}
@@ -163,10 +166,10 @@ export function HostedCheckoutForm({
               <form.Field name="lastName">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor={field.name}>Last Name</Label>
-                    <Input id={field.name} name={field.name} value={field.state.value}
+                    <Label htmlFor={field.name} className="text-primary block">Last Name</Label>
+                    <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                       onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="Doe" className="h-11 text-base" autoComplete="family-name" />
+                      placeholder="Doe" className="h-12" autoComplete="family-name" />
                     <FieldInfo field={field} />
                   </div>
                 )}
@@ -176,10 +179,10 @@ export function HostedCheckoutForm({
             <form.Field name="email">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Email Address</Label>
-                  <Input id={field.name} name={field.name} value={field.state.value}
+                  <Label htmlFor={field.name} className="text-primary block">Email Address</Label>
+                  <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                     onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                    type="email" placeholder="john.doe@example.com" className="h-11 text-base"
+                    type="email" placeholder="john.doe@example.com" className="h-12"
                     autoComplete="email" />
                   <FieldInfo field={field} />
                 </div>
@@ -189,13 +192,13 @@ export function HostedCheckoutForm({
             <form.Field name="phone">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Phone Number</Label>
+                  <Label htmlFor={field.name} className="text-primary block">Phone Number</Label>
                   <div className="relative">
                     <div className="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">+63</div>
-                    <Input id={field.name} name={field.name} value={field.state.value}
+                    <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value.replace(/\D/g, ''))}
-                      placeholder="9XX XXX XXXX" className="h-11 pl-12 text-base" autoComplete="tel" />
+                      placeholder="9XX XXX XXXX" className="h-12 pl-12" autoComplete="tel" />
                   </div>
                   <FieldInfo field={field} />
                 </div>
@@ -205,7 +208,7 @@ export function HostedCheckoutForm({
         </Card>
 
         {/* Billing Address */}
-        <Card className="bg-background overflow-hidden shadow-none">
+        <Card className="bg-card border-border overflow-hidden shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-primary text-base font-bold">Billing Address</CardTitle>
           </CardHeader>
@@ -213,9 +216,9 @@ export function HostedCheckoutForm({
             <form.Field name="country">
               {(field) => (
                 <div className="w-full space-y-2">
-                  <Label htmlFor={field.name}>Country</Label>
+                  <Label htmlFor={field.name} className="text-primary block">Country</Label>
                   <Select value={field.state.value} onValueChange={field.handleChange}>
-                    <SelectTrigger className="h-11 w-full text-base">
+                    <SelectTrigger aria-invalid={!!fieldHasError(field)} className="h-12 w-full">
                       <SelectValue placeholder="Select a country" />
                     </SelectTrigger>
                     <SelectContent>
@@ -233,10 +236,10 @@ export function HostedCheckoutForm({
               <form.Field name="stateProvinceRegion">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor={field.name}>State/Province/Region</Label>
-                    <Input id={field.name} name={field.name} value={field.state.value}
+                    <Label htmlFor={field.name} className="text-primary block">State/Province/Region</Label>
+                    <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                       onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="Metro Manila" className="h-11 text-base" autoComplete="address-level1" />
+                      placeholder="Metro Manila" className="h-12" autoComplete="address-level1" />
                     <FieldInfo field={field} />
                   </div>
                 )}
@@ -245,10 +248,10 @@ export function HostedCheckoutForm({
               <form.Field name="cityMunicipality">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label htmlFor={field.name}>City/Municipality</Label>
-                    <Input id={field.name} name={field.name} value={field.state.value}
+                    <Label htmlFor={field.name} className="text-primary block">City/Municipality</Label>
+                    <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                       onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="Manila" className="h-11 text-base" autoComplete="address-level2" />
+                      placeholder="Manila" className="h-12" autoComplete="address-level2" />
                     <FieldInfo field={field} />
                   </div>
                 )}
@@ -258,11 +261,11 @@ export function HostedCheckoutForm({
             <form.Field name="postalCode">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Postal Code</Label>
-                  <Input id={field.name} name={field.name} value={field.state.value}
+                  <Label htmlFor={field.name} className="text-primary block">Postal Code</Label>
+                  <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value.replace(/\D/g, ''))}
-                    placeholder="1000" className="h-11 text-base" autoComplete="postal-code"
+                    placeholder="1000" className="h-12" autoComplete="postal-code"
                     inputMode="numeric" pattern="[0-9]*" />
                   <FieldInfo field={field} />
                 </div>
@@ -272,10 +275,10 @@ export function HostedCheckoutForm({
             <form.Field name="addressLineOne">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Address Line 1</Label>
-                  <Input id={field.name} name={field.name} value={field.state.value}
+                  <Label htmlFor={field.name} className="text-primary block">Address Line 1</Label>
+                  <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value}
                     onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="123 Main Street" className="h-11 text-base" autoComplete="address-line1" />
+                    placeholder="123 Main Street" className="h-12" autoComplete="address-line1" />
                   <FieldInfo field={field} />
                 </div>
               )}
@@ -284,10 +287,10 @@ export function HostedCheckoutForm({
             <form.Field name="addressLineTwo">
               {(field) => (
                 <div className="space-y-2">
-                  <Label htmlFor={field.name}>Address Line 2</Label>
-                  <Input id={field.name} name={field.name} value={field.state.value ?? ''}
+                  <Label htmlFor={field.name} className="text-primary block">Address Line 2</Label>
+                  <Input aria-invalid={!!fieldHasError(field)} id={field.name} name={field.name} value={field.state.value ?? ''}
                     onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Apartment, suite, etc." className="h-11 text-base" autoComplete="address-line2" />
+                    placeholder="Apartment, suite, etc." className="h-12" autoComplete="address-line2" />
                   <FieldInfo field={field} />
                 </div>
               )}
@@ -298,12 +301,18 @@ export function HostedCheckoutForm({
         <Button
           type="submit"
           size="lg"
-          className="from-primary to-accent h-12 w-full rounded-full bg-gradient-to-r font-semibold dark:text-white"
+          className={cn(
+            'from-primary to-lilac text-primary-foreground h-12 w-full rounded-full bg-gradient-to-r font-semibold',
+            compactActions && 'hidden'
+          )}
           disabled={isLoading}
+          data-mobile-action={compactActions ? 'next' : undefined}
         >
-          {isLoading ? (
+          {compactActions ? (
+            isLoading ? 'Redirecting...' : 'Pay'
+          ) : isLoading ? (
             <>
-              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-primary-foreground" />
               Redirecting to payment...
             </>
           ) : (

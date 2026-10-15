@@ -554,30 +554,6 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
       [getAllOptions]
     )
 
-    const filteredOptions = React.useMemo(() => {
-      if (!searchable || !searchValue) return options
-      if (options.length === 0) return []
-      if (isGroupedOptions(options)) {
-        return options
-          .map((group) => ({
-            ...group,
-            options: group.options.filter(
-              (option) =>
-                option.label
-                  .toLowerCase()
-                  .includes(searchValue.toLowerCase()) ||
-                option.value.toLowerCase().includes(searchValue.toLowerCase())
-            ),
-          }))
-          .filter((group) => group.options.length > 0)
-      }
-      return options.filter(
-        (option) =>
-          option.label.toLowerCase().includes(searchValue.toLowerCase()) ||
-          option.value.toLowerCase().includes(searchValue.toLowerCase())
-      )
-    }, [options, searchValue, searchable, isGroupedOptions])
-
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
     ) => {
@@ -915,14 +891,15 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                   </CommandItem>
                 </CommandGroup>
               )}
-              {isGroupedOptions(filteredOptions) ? (
-                filteredOptions.map((group) => (
+              {isGroupedOptions(options) ? (
+                options.map((group) => (
                   <CommandGroup key={group.heading} heading={group.heading}>
                     {group.options.map((option) => {
                       const isSelected = selectedValues.includes(option.value)
                       return (
                         <CommandItem
                           key={option.value}
+                          value={option.label}
                           onSelect={() => toggleOption(option.value)}
                           className={cn(
                             'cursor-pointer',
@@ -951,11 +928,12 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                 ))
               ) : (
                 <CommandGroup>
-                  {filteredOptions.map((option) => {
+                  {options.map((option) => {
                     const isSelected = selectedValues.includes(option.value)
                     return (
                       <CommandItem
                         key={option.value}
+                        value={option.label}
                         onSelect={() => toggleOption(option.value)}
                         className={cn(
                           'cursor-pointer',

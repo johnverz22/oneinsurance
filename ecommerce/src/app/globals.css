@@ -159,3 +159,10 @@ input[type="date"] {
   position: relative;
   padding-left: 36px;
 }
+
+@utility ticket-edge {
+  --r: 10px;
+  --gap: 10px;
+  -webkit-mask: radial-gradient(circle var(--r) at 50% 100%, #0000 98%, #000) 0 0 / calc(var(--r) * 2 + var(--gap)) 100%;
+  mask: radial-gradient(circle var(--r) at 50% 100%, #0000 98%, #000) 0 0 / calc(var(--r) * 2 + var(--gap)) 100%;
+}

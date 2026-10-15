@@ -7,7 +7,6 @@ import { TravelDetailsForm } from '@/components/travel-insurance/travel-details-
 import { ProposalSearch } from '@/components/travel-insurance/proposal-search'
 import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
 import { TRAVEL_FAQS } from '@/constants/faqs/travel-insurance-faqs'
-import { CoverageOptionsForm } from '@/components/travel-insurance/coverage-options-form'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useRouter, useParams } from 'next/navigation'
 import { PageLoader } from '@/components/page-loader'
@@ -54,11 +53,6 @@ function ProviderTravelInsurancePageContent() {
     resetForm()
     setInsurancePlans(null)
     resetApiResponse()
-
-    // Clear filter on unmount
-    return () => {
-      setProviderFilter(null)
-    }
   }, [providerSlug])
 
   const providerName = providerSlug === 'oona' ? 'Oona Insurance' 
@@ -80,7 +74,7 @@ function ProviderTravelInsurancePageContent() {
           <div
             tabIndex={0}
             role="button"
-            onClick={() => router.push(`/${agentCode}`)}
+            onClick={() => router.push(`/${agentCode}/products/travel-insurance`)}
             className="absolute top-8 left-4 z-10 cursor-pointer gap-3 rounded-tl-full rounded-br-full bg-white px-12 py-1 shadow-lg lg:left-28 xl:left-32"
           >
             <Image src="/images/logo.png" alt="One Insurance" width={256} height={63} className="h-10 w-auto" priority />
@@ -110,10 +104,6 @@ function ProviderTravelInsurancePageContent() {
       <div className="relative mx-auto -mt-20 flex w-full max-w-7xl flex-col gap-8 px-1.5 lg:-mt-40 lg:gap-12">
         <TravelDetailsForm />
         <ProposalSearch />
-      </div>
-
-      <div id="coverage-options" className="relative w-full pt-16 pb-12">
-        <CoverageOptionsForm />
       </div>
 
       <div className="relative mx-auto flex h-full w-full max-w-7xl flex-col items-center justify-center gap-2.5 px-4">

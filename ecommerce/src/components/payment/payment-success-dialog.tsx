@@ -322,7 +322,7 @@ COVERAGE DETAILS
 ----------------
 Travel Type: ${quoteData.TravelType || 'Family'}
 Trip Type: ${quoteData.TripType || 'Single Trip'}
-Number of Travellers: ${quoteData.NoOfTravellers || '2'}
+Number of travelers: ${quoteData.NoOfTravellers || '2'}
 Adults: ${quoteData.NoOfAdults || '1'}
 Children: ${quoteData.NoOfChildren || '1'}
 

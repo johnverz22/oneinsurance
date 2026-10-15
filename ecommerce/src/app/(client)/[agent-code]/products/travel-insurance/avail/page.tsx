@@ -1,8 +1,8 @@
 'use client'
 
+import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useCallback } from 'react'
-import Image from 'next/image'
 import { useIdleService } from '@/utils/use-idle-service'
 import {
   useFullQuoteResponseStore,
@@ -13,11 +13,27 @@ import { PersonalInfoForm } from '@/components/travel-insurance/personal-info-fo
 import { TravelInsurancePayment } from '@/components/travel-insurance/payment'
 import { PolicyDisplay } from '@/components/travel-insurance/policy-display'
 import { PageLoader } from '@/components/page-loader'
-import { Stepper } from '@/components/ui/stepper'
+import {
+  JourneyContainer,
+  JourneyLayout,
+  PageIntro,
+} from '@/components/travel-insurance/journey-layout'
+import { TRAVEL_JOURNEY_STEPS } from '@/constants/travel-journey'
+import { JourneyActions } from '@/components/travel-insurance/journey-actions'
 import TravelInsuranceReviewPage from '@/components/travel-insurance/review-page'
 import { PlanPaymentReview } from '@/components/travel-insurance/plan-payment-review'
-import { cn } from '@/lib/utils'
 import { useAgentCodeStore } from '@/store/agent-code-store'
+import { usePaymentPhaseStore } from '@/store/payment-phase-store'
+import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export default function AvailTravelInsurance() {
   const { step, highestVisitedStep, setStep, clientRequest, coverageOption } =
@@ -27,14 +43,27 @@ export default function AvailTravelInsurance() {
   const { apiResponse } = useFullQuoteResponseStore()
   const [isReadOnlyMode, setIsReadOnlyMode] = useState(false)
 
+  const paymentPhase = usePaymentPhaseStore((s) => s.phase)
   const router = useRouter()
   const searchParams = useSearchParams()
   const proposalNumber = searchParams?.get('proposal')
+  const [sessionNotice, setSessionNotice] = useState<{
+    title: string
+    message: string
+  } | null>(null)
 
-  const handleIdle = useCallback(() => {
-    alert('You have been inactive for a while.')
+  const dismissSessionNotice = useCallback(() => {
+    setSessionNotice(null)
     router.push(`/${agentCode}/products/travel-insurance`)
   }, [router, agentCode])
+
+  const handleIdle = useCallback(() => {
+    setSessionNotice({
+      title: "You've been inactive for a while",
+      message:
+        'For your security, this session has ended. Start a new search to continue.',
+    })
+  }, [])
 
   useIdleService('travel-insurance-form', 15, handleIdle)
 
@@ -78,16 +107,22 @@ export default function AvailTravelInsurance() {
           // Handle 422 error - proposal already issued
           if (response.status === 422) {
             console.error('❌ Proposal already issued:', data.message)
-            alert(data.message || 'This travel insurance quote has already been issued and can no longer resume the process.')
-            router.push(`/${agentCode}/products/travel-insurance`)
+            setSessionNotice({
+              title: 'Quote already issued',
+              message:
+                data.message ||
+                'This travel insurance quote has already been issued and can no longer resume the process.',
+            })
             useTravelInsuranceStore.setState({ isLoadingProposal: false })
             return
           }
-          
+
           if (!response.ok || !data.success || !data.data) {
             console.error('Failed to load proposal from API')
-            alert('Failed to load proposal. Please try again.')
-            router.push(`/${agentCode}/products/travel-insurance`)
+            setSessionNotice({
+              title: "We couldn't load your quote",
+              message: 'Failed to load proposal. Please try again.',
+            })
             useTravelInsuranceStore.setState({ isLoadingProposal: false })
             return
           }
@@ -256,25 +291,33 @@ export default function AvailTravelInsurance() {
     }
   }, [hydrated, clientRequest?.id, coverageOption?.selectedPlan, router, agentCode, proposalNumber, searchParams])
 
-  const steps = [
+  const steps: Array<{
+    title: string
+    intro?: { title: string; helper: string }
+    component: React.ReactNode
+  }> = [
     {
-      title: 'Search Plan',
+      title: TRAVEL_JOURNEY_STEPS[0].title,
       component: <div key={'search-plan'} />,
     },
     {
-      title: 'Your Plan Details',
+      title: TRAVEL_JOURNEY_STEPS[1].title,
+      intro: { title: 'Review your plan', helper: "Check coverage before continuing." },
       component: isReadOnlyMode ? <div key={'review-coverage-skip'} /> : <ReviewCoverage key={'review-coverage'} />,
     },
     {
-      title: 'Personal Information',
+      title: TRAVEL_JOURNEY_STEPS[2].title,
+      intro: { title: 'Traveler information', helper: "Tell us who is traveling." },
       component: isReadOnlyMode ? <div key={'personal-info-skip'} /> : <PersonalInfoForm key={'personal-info-form'} />,
     },
     {
-      title: 'Review & Confirmation',
+      title: TRAVEL_JOURNEY_STEPS[3].title,
+      intro: { title: 'Review and confirm', helper: "Make sure everything is correct before you pay." },
       component: <TravelInsuranceReviewPage key={'review-page'} />,
     },
     {
-      title: 'Payment',
+      title: TRAVEL_JOURNEY_STEPS[4].title,
+      intro: { title: 'Payment', helper: "Choose how you'd like to pay." },
       component: <TravelInsurancePayment key={'travel-insurance-payment'} />,
     },
   ]
@@ -283,50 +326,30 @@ export default function AvailTravelInsurance() {
     return <PageLoader />
   }
 
+  const paymentBusy = step === 4 && paymentPhase !== 'idle'
+
   return (
-    <div className="relative min-h-screen lg:min-h-0 w-full bg-section">
-      {/* ── Header ── */}
-      <div className="sticky top-0 z-20 border-b border-border/60 bg-white shadow-sm lg:relative lg:z-auto lg:border-0 lg:bg-section lg:shadow-none">
-        {/* Logo bar */}
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8 lg:pt-5 lg:pb-2">
-          <a href={`/${agentCode}`} className="flex items-center">
-            <Image
-              src="/images/logo.png"
-              alt="One Insurance"
-              width={256}
-              height={63}
-              className="h-7 w-auto lg:h-9"
-              priority
+    <JourneyLayout
+      fill={paymentBusy}
+      className={paymentBusy ? 'pb-8 lg:pb-12' : undefined}
+      agentCode={agentCode}
+      steps={steps}
+      currentStep={step}
+      highestVisitedStep={isReadOnlyMode ? step : highestVisitedStep}
+      onStepChange={isReadOnlyMode ? undefined : (step) => setStep(step)}
+    >
+      <JourneyContainer className="flex flex-col-reverse gap-6 lg:flex-row lg:items-start lg:gap-8">
+        <div className="min-w-0 space-y-6 lg:flex-1">
+          {!paymentBusy && steps[step].intro && (
+            <PageIntro
+              title={steps[step].intro.title}
+              helper={steps[step].intro.helper}
             />
-          </a>
-          <Image
-            src="/images/IFRC.png"
-            alt="IFRC"
-            width={1290}
-            height={800}
-            className="h-8 w-auto opacity-80 lg:h-10"
-            priority
-          />
-        </div>
-
-        {/* Step progress */}
-        <div className="lg:pt-2 lg:pb-0">
-          <Stepper
-            steps={steps}
-            currentStep={step}
-            highestVisitedStep={isReadOnlyMode ? step : highestVisitedStep}
-            contentContainerClass="flex items-start md:justify-start"
-            onStepChange={isReadOnlyMode ? undefined : (step) => setStep(step)}
-          />
-        </div>
-      </div>
-
-      <div className="relative mx-auto flex max-w-7xl flex-col-reverse gap-8 px-1.5 pt-6 pb-20 lg:flex-row lg:items-start lg:pt-8 lg:pb-12">
-        <div className={cn('lg:col-span-3 lg:w-3/5', { 'lg:w-full': step > 3 })}>
+          )}
           {steps[step].component}
         </div>
 
-        <div className={cn('relative hidden lg:block lg:w-2/5', { 'lg:hidden': step > 3 })}>
+        <div className="hidden lg:block lg:w-80 lg:shrink-0 lg:self-stretch">
           <PlanPaymentReview
             stage={step <= 2 ? 'initial' : 'final'}
             grossPremium={
@@ -334,13 +357,38 @@ export default function AvailTravelInsurance() {
                 ? Number(apiResponse.data.DuePremium)
                 : Number(coverageOption.selectedPlan?.DuePremium) || 0
             }
-          />
+          >
+            {paymentBusy ? (
+              (paymentPhase === 'error' || paymentPhase === 'success') && (
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="w-full rounded-full bg-transparent font-semibold"
+                  onClick={() => {
+                    if (paymentPhase === 'success') {
+                      useTravelInsuranceStore.getState().resetForm()
+                      window.location.href = `/${agentCode}/products/travel-insurance`
+                    } else router.push(`/${agentCode}/products/travel-insurance`)
+                  }}
+                >
+                  {paymentPhase === 'success' ? 'Buy new Travel Insurance' : 'Back to Travel Insurance'}
+                </Button>
+              )
+            ) : step >= 1 && (
+              <JourneyActions
+                key={step}
+                backFallback={step === 1 ? 'Cancel' : 'Back'}
+                nextFallback="Next"
+              />
+            )}
+          </PlanPaymentReview>
         </div>
-      </div>
+      </JourneyContainer>
 
-      {/* ── Mobile bottom action bar (steps 1–3) ── */}
-      {step >= 1 && step <= 3 && coverageOption.selectedPlan && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-white px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
+      {/* ── Mobile bottom action bar ── */}
+      {!paymentBusy && step >= 1 && step <= 4 && coverageOption.selectedPlan && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-card px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.08)] lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-3">
             {/* Left: Cancel (step 1) or Back (steps 2–3) */}
             <button
@@ -355,7 +403,7 @@ export default function AvailTravelInsurance() {
                   else setStep(step - 1)
                 }
               }}
-              className="shrink-0 rounded-full border border-border bg-white px-4 py-2.5 text-xs font-semibold text-foreground"
+              className="shrink-0 rounded-full border border-border bg-card px-4 py-2.5 text-xs font-semibold text-foreground"
             >
               {step === 1 ? 'Cancel' : 'Back'}
             </button>
@@ -378,14 +426,34 @@ export default function AvailTravelInsurance() {
               onClick={() => {
                 const nextBtn = document.querySelector('[data-mobile-action="next"]') as HTMLButtonElement
                 if (nextBtn) nextBtn.click()
+                else if (step === 4) toast.info('Select a payment method first')
               }}
-              className="shrink-0 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-white"
+              className="shrink-0 rounded-full bg-gradient-to-r from-primary to-lilac px-5 py-2.5 text-xs font-semibold text-primary-foreground"
             >
-              {step === 1 ? 'Next' : step === 2 ? 'Continue' : 'Proceed'}
+              {step === 1 ? 'Next' : step === 2 ? 'Continue' : step === 3 ? 'Proceed' : 'Pay'}
             </button>
           </div>
         </div>
       )}
-    </div>
+
+      <AlertDialog
+        open={!!sessionNotice}
+        onOpenChange={(open) => {
+          if (!open) dismissSessionNotice()
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{sessionNotice?.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {sessionNotice?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>Back to Travel Insurance</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </JourneyLayout>
   )
 }

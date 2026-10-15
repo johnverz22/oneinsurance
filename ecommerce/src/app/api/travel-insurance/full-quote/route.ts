@@ -107,11 +107,14 @@ export async function POST(req: NextRequest) {
     console.error('Error fetching travel insurance full quote:', error)
 
     if (axios.isAxiosError(error)) {
-      console.error('Backend Error Response:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-      })
+      console.error(
+        'Backend Error Response:',
+        JSON.stringify({
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        })
+      )
       return handleServerSideAxiosError(error)
     }
 

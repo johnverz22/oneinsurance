@@ -27,7 +27,7 @@ export function PrimaryActionButton({ children, size = 'md', className, ...props
     <button
       type="button"
       className={cn(
-        'rounded-full from-primary to-accent bg-gradient-to-r font-medium text-white shadow-lg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50',
+        'rounded-full from-primary to-lilac bg-gradient-to-r font-medium text-primary-foreground shadow-lg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50',
         sizeClasses[size],
         className
       )}
@@ -97,11 +97,11 @@ export function PriceDisplay({ amount, currency = 'PHP', label = 'Premium', clas
     <div className={cn('flex flex-col items-center', className)}>
       <div className="flex items-baseline gap-1 mb-1">
         <span className="text-primary text-xs font-semibold">{currency}</span>
-        <span className="text-foreground text-xl font-black sm:text-2xl">
+        <span className="text-foreground text-xl font-black tabular-nums sm:text-2xl">
           {amount.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </span>
       </div>
-      <span className="text-primary text-xs font-medium">{label}</span>
+      <span className="text-muted-foreground text-xs font-medium">{label}</span>
     </div>
   )
 }

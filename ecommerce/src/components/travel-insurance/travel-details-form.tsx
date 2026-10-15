@@ -1,12 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
 import { subDays } from 'date-fns'
 import { Users, ChevronDown, ChevronUp } from 'lucide-react'
 import { useForm, useStore } from '@tanstack/react-form'
-import { useTravelCompare } from '@/hooks/use-travel-compare'
-import { travelInsuranceSchemaToInitCompareQuote } from '@/utils/mappers/travel-insurance/init-compare-quote'
 import {
   TravelInsuranceFormData,
   travelInsuranceSchema,
@@ -37,7 +36,7 @@ type TravelDetailsFormProps = {
 }
 
 export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
-  const { compare, status: compareStatus, cards: compareCards, clientRequestId: compareId, error: compareError } = useTravelCompare()
+  const router = useRouter()
   const { agentCode } = useAgentCodeStore()
   const {
     travelDetails,
@@ -158,49 +157,19 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
       updateTravelDetails(value)
       setInsurancePlans(null)
       resetQuoteRefetchCount()
+      setFormModified(false)
+      setClientRequest({ id: undefined, status: 'fetching', errorMessage: undefined })
       setIsSearching(true)
 
-      // Map form data to IGW payload and kick off the async compare flow.
-      // compare() is fire-and-forget here — state changes are handled by the
-      // useEffect below that watches compareStatus.
-      const requestBody = travelInsuranceSchemaToInitCompareQuote(value, agentCode ?? '')
-      compare(requestBody)
+      // The search itself runs on the dedicated plans page so results get a
+      // full page of their own instead of rendering under this form.
+      router.push(`/${agentCode}/products/travel-insurance/plans`)
     } catch (err: any) {
       setIsSearching(false)
       const errorMessage = err?.message || 'Unable to load travel insurance plans.'
       setClientRequest({ status: 'error', errorMessage })
     }
   }
-
-  // React to compare-quote hook status changes and sync into the Zustand store.
-  // compareCards is in deps so a later .insurance.plan.received event refreshes
-  // the plan list (the GET returns the cumulative set — safe to replace).
-  const hasScrolledToPlans = useRef(false)
-  useEffect(() => {
-    if (compareStatus === 'idle') return
-    if (compareStatus === 'loading') hasScrolledToPlans.current = false
-
-    if (compareStatus === 'ready' && compareCards) {
-      setInsurancePlans(compareCards)
-      setFormModified(false)
-      setClientRequest({ id: compareId ?? undefined, status: 'success' })
-      setIsSearching(false)
-      if (!hasScrolledToPlans.current) {
-        hasScrolledToPlans.current = true
-        document.getElementById('coverage-options')?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        })
-      }
-    } else if (compareStatus === 'error') {
-      setIsSearching(false)
-      setClientRequest({
-        status: 'error',
-        errorMessage: compareError?.message || 'Unable to load travel insurance plans.',
-      })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compareStatus, compareCards])
 
   const options = getNormalizedTravelCoverages(TravelCoverageMap)
   const currentValues = useStore(form.store, (state) => state.values)
@@ -324,7 +293,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
           <form.Field name={`travelDetailList[0].PlaceOfOrgin`}>
             {(placeOfOriginField) => (
               <div className="w-full space-y-2">
-                <p className="text-primary text-sm font-medium sm:text-base">
+                <p className="text-primary flex h-6 items-center text-sm font-medium sm:text-base">
                   From
                 </p>
                 <ComboBox
@@ -389,16 +358,16 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
               return (
                 <div className="w-full space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex h-6 items-center justify-between">
                     <p className="text-primary text-sm font-medium sm:text-base">
                       Destinations
                     </p>
                     {/* Domestic toggle */}
-                    <div className="border-muted-foreground/30 flex rounded-full border bg-muted p-0.5 dark:bg-gray-950">
+                    <div className="border-muted-foreground/30 flex rounded-full border bg-muted p-px dark:bg-gray-950">
                       <button
                         type="button"
                         onClick={() => handleDomesticToggle(false)}
-                        className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                        className={`rounded-full px-3 py-0.5 text-xs font-medium transition-all ${
                           !isDomesticMode
                             ? 'bg-lilac text-white shadow-sm'
                             : 'text-foreground'
@@ -409,7 +378,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                       <button
                         type="button"
                         onClick={() => handleDomesticToggle(true)}
-                        className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                        className={`rounded-full px-3 py-0.5 text-xs font-medium transition-all ${
                           isDomesticMode
                             ? 'bg-lilac text-white shadow-sm'
                             : 'text-foreground'
@@ -510,7 +479,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
           <form.Field name="dateOfBirth">
             {(field) => (
               <div className="w-full space-y-2">
-                <p className="text-primary text-sm font-medium sm:text-base">{`Date of Birth ${currentValues.travelType === 'FAMILY' ? 'of Oldest' : ''}`}</p>
+                <p className="text-primary flex h-6 items-center text-sm font-medium sm:text-base">{`Date of Birth ${currentValues.travelType === 'FAMILY' ? 'of Oldest' : ''}`}</p>
                 <DateTimePicker
                   variant="date"
                   value={field.state.value ?? undefined}
@@ -598,7 +567,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
 
           <div className="w-full space-y-2">
             <p className="text-primary text-sm font-medium sm:text-base">
-              Number of Travellers
+              Number of travelers
             </p>
             <Popover>
               <PopoverTrigger asChild>
@@ -620,7 +589,7 @@ export function TravelDetailsForm({ className }: TravelDetailsFormProps) {
                       Who's travelling?
                     </h4>
                     <p className="text-muted-foreground text-sm">
-                      Set the number of travellers (maximum 10 travelers).
+                      Set the number of travelers (maximum 10).
                     </p>
                   </div>
                   <div className="grid gap-3 lg:grid-cols-2">

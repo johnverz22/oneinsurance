@@ -12,7 +12,7 @@ import {
   LifeBuoy,
   Scale,
   Star,
-  Circle,
+  ShieldCheck,
   CheckCircle2,
   Infinity,
 } from 'lucide-react'
@@ -37,11 +37,11 @@ const ICON_MAP: Record<string, React.ElementType> = {
   LifeBuoy,
   Scale,
   Star,
-  Circle,
+  Circle: ShieldCheck,
 }
 
 function CategoryIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = ICON_MAP[name] ?? Circle
+  const Icon = ICON_MAP[name] ?? ShieldCheck
   return <Icon className={className} />
 }
 
@@ -77,8 +77,8 @@ function LimitBadge({ benefit }: { benefit: InsuranceBenefit }) {
       <span className={cn(
         'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none',
         isUnlimited
-          ? 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300'
-          : 'bg-success/10 text-success dark:bg-green-950 dark:text-green-300'
+          ? 'bg-primary/10 text-primary'
+          : 'bg-success/10 text-success'
       )}>
         {isUnlimited ? <Infinity className="h-2.5 w-2.5" /> : <CheckCircle2 className="h-2.5 w-2.5" />}
         {display.label}
@@ -126,8 +126,8 @@ function CollapsedBenefits({ categories }: { categories: BenefitCategory[] }) {
             <div className="min-w-0">
               <p className={cn(
                 'text-sm font-bold leading-tight',
-                isUnlimited ? 'text-blue-600 dark:text-blue-400' :
-                isIncluded  ? 'text-success dark:text-success' :
+                isUnlimited ? 'text-primary' :
+                isIncluded  ? 'text-success' :
                 'text-foreground'
               )}>
                 {limitStr ?? '—'}
@@ -150,7 +150,7 @@ function CategorySection({ category }: { category: BenefitCategory }) {
     <div>
       <div className="flex items-center gap-1.5 mb-1">
         <CategoryIcon name={category.config.icon} className="h-3 w-3 text-primary shrink-0" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
           {category.config.label}
         </span>
       </div>
@@ -160,10 +160,10 @@ function CategorySection({ category }: { category: BenefitCategory }) {
             key={i}
             className="flex items-start justify-between gap-2 rounded px-2 py-0.5 odd:bg-muted/30"
           >
-            <span className="text-muted-foreground text-[11px] leading-snug flex-1">
+            <span className="text-muted-foreground text-xs leading-snug flex-1">
               {benefit.BenefitDesc}
               {benefit.LimitModeDesc && (
-                <span className="block text-[10px] text-muted-foreground/60 mt-0.5 italic">
+                <span className="block text-[11px] text-muted-foreground mt-0.5 italic">
                   {benefit.LimitModeDesc}
                 </span>
               )}
@@ -220,7 +220,7 @@ export function TravelInsurancePlan({
   }
 
   return (
-    <div className={cn('relative mb-2')}>
+    <div className={cn('relative mb-4')}>
       <Card
         variant="interactive"
         className={cn(
@@ -262,7 +262,7 @@ export function TravelInsurancePlan({
 
           {/* Middle: plan name + benefit snapshot */}
           <div className="flex flex-1 flex-col justify-between p-4 sm:p-5">
-            <h3 className="text-foreground text-base font-bold uppercase tracking-wide sm:text-lg">
+            <h3 className="text-foreground text-base font-bold leading-snug text-pretty sm:text-lg">
               {plan.CarrierPlanDesc}
               {carrierCode === 'PACIFIC' && (
                 <a
@@ -270,7 +270,7 @@ export function TravelInsurancePlan({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="ml-2 inline-block align-middle rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-medium normal-case tracking-normal text-primary hover:bg-primary/10 transition-colors"
+                  className="ml-2 inline-block align-middle rounded-full border border-primary/40 px-2 py-0.5 text-[11px] font-medium normal-case tracking-normal text-primary hover:bg-primary/10 transition-colors"
                 >
                   Brochure
                 </a>
@@ -301,7 +301,7 @@ export function TravelInsurancePlan({
                 Apply Now
               </PrimaryActionButton>
               {redirectUrl && (
-                <span className="text-muted-foreground text-center text-[10px]">
+                <span className="text-muted-foreground text-center text-[11px]">
                   via Pacific Cross secure site
                 </span>
               )}
@@ -330,7 +330,7 @@ export function TravelInsurancePlan({
               )
             })()}
             {redirectUrl && (
-              <p className="text-muted-foreground mt-3 text-center text-[10px]">
+              <p className="text-muted-foreground mt-3 text-center text-[11px]">
                 via Pacific Cross secure site
               </p>
             )}
@@ -343,7 +343,7 @@ export function TravelInsurancePlan({
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-white px-4 py-1 text-xs font-medium text-muted-foreground shadow-sm hover:border-primary/40 hover:bg-muted/50 hover:text-primary dark:bg-slate-900 dark:hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-card px-4 py-1 text-xs font-medium text-foreground shadow-sm hover:border-primary/40 hover:bg-muted hover:text-primary transition-colors"
             >
               {expanded ? (
                 <>View less <ChevronUp className="h-3 w-3" /></>

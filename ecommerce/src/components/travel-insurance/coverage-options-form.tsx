@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageIntro } from '@/components/travel-insurance/journey-layout'
 import { InsurancePlan } from '@/types/plan'
 import { TravelInsurancePlan } from './insurance-plan'
 import ServerOffline from '../server-offline'
@@ -61,7 +62,14 @@ function ServerConnectionIssue() {
   )
 }
 
-export function CoverageOptionsForm() {
+type CoverageOptionsFormProps = {
+  /** Re-run the search (used by the standalone plans page). */
+  onRetry?: () => void
+  /** Trip summary bar rendered directly under the page intro. */
+  summary?: React.ReactNode
+}
+
+export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormProps = {}) {
   const router = useRouter()
   const {
     isFormModified,
@@ -302,6 +310,10 @@ export function CoverageOptionsForm() {
   }
 
   const handleRefetch = () => {
+    if (onRetry) {
+      onRetry()
+      return
+    }
     if (hasReachedLimit) return
 
     incrementQuoteRefetchCount()
@@ -411,25 +423,27 @@ export function CoverageOptionsForm() {
         </div>
       )}
 
-      <div className="border-t-muted-foreground/10 flex border-t px-4 sm:px-6">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 py-4 sm:gap-6 sm:py-8">
+      <div className="flex px-4 sm:px-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 pb-4 sm:gap-6">
           {isPlansFetching ? (
             <>
-              <div className="w-full text-center">
-                <Skeleton className="mx-auto h-10 w-[70%] sm:h-12 md:h-14" />
-              </div>
-              <div className="flex justify-start gap-2">
-                <Skeleton className="h-10 w-full max-w-md flex-1/2 rounded-full sm:h-12" />
-                <Skeleton className="h-10 w-full flex-1/2 rounded-full sm:h-12 sm:w-auto lg:max-w-48" />
-              </div>
+              <PageIntro
+                title="Choose your travel plan"
+                helper="Searching for the best plans for you…"
+              />
+              {summary}
             </>
           ) : (
             <>
-              <div className="w-full text-center">
-                <h1 className="from-primary to-accent bg-gradient-to-r bg-clip-text text-2xl font-black leading-tight text-transparent sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-                  Choose your Travel Plans
-                </h1>
-              </div>
+              <PageIntro
+                title="Choose your travel plan"
+                helper={
+                  allTravelPlans.length > 0
+                    ? `${allTravelPlans.length} ${allTravelPlans.length === 1 ? 'plan matches' : 'plans match'} your trip.`
+                    : undefined
+                }
+              />
+              {summary}
 
               {/* Mobile-only horizontal sort pills */}
               <div className="flex sm:hidden gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
@@ -449,7 +463,7 @@ export function CoverageOptionsForm() {
                       'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                       sortBy === opt.value
                         ? 'border-primary bg-primary text-white'
-                        : 'border-border bg-white text-muted-foreground dark:border-gray-600 dark:bg-gray-900 dark:text-muted-foreground'
+                        : 'border-border bg-card text-muted-foreground'
                     )}
                   >
                     {opt.label}
@@ -467,7 +481,7 @@ export function CoverageOptionsForm() {
                         'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                         isActive
                           ? 'border-primary bg-primary text-white'
-                          : 'border-border bg-white text-muted-foreground dark:border-gray-600 dark:bg-gray-900 dark:text-muted-foreground'
+                          : 'border-border bg-card text-muted-foreground'
                       )}
                     >
                       {company?.companyName || code}
@@ -480,9 +494,9 @@ export function CoverageOptionsForm() {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-7xl overflow-hidden px-1.5">
+      <div className="mx-auto w-full max-w-7xl overflow-x-clip">
         {isPlansFetching ? (
-          <div className="relative flex min-h-[60vh] w-full max-w-full gap-6 overflow-hidden pb-6">
+          <div className="relative flex min-h-[60vh] w-full max-w-full gap-6 overflow-hidden px-4 pb-6 sm:px-6">
             {/* Sidebar skeleton — collapsible on desktop */}
             <aside
               className={cn(
@@ -573,8 +587,8 @@ export function CoverageOptionsForm() {
             */}
             <aside
               className={cn(
-                'hidden lg:flex flex-col shrink-0 transition-[width] duration-300 ease-in-out overflow-hidden',
-                showFilters ? 'w-[220px]' : 'w-0'
+                'hidden lg:flex flex-col shrink-0 self-start transition-[width] duration-300 ease-in-out overflow-hidden',
+                showFilters ? 'ml-6 w-[260px] rounded-xl border border-border bg-card p-4' : 'w-0'
               )}
             >
               {/* ── Header row ── */}
@@ -599,7 +613,7 @@ export function CoverageOptionsForm() {
                   {/* Sort */}
                   <div>
                     <h4 className="text-foreground mb-2 text-xs font-bold uppercase tracking-wide">Sort by</h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                       {(
                         [
                           { value: 'lowest', label: 'Lowest premium' },
@@ -613,15 +627,15 @@ export function CoverageOptionsForm() {
                             type="button"
                             onClick={() => { setSortBy(opt.value); scrollToPlans() }}
                             className={cn(
-                              'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors text-left',
+                              'flex w-full items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors text-left',
                               sortBy === opt.value
-                                ? 'bg-primary/8 text-primary font-medium'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:text-muted-foreground'
+                                ? 'bg-primary/10 text-primary font-medium'
+                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                             )}
                           >
                             <span className={cn(
                               'h-2 w-2 shrink-0 rounded-full border transition-colors',
-                              sortBy === opt.value ? 'border-primary bg-primary' : 'border-border bg-white dark:border-gray-600'
+                              sortBy === opt.value ? 'border-primary bg-primary' : 'border-muted-foreground/50 bg-card'
                             )} />
                             {opt.label}
                           </button>
@@ -634,7 +648,7 @@ export function CoverageOptionsForm() {
                   {!providerFilter && (
                     <div>
                       <h4 className="text-foreground mb-2 text-xs font-bold uppercase tracking-wide">Providers</h4>
-                      <ul className="space-y-2">
+                      <ul className="space-y-1">
                         {availableProviders.map((code: string) => {
                           const company = COMPANIES.find((c) => c.carrierCode === code)
                           const isActive = selectedProviders.includes(code)
@@ -644,15 +658,15 @@ export function CoverageOptionsForm() {
                                 type="button"
                                 onClick={() => toggleProvider(code)}
                                 className={cn(
-                                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors text-left',
+                                  'flex w-full items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors text-left',
                                   isActive
-                                    ? 'bg-primary/8 text-primary font-medium'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:text-muted-foreground'
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                 )}
                               >
                                 <span className={cn(
                                   'h-2 w-2 shrink-0 rounded-full border transition-colors',
-                                  isActive ? 'border-primary bg-primary' : 'border-border bg-white dark:border-gray-600'
+                                  isActive ? 'border-primary bg-primary' : 'border-muted-foreground/50 bg-card'
                                 )} />
                                 {company?.companyName || code}
                               </button>
@@ -666,7 +680,7 @@ export function CoverageOptionsForm() {
                   {/* Coverages */}
                   <div>
                     <h4 className="text-foreground mb-2 text-xs font-bold uppercase tracking-wide">Coverages</h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                       {availableCoverages.map((coverage: string) => {
                         const isActive = selectedCoverages.includes(coverage)
                         const label = coverage
@@ -679,15 +693,15 @@ export function CoverageOptionsForm() {
                               type="button"
                               onClick={() => toggleCoverage(coverage)}
                               className={cn(
-                                'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors text-left',
+                                'flex w-full items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors text-left',
                                 isActive
-                                  ? 'bg-primary/8 text-primary font-medium'
-                                  : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:text-muted-foreground'
+                                  ? 'bg-primary/10 text-primary font-medium'
+                                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                               )}
                             >
                               <span className={cn(
                                 'h-2 w-2 shrink-0 rounded-full transition-colors',
-                                isActive ? 'bg-primary' : 'bg-muted dark:bg-gray-600'
+                                isActive ? 'bg-primary' : 'bg-muted-foreground/30'
                               )} />
                               {label}
                             </button>
@@ -700,19 +714,14 @@ export function CoverageOptionsForm() {
               </div>
             </aside>
 
-            {/* Divider — only visible when sidebar is expanded */}
-            {showFilters && (
-              <div className="hidden lg:block shrink-0 w-px bg-border/40 mx-4" />
-            )}
-
             {/* ── Plan list ── */}
-            <div id="plan-list" className="flex flex-1 min-w-0 flex-col gap-3 overflow-x-hidden">
-              {/* Recommendations count — sits just above the toolbar as a subtitle */}
-              <p className="text-muted-foreground text-xs hidden lg:block">
-                <span className="font-semibold text-foreground">{allTravelPlans.length}</span>{' '}
-                recommendation{allTravelPlans.length !== 1 ? 's' : ''} found
-              </p>
-
+            <div
+              id="plan-list"
+              className={cn(
+                'flex min-w-0 flex-1 flex-col gap-3 overflow-x-clip px-2 sm:px-6',
+                showFilters ? 'lg:pl-5' : 'lg:pl-6'
+              )}
+            >
               {/* Toolbar: search inline with List/Compare toggle */}
               <div className="flex items-center gap-2">
                 {/* Expand-filters button — desktop only, shown when sidebar is hidden */}

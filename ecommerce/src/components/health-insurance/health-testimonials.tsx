@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
 import { StarRating } from '@/components/ui/star-rating'
 import Link from 'next/link'
@@ -15,7 +15,6 @@ const TESTIMONIALS = [
       'Sobrang gaan ng loob ko nung na-cover ang hospitalization ko ng walang hassle. Ang bilis ng reimbursement at napaka-helpful ng customer support.',
     name: 'Juan Dela Cruz',
     city: 'Cebu',
-    avatar: 'https://avatar.iran.liara.run/public/boy/10',
   },
   {
     rating: 5,
@@ -24,7 +23,6 @@ const TESTIMONIALS = [
       "I've been using One Insurance for my family's health plan for two years now. The coverage is comprehensive and the premiums are very reasonable.",
     name: 'Mark Rivera',
     city: 'Davao',
-    avatar: 'https://avatar.iran.liara.run/public/boy/20',
   },
   {
     rating: 5,
@@ -33,7 +31,6 @@ const TESTIMONIALS = [
       'Nung nagkasakit ang aking anak, hindi na kami nag-alala sa gastos dahil covered lahat ng medical expenses. Salamat One Insurance!',
     name: 'Maria Santos',
     city: 'Manila',
-    avatar: 'https://avatar.iran.liara.run/public/girl/15',
   },
   {
     rating: 5,
@@ -42,7 +39,6 @@ const TESTIMONIALS = [
       'The claims process was smooth and fast. I submitted my documents online and received my reimbursement within 3 business days. Excellent service!',
     name: 'Carlo Fernandez',
     city: 'Cebu',
-    avatar: 'https://avatar.iran.liara.run/public/boy/30',
   },
   {
     rating: 5,
@@ -51,7 +47,6 @@ const TESTIMONIALS = [
       "Compared to other providers, One Insurance gives the best coverage at the most affordable price. I've recommended it to all my colleagues.",
     name: 'Ana Reyes',
     city: 'Quezon City',
-    avatar: 'https://avatar.iran.liara.run/public/girl/25',
   },
 ]
 
@@ -99,7 +94,6 @@ export function HealthTestimonials() {
                 {/* User */}
                 <div className="flex items-center gap-2.5 border-t pt-3">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={t.avatar} alt={t.name} />
                     <AvatarFallback>{t.name[0]}</AvatarFallback>
                   </Avatar>
                   <div>

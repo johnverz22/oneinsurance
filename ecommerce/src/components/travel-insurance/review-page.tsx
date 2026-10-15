@@ -1,19 +1,18 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
+  Check,
   CheckCircle,
-  Edit2,
-  MapPin,
-  Calendar,
-  Users,
+  ChevronDown,
+  ChevronUp,
+  Copy,
   CreditCard,
-  Shield,
-  Plane,
   Download,
+  ShieldCheck,
+  Ticket,
 } from 'lucide-react'
 import {
   useTravelInsuranceStore,
@@ -30,18 +29,174 @@ import {
   FullQuoteResponseSchema,
 } from '@/types/travel-insurance/policy-types'
 import { useState, useEffect } from 'react'
+import { PlanHeaderStrip } from './plan-header-strip'
 import { TravelDetailsSummary } from './travel-details-summary'
 import {
   getHighlightedBenefits,
   groupBenefits,
   groupPlanBenefits,
 } from '@/utils/travel-benefits-helpers'
-import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
-import Image from 'next/image'
+import { COMPANIES } from '@/constants/companies'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { useSignInStateStore } from '@/store/signin-store'
 import { generateQuotePDF } from '@/utils/generate-quote-pdf'
 import { toast } from 'sonner'
+
+
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('bg-muted/40 border-border min-w-0 rounded-xl border p-3', className)}>
+      <p className="text-muted-foreground text-xs font-medium">{label}</p>
+      <div className="text-foreground mt-0.5 text-sm font-semibold break-words">{children}</div>
+    </div>
+  )
+}
+
+function CollapsibleCard({
+  title,
+  icon,
+  action,
+  defaultOpen = true,
+  children,
+}: {
+  title: string
+  icon?: React.ReactNode
+  action?: React.ReactNode
+  defaultOpen?: boolean
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <Card className="bg-card gap-0 overflow-hidden p-0 shadow-none">
+      <CardHeader
+        className={cn(
+          'flex cursor-pointer items-center justify-between px-5 sm:px-6',
+          open ? 'pt-5 pb-3' : 'py-4 sm:py-5'
+        )}
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-primary text-lg font-semibold sm:text-xl">{title}</h2>
+          {icon}
+        </div>
+        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          {action}
+          <button
+            type="button"
+            className="text-muted-foreground"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? 'Collapse' : 'Expand'}
+          >
+            {open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </button>
+        </div>
+      </CardHeader>
+      <CardContent className={cn('px-5 pb-6 sm:px-6', { hidden: !open })}>{children}</CardContent>
+    </Card>
+  )
+}
+
+function BenefitRows({
+  items,
+}: {
+  items: Array<{ BenefitDesc: string; DefaultLimitDesc?: string | null; Silimit?: string | null; LimitModeDesc?: string | null }>
+}) {
+  return (
+    <div className="divide-border divide-y pr-4">
+      {items.map((b, i) => (
+        <div key={i} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2.5">
+          <h4 className="text-foreground text-sm">{b.BenefitDesc}</h4>
+          <small className="text-muted-foreground text-right text-xs sm:whitespace-nowrap">
+            {b.DefaultLimitDesc && b.DefaultLimitDesc !== '0'
+              ? b.DefaultLimitDesc
+              : b.Silimit && b.Silimit !== '0'
+                ? `Up to ₱${Number.parseFloat(b.Silimit).toLocaleString('en-PH')}`
+                : '—'}
+            {b.LimitModeDesc && ` · ${b.LimitModeDesc}`}
+          </small>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SeeMoreList({
+  total,
+  render,
+}: {
+  total: number
+  render: (expanded: boolean) => React.ReactNode
+}) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div>
+      {render(expanded)}
+      {total > 3 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="text-primary mt-1 flex items-center gap-1 text-sm font-semibold"
+        >
+          {expanded ? (
+            <>
+              See less <ChevronUp className="size-4" />
+            </>
+          ) : (
+            <>
+              See {total - 3} more <ChevronDown className="size-4" />
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function ProposalNumberCard({ proposalNumber }: { proposalNumber: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(proposalNumber)
+      setCopied(true)
+      toast.success('Proposal number copied to clipboard')
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Failed to copy proposal number')
+    }
+  }
+
+  return (
+    <Card className="bg-card border-primary/20 gap-0 overflow-hidden border-2 p-0 shadow-none">
+      <CardContent className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full">
+            <Ticket className="size-5" />
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs font-medium">Proposal Number</p>
+            <p className="text-primary text-xl font-black tracking-wider break-all sm:text-2xl">
+              {proposalNumber}
+            </p>
+            <p className="text-muted-foreground mt-0.5 text-xs">Keep this number to resume or track your application.</p>
+          </div>
+        </div>
+        <Button type="button" variant="outline" className="rounded-full" onClick={copy}>
+          {copied ? <Check className="mr-1.5 size-4" /> : <Copy className="mr-1.5 size-4" />}
+          {copied ? 'Copied' : 'Copy'}
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
 
 export function TravelInsuranceReviewPage() {
   const { travelersInfo, coverageOption, nextStep, prevStep, travelDetails, isLoadingProposal } =
@@ -61,7 +216,7 @@ export function TravelInsuranceReviewPage() {
     }
   }, [])
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     try {
       if (!apiResponse?.data) {
         toast.error('No quote data available')
@@ -99,7 +254,7 @@ export function TravelInsuranceReviewPage() {
         )
       }).filter(Boolean) || []
 
-      generateQuotePDF({
+      await generateQuotePDF({
         travelDetails,
         travelersInfo,
         apiResponse,
@@ -109,6 +264,10 @@ export function TravelInsuranceReviewPage() {
         mainBenefits,
         addonBenefits: selectedAddonBenefits as any,
         agentCode: agentCode || undefined,
+        taxes: {
+          premiumTax: coverageOption.selectedPlan?.PremiumTaxAmt,
+          stampDuty: coverageOption.selectedPlan?.StampDuty,
+        },
       })
 
       toast.success('PDF downloaded successfully')
@@ -186,370 +345,153 @@ export function TravelInsuranceReviewPage() {
   const proposalNumber = apiResponse?.data?.ProposalNo
 
   return (
-    <div className="relative space-y-6">
-      <div className="space-y-6">
-        {/* Proposal Number Card */}
-        {proposalNumber && (
-          <Card className="bg-background overflow-hidden p-0 shadow-none">
-            <CardContent className="flex items-center justify-between px-6 py-4">
-              <h3 className="text-lg font-semibold text-foreground dark:text-muted-foreground">
-                Proposal Number
-              </h3>
-              <div className="flex items-center gap-3">
-                <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 dark:bg-accent/10 px-4 py-2">
-                  <p className="text-primary dark:text-accent text-lg font-bold tracking-wider">
-                    {proposalNumber}
-                  </p>
-                </div>
-                <Button
-                  onClick={async () => {
-                    try {
-                      if (navigator?.clipboard?.writeText) {
-                        await navigator.clipboard.writeText(proposalNumber)
-                        toast.success('Proposal number copied to clipboard')
-                      } else {
-                        // Fallback for browsers that don't support clipboard API
-                        const textArea = document.createElement('textarea')
-                        textArea.value = proposalNumber
-                        textArea.style.position = 'fixed'
-                        textArea.style.left = '-999999px'
-                        document.body.appendChild(textArea)
-                        textArea.select()
-                        try {
-                          document.execCommand('copy')
-                          toast.success('Proposal number copied to clipboard')
-                        } catch (err) {
-                          toast.error('Failed to copy proposal number')
-                        }
-                        document.body.removeChild(textArea)
-                      }
-                    } catch (error) {
-                      console.error('Failed to copy:', error)
-                      toast.error('Failed to copy proposal number')
-                    }
-                  }}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                  </svg>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+    <div className="relative space-y-4 lg:space-y-6">
+      {proposalNumber && <ProposalNumberCard proposalNumber={proposalNumber} />}
 
-        <TravelDetailsSummary />
+      <TravelDetailsSummary />
 
-        <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-6">
-            <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
-            <Button
-              onClick={handleDownloadPDF}
-              variant="default"
-              size="lg"
-              className="from-primary to-accent rounded-full bg-gradient-to-r font-semibold dark:text-white"
-            >
-              <Download className="mr-2 h-5 w-5" />
-              Download Quote PDF
-            </Button>
-          </CardHeader>
-          <CardContent className="h-full w-full space-y-3">
-            {/* Provider Information */}
-            <div className="flex w-full gap-2">
-              <div className="relative h-14 w-28 shrink-0 overflow-hidden rounded-md">
-                <Image
-                  src={(CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image}
-                  alt={provider.companyName}
-                  className="h-full w-full object-contain"
-                  width={112}
-                  height={56}
-                />
-              </div>
-
-              <div className="space-y-2 px-1.5">
-                <h3 className="text-foreground text-left text-base sm:text-xl font-bold tracking-wide text-wrap uppercase">
-                  {plan.CarrierPlanDesc}
-                </h3>
-              </div>
-            </div>
-
-            {/* Benefits and Add-ons Grid */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Benefits Section */}
-              <div className="w-full space-y-3">
-                <h2 className="text-primary text-base font-bold">Benefits</h2>
-                <ScrollArea className="border-muted-foreground/20 bg-muted/30 h-[300px] w-full rounded-md border p-4">
-                  <div className="space-y-2 pr-4">
-                    {allBenefits.map((benefit, index) => (
-                      <div
-                        key={index}
-                        className="grid grid-cols-2 items-center gap-3"
-                      >
-                        <h4 className="text-sm">{benefit.BenefitDesc}</h4>
-                        <small className="text-muted-foreground text-right text-xs">
-                          {benefit.DefaultLimitDesc !== '0'
-                            ? benefit.DefaultLimitDesc
-                            : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
-                          <br />
-                          {benefit.LimitModeDesc}
-                        </small>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </div>
-
-              {/* Add-ons Section */}
-              <div className="w-full space-y-3">
-                <h2 className="text-primary text-base font-bold">
-                  Travel Add-Ons
-                </h2>
-                {selectedAddonDetails.length > 0 ? (
-                  <ScrollArea className="border-muted-foreground/20 bg-muted/30 h-[300px] w-full rounded-md border p-4 pb-6">
-                    <div className="space-y-4 pr-4">
-                      {selectedAddonDetails.map((addonGroup, groupIndex) => (
-                        <div key={groupIndex} className="space-y-2">
-                          <h3 className="text-sm font-semibold">
-                            {addonGroup.parent.CoverageName}
-                          </h3>
-                          <div className="space-y-2">
-                            {addonGroup.children.map((addon, index) => (
-                              <div
-                                key={index}
-                                className="grid grid-cols-2 items-center gap-3"
-                              >
-                                <h4 className="text-sm">{addon.BenefitDesc}</h4>
-                                <small className="text-muted-foreground text-right text-xs">
-                                  {addon.DefaultLimitDesc && addon.DefaultLimitDesc !== '0'
-                                    ? addon.DefaultLimitDesc
-                                    : addon.Silimit && addon.Silimit !== '0'
-                                      ? `Up to ₱${Number.parseFloat(addon.Silimit).toLocaleString('en-PH')}`
-                                      : '—'}
-                                  <br />
-                                  {addon.LimitModeDesc}
-                                </small>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                ) : (
-                  <div className="border-muted-foreground/20 bg-muted/30 flex h-[300px] w-full items-center justify-center rounded-md border">
-                    <p className="text-muted-foreground font-semibold">
-                      No add-on benefits
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Your Information Section */}
-        <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-          <CardHeader className="flex items-center justify-between -space-y-2 pt-6">
-            <h2 className="text-primary text-lg sm:text-2xl font-bold">
-              Your information
-            </h2>
-            <CheckCircle className="dark:text-accent text-primary" />
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Travelers Information */}
-            {travelersInfo.map((traveler, index) => (
-              <div key={index} className="space-y-4">
-                {travelersInfo.length > 1 && (
-                  <h4 className="text-primary dark:text-accent border-b pb-2 text-xl font-bold">
-                    Traveler {index + 1}
-                  </h4>
-                )}
-
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-primary dark:text-accent mb-1 font-medium">
-                        Name
-                      </p>
-                      <p className="text-foreground font-semibold">
-                        {traveler.firstName}{' '}
-                        {traveler.middleName && `${traveler.middleName} `}
-                        {traveler.lastName}
-                        {traveler.suffix &&
-                          traveler.suffix !== 'No Suffix' &&
-                          `, ${traveler.suffix}`}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-primary dark:text-accent mb-1 font-medium">
-                        Mobile Number
-                      </p>
-                      <p className="text-foreground font-semibold">
-                        +63{traveler.mobileNumber}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-primary dark:text-accent mb-1 font-medium">
-                        Gender
-                      </p>
-                      <p className="text-foreground font-semibold">
-                        {traveler.gender === 'M' ? 'Male' : 'Female'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-primary dark:text-accent mb-1 font-medium">
-                        Email Address
-                      </p>
-                      <p className="text-foreground font-semibold">
-                        {traveler.email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div>
-                    <p className="text-primary dark:text-accent mb-1 font-medium">
-                      ID Type
-                    </p>
-                    <p className="text-foreground font-semibold">
-                      {getIdNameByIdType(traveler.idType)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-primary dark:text-accent mb-1 font-medium">
-                      ID Number
-                    </p>
-                    <p className="text-foreground font-semibold">
-                      {traveler.idNumber}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-primary dark:text-accent mb-1 font-medium">
-                    Address
-                  </p>
-                  <p className="text-foreground font-semibold">
-                    {traveler.address.line1}
-                    {traveler.address.line2 && (
-                      <span>, {traveler.address.line2}</span>
-                    )}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-primary dark:text-accent mb-1 font-medium">
-                    Date Of Birth
-                  </p>
-                  <p className="text-foreground font-semibold">
-                    {new Date(traveler.dateOfBirth).toDateString() ||
-                      'Not specified'}
-                  </p>
-                </div>
-
-                {/* Beneficiary display enabled */}
-                {true && traveler.beneficiary && traveler.beneficiary.firstName && (
-                  <div className="border-t pt-4">
-                    <h5 className="text-primary dark:text-accent mb-3 text-lg font-semibold">
-                      Beneficiary
-                    </h5>
-                    <div className="space-y-2 rounded-lg border border-border p-4">
-                      <div>
-                        <p className="text-muted-foreground text-sm">Name</p>
-                        <p className="font-semibold">
-                          {`${traveler.beneficiary.firstName} ${traveler.beneficiary.middleName && traveler.beneficiary.middleName} ${traveler.beneficiary.lastName}`}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-sm">
-                          Date of Birth
-                        </p>
-                        <p className="font-semibold">
-                          {traveler.beneficiary.dateOfBirth
-                            ? new Date(
-                                traveler.beneficiary.dateOfBirth!
-                              ).toDateString()
-                            : 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-sm">
-                          Relationship
-                        </p>
-                        <p className="font-semibold">
-                          {traveler.beneficiary.relationship || 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {index < travelersInfo.length - 1 && (
-                  <div className="my-6 border-b" />
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex w-full flex-col items-center gap-3 px-1.5 lg:px-0">
-        <div className="flex w-full flex-col items-center gap-3 lg:flex-row lg:justify-between">
+      <CollapsibleCard
+        title="Coverage & benefits"
+        action={
           <Button
+            type="button"
             onClick={handleDownloadPDF}
             variant="outline"
-            size="lg"
-            className="w-full rounded-full border-2 font-semibold lg:w-max lg:px-12"
+            size="sm"
+            className="rounded-full font-semibold"
           >
-            <Download className="mr-2 h-5 w-5" />
-            Download Quote PDF
+            <Download className="mr-1.5 size-4" />
+            <span className="hidden sm:inline">Download Quote PDF</span>
+            <span className="sm:hidden">PDF</span>
           </Button>
-          
-          <div className="hidden w-full flex-col gap-3 lg:flex lg:w-auto lg:flex-row">
-            {!isReadOnlyMode && (
-              <Button
-                type="button"
-                size="lg"
-                variant="outline"
-                className="w-full rounded-full bg-transparent px-12 font-semibold lg:w-max"
-                onClick={prevStep}
-                data-mobile-action="back"
-              >
-                Back
-              </Button>
-            )}
-            
-            <Button
-              size="lg"
-              className="from-primary to-accent w-full rounded-full bg-gradient-to-r via-90% px-14 font-semibold lg:w-max dark:text-white"
-              onClick={async () => {
-                setProceedingToPayment(true)
-                await handleProceedToPayment()
-              }}
-              data-mobile-action="next"
-            >
-              <CreditCard className="mr-2 h-4 w-4" />
-              {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}
-            </Button>
+        }
+      >
+        <div className="space-y-4">
+          <PlanHeaderStrip
+            provider={provider}
+            planName={plan.CarrierPlanDesc}
+          />
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-foreground flex items-center gap-2 text-base font-bold">
+                <ShieldCheck className="text-primary size-5" />
+                Benefits
+              </h3>
+              <SeeMoreList
+                total={allBenefits.length}
+                render={(expanded) => (
+                  <BenefitRows items={expanded ? allBenefits : allBenefits.slice(0, 3)} />
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-foreground flex items-center gap-2 text-base font-bold">
+                <ShieldCheck className="text-primary size-5" />
+                Travel Add-Ons
+              </h3>
+              {selectedAddonDetails.length > 0 ? (
+                <SeeMoreList
+                  total={selectedAddonDetails.length}
+                  render={(expanded) => (
+                    <div className="space-y-4">
+                      {(expanded ? selectedAddonDetails : selectedAddonDetails.slice(0, 3)).map(
+                        (addonGroup, groupIndex) => (
+                          <div key={groupIndex}>
+                            <h4 className="text-foreground text-sm font-semibold">
+                              {addonGroup.parent.CoverageName}
+                            </h4>
+                            <BenefitRows items={addonGroup.children} />
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+                />
+              ) : (
+                <div className="bg-muted/40 border-border flex h-20 w-full items-center justify-center rounded-xl border">
+                  <p className="text-muted-foreground text-sm font-medium">No add-on benefits</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </CollapsibleCard>
+
+      <CollapsibleCard
+        title="Your Information"
+        icon={<CheckCircle className="text-success h-4 w-4 sm:h-5 sm:w-5" />}
+      >
+        <div className="space-y-6">
+          {travelersInfo.map((traveler, index) => (
+            <div key={index} className="space-y-4">
+              {travelersInfo.length > 1 && (
+                <h3 className="text-primary border-border border-b pb-2 text-base font-bold">
+                  Traveler {index + 1}
+                </h3>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Name">
+                  {traveler.firstName} {traveler.middleName && `${traveler.middleName} `}
+                  {traveler.lastName}
+                  {traveler.suffix && traveler.suffix !== 'No Suffix' && `, ${traveler.suffix}`}
+                </Field>
+                <Field label="Date of Birth">
+                  {traveler.dateOfBirth ? format(new Date(traveler.dateOfBirth), 'MMM d, yyyy') : 'Not specified'}
+                </Field>
+                <Field label="Gender">{traveler.gender === 'M' ? 'Male' : 'Female'}</Field>
+                <Field label="Mobile Number">+63{traveler.mobileNumber}</Field>
+                <Field label="Email Address">{traveler.email}</Field>
+                <Field label="ID">
+                  {getIdNameByIdType(traveler.idType)} · {traveler.idNumber}
+                </Field>
+                <Field label="Address" className="sm:col-span-2">
+                  {traveler.address.line1}
+                  {traveler.address.line2 && `, ${traveler.address.line2}`}
+                </Field>
+              </div>
+
+              {traveler.beneficiary?.firstName && (
+                <div className="space-y-2">
+                  <h4 className="text-foreground text-sm font-bold">Beneficiary</h4>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Field label="Name">
+                      {[traveler.beneficiary.firstName, traveler.beneficiary.middleName, traveler.beneficiary.lastName]
+                        .filter(Boolean)
+                        .join(' ')}
+                    </Field>
+                    <Field label="Date of Birth">
+                      {traveler.beneficiary.dateOfBirth
+                        ? format(new Date(traveler.beneficiary.dateOfBirth), 'MMM d, yyyy')
+                        : 'N/A'}
+                    </Field>
+                    <Field label="Relationship">{traveler.beneficiary.relationship || 'N/A'}</Field>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </CollapsibleCard>
+
+      <div className="hidden">
+        {!isReadOnlyMode && (
+          <Button type="button" size="lg" variant="outline" onClick={prevStep} data-mobile-action="back">
+            Back
+          </Button>
+        )}
+        <Button
+          size="lg"
+          onClick={async () => {
+            setProceedingToPayment(true)
+            await handleProceedToPayment()
+          }}
+          data-mobile-action="next"
+        >
+          <CreditCard className="mr-2 h-4 w-4" />
+          {proceedingToPayment ? 'Processing...' : 'Proceed to Payment'}
+        </Button>
       </div>
     </div>
   )

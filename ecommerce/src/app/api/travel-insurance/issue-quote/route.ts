@@ -31,8 +31,16 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  if (!body?.payment?.reference) {
+    return NextResponse.json(
+      { success: false, message: 'payment.reference is required' },
+      { status: 400 }
+    )
+  }
+
   const requestBody = {
     proposal_number: body.proposal_number,
+    payment: { reference: body.payment.reference },
     ...(body.CustomField ? { CustomField: body.CustomField } : {}),
   }
 
@@ -77,6 +85,15 @@ export async function POST(req: NextRequest) {
       }
 
       // Non-retryable or exhausted — forward IGW's error body to client
+      console.error(
+        '[issue-quote][SUPPORT-ALERT] issuance failed after payment —',
+        JSON.stringify({
+          proposal_number: body.proposal_number,
+          payment_reference: body.payment.reference,
+          status,
+          message,
+        })
+      )
       return NextResponse.json(
         data && typeof data === 'object' && Object.keys(data).length > 0
           ? data

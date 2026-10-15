@@ -39,7 +39,7 @@ export function generateTravelInsurancePDF(
   yPos += 8
 
   doc.text(`Travel Days: ${data.TravelDays}`, leftCol, yPos)
-  doc.text(`No. of Travellers: ${data.NoOfTravellers}`, rightCol, yPos)
+  doc.text(`No. of travelers: ${data.NoOfTravellers}`, rightCol, yPos)
   yPos += 15
 
   // Premium information

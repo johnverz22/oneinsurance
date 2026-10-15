@@ -13,6 +13,7 @@ interface PaymentBrandsProps {
   selectedBrand?: PaymentBrand | null
   className?: string
   showCardBadge?: boolean
+  variant?: 'default' | 'compact'
   filterByCardType?: boolean | null // null = all, true = cards only, false = non-cards only
 }
 
@@ -22,6 +23,7 @@ export default function PaymentBrands({
   className,
   showCardBadge = true,
   filterByCardType = null,
+  variant = 'default',
 }: PaymentBrandsProps) {
   const { data: response, isLoading, error, refetch } = useGetPaymentBrands()
 
@@ -85,6 +87,36 @@ export default function PaymentBrands({
         <p className="text-sm text-muted-foreground">
           Please check back later or contact support if this persists.
         </p>
+      </div>
+    )
+  }
+
+  if (variant === 'compact') {
+    return (
+      <div className={cn('grid grid-cols-3 gap-2 sm:flex sm:flex-wrap', className)} role="radiogroup" aria-label="Payment method">
+        {filteredBrands.map((brand: PaymentBrand) => {
+          const selected = selectedBrand?.value === brand.value
+          return (
+            <button
+              key={`${brand.code}-${brand.value}`}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              aria-label={`Select ${brand.value} as payment method`}
+              onClick={() => handleBrandClick(brand)}
+              className={cn(
+                'bg-card relative flex h-14 w-full items-center justify-center rounded-xl border p-2 transition-colors sm:h-12 sm:w-24',
+                selected
+                  ? 'border-primary bg-primary/5 ring-primary/30 ring-2'
+                  : 'border-border hover:border-primary/60'
+              )}
+            >
+              <span className="relative block h-full w-full">
+                <Image src={brand.image} alt={brand.value} fill sizes="(max-width: 640px) 30vw, 96px" className="object-contain" />
+              </span>
+            </button>
+          )
+        })}
       </div>
     )
   }

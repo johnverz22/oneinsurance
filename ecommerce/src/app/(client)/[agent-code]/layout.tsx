@@ -39,6 +39,11 @@ export default function ProductsLayout({
     pathname.includes('ctpl') ||
     pathname.includes('motor')
 
+  const isTravelJourney =
+    pathname.includes('/travel-insurance/avail') ||
+    pathname.includes('/travel-insurance/plans')
+  const isJourneyPage = pathname.includes('/avail') || isTravelJourney
+
   return (
     <>
       {!isProductPage && (
@@ -53,7 +58,7 @@ export default function ProductsLayout({
       {/* Product pages: dark hero at top — overlay a transparent, light-text nav
           on landing pages only. Sub-pages (/avail etc.) manage their own
           header and suppress this one entirely. */}
-      {isProductPage && !pathname.includes('/avail') && (
+      {isProductPage && !isJourneyPage && (
         <div className="hidden md:block">
           <Header
             navigations={NAVIGATIONS}
@@ -72,12 +77,13 @@ export default function ProductsLayout({
         </div>
       )}
 
-      <main className={`w-full${pathname.includes('/avail') ? '' : ' min-h-full'}`}>{children}</main>
+      <main className={`w-full${isJourneyPage ? '' : ' min-h-full'}`}>{children}</main>
 
       {/* Avail pages: footer hidden on mobile (fixed action bar takes that space),
           shown on lg+ where the action bar is not rendered */}
-      {!pathname.includes('/avail') && <Footer />}
-      {pathname.includes('/avail') && (
+      {/* Travel search/purchase journey (plans + avail): no footer on any screen size */}
+      {!isJourneyPage && <Footer />}
+      {isJourneyPage && !isTravelJourney && (
         <div className="hidden lg:block">
           <Footer />
         </div>

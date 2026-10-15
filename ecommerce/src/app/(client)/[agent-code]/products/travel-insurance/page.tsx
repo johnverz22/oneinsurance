@@ -9,13 +9,13 @@ import { TravelDetailsForm } from '@/components/travel-insurance/travel-details-
 import { ProposalSearch } from '@/components/travel-insurance/proposal-search'
 import { useTravelInsuranceStore, useFullQuoteResponseStore } from '@/store/travel-insurance-store'
 import { TRAVEL_FAQS } from '@/constants/faqs/travel-insurance-faqs'
-import { CoverageOptionsForm } from '@/components/travel-insurance/coverage-options-form'
+import { useTravelProviderFilter } from '@/store/travel-provider-filter-store'
 import { useCreateQuoteRequest } from '@/app/data/mutations/create-quote-request'
-import { useAgentCodeStore } from '@/store/agent-code-store'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { PageLoader } from '@/components/page-loader'
+import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/ui/star-rating'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { clearProposalNumber } from '@/utils/payment-storage'
 import { MobileProductNav } from '@/components/layout/mobile-product-nav'
 
@@ -33,12 +33,13 @@ function TravelInsurancePageSSR() {
     setInsurancePlans,
     resetAvailForm,
     setFormModified,
-    insurancePlans,
   } = useTravelInsuranceStore()
+  const { setProviderFilter } = useTravelProviderFilter()
   const { resetApiResponse } = useFullQuoteResponseStore()
   const router = useRouter()
   const { mutateAsync } = useCreateQuoteRequest()
-  const { agentCode } = useAgentCodeStore()
+  const params = useParams()
+  const agentCode = params['agent-code'] as string
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
@@ -49,6 +50,7 @@ function TravelInsurancePageSSR() {
     setInsurancePlans(null)
     resetApiResponse()
     clearProposalNumber()
+    setProviderFilter(null)
   }, [])
 
   return (
@@ -57,7 +59,6 @@ function TravelInsurancePageSSR() {
       <MobileProductNav
         searchContent={<ProposalSearch />}
         searchTitle="Find Proposal"
-        plansTargetId="coverage-options"
       />
 
       {/* --- HERO SECTION --- overflow-x-hidden scoped here so the hero image
@@ -124,18 +125,38 @@ function TravelInsurancePageSSR() {
           }
         `}</style>
         
-        <TravelDetailsForm />
+        {/* Gate on `hydrated`: the form reads persisted Zustand state that the
+            server can't see, so SSR vs first client render would mismatch.
+            The mount effect resets the form anyway, so nothing is lost. */}
+        {hydrated ? (
+          <TravelDetailsForm />
+        ) : (
+          <div
+            data-testid="travel-details-form"
+            className="bg-card w-full space-y-6 rounded-md border shadow-lg lg:rounded-xl"
+          >
+            <div className="space-y-6 px-4 pt-3 pb-6 sm:px-8">
+              <Skeleton className="h-11 w-56 rounded-full" />
+              <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:gap-4">
+                <Skeleton className="h-12 w-full rounded-full" />
+                <Skeleton className="h-12 w-full rounded-full" />
+                <Skeleton className="h-12 w-full rounded-full" />
+              </div>
+              <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:gap-4">
+                <Skeleton className="h-12 w-full rounded-full" />
+                <Skeleton className="h-12 w-full rounded-full" />
+              </div>
+              <div className="flex justify-end">
+                <Skeleton className="h-12 w-40 rounded-full" />
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="mt-4 md:mt-0">
           <ProposalSearch variant="collapsible" />
         </div>
       </div>
-
-      {insurancePlans && (
-        <div id="coverage-options" className="relative w-full pb-0 pt-4 md:pb-12 md:pt-16">
-          <CoverageOptionsForm />
-        </div>
-      )}
 
       {/* --- LOW PRIORITY CONTENT (lg+ only) --- */}
       <div className="relative mx-auto hidden w-full max-w-7xl flex-col items-center justify-center gap-2.5 px-4 lg:flex">
@@ -219,11 +240,6 @@ function TravelInsurancePageSSR() {
               </p>
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage
-                    src="https://avatar.iran.liara.run/public/boy/1"
-                    alt="avatar"
-                    className="size-8"
-                  />
                   <AvatarFallback>MR</AvatarFallback>
                 </Avatar>
                 <p className="text-lg font-bold">Miguel Reyes</p>
@@ -236,11 +252,6 @@ function TravelInsurancePageSSR() {
               </p>
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage
-                    src="https://avatar.iran.liara.run/public/girl/2"
-                    alt="avatar"
-                    className="size-8"
-                  />
                   <AvatarFallback>AC</AvatarFallback>
                 </Avatar>
                 <p className="text-lg font-bold">Andrea Cruz</p>
@@ -253,11 +264,6 @@ function TravelInsurancePageSSR() {
               </p>
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage
-                    src="https://avatar.iran.liara.run/public/boy/3"
-                    alt="avatar"
-                    className="size-8"
-                  />
                   <AvatarFallback>JT</AvatarFallback>
                 </Avatar>
                 <p className="text-lg font-bold">Jose Tan</p>

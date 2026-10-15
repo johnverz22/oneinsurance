@@ -26,6 +26,15 @@ import {
   PersonalInfoFormData,
 } from '@/types/travel-insurance/travel-insurance-request'
 import { FieldInfo } from '@/components/ui/form'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { DateTimePicker } from '@/components/ui/date-time-picker'
 import { provinces } from '@/constants/phil-prov'
 import { citiesMunicipalities } from '@/constants/phil-city-mun'
@@ -76,6 +85,10 @@ export function PersonalInfoForm() {
   const { mutateAsync } = useFullQuoteRequest()
   const { setApiResponse } = useFullQuoteResponseStore()
   const signinState = useSignInStateStore()
+  const [quoteError, setQuoteError] = useState<{
+    message: string
+    details: string[]
+  } | null>(null)
 
   // Store ID files for each traveler using module-level singleton (survives unmount/remount)
   // idFilesStore is defined in travel-insurance-store.ts
@@ -146,16 +159,12 @@ export function PersonalInfoForm() {
       if (!fullQuoteResponse?.success || !fullQuoteResponse.data) {
         // 422 responses carry errors{} keyed by field path
         // (e.g. "travellers.0.id_number") — surface them all.
-        const fieldErrors = fullQuoteResponse?.errors
-          ? Object.entries(fullQuoteResponse.errors)
-              .map(([field, msgs]) => `${field}: ${msgs.join(', ')}`)
-              .join('\n')
-          : null
-        alert(
-          fieldErrors
-            ? `${fullQuoteResponse?.message ?? 'Validation failed'}\n${fieldErrors}`
-            : fullQuoteResponse?.message || 'Failed to create quote.'
-        )
+        const details = Object.values(fullQuoteResponse?.errors ?? {}).flat()
+        setQuoteError({
+          message:
+            fullQuoteResponse?.message || 'We could not create your quote.',
+          details,
+        })
         return
       }
 
@@ -365,8 +374,8 @@ export function PersonalInfoForm() {
           }}
         >
           <Card id="travelers-info" className="gap-4 shadow-none">
-            <CardHeader className="text-lg sm:text-2xl font-bold">
-              Travelers Information
+            <CardHeader className="text-lg font-semibold sm:text-xl">
+              Traveler information
             </CardHeader>
 
             <div className="space-y-4 px-6 pb-6">
@@ -541,6 +550,7 @@ export function PersonalInfoForm() {
                                             )
                                           }
                                           onBlur={nameField.handleBlur}
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${
                                             haveError
                                               ? 'border-destructive'
@@ -602,6 +612,7 @@ export function PersonalInfoForm() {
                                             )
                                           }
                                           onBlur={lastNameField.handleBlur}
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${
                                             haveError
                                               ? 'border-destructive'
@@ -637,7 +648,7 @@ export function PersonalInfoForm() {
                                           sField.handleChange(value as any)
                                         }
                                       >
-                                        <SelectTrigger className="h-12 w-full">
+                                        <SelectTrigger aria-invalid={!!fieldHasError(sField)} className="h-12 w-full">
                                           <SelectValue placeholder="Select Suffix" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -724,6 +735,7 @@ export function PersonalInfoForm() {
                                                 )
                                               }
                                             }}
+                                            aria-invalid={!!haveError}
                                             className={`${haveError && 'border-destructive'}`}
                                           />
                                         </div>
@@ -750,6 +762,7 @@ export function PersonalInfoForm() {
                                             )
                                           }
                                           onBlur={emailField.handleBlur}
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${
                                             haveError
                                               ? 'border-destructive'
@@ -772,8 +785,15 @@ export function PersonalInfoForm() {
                                         <Label className="text-primary block">
                                           Mobile Number <span className="text-destructive">*</span>
                                         </Label>
-                                        <div className="dark:bg-input/30 border-muted-foreground/30 flex items-center gap-2 rounded-full border pl-2">
-                                          <span>+63</span>
+                                        <div
+                                          className={cn(
+                                            'dark:bg-input/30 flex items-center gap-2 rounded-full border pl-4 transition-[color,box-shadow]',
+                                            haveError
+                                              ? 'border-destructive ring-destructive/30 dark:ring-destructive/40 ring-[3px]'
+                                              : 'border-muted-foreground/30 focus-within:border-primary focus-within:ring-primary/30 focus-within:ring-[3px]'
+                                          )}
+                                        >
+                                          <span className="text-muted-foreground">+63</span>
                                           <Input
                                             value={mobileField.state.value}
                                             onChange={(e) =>
@@ -782,11 +802,8 @@ export function PersonalInfoForm() {
                                               )
                                             }
                                             onBlur={mobileField.handleBlur}
-                                            className={`h-12 rounded-l-none bg-none ${
-                                              haveError
-                                                ? 'border-destructive'
-                                                : ''
-                                            }`}
+                                            aria-invalid={!!haveError}
+                                            className="h-12 rounded-l-none border-0 bg-transparent pl-0 shadow-none ring-0 focus-visible:border-0 focus-visible:ring-0 aria-invalid:border-0 aria-invalid:ring-0 dark:bg-transparent"
                                             placeholder="9171234567"
                                           />
                                         </div>
@@ -811,7 +828,7 @@ export function PersonalInfoForm() {
                                           field.handleChange(value as any)
                                         }
                                       >
-                                        <SelectTrigger className="h-12 w-full">
+                                        <SelectTrigger aria-invalid={!!fieldHasError(field)} className="h-12 w-full">
                                           <SelectValue placeholder="ID Type" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -861,6 +878,7 @@ export function PersonalInfoForm() {
                                             )
                                           }
                                           onBlur={idNumberField.handleBlur}
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${haveError && 'border-destructive'}`}
                                           placeholder="Enter ID Number"
                                         />
@@ -892,6 +910,7 @@ export function PersonalInfoForm() {
                                           }}
                                         >
                                           <SelectTrigger
+                                            aria-invalid={!!haveError}
                                             className={`h-12 w-full ${haveError && 'border-destructive'}`}
                                           >
                                             <SelectValue placeholder="Select" />
@@ -945,6 +964,7 @@ export function PersonalInfoForm() {
                                           }
                                         >
                                           <SelectTrigger
+                                            aria-invalid={!!haveError}
                                             className={`h-12 w-full ${haveError && 'border-destructive'}`}
                                           >
                                             <SelectValue placeholder="Select" />
@@ -990,6 +1010,7 @@ export function PersonalInfoForm() {
                                               e.target.value
                                             )
                                           }
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${haveError && 'border-destructive'}`}
                                           placeholder="e.g. 1000"
                                         />
@@ -1015,6 +1036,7 @@ export function PersonalInfoForm() {
                                             l1Field.handleChange(e.target.value)
                                           }
                                           onBlur={l1Field.handleBlur}
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${haveError && 'border-destructive'}`}
                                           placeholder="e.g. House/Unit/Street"
                                         />
@@ -1039,6 +1061,7 @@ export function PersonalInfoForm() {
                                             l2Field.handleChange(e.target.value)
                                           }
                                           onBlur={l2Field.handleBlur}
+                                          aria-invalid={!!haveError}
                                           className={`h-12 ${haveError && 'border-destructive'}`}
                                           placeholder="e.g. Brgy/Subdivision/Details"
                                           maxLength={45}
@@ -1092,6 +1115,7 @@ export function PersonalInfoForm() {
                                             onCheckedChange={(checked) => {
                                               field.handleChange(checked as boolean)
                                             }}
+                                            aria-invalid={!!haveError}
                                             className={`mt-1 ${haveError ? 'border-destructive' : ''}`}
                                           />
                                           <label
@@ -1189,6 +1213,7 @@ export function PersonalInfoForm() {
                                                     )
                                                   }
                                                   onBlur={fNameField.handleBlur}
+                                                  aria-invalid={!!haveError}
                                                   className={`h-12 ${haveError && 'border-destructive'}`}
                                                   placeholder="Enter beneficiary first name"
                                                   disabled={!hasBeneficiary}
@@ -1219,6 +1244,7 @@ export function PersonalInfoForm() {
                                                     )
                                                   }
                                                   onBlur={mNameField.handleBlur}
+                                                  aria-invalid={!!haveError}
                                                   className={`h-12 ${haveError && 'border-destructive'}`}
                                                   placeholder="Enter beneficiary middle name"
                                                   disabled={!hasBeneficiary}
@@ -1248,6 +1274,7 @@ export function PersonalInfoForm() {
                                                     )
                                                   }
                                                   onBlur={lNameField.handleBlur}
+                                                  aria-invalid={!!haveError}
                                                   className={`h-12 ${haveError && 'border-destructive'}`}
                                                   placeholder="Enter beneficiary last name"
                                                   disabled={!hasBeneficiary}
@@ -1287,6 +1314,7 @@ export function PersonalInfoForm() {
                                                       date >= new Date()
                                                     }
                                                     required
+                                                    aria-invalid={!!haveError}
                                                     className={`${haveError && 'border-destructive'}`}
                                                   />
                                                 ) : (
@@ -1330,6 +1358,7 @@ export function PersonalInfoForm() {
                                                     )
                                                   }
                                                   onBlur={rField.handleBlur}
+                                                  aria-invalid={!!haveError}
                                                   className={`h-12 ${haveError && 'border-destructive'}`}
                                                   placeholder="e.g., Spouse, Parent, Child"
                                                   disabled={!hasBeneficiary}
@@ -1366,7 +1395,7 @@ export function PersonalInfoForm() {
             </div>
           </Card>
 
-          <div className="sticky bottom-0 hidden items-center justify-center gap-3 bg-section px-1.5 py-6 lg:flex lg:justify-start lg:px-0">
+          <div className="hidden">
             <Button
               type="button"
               size="lg"
@@ -1378,7 +1407,7 @@ export function PersonalInfoForm() {
               }}
               data-mobile-action="back"
             >
-              {currentTabIndex === 0 ? 'Back' : 'Previous Traveller'}
+              {currentTabIndex === 0 ? 'Back' : 'Previous traveler'}
             </Button>
 
             {currentTabIndex < totalTravelers - 1 ? (
@@ -1389,7 +1418,7 @@ export function PersonalInfoForm() {
                 onClick={handleNextTraveller}
                 data-mobile-action="next"
               >
-                Next Traveller
+                Next traveler
               </Button>
             ) : (
               <form.Subscribe
@@ -1409,6 +1438,38 @@ export function PersonalInfoForm() {
           </div>
         </form>
       </div>
+      <AlertDialog
+        open={!!quoteError}
+        onOpenChange={(open) => !open && setQuoteError(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>We couldn&apos;t create your quote</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Something went wrong while processing your request. Please
+                  contact support and we&apos;ll help you complete your
+                  application.
+                </p>
+                {quoteError && quoteError.details.length > 0 && (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {quoteError.details.map((d) => (
+                      <li key={d}>{d}</li>
+                    ))}
+                  </ul>
+                )}
+                <p className="text-foreground text-sm font-medium">
+                  +63 (2) 8123-4567 · support@oneinsurance.ph
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>Close</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

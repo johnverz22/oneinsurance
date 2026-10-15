@@ -34,7 +34,7 @@ const Step: React.FC<StepProps> = ({
       tabIndex={1}
       role="button"
       className={cn(
-        'border-muted-foreground/10 flex items-center rounded-md px-1 py-1.5 sm:px-2 sm:py-2',
+        'border-muted-foreground/10 flex items-center lg:shrink-0 rounded-md px-1 py-1.5 sm:px-2 sm:py-2',
         className
       )}
       // onClick={onClick}
@@ -71,7 +71,7 @@ const Step: React.FC<StepProps> = ({
         <div className="ml-2 lg:ml-3">
           <p
             className={cn(
-              'text-muted-foreground text-xs font-medium sm:text-sm lg:text-base',
+              'text-muted-foreground text-xs font-medium sm:text-sm lg:text-base lg:whitespace-nowrap',
               {
                 'text-tertiary': isVisited,
                 'text-primary dark:text-accent font-bold':

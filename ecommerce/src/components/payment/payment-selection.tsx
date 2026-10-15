@@ -17,20 +17,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { PaymentBrand } from '@/types/payment'
-import PaymentBrands, {
-  CardPaymentBrands,
-  DigitalPaymentBrands,
-} from '@/components/payment/payment-brands'
+import PaymentBrands from '@/components/payment/payment-brands'
 import { HostedCheckoutForm } from './card-payment-form'
 import { PaymentSuccessInline } from './payment-success-inline'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   CreditCard,
-  Smartphone,
-  ShoppingCart,
-  ArrowRight,
   Shield,
   ArrowLeft,
   AlertCircle,
@@ -54,7 +47,8 @@ import {
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { popup } from '@/store/use-popup-store'
 import { toast } from 'sonner'
-import { PageLoader } from '../page-loader'
+import { usePaymentPhaseStore } from '@/store/payment-phase-store'
+import { PaymentFinalizing, PaymentIssueError } from './payment-finalizing'
 import axios from 'axios'
 import { COMPANIES } from '@/constants/companies'
 import { getPlanName } from '@/utils/custom-fields-storage'
@@ -77,7 +71,6 @@ function removeReturnParamsFromUrl() {
 // ---------------------------------------------------------------------------
 
 export default function PaymentSelection() {
-  const [paymentMethod, setPaymentMethod] = useState<'all' | 'cards' | 'digital'>('all')
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [isIssuingQuote, setIsIssuingQuote] = useState(false)
@@ -88,7 +81,14 @@ export default function PaymentSelection() {
   // Stable merchant_transaction_id minted server-side on load
   const [merchantTransactionId, setMerchantTransactionId] = useState<string | null>(null)
 
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false)
+  const [issueError, setIssueError] = useState(false)
+  const [issueFailures, setIssueFailures] = useState(0)
+  const [retryError, setRetryError] = useState<string | null>(null)
+  const lastPaidTxnRef = useRef<string | null>(null)
+
   const isProcessingQuoteRef = useRef(false)
+  const setPaymentPhase = usePaymentPhaseStore((s) => s.setPhase)
 
   const { mutateAsync: issueQuote } = useIssueQuoteRequest()
   const { mutateAsync: submitPayment } = usePaymentSubmit()
@@ -109,10 +109,20 @@ export default function PaymentSelection() {
     selectedPaymentBrand,
     paymentSubmitResponse,
     coverageOption,
+    travelDetails,
+    travelersInfo,
   } = useTravelInsuranceStore()
 
   const { agentCode } = useAgentCodeStore()
   const { apiResponse } = useFullQuoteResponseStore()
+
+  useEffect(() => {
+    setPaymentPhase(
+      showSuccessDialog ? 'success' : issueError ? 'error' : isIssuingQuote || isVerifyingPayment ? 'finalizing' : 'idle'
+    )
+  }, [showSuccessDialog, issueError, isIssuingQuote, isVerifyingPayment, setPaymentPhase])
+
+  useEffect(() => () => setPaymentPhase('idle'), [setPaymentPhase])
 
   // --------------------------------------------------------------------------
   // 1. Mint merchant_transaction_id on mount (before the form is shown)
@@ -162,6 +172,10 @@ export default function PaymentSelection() {
     const effectiveStatus = status || (referenceId ? 'success' : null)
 
     if (effectiveStatus === 'failure') {
+      // Keep the ref set for this mount — dev StrictMode re-invokes this
+      // effect with stale searchParams, which would toast twice. Returning
+      // from DLT is always a fresh page load, so a legit retry remounts.
+      isProcessingQuoteRef.current = true
       toast.error('Payment was not completed. Please try again.')
       return
     }
@@ -169,6 +183,7 @@ export default function PaymentSelection() {
     // status === 'success' — verify with DLT /sync
     isProcessingQuoteRef.current = true
     setIsProcessing(true)
+    setIsVerifyingPayment(true)
 
     syncPayment({ merchant_transaction_id: txn })
       .then((syncResult) => {
@@ -176,24 +191,28 @@ export default function PaymentSelection() {
           handleIssueQuote(txn)
         } else if (syncResult.data.payment_status === 'REJECTED') {
           toast.error('Payment was rejected. Please try again with a different payment method.')
+          setIsVerifyingPayment(false)
           setIsProcessing(false)
           isProcessingQuoteRef.current = false
         } else {
           // PENDING — payor may still be on the DLT page or DLT is processing
           toast.info('Payment is being processed. Please wait a moment and check your status.')
+          setIsVerifyingPayment(false)
           setIsProcessing(false)
           isProcessingQuoteRef.current = false
         }
       })
       .catch(() => {
-        // Sync call failed — redirect to error page if we have a proposal number
+        setIsVerifyingPayment(false)
+        // Sync call failed — show the finalize-policy error inline if we have a proposal number
         if (apiResponse?.data?.ProposalNo) {
-          router.push(`/${agentCode}/payment-error`)
+          lastPaidTxnRef.current = txn
+          setIssueError(true)
         } else {
           toast.error('Unable to verify payment status. Please contact support.')
-          setIsProcessing(false)
-          isProcessingQuoteRef.current = false
         }
+        setIsProcessing(false)
+        isProcessingQuoteRef.current = false
       })
   }, [searchParams])
 
@@ -201,6 +220,9 @@ export default function PaymentSelection() {
   // Issue quote after confirmed PAID
   // --------------------------------------------------------------------------
   async function handleIssueQuote(txnId: string) {
+    lastPaidTxnRef.current = txnId
+    setRetryError(null)
+    setIsVerifyingPayment(false)
     setIsIssuingQuote(true)
     try {
       const customFields = getCustomFields()
@@ -223,12 +245,15 @@ export default function PaymentSelection() {
 
       const issueBody: IssueQuoteRequest = {
         proposal_number: apiResponse.data.ProposalNo,
+        payment: { reference: txnId },
         CustomField: {
           PlanName: customFields.PlanName,
           ...(customFields.PaymentBrand ? { PaymentBrand: customFields.PaymentBrand } : {}),
         },
       }
       const response = await issueQuote({ issueQuoteRequest: issueBody })
+      setIssueError(false)
+      setIssueFailures(0)
       setIssueQuoteResponse(response)
       setPolicyNo(response?.data?.policy_no ?? '')
 
@@ -241,12 +266,14 @@ export default function PaymentSelection() {
         onConfirm: () => setShowSuccessDialog(true),
       })
     } catch (error: any) {
-      console.error('[payment-selection] issue quote error:', error)
-      toast.error(
-        error?.message || 'Payment confirmed but policy issuance failed. Please contact support.'
-      )
+      console.warn('[payment-selection] issue quote error:', error)
+      const message = error?.message || 'We couldn’t create your policy this time.'
       if (apiResponse?.data?.ProposalNo) {
-        router.push(`/${agentCode}/payment-error`)
+        if (issueError) setRetryError(message)
+        setIssueFailures((n) => n + 1)
+        setIssueError(true)
+      } else {
+        toast.error(message)
       }
     } finally {
       setIsIssuingQuote(false)
@@ -402,7 +429,7 @@ export default function PaymentSelection() {
   // Error: couldn't mint a transaction ID
   if (txnIdMintError) {
     return (
-      <Card className="bg-background overflow-hidden p-0 shadow-none">
+      <Card className="bg-card overflow-hidden p-0 shadow-none">
         <CardContent className="flex flex-col items-center gap-6 py-16 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
             <AlertCircle className="h-10 w-10 text-destructive" />
@@ -426,16 +453,39 @@ export default function PaymentSelection() {
     )
   }
 
+  // Payment succeeded but issuing the policy failed — stay in the journey layout
+  // (also while retrying, so the button shows its own loading state)
+  if (issueError) {
+    return (
+      <PaymentIssueError
+        proposalNumber={apiResponse?.data?.ProposalNo ?? null}
+        paymentReference={lastPaidTxnRef.current ?? merchantTransactionId}
+        amountPaid={paymentSubmitResponse?.data?.amount}
+        paidAt={paymentSubmitResponse?.data?.timestamp}
+        planName={coverageOption.selectedPlan?.CarrierPlanDesc ?? apiResponse?.data?.ProductName}
+        departureDate={travelDetails.departureDate}
+        returnDate={travelDetails.returnDate}
+        email={travelersInfo?.[0]?.email}
+        failedAttempts={issueFailures}
+        retryError={retryError}
+        hideBackOnDesktop
+        isRetrying={isIssuingQuote}
+        onRetry={() => handleIssueQuote(lastPaidTxnRef.current ?? merchantTransactionId ?? '')}
+        onBack={() => router.push(`/${agentCode}/products/travel-insurance`)}
+      />
+    )
+  }
+
   // Issuing quote after payment confirmed
-  if (isIssuingQuote) {
-    return <PageLoader />
+  if (isIssuingQuote || isVerifyingPayment) {
+    return <PaymentFinalizing stage={isIssuingQuote ? 'issuing' : 'verifying'} />
   }
 
   // SUBMISSION_UNKNOWN: DLT could not confirm outcome — let user verify before retrying
   if (isSubmissionUnknown) {
     return (
       <div className="space-y-6">
-        <Card className="bg-background overflow-hidden p-0 shadow-none">
+        <Card className="bg-card overflow-hidden p-0 shadow-none">
           <CardHeader className="pt-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/10">
@@ -472,7 +522,7 @@ export default function PaymentSelection() {
           </Button>
           <Button
             size="lg"
-            className="from-primary to-accent w-full rounded-full bg-gradient-to-r font-semibold dark:text-white sm:w-auto sm:px-12"
+            className="from-primary to-lilac text-primary-foreground w-full rounded-full bg-gradient-to-r font-semibold sm:w-auto sm:px-12"
             disabled={isProcessing}
             onClick={async () => {
               if (!merchantTransactionId) return
@@ -517,6 +567,7 @@ export default function PaymentSelection() {
     return (
       <PaymentSuccessInline
         onContinue={handleSuccessDialogContinue}
+        hideContinueOnDesktop
         paymentMethod={selectedPaymentBrand}
         policyData={issueQuoteResponse.data}
         quoteData={apiResponse.data}
@@ -530,147 +581,43 @@ export default function PaymentSelection() {
 
   // Main payment selection UI
   return (
-    <div className="space-y-6">
-      <Card className="bg-background overflow-hidden p-0 pb-8 shadow-none">
-        <CardHeader className="flex flex-col gap-2 border-b pt-6 sm:flex-row sm:items-center sm:justify-between sm:-space-y-2">
-          <h2 className="text-primary text-lg font-bold sm:text-2xl">
-            Choose Your Payment Method
-          </h2>
-          <div className="flex flex-col items-start gap-0.5 sm:items-end">
-            <p className="text-muted-foreground text-sm font-medium">Total Amount</p>
-            <p className="text-primary text-lg font-bold sm:text-2xl">
-              ₱{apiResponse?.data?.DuePremium?.toLocaleString('en-PH', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }) ?? '0.00'}
-            </p>
-          </div>
+    <div className="space-y-4 lg:space-y-6">
+      <Card className="bg-card gap-0 overflow-hidden p-0 shadow-none">
+        <CardHeader className="px-5 pt-5 pb-3 sm:px-6">
+          <h2 className="text-primary text-lg font-bold sm:text-2xl">Payment Method</h2>
+          <p className="text-muted-foreground flex items-center gap-1.5 text-sm">
+            <Shield className="text-success size-4 shrink-0" />
+            Secure checkout — you'll be redirected to complete payment.
+          </p>
         </CardHeader>
 
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Left — Brand selection */}
-            <div className="space-y-4">
-              {/* Mobile: compact selected brand pill */}
-              {selectedPaymentBrand && (
-                <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-3 lg:hidden">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-14 items-center justify-center rounded border bg-white p-1">
-                      <img src={selectedPaymentBrand.image} alt={selectedPaymentBrand.value}
-                        className="h-full w-full object-contain" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{selectedPaymentBrand.value}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {selectedPaymentBrand.is_card ? 'Card' : 'Digital Wallet'}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full border-2 text-xs font-semibold"
-                    onClick={() => setSelectedPaymentBrand(null)}
-                  >
-                    Change
-                  </Button>
-                </div>
-              )}
+        <CardContent className="space-y-6 px-5 pt-3 pb-6 sm:px-6">
+          <PaymentBrands
+            variant="compact"
+            onBrandSelect={handleBrandSelect}
+            selectedBrand={selectedPaymentBrand}
+          />
 
-              <div className={selectedPaymentBrand ? 'hidden lg:block' : ''}>
-                <Tabs value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="all" className="flex items-center gap-1.5">
-                      <ShoppingCart className="h-4 w-4" />
-                      <span className="sm:hidden">All</span>
-                      <span className="hidden sm:inline">All Methods</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="cards" className="flex items-center gap-1.5">
-                      <CreditCard className="h-4 w-4" />
-                      Cards
-                    </TabsTrigger>
-                    <TabsTrigger value="digital" className="flex items-center gap-1.5">
-                      <Smartphone className="h-4 w-4" />
-                      <span className="sm:hidden">Wallets</span>
-                      <span className="hidden sm:inline">Digital Wallets</span>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="all" className="mt-6">
-                    <PaymentBrands onBrandSelect={handleBrandSelect} selectedBrand={selectedPaymentBrand} />
-                  </TabsContent>
-                  <TabsContent value="cards" className="mt-6">
-                    <CardPaymentBrands onBrandSelect={handleBrandSelect} selectedBrand={selectedPaymentBrand} />
-                  </TabsContent>
-                  <TabsContent value="digital" className="mt-6">
-                    <DigitalPaymentBrands onBrandSelect={handleBrandSelect} selectedBrand={selectedPaymentBrand} />
-                  </TabsContent>
-                </Tabs>
-              </div>
+          {selectedPaymentBrand && (
+            <div id="payment-form-section">
+              <HostedCheckoutForm
+                selectedBrand={selectedPaymentBrand}
+                onSubmit={handlePaymentSubmit}
+                isLoading={isProcessing}
+                className="max-w-none"
+                compactActions
+                paymentConfig={paymentConfig}
+                fullQuoteResponse={apiResponse.data}
+              />
             </div>
-
-            {/* Right — Billing form or placeholder */}
-            <div id="payment-form-section" className="space-y-4">
-              {!selectedPaymentBrand ? (
-                <div className="border-muted-foreground/20 bg-muted/30 flex min-h-[500px] w-full items-center justify-center rounded-lg border">
-                  <div className="space-y-4 p-8 text-center">
-                    <div className="bg-primary/10 dark:bg-primary/20 mx-auto flex h-20 w-20 items-center justify-center rounded-full">
-                      <CreditCard className="text-primary h-10 w-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-primary dark:text-accent text-lg font-bold">
-                        Select a Payment Method
-                      </h3>
-                      <p className="text-muted-foreground max-w-xs text-sm">
-                        Choose your preferred payment method on the left to continue
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <CreditCard className="h-4 w-4" /><span>Cards</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Smartphone className="h-4 w-4" /><span>Wallets</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Shield className="h-4 w-4 shrink-0" />
-                    <span>Fill in your billing details — you'll be redirected to complete payment securely</span>
-                  </div>
-                  <HostedCheckoutForm
-                    selectedBrand={selectedPaymentBrand}
-                    onSubmit={handlePaymentSubmit}
-                    isLoading={isProcessing}
-                    className="max-w-none"
-                    paymentConfig={paymentConfig}
-                    fullQuoteResponse={apiResponse.data}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Bottom nav — matches review page layout */}
-      <div className="flex w-full flex-col items-center gap-3 px-1.5 lg:px-0">
-        <div className="flex w-full flex-col items-center gap-3 lg:flex-row lg:justify-between">
-          {/* Back button — full width on mobile, auto on desktop */}
-          <Button
-            type="button"
-            size="lg"
-            variant="outline"
-            className="w-full rounded-full border-2 font-semibold lg:w-auto lg:px-12"
-            onClick={prevStep}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Review
-          </Button>
-        </div>
+      <div className="hidden">
+        <Button type="button" onClick={prevStep} data-mobile-action="back">
+          Back
+        </Button>
       </div>
     </div>
   )

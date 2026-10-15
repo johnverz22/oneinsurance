@@ -16,7 +16,7 @@ import {
   PriceDisplay,
   PrimaryActionButton,
 } from '@/components/ui/insurance-shared'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { removeStorage } from '@/utils/remove-session-storage'
 import { MotorProposalSearch } from '@/components/ctpl-insurance/motor-proposal-search'
 import { MobileProductNav } from '@/components/layout/mobile-product-nav'
@@ -784,7 +784,6 @@ function CtplInsurance() {
               <p className="text-sm text-muted-foreground italic">"{t.text}"</p>
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={`https://avatar.iran.liara.run/public/${i % 2 === 0 ? 'boy' : 'girl'}/${i + 1}`} />
                   <AvatarFallback>{t.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>

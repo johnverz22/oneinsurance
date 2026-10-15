@@ -1,9 +1,8 @@
 'use client'
 
-import Image from 'next/image'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
+import { COMPANIES } from '@/constants/companies'
 import { CheckIcon, ChevronDown, ChevronUp, Info, Loader2Icon, ShieldCheck } from 'lucide-react'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -18,6 +17,7 @@ import {
   groupPlanBenefits,
   parseLimit,
 } from '@/utils/travel-benefits-helpers'
+import { PlanHeaderStrip } from './plan-header-strip'
 import { TravelDetailsSummary } from './travel-details-summary'
 import { useAgentCodeStore } from '@/store/agent-code-store'
 import { cn } from '@/lib/utils'
@@ -90,76 +90,64 @@ export function ReviewCoverage() {
       <div className="space-y-4 lg:space-y-8">
         <TravelDetailsSummary />
 
-        <Card className={cn("bg-background overflow-hidden p-0 shadow-none", { "pb-8": isPlanExpanded })}>
+        <Card className="bg-card gap-0 overflow-hidden p-0 shadow-none">
           <CardHeader
             className={cn(
-              "flex items-center justify-between cursor-pointer lg:cursor-default",
-              !isPlanExpanded ? "py-4 sm:py-6" : "pt-4 pb-2 sm:pt-6"
+              'flex cursor-pointer items-center justify-between px-5 sm:px-6',
+              isPlanExpanded ? 'pt-5 pb-3' : 'py-4 sm:py-5'
             )}
             onClick={() => setIsPlanExpanded(!isPlanExpanded)}
           >
-            <h2 className="text-primary text-lg sm:text-2xl font-bold">Plan Details</h2>
-            <button className="lg:hidden text-muted-foreground" type="button">
-              {isPlanExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-            </button>
+            <div className="min-w-0">
+              <h2 className="text-primary text-lg font-semibold sm:text-xl">Coverage &amp; benefits</h2>
+              {!isPlanExpanded && (
+                <p className="text-muted-foreground mt-1 truncate text-sm">
+                  {provider.companyName} · {plan.CarrierPlanDesc}
+                </p>
+              )}
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {!isPlanExpanded && (
+                <span className="text-primary text-sm font-semibold">Edit</span>
+              )}
+              <button className="text-muted-foreground" type="button" aria-label={isPlanExpanded ? 'Collapse' : 'Expand'}>
+                {isPlanExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              </button>
+            </div>
           </CardHeader>
-          <CardContent className={cn('h-full w-full space-y-3', { 'hidden lg:block': !isPlanExpanded })}>
-            <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:divide-x">
-              <div className="w-full space-y-2">
-                <div className="relative h-14 w-28 overflow-hidden rounded-md">
-                  {((CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image) && (
-                    <Image
-                      src={(CARRIER_BRAND_COLORS[provider.carrierCode] as any)?.planCardLogo || provider.image}
-                      alt={provider.companyName}
-                      className="h-full w-full object-contain"
-                      width={112}
-                      height={56}
-                    />
-                  )}
-                </div>
+          <CardContent className={cn('space-y-4 px-5 pb-6 sm:px-6', { 'hidden': !isPlanExpanded })}>
+            <PlanHeaderStrip
+              provider={provider}
+              planName={plan.CarrierPlanDesc}
+            />
 
-                <h3 className="text-foreground text-left text-base sm:text-xl font-bold tracking-wide text-wrap uppercase">
-                  {plan.CarrierPlanDesc}
-                </h3>
-              </div>
-
-              <div className="flex w-full flex-col gap-4 lg:pl-8">
-                <div className="space-y-3">
-                  <h2 className="text-primary text-md font-bold lg:text-2xl">
-                    Benefits
-                  </h2>
-                  <div className="relative">
-                    <ScrollArea className="h-[300px] w-full p-4">
-                      <div className="grid gap-2">
-                        {benefits.map((benefit, index) => (
-                          <div
-                            key={index}
-                            className="grid grid-cols-2 items-center gap-3"
-                          >
-                            <h4 className="text-sm">{benefit.BenefitDesc}</h4>
-                            <small className="text-muted-foreground text-right text-xs">
-                              {benefit.DefaultLimitDesc !== '0'
-                                ? benefit.DefaultLimitDesc
-                                : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
-                              <br />
-                              {benefit.LimitModeDesc}
-                            </small>
-                          </div>
-                        ))}
-                        {hasMore && (
-                          <small className="text-muted-foreground italic">
-                            and many more...
-                          </small>
-                        )}
+            <div className="space-y-3">
+              <h3 className="text-foreground flex items-center gap-2 text-base font-bold sm:text-lg">
+                <ShieldCheck className="text-primary size-5" />
+                Benefits
+              </h3>
+              <div className="relative">
+                <ScrollArea className="h-[320px] w-full">
+                  <div className="divide-border divide-y pr-4">
+                    {benefits.map((benefit, index) => (
+                      <div key={index} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-2.5">
+                        <h4 className="text-foreground text-sm">{benefit.BenefitDesc}</h4>
+                        <small className="text-muted-foreground text-right text-xs sm:whitespace-nowrap">
+                          {benefit.DefaultLimitDesc !== '0'
+                            ? benefit.DefaultLimitDesc
+                            : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
+                          {benefit.LimitModeDesc && ` · ${benefit.LimitModeDesc}`}
+                        </small>
                       </div>
-                    </ScrollArea>
-                    {/* Bottom gradient fade indicator */}
-                    <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-12 bg-gradient-to-t from-gray-100 to-transparent" />
+                    ))}
+                    {hasMore && (
+                      <small className="text-muted-foreground block py-2.5 italic">
+                        and many more...
+                      </small>
+                    )}
                   </div>
-                </div>
-                <div className="bg-tertiary w-max self-end rounded-full px-6 py-2 text-center text-base font-bold text-white">
-                  PHP {Number(plan.DuePremium).toLocaleString('en-PH')}
-                </div>
+                </ScrollArea>
+                <div className="from-card pointer-events-none absolute right-0 bottom-0 left-0 h-10 bg-gradient-to-t to-transparent" />
               </div>
             </div>
           </CardContent>
@@ -167,10 +155,10 @@ export function ReviewCoverage() {
           {groupedAddonBenefits &&
             Object.keys(groupedAddonBenefits).length > 0 && (
               <div className="border-t-muted-foreground/10 space-y-6 border-t px-6 py-6">
-                <h2 className="text-primary text-lg sm:text-2xl font-bold">
-                  Travel Add-Ons
+                <h2 className="text-primary text-lg font-semibold sm:text-xl">
+                  Travel add-ons
                 </h2>
-                <div className="grid gap-3 lg:grid-cols-2">
+                <div className="grid gap-3">
                   {Object.entries(groupedAddonBenefits).map(
                     ([benefitCode, benefitGroup]) => (
                       <Card key={benefitCode} className="space-y-3">
@@ -197,16 +185,15 @@ export function ReviewCoverage() {
                                   height={16}
                                   className="text-primary mt-0.5 shrink-0"
                                 />
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-sm text-muted-foreground flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-4">
                                   <p className="font-medium">
                                     {benefit.BenefitDesc}
                                   </p>
-                                  <p className="text-primary font-semibold">
+                                  <p className="text-primary font-semibold sm:whitespace-nowrap">
                                     {benefit.DefaultLimitDesc !== '0'
                                       ? benefit.DefaultLimitDesc
                                       : `Up to ₱${Number.parseFloat(benefit.Silimit ?? '0').toLocaleString('en-PH')}`}
-                                    <br />
-                                    {benefit.LimitModeDesc}
+                                    {benefit.LimitModeDesc && ` · ${benefit.LimitModeDesc}`}
                                   </p>
                                 </div>
                               </div>
@@ -230,7 +217,7 @@ export function ReviewCoverage() {
                             {localSelectedAddons.includes(benefitCode)
                               ? '✓'
                               : '+'}
-                            &nbsp;Add to Trip
+                            &nbsp;Add to trip
                           </button>
                         </CardContent>
                       </Card>
@@ -244,15 +231,7 @@ export function ReviewCoverage() {
         {/* Mobile-only: Premium summary (replaces sidebar on mobile) */}
         <div className="lg:hidden rounded-xl border border-border bg-white p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Insurance Provider</span>
-            <span className="text-sm font-semibold text-foreground">{provider.companyName}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Plan</span>
-            <span className="text-sm font-semibold text-foreground uppercase text-right max-w-[60%]">{plan.CarrierPlanDesc}</span>
-          </div>
-          <div className="flex items-center justify-between border-t border-border pt-3">
-            <span className="text-sm font-bold text-foreground">Total Premium</span>
+            <span className="text-sm font-bold text-foreground">Total premium</span>
             <span className="text-lg font-black text-primary">₱{Number(plan.DuePremium).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
           </div>
           <p className="text-xs text-muted-foreground flex items-start gap-1">
@@ -261,7 +240,7 @@ export function ReviewCoverage() {
           </p>
         </div>
 
-        <div className="relative hidden w-full items-center justify-center gap-3 px-1.5 lg:flex lg:justify-start lg:px-0">
+        <div className="hidden">
           <Button
             size="lg"
             variant="outline"
