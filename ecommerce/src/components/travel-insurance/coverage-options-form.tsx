@@ -13,7 +13,7 @@ import { TravelInsurancePlan } from './insurance-plan'
 import ServerOffline from '../server-offline'
 import { Input } from '../ui/input'
 import { useDebounce } from '@/hooks/use-debounce'
-import { LayoutList, Table2, PanelLeftClose, PanelLeft, HeartPulse, ShieldPlus, Globe2, ArrowUpDown } from 'lucide-react'
+import { LayoutList, Table2, PanelLeftClose, PanelLeft, HeartPulse, ShieldPlus, Globe2, ArrowUpDown, X } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ import pacificCrossPlansData from '@/constants/pacific-cross-travel-plans.json'
 import pacificCrossAsiaPlansData from '@/constants/pacific-cross-travel-plans-asia.json'
 import pacificCrossDomesticPlansData from '@/constants/pacific-cross-travel-plans-domestic.json'
 import { TierComparisonMatrix } from './tier-comparison-matrix'
+import { MobileFilterSheet } from './mobile-filter-sheet'
 
 type SortKey = 'match' | 'lowest' | 'highest' | 'addons' | 'discounts'
 type QuickFilter = 'medical' | 'covid' | 'schengen'
@@ -105,6 +106,46 @@ function ServerConnectionIssue() {
   )
 }
 
+// ─── Sticky Mobile Compare Bar ───────────────────────────────────────────────
+
+function MobileCompareBar({
+  count,
+  onCompare,
+  onClear,
+}: {
+  count: number
+  onCompare: () => void
+  onClear: () => void
+}) {
+  if (count === 0) return null
+  return (
+    <div
+      className="sm:hidden fixed inset-x-0 bottom-0 z-30 bg-card border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.08)] px-4 flex items-center gap-3"
+      style={{
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        paddingTop: '12px',
+        minHeight: '56px',
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClear}
+        aria-label="Clear compare selection"
+        className="shrink-0 text-sm font-medium text-muted-foreground underline underline-offset-2 min-h-[44px] px-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Clear
+      </button>
+      <button
+        type="button"
+        onClick={onCompare}
+        className="flex-1 rounded-full from-primary to-lilac bg-gradient-to-r text-primary-foreground font-semibold text-sm shadow min-h-[44px] transition-opacity hover:opacity-90 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+      >
+        Compare ({count})
+      </button>
+    </div>
+  )
+}
+
 type CoverageOptionsFormProps = {
   /** Re-run the search (used by the standalone plans page). */
   onRetry?: () => void
@@ -142,6 +183,11 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
   const [quickFilters, setQuickFilters] = useState<QuickFilter[]>([])
   const [viewMode, setViewMode] = useState<'list' | 'compare'>('list')
   const [showFilters, setShowFilters] = useState(true)
+  // Mobile filter sheet
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false)
+  // Mobile compare selection + full-screen compare sheet
+  const [compareSet, setCompareSet] = useState<Set<string>>(new Set())
+  const [compareSheetOpen, setCompareSheetOpen] = useState(false)
 
   // Plans come directly from the store — set synchronously by the mutation
   const isLoading = !!clientRequest.id && clientRequest.status === 'fetching'
@@ -184,6 +230,15 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
     setSelectedCoverages([])
     setQuickFilters([])
     setSortBy('match')
+  }
+
+  const handleCompareChange = (planKey: string, checked: boolean) => {
+    setCompareSet((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(planKey)
+      else next.delete(planKey)
+      return next
+    })
   }
 
   const filtersActive =
@@ -935,21 +990,26 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
 
               {viewMode === 'list' ? (
                 <div className="flex flex-col gap-2">
-                  {allTravelPlans.map((item: any, index: number) => (
-                    <TravelInsurancePlan
-                      key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode || item.Plan.CarrierPlanDesc}-${index}`}
-                      plan={item.Plan}
-                      carrierCode={item.CarrierCode}
-                      selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
-                      isAvailable={!isFormModified}
-                      redirectUrl={item.IsExternalLink === 'Y' ? item.RedirectUrl : undefined}
-                      currency={item.Plan.Currency}
-                      onSelectPlan={(plan, carrierCode) => {
-                        handleSelectPlan(plan, carrierCode)
-                        resetQuoteRefetchCount()
-                      }}
-                    />
-                  ))}
+                  {allTravelPlans.map((item: any, index: number) => {
+                    const planKey = `${item.CarrierCode}-${item.Plan.CarrierPlanCode || item.Plan.CarrierPlanDesc}-${index}`
+                    return (
+                      <TravelInsurancePlan
+                        key={planKey}
+                        plan={item.Plan}
+                        carrierCode={item.CarrierCode}
+                        selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
+                        isAvailable={!isFormModified}
+                        redirectUrl={item.IsExternalLink === 'Y' ? item.RedirectUrl : undefined}
+                        currency={item.Plan.Currency}
+                        compareChecked={compareSet.has(planKey)}
+                        onCompareChange={(checked) => handleCompareChange(planKey, checked)}
+                        onSelectPlan={(plan, carrierCode) => {
+                          handleSelectPlan(plan, carrierCode)
+                          resetQuoteRefetchCount()
+                        }}
+                      />
+                    )
+                  })}
                 </div>
               ) : (
                 <>
@@ -967,21 +1027,26 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
                   </div>
                   {/* Mobile fallback when Compare is active — still show List */}
                   <div className="flex flex-col gap-2 lg:hidden">
-                    {allTravelPlans.map((item: any, index: number) => (
-                      <TravelInsurancePlan
-                        key={`${item.CarrierCode}-${item.Plan.CarrierPlanCode || item.Plan.CarrierPlanDesc}-${index}`}
-                        plan={item.Plan}
-                        carrierCode={item.CarrierCode}
-                        selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
-                        isAvailable={!isFormModified}
-                        redirectUrl={item.IsExternalLink === 'Y' ? item.RedirectUrl : undefined}
-                        currency={item.Plan.Currency}
-                        onSelectPlan={(plan, carrierCode) => {
-                          handleSelectPlan(plan, carrierCode)
-                          resetQuoteRefetchCount()
-                        }}
-                      />
-                    ))}
+                    {allTravelPlans.map((item: any, index: number) => {
+                      const planKey = `${item.CarrierCode}-${item.Plan.CarrierPlanCode || item.Plan.CarrierPlanDesc}-${index}`
+                      return (
+                        <TravelInsurancePlan
+                          key={planKey}
+                          plan={item.Plan}
+                          carrierCode={item.CarrierCode}
+                          selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
+                          isAvailable={!isFormModified}
+                          redirectUrl={item.IsExternalLink === 'Y' ? item.RedirectUrl : undefined}
+                          currency={item.Plan.Currency}
+                          compareChecked={compareSet.has(planKey)}
+                          onCompareChange={(checked) => handleCompareChange(planKey, checked)}
+                          onSelectPlan={(plan, carrierCode) => {
+                            handleSelectPlan(plan, carrierCode)
+                            resetQuoteRefetchCount()
+                          }}
+                        />
+                      )
+                    })}
                   </div>
                 </>
               )}
@@ -989,6 +1054,98 @@ export function CoverageOptionsForm({ onRetry, summary }: CoverageOptionsFormPro
           </div>
         )}
       </div>
+
+      {/* ── Mobile Filter Sheet ── */}
+      <MobileFilterSheet
+        open={filterSheetOpen}
+        onClose={() => setFilterSheetOpen(false)}
+        sortBy={sortBy}
+        onSortChange={(v) => { setSortBy(v as SortKey); scrollToPlans() }}
+        availableProviders={availableProviders}
+        selectedProviders={selectedProviders}
+        onProviderToggle={toggleProvider}
+        hideProviderFilter={!!providerFilter}
+        availableCoverages={availableCoverages}
+        selectedCoverages={selectedCoverages}
+        onCoverageToggle={toggleCoverage}
+        planCount={allTravelPlans.length}
+        onClearAll={clearFilters}
+      />
+
+      {/* ── Mobile Compare Bar (sticky bottom) ── */}
+      <MobileCompareBar
+        count={compareSet.size}
+        onCompare={() => setCompareSheetOpen(true)}
+        onClear={() => setCompareSet(new Set())}
+      />
+
+      {/* ── Mobile Compare Sheet (full-screen overlay) ── */}
+      {compareSheetOpen && (() => {
+        const selectedPlans = allTravelPlans.filter((_item: any, index: number) => {
+          const planKey = `${_item.CarrierCode}-${_item.Plan.CarrierPlanCode || _item.Plan.CarrierPlanDesc}-${index}`
+          return compareSet.has(planKey)
+        })
+        return (
+          <div
+            className="sm:hidden fixed inset-0 z-50 flex flex-col bg-background"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Compare plans"
+          >
+            <div className="flex items-center gap-3 border-b border-border bg-card px-4 py-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setCompareSheetOpen(false)}
+                aria-label="Close compare"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
+              >
+                <X className="size-5" />
+              </button>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-semibold text-foreground">Compare plans</h2>
+                <p className="text-xs text-muted-foreground leading-none mt-0.5">
+                  {selectedPlans.length} {selectedPlans.length === 1 ? 'plan' : 'plans'} selected
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setCompareSet(new Set()); setCompareSheetOpen(false) }}
+                className="shrink-0 text-sm font-medium text-muted-foreground hover:text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring px-1 min-h-[44px]"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto overscroll-contain p-4">
+              {selectedPlans.length < 2 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-8">
+                  <p className="text-muted-foreground text-sm">
+                    Select at least 2 plans using the checkboxes, then tap Compare.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCompareSheetOpen(false)}
+                    className="rounded-full border border-border px-6 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                  >
+                    Back to plans
+                  </button>
+                </div>
+              ) : (
+                <TierComparisonMatrix
+                  plans={selectedPlans}
+                  selectedPlan={coverageOption.selectedPlan?.CarrierPlanCode}
+                  isAvailable={!isFormModified}
+                  onSelectPlan={(plan, carrierCode) => {
+                    handleSelectPlan(plan, carrierCode)
+                    resetQuoteRefetchCount()
+                    setCompareSheetOpen(false)
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

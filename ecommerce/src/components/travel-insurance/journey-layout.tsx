@@ -40,10 +40,10 @@ export function PageIntro({
 }) {
   return (
     <div className={cn('space-y-1', className)}>
-      <h1 className="text-primary text-[28px] leading-tight font-semibold">
+      <h1 className="text-primary text-[24px] leading-tight font-semibold text-balance sm:text-[28px]">
         {title}
       </h1>
-      {helper && <p className="text-muted-foreground text-base">{helper}</p>}
+      {helper && <p className="text-muted-foreground text-sm sm:text-base">{helper}</p>}
     </div>
   )
 }

@@ -202,7 +202,7 @@ function TravelPlansPageContent() {
         onClick={goToSearch}
       >
         <Pencil className="mr-1.5 size-4" />
-        Modify search
+        Edit search
       </Button>
     </div>
   )

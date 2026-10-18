@@ -26,7 +26,12 @@ export function JourneyStepper({
           Step {currentStep + 1} of {total} · {steps[currentStep]?.title}
         </p>
         <div
-          aria-hidden
+          role="progressbar"
+          aria-valuenow={currentStep + 1}
+          aria-valuemin={1}
+          aria-valuemax={total}
+          aria-valuetext={`Step ${currentStep + 1} of ${total}: ${steps[currentStep]?.title}`}
+          aria-label="Booking progress"
           className="bg-muted mt-2 h-1.5 w-full overflow-hidden rounded-full"
         >
           <div

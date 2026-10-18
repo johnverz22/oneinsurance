@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Infinity,
   FileText,
+  Check,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { PriceDisplay, PrimaryActionButton } from '@/components/ui/insurance-shared'
@@ -356,6 +357,9 @@ interface TravelInsurancePlanProps {
   redirectUrl?: string
   currency?: string
   onSelectPlan: (plan: InsurancePlan, carrierCode: string) => void
+  /** Mobile compare checkbox state */
+  compareChecked?: boolean
+  onCompareChange?: (checked: boolean) => void
 }
 
 // ─── main component ───────────────────────────────────────────────────────────
@@ -368,6 +372,8 @@ export function TravelInsurancePlan({
   isAvailable = true,
   redirectUrl,
   currency,
+  compareChecked = false,
+  onCompareChange,
 }: TravelInsurancePlanProps) {
   const [expanded, setExpanded] = useState(false)
   const benefitsId = useId()
@@ -458,14 +464,40 @@ export function TravelInsurancePlan({
 
         {/* ══════════ MOBILE: vertically stacked card (< sm) ═════════════════ */}
         <div className="flex w-full flex-col gap-3 p-4 sm:hidden">
-          {/* Row 1: insurer logo, centered on its own row regardless of brochure presence */}
-          <div className="flex items-center justify-center rounded-lg border border-border bg-white py-2">
+          {/* Row 1: insurer logo, with optional compare checkbox top-right */}
+          <div className="relative flex items-center justify-center rounded-lg border border-border bg-white py-2">
             <InsurerLogo
               src={cardLogoSrc}
               name={insurerName}
               intrinsic={cardLogoIntrinsic}
               className="h-10 min-[390px]:h-12 w-auto max-w-[150px] shrink-0"
             />
+            {onCompareChange && (
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={compareChecked}
+                aria-label={`Compare ${plan.CarrierPlanDesc}`}
+                onClick={() => onCompareChange(!compareChecked)}
+                className={cn(
+                  'absolute top-1 right-1',
+                  'flex h-11 w-11 items-center justify-center rounded-full transition-colors',
+                  'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                  compareChecked
+                    ? 'text-primary hover:bg-primary/10'
+                    : 'text-muted-foreground hover:bg-muted',
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex h-5 w-5 items-center justify-center rounded border-2 transition-colors',
+                    compareChecked ? 'border-primary bg-primary' : 'border-muted-foreground/40 bg-white',
+                  )}
+                >
+                  {compareChecked && <Check className="size-3 text-primary-foreground" aria-hidden />}
+                </span>
+              </button>
+            )}
           </div>
 
           {/* Rows 2–3: plan name + price, centered as a pair */}
