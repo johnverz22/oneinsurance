@@ -335,6 +335,7 @@ export function igwFullQuoteToPolicyData(
     DuePremium: premium,
     EffectiveDate: departureDate,
     ExpiryDate: returnDate,
+    ExpiresAt: data.expires_at,
     FirstDataEntryDate: now,
     GrossPremium: premium,
     IsAgent: 'N',

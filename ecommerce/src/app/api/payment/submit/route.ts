@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import axios from 'axios'
-import { withDltAuthRetry } from '@/app/api/payment/route'
+import { withDltAuthRetry } from '../dlt-auth'
 
 // ---------------------------------------------------------------------------
 // POST /api/payment/submit

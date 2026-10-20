@@ -147,6 +147,8 @@ export const TravelPolicyDataSchema = z.object({
   DuePremium: z.number(),
   EffectiveDate: z.string(),
   ExpiryDate: z.string(),
+  // IGW-owned proposal expiry (ISO datetime) — supersedes the 48h heuristic
+  ExpiresAt: z.string().optional(),
   FirstDataEntryDate: z.string(),
   GrossPremium: z.number(),
   InsertBy: z.number().optional(),

@@ -1,5 +1,9 @@
 import { format, isDate } from 'date-fns'
-import type { DateRange } from 'react-day-picker'
+
+export type DateRange = {
+  from?: Date
+  to?: Date
+}
 
 export function formatSelection(
   date: Date | Date[] | DateRange | undefined,

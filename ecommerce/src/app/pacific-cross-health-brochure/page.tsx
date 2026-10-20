@@ -11,7 +11,7 @@ const plans = [
     fullDescription: 'Coverage for the treatment of an emergency medical condition in the Emergency Room as Out-Patient or as In-Patient.',
     issueAge: '15 days – 65 years old',
     waitingPeriod: '7 days',
-    accentColor: 'from-primary to-primary/80',
+    accentColor: 'from-[#006838] to-[#006838]/80',
     options: [
       { label: 'Plan A', maxBenefit: '₱5,000', premium: '499' },
       { label: 'Plan B', maxBenefit: '₱10,000', premium: '849' },
@@ -24,7 +24,7 @@ const plans = [
     fullDescription: 'Coverage for the treatment of emergency medical condition as In-Patient.',
     issueAge: '15 days – 65 years old',
     waitingPeriod: '7 days',
-    accentColor: 'from-primary to-primary/80',
+    accentColor: 'from-[#006838] to-[#006838]/80',
     options: [
       { label: 'Plan A', maxBenefit: '₱10,000', premium: '1,499' },
       { label: 'Plan B', maxBenefit: '₱20,000', premium: '2,699' },
@@ -37,7 +37,7 @@ const plans = [
     fullDescription: 'Coverage for post-hospitalization prescribed medicines.',
     issueAge: '15 days – 60 years old',
     waitingPeriod: '15 days',
-    accentColor: 'from-primary to-primary/80',
+    accentColor: 'from-[#006838] to-[#006838]/80',
     options: [
       { label: 'Plan A', maxBenefit: '₱2,000', premium: '549' },
       { label: 'Plan B', maxBenefit: '₱2,500', premium: '649' },
@@ -50,7 +50,7 @@ const plans = [
     fullDescription: 'Coverage for medically diagnosed Dengue.',
     issueAge: 'Any age',
     waitingPeriod: '15 days',
-    accentColor: 'from-primary to-primary/80',
+    accentColor: 'from-[#006838] to-[#006838]/80',
     options: [
       { label: 'Single Plan', maxBenefit: '₱10,000', premium: '325' },
     ],
@@ -61,7 +61,7 @@ const plans = [
     fullDescription: 'Coverage for the In-Patient treatment of COVID-19 and Serious Adverse Effects of COVID-19 vaccination.',
     issueAge: '15 days – 65 years old',
     waitingPeriod: '15 days',
-    accentColor: 'from-primary to-primary/80',
+    accentColor: 'from-[#006838] to-[#006838]/80',
     options: [
       { label: 'Plan 30', maxBenefit: '₱30,000', premium: '579' },
       { label: 'Plan 100', maxBenefit: '₱100,000', premium: '1,999' },
@@ -75,7 +75,7 @@ const benefits = [
     icon: '🏥',
     title: 'ER & in-patient coverage',
     desc: 'Covers actual medical cost in the Emergency Room of an accredited hospital — as out-patient or in-patient, via reimbursement or direct settlement.',
-    color: 'bg-primary/10 text-blue-700',
+    color: 'bg-[#006838]/10 text-blue-700',
     border: 'border-l-primary',
   },
   {
@@ -89,7 +89,7 @@ const benefits = [
     icon: '🔄',
     title: 'All 5 plans allowed',
     desc: 'One insured person may hold all 5 prepaid plans simultaneously — only 1 option per plan per period of insurance.',
-    color: 'bg-primary/10 text-blue-700',
+    color: 'bg-[#006838]/10 text-blue-700',
     border: 'border-l-primary',
   },
   {
@@ -145,7 +145,7 @@ const faqs = [
 
 function PlanCard({ plan }: { plan: typeof plans[0] }) {
   return (
-    <div className="rounded-xl border border-border bg-white overflow-hidden">
+    <div className="rounded-xl border border-[#dfe7df] dark:border-[#3d4140] bg-white overflow-hidden">
       <div className={`bg-gradient-to-r ${plan.accentColor} px-5 py-4`}>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -166,23 +166,23 @@ function PlanCard({ plan }: { plan: typeof plans[0] }) {
         {plan.options.length === 1 ? (
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium text-foreground">{plan.options[0].label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Up to {plan.options[0].maxBenefit}</p>
+              <p className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">{plan.options[0].label}</p>
+              <p className="text-xs text-[#808080] mt-0.5">Up to {plan.options[0].maxBenefit}</p>
             </div>
-            <p className="text-xl font-bold text-primary">₱{plan.options[0].premium}</p>
+            <p className="text-xl font-bold text-[#006838]">₱{plan.options[0].premium}</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 text-[11px] text-muted-foreground font-medium pb-2 border-b border-border mb-1">
+            <div className="grid grid-cols-3 text-[11px] text-[#808080] font-medium pb-2 border-b border-[#dfe7df] dark:border-[#3d4140] mb-1">
               <span>Option</span>
               <span>Max benefit</span>
               <span className="text-right">Premium</span>
             </div>
             {plan.options.map((opt) => (
               <div key={opt.label} className="grid grid-cols-3 items-center py-2 border-b border-gray-50 last:border-0">
-                <span className="text-sm font-medium text-foreground">{opt.label}</span>
-                <span className="text-sm text-muted-foreground">{opt.maxBenefit}</span>
-                <span className="text-sm font-bold text-primary text-right">₱{opt.premium}</span>
+                <span className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">{opt.label}</span>
+                <span className="text-sm text-[#808080]">{opt.maxBenefit}</span>
+                <span className="text-sm font-bold text-[#006838] text-right">₱{opt.premium}</span>
               </div>
             ))}
           </>
@@ -200,7 +200,7 @@ function FaqItem({ faq, index, open, onToggle }: {
 }) {
   return (
     <div
-      className={`rounded-xl border bg-white overflow-hidden transition-colors ${open ? 'border-primary' : 'border-border'}`}
+      className={`rounded-xl border bg-white overflow-hidden transition-colors ${open ? 'border-[#006838]' : 'border-[#dfe7df] dark:border-[#3d4140]'}`}
     >
       <button
         className="w-full flex items-center gap-3 px-4 py-4 text-left"
@@ -208,21 +208,21 @@ function FaqItem({ faq, index, open, onToggle }: {
         aria-expanded={open}
       >
         <span
-          className={`w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors ${open ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}
+          className={`w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors ${open ? 'bg-[#006838] text-white' : 'bg-[#006838]/10 text-[#006838]'}`}
         >
           {index + 1}
         </span>
-        <span className="flex-1 text-sm font-medium text-foreground">{faq.q}</span>
+        <span className="flex-1 text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">{faq.q}</span>
         <svg
-          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-primary' : 'text-muted-foreground'}`}
+          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-[#006838]' : 'text-[#808080]'}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
-        <div className="px-4 pb-4 pl-[52px] border-t border-border pt-3">
-          <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
+        <div className="px-4 pb-4 pl-[52px] border-t border-[#dfe7df] dark:border-[#3d4140] pt-3">
+          <p className="text-sm text-[#808080] leading-relaxed">{faq.a}</p>
         </div>
       )}
     </div>
@@ -233,22 +233,22 @@ export default function PacificCrossHealthBrochurePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   return (
-    <div className="min-h-screen bg-muted/50">
+    <div className="min-h-screen bg-[#f1f2f0] dark:bg-[#303232]">
       {/* Sticky header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-[#808080] hover:text-[#183d2c] dark:text-[#f4f5f2] transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
-          <span className="text-sm font-semibold text-foreground">Select Prepaid Insurance Plans</span>
+          <span className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Select Prepaid Insurance Plans</span>
         </div>
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-8 space-y-10">
 
         {/* ── Hero ── */}
-        <section className="relative rounded-2xl bg-primary px-6 py-8 overflow-hidden">
+        <section className="relative rounded-2xl bg-[#006838] px-6 py-8 overflow-hidden">
           {/* Decorative circles */}
           <div className="absolute -top-8 -right-8 w-48 h-48 rounded-full bg-white/[0.03]" />
           <div className="absolute -bottom-12 left-1/3 w-36 h-36 rounded-full bg-white/[0.03]" />
@@ -275,9 +275,9 @@ export default function PacificCrossHealthBrochurePage() {
         </section>
 
         {/* ── Important Notes ── */}
-        <section className="rounded-xl border-l-4 border-primary bg-primary/5 px-5 py-4 space-y-1.5">
-          <h3 className="text-sm font-semibold text-primary">Important notes</h3>
-          <ul className="text-xs text-foreground space-y-1 list-disc list-inside leading-relaxed">
+        <section className="rounded-xl border-l-4 border-[#006838] bg-[#006838]/5 px-5 py-4 space-y-1.5">
+          <h3 className="text-sm font-semibold text-[#006838]">Important notes</h3>
+          <ul className="text-xs text-[#183d2c] dark:text-[#f4f5f2] space-y-1 list-disc list-inside leading-relaxed">
             <li><strong>Period of Insurance:</strong> Valid for 1 year from Effective Date — terminated once a claim is approved.</li>
             <li><strong>Waiting Period:</strong> Number of days from purchase before coverage begins.</li>
             <li>You may purchase all 5 plans, but only 1 option per plan per period.</li>
@@ -286,7 +286,7 @@ export default function PacificCrossHealthBrochurePage() {
 
         {/* ── Plans ── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-foreground">Available plans</h2>
+          <h2 className="text-xl font-bold text-[#183d2c] dark:text-[#f4f5f2]">Available plans</h2>
 
           {/* Top 2 plans full-width */}
           {plans.slice(0, 2).map((plan) => (
@@ -307,32 +307,32 @@ export default function PacificCrossHealthBrochurePage() {
         {/* ── Plan Benefits & Limitations ── */}
         <section className="space-y-5">
           <div>
-            <p className="text-[10px] font-semibold tracking-widest text-primary uppercase mb-1">Coverage details</p>
-            <h2 className="text-xl font-bold text-foreground">Plan benefits &amp; limitations</h2>
+            <p className="text-[10px] font-semibold tracking-widest text-[#006838] uppercase mb-1">Coverage details</p>
+            <h2 className="text-xl font-bold text-[#183d2c] dark:text-[#f4f5f2]">Plan benefits &amp; limitations</h2>
           </div>
 
           {/* How it works timeline */}
-          <div className="rounded-xl border border-border bg-white p-5">
-            <p className="text-xs font-medium text-muted-foreground mb-5 flex items-center gap-1.5">
-              <span className="text-primary">→</span> How your coverage works
+          <div className="rounded-xl border border-[#dfe7df] dark:border-[#3d4140] bg-white p-5">
+            <p className="text-xs font-medium text-[#808080] mb-5 flex items-center gap-1.5">
+              <span className="text-[#006838]">→</span> How your coverage works
             </p>
             <div className="flex items-start gap-0 overflow-x-auto pb-1">
               {timelineSteps.map((step, i) => (
                 <div key={step.label} className="flex items-center flex-shrink-0">
                   <div className="flex flex-col items-center w-20 sm:w-24">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg mb-2 ${
-                      i === 0 ? 'bg-primary/10' :
+                      i === 0 ? 'bg-[#006838]/10' :
                       i === 2 ? 'bg-success/10' :
                       i === 3 ? 'bg-warning/10' :
-                      i === 4 ? 'bg-destructive/10' : 'bg-primary/10'
+                      i === 4 ? 'bg-[#dc2626]/10' : 'bg-[#006838]/10'
                     }`}>
                       {step.icon}
                     </div>
-                    <p className="text-[10px] font-medium text-foreground text-center leading-tight">{step.label}</p>
-                    {step.sub && <p className="text-[9px] text-muted-foreground text-center mt-0.5">{step.sub}</p>}
+                    <p className="text-[10px] font-medium text-[#183d2c] dark:text-[#f4f5f2] text-center leading-tight">{step.label}</p>
+                    {step.sub && <p className="text-[9px] text-[#808080] text-center mt-0.5">{step.sub}</p>}
                   </div>
                   {i < timelineSteps.length - 1 && (
-                    <div className="w-8 sm:w-12 h-px bg-primary/30 flex-shrink-0 mb-5" />
+                    <div className="w-8 sm:w-12 h-px bg-[#006838]/30 flex-shrink-0 mb-5" />
                   )}
                 </div>
               ))}
@@ -342,28 +342,28 @@ export default function PacificCrossHealthBrochurePage() {
           {/* Benefit cards */}
           <div className="grid sm:grid-cols-2 gap-3">
             {benefits.map((b) => (
-              <div key={b.title} className={`rounded-xl border border-border border-l-4 ${b.border} bg-white p-4 flex gap-3`}>
+              <div key={b.title} className={`rounded-xl border border-[#dfe7df] dark:border-[#3d4140] border-l-4 ${b.border} bg-white p-4 flex gap-3`}>
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0 ${b.color}`}>
                   {b.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{b.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{b.desc}</p>
+                  <p className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">{b.title}</p>
+                  <p className="text-xs text-[#808080] mt-1 leading-relaxed">{b.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Exclusions */}
-          <div className="rounded-xl bg-destructive/10 border border-red-100 p-4">
-            <p className="text-xs font-semibold text-destructive mb-3 flex items-center gap-1.5">
+          <div className="rounded-xl bg-[#dc2626]/10 border border-red-100 p-4">
+            <p className="text-xs font-semibold text-[#dc2626] mb-3 flex items-center gap-1.5">
               <span>🚫</span> Not covered under this plan
             </p>
             <div className="flex flex-wrap gap-2">
               {exclusions.map((ex) => (
                 <span
                   key={ex}
-                  className="inline-block rounded-full bg-white border border-destructive/50 px-3 py-1 text-[10px] font-medium text-destructive"
+                  className="inline-block rounded-full bg-white border border-[#dc2626]/50 px-3 py-1 text-[10px] font-medium text-[#dc2626]"
                 >
                   {ex}
                 </span>
@@ -375,8 +375,8 @@ export default function PacificCrossHealthBrochurePage() {
         {/* ── FAQ ── */}
         <section className="space-y-4">
           <div>
-            <p className="text-[10px] font-semibold tracking-widest text-primary uppercase mb-1">Need to know</p>
-            <h2 className="text-xl font-bold text-foreground">Frequently asked questions</h2>
+            <p className="text-[10px] font-semibold tracking-widest text-[#006838] uppercase mb-1">Need to know</p>
+            <h2 className="text-xl font-bold text-[#183d2c] dark:text-[#f4f5f2]">Frequently asked questions</h2>
           </div>
 
           <div className="space-y-2">
@@ -392,32 +392,32 @@ export default function PacificCrossHealthBrochurePage() {
           </div>
 
           {/* Still have questions */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-border bg-white p-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-xl border border-[#dfe7df] dark:border-[#3d4140] bg-white p-4">
+            <div className="w-10 h-10 rounded-xl bg-[#006838]/10 flex items-center justify-center text-xl flex-shrink-0">
               ✉️
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Still have questions?</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
+              <p className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Still have questions?</p>
+              <p className="text-xs text-[#808080] mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
             </div>
             <div className="text-right sm:flex-shrink-0">
-              <p className="text-sm font-semibold text-primary">client_services@pacificcross.com.ph</p>
-              <p className="text-xs text-muted-foreground">+63 2 8230-8511</p>
+              <p className="text-sm font-semibold text-[#006838]">client_services@pacificcross.com.ph</p>
+              <p className="text-xs text-[#808080]">+63 2 8230-8511</p>
             </div>
           </div>
         </section>
 
         {/* ── Contact / CTA ── */}
-        <section className="rounded-xl border border-border bg-white p-6 text-center space-y-3">
-          <p className="text-sm text-muted-foreground">
+        <section className="rounded-xl border border-[#dfe7df] dark:border-[#3d4140] bg-white p-6 text-center space-y-3">
+          <p className="text-sm text-[#808080]">
             For the full list of exclusions, terms, and conditions, please ask for a specimen Policy via email
           </p>
-          <p className="text-base font-semibold text-primary">client_services@pacificcross.com.ph</p>
-          <p className="text-sm text-muted-foreground">Pacific Cross Hotline: +63 2 8230-8511</p>
+          <p className="text-base font-semibold text-[#006838]">client_services@pacificcross.com.ph</p>
+          <p className="text-sm text-[#808080]">Pacific Cross Hotline: +63 2 8230-8511</p>
           <a
             href="/files/pacific-cross-select-er-brochure.pdf"
             target="_blank"
-            className="inline-block mt-2 rounded-full bg-primary px-7 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
+            className="inline-block mt-2 rounded-full bg-[#006838] px-7 py-2.5 text-sm font-semibold text-white hover:bg-[#006838]/90 transition-colors"
           >
             Download PDF Brochure
           </a>

@@ -1,23 +1,21 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Hide the on-screen dev indicator so it can't overlap the mobile UI.
   devIndicators: false,
-
-  // rewrites: async () => [
-  //   {
-  //     source: '/api/:path*',
-  //     destination: 'https://insurance-dev.intel-soln.com.ph/api/:path*',
-  //   },
-  // ],
-  // reactStrictMode: false,
-
   images: {
     qualities: [75, 90],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'dev-one-insurance.intel-soln.com.ph',
+        hostname: 'developers.oneinsurance.shop',
+      },
+      {
+        protocol: 'https',
+        hostname: 'stage-api.oneinsurance.shop',
+      },
+      {
+        protocol: 'https',
+        hostname: 'stage-ifrc-igw.oneinsurance.shop',
       },
       {
         protocol: 'https',
@@ -25,44 +23,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-
-  // Turbopack is the default in Next.js 16.
-  turbopack: {
-    resolveAlias: {
-      // @techstark/opencv-js (via @paddleocr/paddleocr-js) contains
-      // `require("fs")`, `require("path")`, and `require("crypto")` behind
-      // runtime Node-environment guards.  Turbopack still resolves them at
-      // build time for browser bundles, so we stub them with an empty module.
-      fs: { browser: './src/lib/empty-module.ts' },
-      path: { browser: './src/lib/empty-module.ts' },
-      crypto: { browser: './src/lib/empty-module.ts' },
-      // The paddleocr worker-entry uses `new URL("ort.bundle.min.mjs", import.meta.url)`
-      // which Turbopack tries to resolve as a module.  Stub it as well.
-      'ort.bundle.min.mjs': { browser: './src/lib/empty-module.ts' },
-    },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = { ...config.resolve.fallback, fs: false, path: false, crypto: false }
+    }
+    return config
   },
-
-  // ── Long-lived caching for self-hosted WASM and model files ─────────────────
   async headers() {
+    const immutable = [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }]
     return [
-      {
-        source: '/ort/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/models/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
+      { source: '/ort/:path*', headers: immutable },
+      { source: '/models/:path*', headers: immutable },
     ]
   },
 }

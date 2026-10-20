@@ -1,0 +1,27 @@
+# Cursor AI Rules — One Insurance Redesign
+
+You are working on the One Insurance Ecommerce Redesign application.
+Always adhere to the following conventions:
+
+1. Brand Tokens:
+   - Primary: #006838 (Insurance Green)
+   - Secondary: #559e45 (Leaf Green)
+   - Surfaces: #fcfdfb (light canvas), #1c1e1e (dark canvas)
+   - Input class: .ui-form-field (with outline: 2px solid #006838 on focus)
+
+2. Architecture:
+   - Next.js 16 App Router.
+   - Dynamic affiliate routes use `src/app/[agent-code]/travel-insurance/`.
+   - Backend Route Handlers live under `src/app/api/travel-insurance/`.
+   - Global client state is stored in `src/store/travel-insurance-store.ts` via Zustand.
+
+3. Flow Steps:
+   - Step 1: `/[agent-code]/travel-insurance` (Landing & Trip form)
+   - Step 2: `/[agent-code]/travel-insurance/plans` (Plan catalogue & filter)
+   - Step 3: `/[agent-code]/travel-insurance/quote` (Travellers form & quote)
+   - Step 4: `/[agent-code]/travel-insurance/review` (Locked proposal review)
+   - Step 5: `/[agent-code]/travel-insurance/payment` (Checkout & billing)
+   - Step 6: `/[agent-code]/travel-insurance/issuance` (Wait state)
+   - Step 7: `/[agent-code]/travel-insurance/policy` (eCOC & Receipt)
+
+4. Read local design guides in `docs/design-specs/` before creating or editing UI components.

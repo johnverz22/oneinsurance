@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 50 160 80" fill="white">
+  <!-- Cross/pinwheel icon - using ✜ which looks like a plus with rounded ends -->
+  <text x="145" y="38" font-family="Arial, sans-serif" font-size="28" text-anchor="middle">✜</text>
+  <!-- PACIFIC text -->
+  <text x="18" y="82" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">PACIFIC</text>
+  <!-- CROSS text - indented -->
+  <text x="38" y="118" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">CROSS</text>
+</svg>

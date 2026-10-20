@@ -17,8 +17,6 @@ export const getEcho = (): Echo<'reverb'> => {
 
   if (!echoInstance) {
     window.Pusher = Pusher
-
-    // Only log WebSocket traffic in development
     Pusher.logToConsole = process.env.NODE_ENV === 'development'
 
     const config = {
@@ -29,19 +27,7 @@ export const getEcho = (): Echo<'reverb'> => {
       wssPort: Number(process.env.NEXT_PUBLIC_REVERB_PORT) || 8080,
       forceTLS: (process.env.NEXT_PUBLIC_REVERB_SCHEME || 'http') === 'https',
       enabledTransports: ['ws', 'wss'] as ('ws' | 'wss')[],
-      //   disableStats: true,
     }
-
-    // Debug: Log configuration (remove in production)
-    // console.log('🔧 Echo Configuration:', {
-    //   ...config,
-    //   key: config.key ? '***' + config.key.slice(-4) : 'MISSING',
-    // })
-
-    // Check for missing key
-    // if (!config.key) {
-    //   console.error('❌ REVERB_APP_KEY is missing! Check your .env.local file')
-    // }
 
     echoInstance = new Echo(config)
     window.Echo = echoInstance

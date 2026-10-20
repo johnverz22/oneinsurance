@@ -26,11 +26,12 @@ const phpFormatter = new Intl.NumberFormat('en-PH', {
 
 /** "₱2,548" — primary price display, always PHP. */
 export function formatPHP(amount: number): string {
-  return phpFormatter.format(amount)
+  return Number.isFinite(amount) ? phpFormatter.format(amount) : '—'
 }
 
 /** "₱2.5M" / "₱950K" / "₱480" — compact PHP for coverage chips. */
 export function formatPHPCompact(amount: number): string {
+  if (!Number.isFinite(amount)) return '—'
   if (amount >= 1_000_000) {
     const m = amount / 1_000_000
     return `₱${Number(m.toFixed(1))}M`

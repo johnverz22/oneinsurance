@@ -1,6 +1,8 @@
 import { createElement } from 'react'
-import { TravelCoverage } from '@/types/travel-insurance/travel-insurance-request'
-import { PH_ID_TYPES } from '@/types/travel-insurance/travel-insurance-request'
+import {
+  PH_ID_TYPES,
+  TravelCoverage,
+} from '@/types/travel-insurance/travel-insurance-request'
 import { CountryFlag } from '@/components/ui/country-flag'
 
 // Stable component identity per flag so React doesn't remount icons every render
@@ -8,7 +10,10 @@ const flagIconCache = new Map<string, React.ComponentType<{ className?: string }
 const flagIconFor = (flag: string) => {
   let C = flagIconCache.get(flag)
   if (!C) {
-    C = (props: { className?: string }) => createElement(CountryFlag, { flag, ...props })
+    const FlagIcon = (props: { className?: string }) =>
+      createElement(CountryFlag, { flag, ...props })
+    FlagIcon.displayName = `FlagIcon(${flag})`
+    C = FlagIcon
     flagIconCache.set(flag, C)
   }
   return C

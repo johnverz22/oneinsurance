@@ -1,11 +1,12 @@
 import { jsPDF } from 'jspdf'
 import QRCode from 'qrcode'
-import { addDays, differenceInCalendarDays, format } from 'date-fns'
+import { differenceInCalendarDays, format } from 'date-fns'
 import { TravelInsuranceFormData, PersonalInfoFormData, PH_ID_TYPES } from '@/types/travel-insurance/travel-insurance-request'
 import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
 import { InsuranceBenefit } from '@/types/plan'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { getCanonicalConfigForBenefit, resolveLimitDisplay } from '@/utils/travel-benefits-helpers'
+import { buildProposalUrl, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
 
 interface QuotePDFData {
   travelDetails: TravelInsuranceFormData
@@ -17,29 +18,29 @@ interface QuotePDFData {
   mainBenefits?: InsuranceBenefit[]
   addonBenefits?: InsuranceBenefit[]
   agentCode?: string
+  providerLogoUrl?: string | null
+  limitsUnavailable?: boolean
   taxes?: { premiumTax?: number | string | null; stampDuty?: number | string | null }
 }
 
+
+export const SUPPORT_PHONE = '(02) 8633 5681'
+export const SUPPORT_EMAIL = 'sales@ifrcinsurance.com'
+export const SUPPORT_WEB = 'oneinsurance.shop'
+const DISCLAIMER =
+  'This is a generated proposal only, not a policy or proof of coverage. Subject to payment, insurer underwriting and full policy terms.'
+
+// One Insurance design-system colours (docs/ui-theme-design.md)
 export type Rgb = [number, number, number]
 type Align = 'left' | 'right'
-
-export const LOGO_ASPECT = 1415 / 346
-export const QUOTE_VALIDITY_DAYS = 30
-export const SUPPORT_PHONE = '+63 (2) 8123-4567'
-export const SUPPORT_EMAIL = 'support@oneinsurance.ph'
-export const SUPPORT_WEB = 'www.oneinsurance.ph'
-const DISCLAIMER =
-  'This is a quotation only, not a policy or proof of coverage. Subject to insurer underwriting and full policy terms.'
-
-// Colors (all text pairs >= WCAG AA 4.5:1; brand green is only used for fills/rules and large text)
-export const BRAND: Rgb = [76, 132, 62]
-export const INK_GREEN: Rgb = [46, 98, 36]
-export const INK: Rgb = [31, 41, 55]
-export const MUTED: Rgb = [75, 85, 99]
-export const CARD: Rgb = [247, 248, 250]
-export const CARD_BORDER: Rgb = [226, 230, 235]
-export const DIVIDER: Rgb = [215, 220, 226]
-export const HEAD_RULE: Rgb = [156, 163, 175]
+export const BRAND: Rgb = [0, 104, 56]
+export const INK_GREEN: Rgb = [0, 104, 56]
+export const INK: Rgb = [24, 61, 44]
+export const MUTED: Rgb = [92, 99, 95]
+export const CARD: Rgb = [241, 242, 240]
+export const CARD_BORDER: Rgb = [223, 231, 223]
+export const DIVIDER: Rgb = [223, 231, 223]
+export const HEAD_RULE: Rgb = [199, 212, 201]
 export const WHITE: Rgb = [255, 255, 255]
 export const WARN_BG: Rgb = [255, 244, 229]
 export const WARN_BORDER: Rgb = [180, 83, 9]
@@ -59,17 +60,29 @@ export const CELL_PAD = 1.3
 export const lh = (pt: number) => pt * MM * LINE
 export const PHT = 'Asia/Manila'
 
-export async function loadLogo(): Promise<string | null> {
+export interface PdfImage {
+  data: string
+  aspect: number
+}
+
+/** Loads any same-origin image (PNG/SVG/WebP) and rasterises it to a PNG data URL for jsPDF. */
+export async function loadImage(url: string): Promise<PdfImage | null> {
   try {
-    const res = await fetch('/images/logo.png')
-    if (!res.ok) return null
-    const blob = await res.blob()
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = reject
+      img.src = encodeURI(decodeURI(url))
     })
+    const w = img.naturalWidth || 400
+    const h = img.naturalHeight || 160
+    const scale = Math.min(2, 1200 / w)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(w * scale)
+    canvas.height = Math.round(h * scale)
+    canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+    return { data: canvas.toDataURL('image/png'), aspect: w / h }
   } catch {
     return null
   }
@@ -161,8 +174,9 @@ interface BenefitGroup {
   rows: BenefitRow[]
 }
 
-function limitText(b: InsuranceBenefit, name: string, category: string) {
+function limitText(b: InsuranceBenefit, name: string, category: string, unavailable = false) {
   const d = resolveLimitDisplay(b)
+  if (unavailable && d.kind === 'none') return 'Per policy wording'
   const mode = b.LimitModeDesc && b.LimitModeDesc !== '0' ? clean(b.LimitModeDesc) : ''
   const join = (parts: (string | undefined)[]) => parts.filter(Boolean).join(' \u00b7 ')
   switch (d.kind) {
@@ -181,7 +195,7 @@ function limitText(b: InsuranceBenefit, name: string, category: string) {
   }
 }
 
-function buildBenefitGroups(main: InsuranceBenefit[], addons: InsuranceBenefit[]) {
+function buildBenefitGroups(main: InsuranceBenefit[], addons: InsuranceBenefit[], unavailable = false) {
   const groups = new Map<string, BenefitGroup>()
   const seen = new Set<string>()
 
@@ -212,7 +226,7 @@ function buildBenefitGroups(main: InsuranceBenefit[], addons: InsuranceBenefit[]
     }
     seen.add(key)
     if (!groups.has(label)) groups.set(label, { label, order: forcedOrder ?? cfg.order, rows: [] })
-    groups.get(label)!.rows.push({ name, limit: limitText(b, name, label) })
+    groups.get(label)!.rows.push({ name, limit: limitText(b, name, label, unavailable) })
   }
 
   main.forEach((b) => add(b))
@@ -220,31 +234,46 @@ function buildBenefitGroups(main: InsuranceBenefit[], addons: InsuranceBenefit[]
   return [...groups.values()].sort((a, b) => a.order - b.order || a.label.localeCompare(b.label))
 }
 
-export async function createQuotePDF(data: QuotePDFData, opts: { logo?: string | null; origin?: string } = {}) {
-  const logo = opts.logo === undefined ? await loadLogo() : opts.logo
+export async function createQuotePDF(
+  data: QuotePDFData,
+  opts: { logo?: PdfImage | null; providerLogo?: PdfImage | null; origin?: string } = {}
+) {
+  const logo = opts.logo === undefined ? await loadImage('/images/logo-oi-light.png') : opts.logo
+  const providerLogo =
+    opts.providerLogo === undefined
+      ? data.providerLogoUrl
+        ? await loadImage(data.providerLogoUrl)
+        : null
+      : opts.providerLogo
   const origin = opts.origin ?? (typeof window !== 'undefined' ? window.location.origin : `https://${SUPPORT_WEB}`)
-  const resumeUrl = `${origin}/${data.agentCode ? `${data.agentCode}/` : ''}products/travel-insurance`
-  const qr = await QRCode.toDataURL(resumeUrl, { margin: 0, width: 256, errorCorrectionLevel: 'M' })
+  const resumeUrl = buildProposalUrl(origin, data.agentCode || 'DIRECT', data.apiResponse?.data?.ProposalNo || '')
+  const qr = await QRCode.toDataURL(resumeUrl, {
+    margin: 0,
+    width: 256,
+    errorCorrectionLevel: 'M',
+    color: { dark: '#183d2c', light: '#ffffff' },
+  })
   quiet = true
-  const { heights } = renderQuote(data, logo, qr, resumeUrl, true, [])
+  const { heights } = renderQuote(data, logo, providerLogo, qr, resumeUrl, true, [])
   quiet = false
-  return renderQuote(data, logo, qr, resumeUrl, false, heights)
+  return renderQuote(data, logo, providerLogo, qr, resumeUrl, false, heights)
 }
 
 export async function generateQuotePDF(data: QuotePDFData) {
   const { doc, proposalNo } = await createQuotePDF(data)
-  doc.save(`Travel-Insurance-Quote-${proposalNo}.pdf`)
+  doc.save(`Travel-Insurance-Proposal-${proposalNo}.pdf`)
 }
 
 function renderQuote(
   data: QuotePDFData,
-  logo: string | null,
+  logo: PdfImage | null,
+  providerLogo: PdfImage | null,
   qr: string,
   resumeUrl: string,
   measuring: boolean,
   known: number[]
 ) {
-  const { travelDetails, travelersInfo, apiResponse, planName, providerName, mainBenefits, addonBenefits, agentCode, taxes } = data
+  const { travelDetails, travelersInfo, apiResponse, planName, providerName, mainBenefits, addonBenefits, agentCode, taxes, limitsUnavailable } = data
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
   doc.setLineHeightFactor(LINE)
@@ -281,8 +310,13 @@ function renderQuote(
 
   // ---------- derived data ----------
   const d = apiResponse?.data
-  const now = new Date()
-  const validUntil = addDays(now, QUOTE_VALIDITY_DAYS)
+  const explicitExpiry = d?.ExpiresAt ? new Date(d.ExpiresAt) : null
+  const created = d?.ProposalDate ? new Date(d.ProposalDate) : null
+  const now = created && !Number.isNaN(created.getTime()) ? created : new Date()
+  const validUntil =
+    explicitExpiry && !Number.isNaN(explicitExpiry.getTime())
+      ? explicitExpiry
+      : new Date(now.getTime() + PROPOSAL_VALIDITY_HOURS * 3600_000)
   const departure = new Date(travelDetails.departureDate)
   const returning = new Date(travelDetails.returnDate ?? travelDetails.departureDate)
   // Inclusive counting: departure and return days both count (Oct 14-21 = 8 days)
@@ -290,7 +324,7 @@ function renderQuote(
   if (d?.TravelDays && d.TravelDays !== days && d.TravelDays !== days - 1) {
     logError(`Backend TravelDays (${d.TravelDays}) disagrees with inclusive day count (${days})`)
   }
-  const departsOnOrBeforeIssue = differenceInCalendarDays(departure, now) <= 0
+  const departsOnOrBeforeIssue = differenceInCalendarDays(departure, new Date()) <= 0
   const proposalNo = d?.ProposalNo || 'N/A'
   if (!d?.ProposalNo) logError('Missing ProposalNo in full-quote response')
 
@@ -303,7 +337,6 @@ function renderQuote(
   const coverageAreaRaw = (travelDetails.travelDetailList[0]?.TravelCoverageArea || '').trim()
   const AREA_LABELS: Record<string, string> = { APAC: 'APAC', WORLD: 'Worldwide', SCHENGEN: 'Schengen', DOMESTIC: 'Domestic' }
   const coverageArea = coverageAreaRaw ? (AREA_LABELS[coverageAreaRaw.toUpperCase()] ?? titleCase(coverageAreaRaw)) : 'N/A'
-  const isInternational = coverageAreaRaw.toUpperCase() !== 'DOMESTIC'
 
   const holder = travelersInfo?.[0]
   const risks = d?.PolicyLobList?.[0]?.PolicyRiskList ?? []
@@ -318,24 +351,23 @@ function renderQuote(
           type: adult ? 'Adult' : 'Child',
         }
       })
-    : (travelersInfo ?? []).map((t) => ({
+    : (travelersInfo ?? []).map((t, i) => ({
         name: fullName(t.firstName, t.middleName, t.lastName, t.suffix),
         dob: fmtDate(t.dateOfBirth),
         age: 'N/A',
-        type: 'Adult',
+        type: i < adults ? 'Adult' : 'Child',
       }))
   const holderName = holder ? fullName(holder.firstName, holder.middleName, holder.lastName, holder.suffix) : ''
   const sameAsTraveler = !!holder && travelers.length === 1 && travelers[0].name.toLowerCase() === holderName.toLowerCase()
   const primaryTraveler = travelers[0]?.name || holderName || 'N/A'
-  const travelerLabel = travelers.length > 1 ? `${primaryTraveler} +${travelers.length - 1} more` : primaryTraveler
 
   // ---------- document metadata / accessibility ----------
   doc.setProperties({
-    title: `Travel Insurance Quotation ${proposalNo}`,
-    subject: `Quotation for ${planName || 'travel insurance'}`,
+    title: `Travel Insurance Proposal ${proposalNo}`,
+    subject: `Proposal for ${planName || 'travel insurance'}`,
     author: 'One Insurance',
     creator: 'One Insurance',
-    keywords: 'travel insurance, quotation',
+    keywords: 'travel insurance, proposal',
   })
   doc.setLanguage('en-US')
   doc.viewerPreferences({ DisplayDocTitle: true })
@@ -431,35 +463,6 @@ function renderQuote(
     })
   }
 
-  const warnRow = (label: string, value: string, tag: string, link: string, url: string, ix: number, iw: number) => {
-    const bp = 2.6
-    const h = bp * 2 + lh(GFS.label) + 0.6 + lh(GFS.value)
-    ensure(h)
-    fill(WARN_BG)
-    stroke(WARN_BORDER, 0.3)
-    doc.roundedRect(ix, y, iw, h, 1.5, 1.5, 'FD')
-    font(GFS.label, 'normal', WARN_TEXT)
-    doc.text(label, ix + bp, base(y + bp, GFS.label))
-    const vy = y + bp + lh(GFS.label) + 0.6
-    font(GFS.value, 'bold', WARN_TEXT)
-    doc.text(value, ix + bp, base(vy, GFS.value))
-    const vw = doc.getTextWidth(value)
-    font(FS.min, 'bold', WARN_TEXT)
-    const tw = doc.getTextWidth(tag) + 4
-    const th = lh(FS.min) + 0.4
-    stroke(WARN_BORDER, 0.3)
-    doc.roundedRect(ix + bp + vw + 3, vy + (lh(GFS.value) - th) / 2, tw, th, th / 2, th / 2, 'S')
-    doc.text(tag, ix + bp + vw + 5, base(vy + (lh(GFS.value) - th) / 2 + 0.2, FS.min))
-    font(GFS.label + 1, 'bold', INK_GREEN)
-    const lw = doc.getTextWidth(link)
-    const lx = ix + iw - bp - lw
-    const ly = base(vy, GFS.label + 1)
-    if (!measuring) doc.textWithLink(link, lx, ly, { url })
-    stroke(INK_GREEN, 0.25)
-    doc.line(lx, ly + 0.7, lx + lw, ly + 0.7)
-    y += h
-  }
-
   const table = (
     cols: { label: string; w: number; align?: Align }[],
     rows: { cells: string[]; bold?: boolean }[]
@@ -493,18 +496,18 @@ function renderQuote(
 
   // ---------- HEADER ----------
   const logoH = 11
-  if (logo) doc.addImage(logo, 'PNG', MARGIN, y, logoH * LOGO_ASPECT, logoH, 'logo', 'FAST')
+  if (logo) doc.addImage(logo.data, 'PNG', MARGIN, y, logoH * logo.aspect, logoH, 'logo', 'FAST')
   else {
     font(18, 'bold', INK_GREEN)
     doc.text('One Insurance', MARGIN, y + 8)
   }
-  const tagW = 27
+  const tagW = 25
   const tagH = 6.4
   const tagY = y + logoH + 3
   stroke(INK_GREEN, 0.35)
   doc.roundedRect(MARGIN, tagY, tagW, tagH, 1, 1, 'S')
   font(FS.label, 'bold', INK_GREEN)
-  doc.text('QUOTATION', MARGIN + tagW / 2, base(tagY + (tagH - lh(FS.label)) / 2 + 0.3, FS.label), { align: 'center' })
+  doc.text('PROPOSAL', MARGIN + tagW / 2, base(tagY + (tagH - lh(FS.label)) / 2 + 0.3, FS.label), { align: 'center' })
 
   const rx = MARGIN + W
   let hy = y
@@ -515,9 +518,9 @@ function renderQuote(
   doc.text(proposalNo, rx, base(hy, 14), { align: 'right' })
   hy += lh(14) + 1
   font(FS.body, 'normal', INK)
-  doc.text(`Issued: ${fmtDateTimePHT(now)}`, rx, base(hy, FS.body), { align: 'right' })
+  doc.text(`Generated: ${fmtDateTimePHT(now)}`, rx, base(hy, FS.body), { align: 'right' })
   hy += lh(FS.body)
-  doc.text(`Valid until: ${fmtDatePHT(validUntil)}`, rx, base(hy, FS.body), { align: 'right' })
+  doc.text(`Pay by: ${fmtDateTimePHT(validUntil)}`, rx, base(hy, FS.body), { align: 'right' })
   hy += lh(FS.body)
   if (agentCode) {
     doc.text(`Agent code: ${agentCode}`, rx, base(hy, FS.body), { align: 'right' })
@@ -531,7 +534,7 @@ function renderQuote(
 
   // ---------- WARNING ----------
   if (departsOnOrBeforeIssue) {
-    const msg = `Check your travel dates: departure (${fmtDate(departure)}) is on or before the issue date (${fmtDate(now)}). Coverage may not be available for a trip that has already started.`
+    const msg = `Check your travel dates: departure (${fmtDate(departure)}) is on or before today (${fmtDate(new Date())}). Coverage may not be available for a trip that has already started.`
     const lines = wrap(msg, W - 2 * PAD - 6, FS.body, 'bold')
     const h = lines.length * lh(FS.body) + 2 * 3
     fill(WARN_BG)
@@ -548,7 +551,9 @@ function renderQuote(
     const bp = 5
     const bandInner = W - 2 * bp
     const rightW = 68
-    const leftW = bandInner - rightW - 6
+    const logoBoxW = providerLogo ? 30 : 0
+    const logoGap = providerLogo ? 4 : 0
+    const leftW = bandInner - rightW - 6 - logoBoxW - logoGap
     const planTitle = clean(planName || 'Travel Insurance Plan')
     const planLines = wrap(planTitle, leftW, 14, 'bold').slice(0, 2)
     const planCode = d?.CarrierPlanCode || d?.PlanCode
@@ -569,7 +574,7 @@ function renderQuote(
     const facts: { label: string; lines: string[] }[] = [
       { label: 'Route', lines: wrap(`${origin} to ${destinations}`, cw - 3, FS.body, 'bold').slice(0, 2) },
       { label: 'Travel dates', lines: [`${fmtDate(departure)} \u2013 ${fmtDate(returning)}`, `${days} ${days === 1 ? 'day' : 'days'} (inclusive)`] },
-      { label: 'Traveler', lines: [...wrap(travelerLabel, cw - 3, FS.body, 'bold').slice(0, 1), counts] },
+      { label: 'Traveler', lines: [...wrap(primaryTraveler, cw - 6, FS.body, 'bold').slice(0, 1), counts] },
     ]
     const factsH = lh(FS.label) + Math.max(...facts.map((f) => f.lines.length)) * lh(FS.body) + 1
     const h = bp + topH + 3.5 + factsH + bp
@@ -577,8 +582,19 @@ function renderQuote(
     fill(INK_GREEN)
     doc.roundedRect(MARGIN, y, W, h, 2.5, 2.5, 'F')
 
-    const x0 = MARGIN + bp
+    const bx = MARGIN + bp
+    const x0 = bx + logoBoxW + logoGap
     const y0 = y + bp
+    if (providerLogo) {
+      const boxH = Math.min(topH, 14)
+      fill(WHITE)
+      doc.roundedRect(bx, y0, logoBoxW, boxH, 1.5, 1.5, 'F')
+      const maxW = logoBoxW - 4
+      const maxH = boxH - 3
+      const lw = Math.min(maxW, maxH * providerLogo.aspect)
+      const lhh = lw / providerLogo.aspect
+      doc.addImage(providerLogo.data, 'PNG', bx + (logoBoxW - lw) / 2, y0 + (boxH - lhh) / 2, lw, lhh, 'provider', 'FAST')
+    }
     font(FS.label, 'bold', WHITE)
     doc.text('PLAN', x0, base(y0, FS.label))
     font(14, 'bold', WHITE)
@@ -591,7 +607,7 @@ function renderQuote(
     const rxb = MARGIN + W - bp
     font(FS.label, 'bold', WHITE)
     doc.text('TOTAL PREMIUM', rxb, base(y0, FS.label), { align: 'right' })
-    const premium = d?.GrossPremium || d?.DuePremium || 0
+    const premium = d?.DuePremium || d?.GrossPremium || 0
     if (!premium) logError('Missing GrossPremium/DuePremium in full-quote response')
     font(FS.total, 'bold', WHITE)
     doc.text(money(premium), rxb, base(y0 + lh(FS.label), FS.total), { align: 'right' })
@@ -624,8 +640,6 @@ function renderQuote(
       () => {
         const ix = MARGIN + HPAD
         const iw = W - 2 * HPAD
-        const missing = isInternational
-        const isPassport = holder.idType === 'PAS'
         fieldGroup(
           'Personal',
           [
@@ -655,19 +669,6 @@ function renderQuote(
           ix,
           iw
         )
-        if (missing) {
-          y += ROW_GAP
-          const single = !destinations.includes(',') && destinations.length <= 20 && destinations !== 'N/A'
-          warnRow(
-            'Passport details',
-            isPassport ? 'Expiry and nationality missing' : 'Not provided',
-            single ? `Required for ${destinations} travel` : 'Required for international travel',
-            'Add passport',
-            resumeUrl,
-            ix,
-            iw
-          )
-        }
         if (beneficiary?.firstName)
           fieldGroup(
             'Beneficiary',
@@ -682,7 +683,6 @@ function renderQuote(
       },
       HPAD
     )
-    if (isInternational) logError('Nationality and passport expiry are not captured by the personal info form')
   }
 
   if (!sameAsTraveler && travelers.length > 0) {
@@ -703,7 +703,7 @@ function renderQuote(
 
   // ---------- PREMIUM ----------
   card('Premium Summary', () => {
-    const gross = d?.GrossPremium || d?.DuePremium || 0
+    const gross = d?.DuePremium || d?.GrossPremium || 0
     const before = d?.BeforeVatPremium || gross
     const lgt = d?.LGT || 0
     const taxTotal = Math.max(0, gross - before - lgt)
@@ -738,7 +738,7 @@ function renderQuote(
   })
 
   // ---------- PAGE 2: benefits, information, resume ----------
-  const groups = buildBenefitGroups(mainBenefits ?? [], addonBenefits ?? [])
+  const groups = buildBenefitGroups(mainBenefits ?? [], addonBenefits ?? [], limitsUnavailable)
   if (/covid/i.test(planName || '') && !groups.some((g) => g.rows.some((r) => /covid/i.test(r.name))))
     logError('Plan name mentions COVID-19 but no COVID-19 benefit with a limit was found')
 
@@ -809,9 +809,9 @@ function renderQuote(
     const qrSize = 24
     const textW = innerW - qrSize - 8
     const contactLines = wrap(`Emergency & support: ${SUPPORT_PHONE}  \u00b7  ${SUPPORT_EMAIL}`, textW, FS.body, 'bold')
-    const lead = wrap('Scan the QR code or open the link to buy or resume online:', textW, FS.body)
+    const lead = wrap('Scan the QR code or open the link to review this proposal and pay online:', textW, FS.body)
     const linkLines = wrap(resumeUrl, textW, FS.body)
-    const refLines = wrap(`Quote reference: ${proposalNo}`, textW, FS.body, 'bold')
+    const refLines = wrap(`Proposal number: ${proposalNo}`, textW, FS.body, 'bold')
     const textH = [contactLines, lead, linkLines, refLines].reduce((s, l) => s + l.length * lh(FS.body), 0) + 3
     const ctaH = Math.max(qrSize, textH)
     const noteLines = wrap(

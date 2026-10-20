@@ -1,4 +1,5 @@
 import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
+import { insurerNameToCarrierCode } from '@/utils/insurer-codes'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -54,23 +55,6 @@ interface IgwCompareQuoteResponse {
 }
 
 /**
- * Maps IGW insurer names to the internal carrier codes used in COMPANIES constant.
- * Add entries here as new insurers are onboarded via IGW.
- */
-const INSURER_NAME_TO_CARRIER_CODE: Record<string, string> = {
-  'malayan insurance': 'MALAYAN',
-  'oona insurance': 'OONAPH',
-  'oona': 'OONAPH',
-  'pacific cross': 'PACIFIC',
-  'standard insurance': 'STANDARD',
-  'pioneer insurance': 'PIONEER',
-  'paramount': 'PARAMOUNT',
-  'axa': 'AXAPH',
-  'philcare': 'PHILCARE',
-  'maxicare': 'MAXICARE',
-}
-
-/**
  * IGW insurer codes that support the full-quote endpoint.
  *
  * Plans from insurers NOT in this set are stripped from the compare-quote
@@ -81,17 +65,6 @@ const INSURER_NAME_TO_CARRIER_CODE: Record<string, string> = {
  * insurer (test with POST /api/v1/travel/full-quote and verify a 201 back).
  */
 const FULL_QUOTE_SUPPORTED_INSURERS = new Set(['MIC', 'OONA'])
-
-function insurerNameToCarrierCode(insurerName: string): string {
-  const key = insurerName.toLowerCase()
-  // Try exact match first, then prefix match
-  if (INSURER_NAME_TO_CARRIER_CODE[key]) return INSURER_NAME_TO_CARRIER_CODE[key]
-  for (const [pattern, code] of Object.entries(INSURER_NAME_TO_CARRIER_CODE)) {
-    if (key.includes(pattern)) return code
-  }
-  // Fallback: uppercase first word of insurer name
-  return insurerName.split(' ')[0].toUpperCase()
-}
 
 /**
  * Normalized per-benefit limit. Survives insurer differences so display code

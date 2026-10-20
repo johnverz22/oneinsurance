@@ -1,0 +1,194 @@
+// ---------------------------------------------------------------------------
+// Payment mappers — DLT Hosted Checkout v4.0
+//
+// All payment types (card and e-wallet) go through exactly the same submit
+// flow.  The browser collects billing details only — no card number, no CVV,
+// no 3DS device block.  Card entry happens on the DLT-hosted page.
+// ---------------------------------------------------------------------------
+
+import { PaymentSubmitRequest, PaymentBrand } from '@/types/payment'
+
+// ---------------------------------------------------------------------------
+// Billing-details form data (collected by HostedCheckoutForm for all brands)
+// ---------------------------------------------------------------------------
+export interface BillingFormData {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  addressLineOne: string
+  addressLineTwo: string
+  cityMunicipality: string
+  stateProvinceRegion: string
+  postalCode: string
+  country: string
+}
+
+// ---------------------------------------------------------------------------
+// Payment configuration passed in from the parent component.
+// merchant_account_id, service_code, channel, and time_offset are all
+// injected server-side by the BFF — never included here.
+// ---------------------------------------------------------------------------
+export interface PaymentRequestConfig {
+  merchantTransactionId: string
+  productReferenceId?: string
+  /** Short label, max 80 chars */
+  productName?: string
+  /** Concise description, max 120 chars. Treat as required — DLT 500s without it. */
+  productDescription: string
+  /**
+   * Decimal string e.g. "1299.00", or a number (pesos) which will be coerced.
+   * Use pesosToDltString() to build the canonical string form.
+   */
+  amount: string | number
+  currency?: string
+  /** Full URL, e.g. https://app.example.com/[agent]/products/travel-insurance/avail?status=success */
+  successUrl?: string
+  failureUrl?: string
+}
+
+// ---------------------------------------------------------------------------
+// Money helpers
+//
+// Amount travels as a decimal string throughout.  Never use parseFloat on it.
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert a PHP peso integer (e.g. 1 299 pesos) to the DLT decimal string
+ * format: "1299.00".  Input is integer pesos (not cents).
+ */
+export function pesosToDltString(pesos: number): string {
+  if (!Number.isFinite(pesos) || pesos < 0) return '0.00'
+  // Use integer arithmetic to avoid floating-point drift
+  const cents = Math.round(pesos * 100)
+  return (cents / 100).toFixed(2)
+}
+
+/**
+ * Convert an integer-cents value to DLT decimal string.
+ */
+export function centsToDltString(cents: number): string {
+  if (!Number.isFinite(cents) || cents < 0) return '0.00'
+  return (Math.round(cents) / 100).toFixed(2)
+}
+
+// ---------------------------------------------------------------------------
+// Unified Hosted Checkout request mapper
+//
+// Works for every brand (card or e-wallet) — there is no branching.
+// ---------------------------------------------------------------------------
+export function mapToHostedCheckoutRequest(
+  formData: BillingFormData,
+  selectedBrand: PaymentBrand,
+  config: PaymentRequestConfig
+): PaymentSubmitRequest {
+  // Coerce number to decimal string (peso value → "1299.00")
+  const amount =
+    typeof config.amount === 'number'
+      ? pesosToDltString(config.amount)
+      : config.amount
+
+  return {
+    merchant_transaction_id: config.merchantTransactionId,
+    amount,
+    currency: config.currency ?? 'PHP',
+
+    payment_brand: selectedBrand.value,
+    payment_brand_code: selectedBrand.code,
+
+    product_name: (config.productName ?? config.productDescription).substring(0, 80) || 'Insurance',
+    product_description: config.productDescription.substring(0, 120) || 'Product Payment',
+    product_reference_id: config.productReferenceId,
+
+    first_name: formData.firstName.trim(),
+    last_name: formData.lastName.trim(),
+    email: formData.email.trim().toLowerCase(),
+    phone: formData.phone.replace(/\s/g, ''),
+
+    address_line_one: formData.addressLineOne.trim(),
+    address_line_two: formData.addressLineTwo.trim() || 'N/A',
+    city_municipality: formData.cityMunicipality.trim(),
+    state_province_region: formData.stateProvinceRegion.trim(),
+    country_code: (formData.country || 'PH').toUpperCase(),
+    postal_code: formData.postalCode.trim(),
+
+    success_url: config.successUrl,
+    failure_url: config.failureUrl,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Billing-form validation
+// ---------------------------------------------------------------------------
+export function validateBillingForm(formData: BillingFormData): string[] {
+  const errors: string[] = []
+  if (!formData.firstName.trim()) errors.push('First name is required')
+  if (!formData.lastName.trim()) errors.push('Last name is required')
+  if (!formData.email.trim()) errors.push('Email is required')
+  if (!formData.phone.trim()) errors.push('Phone number is required')
+  if (!formData.addressLineOne.trim()) errors.push('Address Line 1 is required')
+  if (!formData.addressLineTwo.trim()) errors.push('Address Line 2 is required')
+  if (!formData.cityMunicipality.trim()) errors.push('City/Municipality is required')
+  if (!formData.stateProvinceRegion.trim()) errors.push('State/Province/Region is required')
+  if (!formData.postalCode.trim()) errors.push('Postal code is required')
+  if (!formData.country.trim()) errors.push('Country is required')
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (formData.email && !emailRe.test(formData.email)) {
+    errors.push('Please enter a valid email address')
+  }
+  return errors
+}
+
+// ---------------------------------------------------------------------------
+// Legacy generateTransactionId — kept so existing callers don't break during
+// the migration.  Prefer the server-side GET /api/payment/transaction-id route
+// which uses crypto.randomBytes for ~75 bits of entropy.
+// ---------------------------------------------------------------------------
+export const generateTransactionId = (): string => {
+  const ts = Date.now()
+  const rnd = Math.random().toString(36).substring(2, 8)
+  return `TXN${ts}${rnd}`.toUpperCase()
+}
+
+// ---------------------------------------------------------------------------
+// v3.0 legacy shims — kept for health/CTPL payment steps that haven't been
+// migrated to Hosted Checkout yet.  These types and mappers still produce a
+// valid PaymentSubmitRequest shape (minus card fields, which the BFF strips
+// before forwarding to DLT v4.0 anyway).
+// ---------------------------------------------------------------------------
+
+/** @deprecated Use BillingFormData. Kept for health/CTPL migration. */
+export type CardPaymentFormData = BillingFormData & {
+  cardholderName: string
+  cardNumber: string
+  expiryMonth: string
+  expiryYear: string
+  ccv: string
+}
+
+/** @deprecated Use BillingFormData. Kept for health/CTPL migration. */
+export type DigitalPaymentFormData = BillingFormData & {
+  phoneNumber?: string
+}
+
+/**
+ * @deprecated Use mapToHostedCheckoutRequest.
+ * Produces a submit payload — the BFF strips card fields before calling DLT v4.0.
+ */
+export const mapCardPaymentToRequest = (
+  formData: CardPaymentFormData,
+  selectedBrand: PaymentBrand,
+  config: PaymentRequestConfig
+): PaymentSubmitRequest =>
+  mapToHostedCheckoutRequest(formData, selectedBrand, config)
+
+/**
+ * @deprecated Use mapToHostedCheckoutRequest.
+ */
+export const mapDigitalPaymentToRequest = (
+  formData: DigitalPaymentFormData,
+  selectedBrand: PaymentBrand,
+  config: PaymentRequestConfig
+): PaymentSubmitRequest =>
+  mapToHostedCheckoutRequest(formData, selectedBrand, config)

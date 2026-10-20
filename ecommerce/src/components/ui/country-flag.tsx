@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils'
-import 'flag-icons/css/flag-icons.min.css'
 
 /**
  * Regional-indicator emoji (🇵🇭) encode the ISO alpha-2 code directly —
@@ -44,7 +43,10 @@ export function CountryFlag({
   }
 
   return (
-    <span className={cn('inline-flex items-center justify-center', className)} aria-hidden>
+    <span
+      className={cn('inline-flex items-center justify-center', className)}
+      aria-hidden
+    >
       <span className={`fi fi-${iso} inline-block rounded-[2px]`} />
     </span>
   )

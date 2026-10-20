@@ -1,0 +1,142 @@
+import Link from 'next/link'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Brand } from '@/components/layout/brand'
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  ArrowRight,
+} from 'lucide-react'
+
+export const Footer = () => {
+  return (
+    <footer className="relative bg-section">
+      {/* Newsletter Section */}
+      <div className="border-b py-12">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="flex flex-col items-center justify-center gap-6 lg:flex-row lg:gap-8">
+            <form className="flex w-full max-w-md items-center gap-3">
+              <div className="relative flex-1">
+                <Input
+                  type="email"
+                  placeholder="Email Address"
+                  className="h-14 rounded-full border-0 bg-white pr-16 text-foreground shadow-sm placeholder:text-muted-foreground"
+                  required
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  aria-label="Subscribe"
+                  className="bg-primary hover:bg-primary/90 absolute top-2 right-2 h-10 w-10 rounded-full"
+                >
+                  <ArrowRight className="h-5 w-5 text-white" />
+                </Button>
+              </div>
+            </form>
+            <div className="text-center lg:text-left">
+              <p className="text-base font-semibold text-foreground">
+                Don&apos;t miss out on the latest updates.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Stay informed about new products, tips, and exclusive offers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Content */}
+      <div className="mx-auto max-w-7xl px-4 py-10">
+        <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
+          <Brand className="text-2xl" />
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-center gap-3 lg:justify-end">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
+                asChild
+              >
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
+                asChild
+              >
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
+                asChild
+              >
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full bg-white text-muted-foreground hover:bg-white/80 hover:text-foreground"
+                asChild
+              >
+                <a
+                  href="https://youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <Button
+                variant="link"
+                className="text-foreground w-full !p-0 lg:!text-left"
+                asChild
+              >
+                <Link href="/agent-application">Become an Agent</Link>
+              </Button>
+              <Button
+                variant="link"
+                className="text-foreground w-full !p-0 lg:!text-left"
+              >
+                Privacy And Policy
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}

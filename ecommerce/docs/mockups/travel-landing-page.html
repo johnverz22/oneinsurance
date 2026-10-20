@@ -1,0 +1,2086 @@
+Title: Live Content
+
+Description: Fetched live
+
+Source: https://developers.oneinsurance.shop/mockups/travel/landing-page
+
+---
+
+<!DOCTYPE html>
+<html lang="en" class="scheme-light dark:scheme-dark">
+<head>
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+<link rel="manifest" href="/favicon/site.webmanifest">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Explore travel insurance plans with One Insurance.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Travel insurance 1 · One Insurance</title>
+    <script>
+        try { document.documentElement.classList.toggle('dark', (localStorage.getItem('oi-ui-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'); }
+        catch { document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches); }
+    </script>
+    <link rel="preload" as="font" href="https://developers.oneinsurance.shop/build/assets/inter-400-normal-C38fXH4l.woff2" type="font/woff2" crossorigin="anonymous" />
+<link rel="preload" as="font" href="https://developers.oneinsurance.shop/build/assets/inter-500-normal-Cerq10X2.woff2" type="font/woff2" crossorigin="anonymous" />
+<link rel="preload" as="font" href="https://developers.oneinsurance.shop/build/assets/inter-600-normal-LgqL8muc.woff2" type="font/woff2" crossorigin="anonymous" />
+<link rel="preload" as="font" href="https://developers.oneinsurance.shop/build/assets/inter-700-normal-Yt3aPRUw.woff2" type="font/woff2" crossorigin="anonymous" />
+<style>
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/inter-400-normal-C38fXH4l.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/inter-400-normal-CyCys3Eg.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/inter-500-normal-Cerq10X2.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/inter-500-normal-BL9OpVg8.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/inter-600-normal-LgqL8muc.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/inter-600-normal-CiBQ2DWP.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/build/assets/inter-700-normal-Yt3aPRUw.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/build/assets/inter-700-normal-BLAVimhd.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/instrument-sans-400-normal-DRC__1Mx.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/instrument-sans-400-normal-D1W7dsQl.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/instrument-sans-500-normal-Dk9ku72i.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/instrument-sans-500-normal-Z6ESRlEs.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/instrument-sans-600-normal-B7fBEWYG.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/instrument-sans-600-normal-B9e8oLYv.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/manrope-400-normal-PaqtzbVb.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/manrope-400-normal-8tf8FM3T.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/manrope-500-normal-BYYD-dBL.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/manrope-500-normal-DMZssgOp.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/manrope-600-normal-4f0koTD-.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/manrope-600-normal-BqgrALkZ.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/dm-sans-400-normal-CW0RaeGs.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/dm-sans-400-normal-BwCSEQnW.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/dm-sans-500-normal-B9HHJjqV.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/dm-sans-500-normal-Dr3UlScf.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/dm-sans-600-normal-Aqo67rzb.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/dm-sans-600-normal-BmdmIIQ2.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/plus-jakarta-sans-400-normal-Dhut76fR.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/plus-jakarta-sans-400-normal-BDKaGhyp.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/plus-jakarta-sans-500-normal-Bf-nb4oT.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/plus-jakarta-sans-500-normal-DYtqi0QS.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/plus-jakarta-sans-600-normal-DLTa1BUW.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/plus-jakarta-sans-600-normal-BR_Ojra4.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/public-sans-400-normal-8Rpg0ruU.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/public-sans-400-normal-SBbinRkI.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/public-sans-500-normal-NlrCPXnF.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/public-sans-500-normal-vCxiVFAq.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/public-sans-600-normal-Fru-LXNs.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Public Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/public-sans-600-normal-BR59oU-I.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/nunito-sans-400-normal-AkRraKH2.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/nunito-sans-400-normal-DY9yCUyQ.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/nunito-sans-500-normal-DlmaWqTx.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/nunito-sans-500-normal-BkymD7ni.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/nunito-sans-600-normal-BtVRvDNj.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/nunito-sans-600-normal-DLks-Kj1.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/work-sans-400-normal-jUejSri3.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/work-sans-400-normal-DE1_0GuN.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/work-sans-500-normal-BKGnScDy.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/work-sans-500-normal-BmdXWF6_.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/work-sans-600-normal-DB-2V89X.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Work Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/work-sans-600-normal-Cg-NlmS7.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/ibm-plex-sans-400-normal-CDDApCn2.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/ibm-plex-sans-400-normal-CYLoc0-x.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/ibm-plex-sans-500-normal-6ng42L7E.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/ibm-plex-sans-500-normal-BgVn5rGT.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/ibm-plex-sans-600-normal-CuJfVYMP.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/ibm-plex-sans-600-normal-Cu4Hd6ag.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/source-sans-3-400-normal-DQi5PRDE.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/build/assets/source-sans-3-400-normal-AFMiCETP.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/source-sans-3-500-normal-DiWS0tcR.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/build/assets/source-sans-3-500-normal-BtDzq-z9.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/source-sans-3-600-normal-DeckBYAU.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/build/assets/source-sans-3-600-normal-BvDVuF-j.woff") format("woff");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+:root {
+  --font-inter: "Inter";
+  --font-instrument-sans: "Instrument Sans";
+  --font-manrope: "Manrope";
+  --font-dm-sans: "DM Sans";
+  --font-plus-jakarta-sans: "Plus Jakarta Sans";
+  --font-public-sans: "Public Sans";
+  --font-nunito-sans: "Nunito Sans";
+  --font-work-sans: "Work Sans";
+  --font-ibm-plex-sans: "IBM Plex Sans";
+  --font-source-sans-3: "Source Sans 3";
+}
+
+.font-inter {
+  font-family: var(--font-inter);
+}
+
+.font-instrument-sans {
+  font-family: var(--font-instrument-sans);
+}
+
+.font-manrope {
+  font-family: var(--font-manrope);
+}
+
+.font-dm-sans {
+  font-family: var(--font-dm-sans);
+}
+
+.font-plus-jakarta-sans {
+  font-family: var(--font-plus-jakarta-sans);
+}
+
+.font-public-sans {
+  font-family: var(--font-public-sans);
+}
+
+.font-nunito-sans {
+  font-family: var(--font-nunito-sans);
+}
+
+.font-work-sans {
+  font-family: var(--font-work-sans);
+}
+
+.font-ibm-plex-sans {
+  font-family: var(--font-ibm-plex-sans);
+}
+
+.font-source-sans-3 {
+  font-family: var(--font-source-sans-3);
+}
+</style>    <link rel="preload" as="style" href="https://developers.oneinsurance.shop/build/assets/app-C3XZqkUs.css" /><link rel="modulepreload" as="script" href="https://developers.oneinsurance.shop/build/assets/app-BXhSPl4o.js" /><link rel="stylesheet" href="https://developers.oneinsurance.shop/build/assets/app-C3XZqkUs.css" /><script type="module" src="https://developers.oneinsurance.shop/build/assets/app-BXhSPl4o.js"></script><script id="browser-logger-active">
+(function() {
+    const ENDPOINT = 'https://developers.oneinsurance.shop/_boost/browser-logs';
+    const logQueue = [];
+    let flushTimeout = null;
+    const captureTypes = ["error","warning","info","log","debug","table"];
+
+    console.log('🔍 Browser logger active (MCP server detected). Posting to: ' + ENDPOINT);
+
+    // Store original console methods
+    const originalConsole = {
+        log: console.log,
+        debug: console.debug,
+        info: console.info,
+        error: console.error,
+        warn: console.warn,
+        table: console.table
+    };
+
+    // Walk own enumerable keys so JSON.stringify cannot auto-invoke a proxy fake toJSON (e.g. Livewire's `$wire`) and fire a real request.
+    function toSafeValue(value, seen) {
+        if (value === null || typeof value !== 'object') {
+            return value;
+        }
+        if (value instanceof Error) {
+            return { name: value.name, message: value.message, stack: value.stack };
+        }
+        // Date has no own enumerable keys, so the walk below would collapse it to {}.
+        if (value instanceof Date) {
+            return value.toISOString();
+        }
+        if (seen.has(value)) {
+            return '[Circular]';
+        }
+        seen.add(value);
+        if (Array.isArray(value)) {
+            return value.map((item) => toSafeValue(item, seen));
+        }
+        const plain = {};
+        for (const key of Object.keys(value)) {
+            if (key === 'toJSON') continue;
+            try {
+                plain[key] = toSafeValue(value[key], seen);
+            } catch (e) {
+                plain[key] = '[Unreadable]';
+            }
+        }
+        return plain;
+    }
+
+    // Helper to safely stringify values
+    function safeStringify(obj) {
+        return JSON.stringify(toSafeValue(obj, new WeakSet()));
+    }
+
+    // Normalize log type for consistency (e.g., 'warn' to 'warning')
+    function normalizeType(type) {
+        return type === 'warn' ? 'warning' : type;
+    }
+
+    // Determine if a log type should be captured based on configured levels
+    function shouldCapture(type) {
+        return captureTypes.includes(normalizeType(type));
+    }
+
+    // Batch and send logs
+    function flushLogs() {
+        if (logQueue.length === 0) return;
+
+        const batch = logQueue.splice(0, logQueue.length);
+
+        fetch(ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ logs: batch })
+        }).catch(err => {
+            // Silently fail to avoid infinite loops
+            originalConsole.error('Failed to send logs:', err);
+        });
+    }
+
+    // Debounced flush (100ms)
+    function scheduleFlush() {
+        if (flushTimeout) clearTimeout(flushTimeout);
+        flushTimeout = setTimeout(flushLogs, 100);
+    }
+
+    // Intercept console methods
+    ['log', 'debug', 'info', 'error', 'warn', 'table'].forEach(method => {
+        console[method] = function(...args) {
+            // Call original method
+            originalConsole[method].apply(console, args);
+
+            // Capture log data
+            try {
+                if (!shouldCapture(method)) {
+                    return;
+                }
+
+                logQueue.push({
+                    type: method,
+                    timestamp: new Date().toISOString(),
+                    data: args.map(arg => {
+                        try {
+                            return typeof arg === 'object' ? JSON.parse(safeStringify(arg)) : arg;
+                        } catch (e) {
+                            return String(arg);
+                        }
+                    }),
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                });
+
+                scheduleFlush();
+            } catch (e) {
+                // Fail silently
+            }
+        };
+    });
+
+    // Global error handlers for uncaught errors
+    const originalOnError = window.onerror;
+    window.onerror = function boostErrorHandler(errorMsg, url, lineNumber, colNumber, error) {
+        try {
+            if (shouldCapture('error')) {
+                logQueue.push({
+                    type: 'uncaught_error',
+                    timestamp: new Date().toISOString(),
+                    data: [{
+                        message: errorMsg,
+                        filename: url,
+                        lineno: lineNumber,
+                        colno: colNumber,
+                        error: error ? {
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack
+                        } : null
+                    }],
+                    url: window.location.href,
+                    userAgent: navigator.userAgent
+                });
+
+                scheduleFlush();
+            }
+
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Call original handler if it exists
+        if (originalOnError && typeof originalOnError === 'function') {
+            return originalOnError(errorMsg, url, lineNumber, colNumber, error);
+        }
+
+        // Let the error continue to propagate
+        return false;
+    }
+    window.addEventListener('error', (event) => {
+        try {
+            if (!shouldCapture('error')) {
+                return false;
+            }
+
+            logQueue.push({
+                type: 'window_error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: event.message,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno,
+                    error: event.error ? {
+                        name: event.error.name,
+                        message: event.error.message,
+                        stack: event.error.stack
+                    } : null
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Let the error continue to propagate
+        return false;
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+        try {
+            if (!shouldCapture('error')) {
+                return false;
+            }
+
+            logQueue.push({
+                type: 'error',
+                timestamp: new Date().toISOString(),
+                data: [{
+                    message: 'Unhandled Promise Rejection',
+                    reason: toSafeValue(event.reason, new WeakSet())
+                }],
+                url: window.location.href,
+                userAgent: navigator.userAgent
+            });
+
+            scheduleFlush();
+        } catch (e) {
+            // Fail silently
+        }
+
+        // Let the rejection continue to propagate
+        return false;
+    });
+
+    // Flush on page unload
+    window.addEventListener('beforeunload', () => {
+        if (logQueue.length > 0) {
+            navigator.sendBeacon(ENDPOINT, JSON.stringify({ logs: logQueue }));
+        }
+    });
+})();
+</script>
+</head>
+<body x-data="travelMockup" class="bg-[#fcfdfb] font-sans text-base text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
+    <a href="#main" class="sr-only fixed top-3 left-3 z-50 rounded-md bg-[#006838] px-4 py-3 text-white focus:not-sr-only">Skip to content</a>
+    <div data-developer-tools class="border-b border-[#dfe7df] bg-[#f1f2f0] text-[#183d2c] dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2] print:hidden">
+    <div class="mx-auto max-w-7xl px-5 py-2 sm:px-8">
+        <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <a href="https://developers.oneinsurance.shop/ui" class="rounded-md py-2 text-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-[#006838]">← OI Developers / Travel insurance</a>
+            <a href="https://developers.oneinsurance.shop/downloads/design/landing-page" class="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Download this design.md</a>
+        </div>
+        <details class="mt-1" data-developer-tab>
+            <summary class="min-h-11 w-fit cursor-pointer rounded-md px-3 py-2 font-semibold text-[#006838] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Developer</summary>
+            <nav aria-label="Design document downloads" class="border-t border-[#dfe7df] py-5 dark:border-[#3d4140]">
+                <h2 class="font-semibold">Design handoff</h2>
+                <p class="mt-2 text-sm leading-7 text-[#333] dark:text-[#c4c7c5]">Download the shared theme and page guides. Markdown files describe the mockups, interactions and implementation limits.</p>
+                <p class="mt-2 text-sm text-[#333] dark:text-[#c4c7c5]">Mockup preview · Fictional data and sample documents</p>
+                <a href="https://developers.oneinsurance.shop/downloads/design/ui-theme" class="mt-3 inline-flex min-h-11 items-center rounded-md bg-[#006838] px-5 py-2.5 font-semibold text-white hover:bg-[#00552e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]">Download UI theme design.md</a>
+                <ul class="mt-4 grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/landing-page" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Landing page · Trip details · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/two" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Alternate landing page · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/step-2" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Step 2 · Choose a plan · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/step-3" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Step 3 · Generate quote · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/step-4" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Step 4 · Review quote · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/step-5" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Step 5 · Payment · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/policy-issuance" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Policy issuance · design.md</a></li>
+                                            <li><a href="https://developers.oneinsurance.shop/downloads/design/policy-issued" class="inline-flex min-h-11 items-center rounded-md py-2 text-sm text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]">Policy issued · design.md</a></li>
+                                    </ul>
+            </nav>
+        </details>
+    </div>
+</div>
+    <div aria-hidden="true" class="h-px -mb-px"></div>
+    <header x-data="travelHeader" :class="{ 'is-stuck': stuck }" class="travel-header sticky top-0 z-30 border-b border-[#dfe7df] bg-white dark:border-[#3d4140] dark:bg-[#171919]">
+        <div class="flex min-h-20 w-full items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
+            <a href="#main" aria-label="One Insurance travel insurance home" class="shrink-0 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006838]">
+                <img src="https://developers.oneinsurance.shop/storage/img/logo-oi-light.png" alt="One Insurance" width="6720" height="1689" class="travel-header__logo-light h-auto w-28 dark:hidden sm:w-40">
+                <img src="https://developers.oneinsurance.shop/storage/img/logo-oi-dark.png" alt="One Insurance" width="6720" height="1689" class="travel-header__logo-dark hidden h-auto w-28 dark:block sm:w-40">
+            </a>
+                        <nav aria-label="Travel navigation" class="hidden items-center gap-1 text-sm font-medium lg:flex">
+                <a href="#coverage" class="inline-flex min-h-11 items-center justify-center rounded-md border border-transparent bg-transparent px-5 py-2.5 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white">Coverage</a>
+                <a href="#how-it-works" class="inline-flex min-h-11 items-center justify-center rounded-md border border-transparent bg-transparent px-5 py-2.5 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white">How it works</a>
+                <a href="#faqs" class="inline-flex min-h-11 items-center justify-center rounded-md border border-transparent bg-transparent px-5 py-2.5 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white">FAQs</a>
+            </nav>
+                        <div class="flex items-center gap-2 sm:gap-3">
+                                <nav aria-label="Insurance products" class="hidden lg:block">
+                    <div class="relative" x-data="{ open: false, focusLink(offset) { const links = [...$refs.links.querySelectorAll('a')]; const current = links.indexOf(document.activeElement); links[(current + offset + links.length) % links.length]?.focus(); } }" @click.outside="open = false" @keydown.escape.stop.prevent="open = false; $refs.trigger.focus()" @focusout="$nextTick(() => { if (!$el.contains(document.activeElement)) open = false })">
+    <button x-ref="trigger" type="button" @click="open = !open" @keydown.arrow-down.prevent="open = true; $nextTick(() => $refs.links.querySelector('a').focus())" @keydown.arrow-up.prevent="open = true; $nextTick(() => $refs.links.querySelector('li:last-child a').focus())" :aria-expanded="open" aria-controls="desktop-products" class="inline-flex min-h-11 items-center gap-2 py-2 text-sm font-semibold text-[#006838] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:focus-visible:outline-white">
+        Travel Insurance
+        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 transition-transform duration-150 motion-reduce:transition-none" x-bind:class="open ? 'rotate-180' : ''"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>    </button>
+    <div id="desktop-products" x-show="open" x-cloak x-transition:enter="transition ease-out duration-150 motion-reduce:transition-none" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100 motion-reduce:transition-none" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="travel-products-menu absolute top-full left-0 z-40 mt-3 w-72 max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#dfe7df] bg-white py-2 text-[#183d2c] shadow-xl shadow-black/15 dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2]">
+        <span aria-hidden="true" class="travel-products-menu__arrow absolute -top-2 left-7 size-4 rotate-45 border-t border-l border-[#dfe7df] bg-white dark:border-[#3d4140] dark:bg-[#262828]"></span>
+        <ul x-ref="links" @keydown.arrow-down.prevent="focusLink(1)" @keydown.arrow-up.prevent="focusLink(-1)" @keydown.home.prevent="$refs.links.querySelector('a').focus()" @keydown.end.prevent="$refs.links.querySelector('li:last-child a').focus()" class="relative">
+                                            <li><a href="https://developers.oneinsurance.shop/mockups/travel/landing-page"  aria-current="page"   @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white bg-[#f1f2f0] text-[#006838] dark:bg-[#303232] dark:text-[#d0e3c8]"><span>Travel Insurance</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Health Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>CTPL Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Marine Cargo Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Engineering Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Mandatory and Specialized Insurance Coverage</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                    </ul>
+    </div>
+</div>
+
+
+                </nav>
+                <div class="hidden sm:block"><a href="#trip-search" class="inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white">Get a quote</a></div>
+                                <button type="button" @click="toggleTheme()" :aria-label="dark ? 'Switch to light mode' : 'Switch to dark mode'" :title="dark ? 'Switch to light mode' : 'Switch to dark mode'" aria-label="Switch to dark mode" class="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white">
+                    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 dark:hidden"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008" />
+</svg>                    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 hidden dark:block"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
+</svg>                </button>
+                                <button type="button" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-controls="mobile-navigation" class="min-h-11 rounded-md border border-[#c7d4c9] px-3 text-xs font-medium dark:border-[#565c58] lg:hidden">Menu</button>
+                            </div>
+        </div>
+                <nav id="mobile-navigation" x-show="menuOpen" x-transition.duration.240ms x-cloak aria-label="Mobile travel navigation" class="border-t border-[#dfe7df] px-5 py-4 dark:border-[#3d4140] lg:hidden">
+            <div class="mx-auto flex max-w-7xl flex-wrap gap-5 text-sm"><div class="relative" x-data="{ open: false, focusLink(offset) { const links = [...$refs.links.querySelectorAll('a')]; const current = links.indexOf(document.activeElement); links[(current + offset + links.length) % links.length]?.focus(); } }" @click.outside="open = false" @keydown.escape.stop.prevent="open = false; $refs.trigger.focus()" @focusout="$nextTick(() => { if (!$el.contains(document.activeElement)) open = false })">
+    <button x-ref="trigger" type="button" @click="open = !open" @keydown.arrow-down.prevent="open = true; $nextTick(() => $refs.links.querySelector('a').focus())" @keydown.arrow-up.prevent="open = true; $nextTick(() => $refs.links.querySelector('li:last-child a').focus())" :aria-expanded="open" aria-controls="mobile-products" class="inline-flex min-h-11 items-center gap-2 py-2 text-sm font-semibold text-[#006838] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:focus-visible:outline-white">
+        Travel Insurance
+        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 transition-transform duration-150 motion-reduce:transition-none" x-bind:class="open ? 'rotate-180' : ''"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>    </button>
+    <div id="mobile-products" x-show="open" x-cloak x-transition:enter="transition ease-out duration-150 motion-reduce:transition-none" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-100 motion-reduce:transition-none" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="travel-products-menu absolute top-full left-0 z-40 mt-3 w-72 max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#dfe7df] bg-white py-2 text-[#183d2c] shadow-xl shadow-black/15 dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2]">
+        <span aria-hidden="true" class="travel-products-menu__arrow absolute -top-2 left-7 size-4 rotate-45 border-t border-l border-[#dfe7df] bg-white dark:border-[#3d4140] dark:bg-[#262828]"></span>
+        <ul x-ref="links" @keydown.arrow-down.prevent="focusLink(1)" @keydown.arrow-up.prevent="focusLink(-1)" @keydown.home.prevent="$refs.links.querySelector('a').focus()" @keydown.end.prevent="$refs.links.querySelector('li:last-child a').focus()" class="relative">
+                                            <li><a href="https://developers.oneinsurance.shop/mockups/travel/landing-page"  aria-current="page"   @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white bg-[#f1f2f0] text-[#006838] dark:bg-[#303232] dark:text-[#d0e3c8]"><span>Travel Insurance</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Health Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>CTPL Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Marine Cargo Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Engineering Insurance</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                                            <li><a href="#footer-links-status"   title="Landing page coming soon"  @click="open = false; menuOpen = false" class="flex min-h-12 items-center justify-between gap-3 px-4 py-3 text-sm font-semibold leading-6 hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:focus-visible:outline-white"><span>Mandatory and Specialized Insurance Coverage</span><span class="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">Soon</span></a></li>
+                    </ul>
+    </div>
+</div>
+
+
+<a @click="menuOpen = false" href="#coverage">Coverage</a><a @click="menuOpen = false" href="#how-it-works">How it works</a><a @click="menuOpen = false" href="#faqs">FAQs</a><button type="button" @click="menuOpen = false; $refs.retrieve.showModal()">Retrieve proposal</button></div>
+        </nav>
+            </header>
+
+
+    <main id="main">
+        <section aria-labelledby="hero-title" class="travel-one-hero dark:bg-[#171919]">
+            <div class="travel-one-hero__inner">
+                <div class="travel-one-hero__copy">
+                    <h1 id="hero-title" class="text-[clamp(2.75rem,5vw,4.5rem)] leading-[1.08] font-semibold tracking-[-0.055em]">Enjoy every<br>part of your<br><span class="text-[#006838] dark:text-[#f4f5f2]">journey.</span></h1>
+                    <p class="mx-auto mt-7 max-w-md text-lg leading-8 text-[#333] dark:text-[#c4c7c5]">A weekend away. A long-awaited adventure. Find travel cover for life’s next chapter, with clear choices and a simpler way to get started.</p>
+                    <div class="mt-7 flex flex-wrap justify-center gap-4"><a href="#trip-search" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#006838] px-5 py-3 text-base font-semibold text-white hover:bg-[#00552e] active:bg-[#004525] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Get a quote</a><a href="#how-it-works" class="inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white">How it works</a></div>
+                </div>
+            </div>
+            <figure class="travel-one-hero__art">
+                <div aria-hidden="true" class="travel-one-hero__blob travel-one-hero__blob--green"></div>
+                <div aria-hidden="true" class="travel-one-hero__blob travel-one-hero__blob--cream"></div>
+                <img src="https://developers.oneinsurance.shop/storage/img/travel-insurance-img-1.png" alt="Five friends enjoying a road trip together in an open-top vehicle" width="1495" height="1052" fetchpriority="high" class="travel-one-hero__image">
+            </figure>
+            <div aria-hidden="true" class="travel-one-hero__blob travel-one-hero__blob--small"></div>
+        </section>
+
+        <section id="coverage" aria-labelledby="coverage-title" class="travel-one-coverage scroll-mt-24 bg-white dark:bg-[#1c1e1e]">
+            <div class="mx-auto max-w-7xl px-5 pt-10 pb-14 sm:px-8 lg:pt-12 lg:pb-20">
+                <div class="mx-auto max-w-2xl text-center">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-[#006838] dark:text-[#c4c7c5]">Travel protection</p>
+                    <h2 id="coverage-title" class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Cover for the journey ahead.</h2>
+                    <p class="mt-4 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">From unexpected delays to medical concerns, explore the benefits that help you prepare for the moments you cannot plan.</p>
+                </div>
+                <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                                            <article class="travel-one-benefit rounded-lg border border-transparent bg-[#fcfdfb] px-6 py-7 shadow-lg shadow-[#183d2c]/5 dark:bg-[#262828] dark:shadow-none">
+                            <span class="travel-one-benefit__icon inline-flex size-12 items-center justify-center rounded-xl bg-[#f1f2f0] dark:bg-[#303232]"><img src="https://developers.oneinsurance.shop/images/mockups/travel-insurance/shared/icons/first-aid-kit.svg" alt="" width="28" height="28" class="size-7 dark:invert"></span>
+                            <h3 class="mt-6 text-lg font-semibold text-[#006838] dark:text-[#f4f5f2]">Medical emergencies</h3>
+                            <p class="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Explore plans with emergency medical benefits while you are away from home.</p>
+                        </article>
+                                            <article class="travel-one-benefit rounded-lg border border-transparent bg-[#fcfdfb] px-6 py-7 shadow-lg shadow-[#183d2c]/5 dark:bg-[#262828] dark:shadow-none">
+                            <span class="travel-one-benefit__icon inline-flex size-12 items-center justify-center rounded-xl bg-[#f1f2f0] dark:bg-[#303232]"><img src="https://developers.oneinsurance.shop/images/mockups/travel-insurance/shared/icons/plane.svg" alt="" width="28" height="28" class="size-7 dark:invert"></span>
+                            <h3 class="mt-6 text-lg font-semibold text-[#006838] dark:text-[#f4f5f2]">Trip disruptions</h3>
+                            <p class="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Compare protection for covered cancellations, interruptions, and travel delays.</p>
+                        </article>
+                                            <article class="travel-one-benefit rounded-lg border border-transparent bg-[#fcfdfb] px-6 py-7 shadow-lg shadow-[#183d2c]/5 dark:bg-[#262828] dark:shadow-none">
+                            <span class="travel-one-benefit__icon inline-flex size-12 items-center justify-center rounded-xl bg-[#f1f2f0] dark:bg-[#303232]"><img src="https://developers.oneinsurance.shop/images/mockups/travel-insurance/shared/icons/luggage.svg" alt="" width="28" height="28" class="size-7 dark:invert"></span>
+                            <h3 class="mt-6 text-lg font-semibold text-[#006838] dark:text-[#f4f5f2]">Baggage concerns</h3>
+                            <p class="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Look for benefits that help with eligible lost or delayed baggage.</p>
+                        </article>
+                                            <article class="travel-one-benefit rounded-lg border border-transparent bg-[#fcfdfb] px-6 py-7 shadow-lg shadow-[#183d2c]/5 dark:bg-[#262828] dark:shadow-none">
+                            <span class="travel-one-benefit__icon inline-flex size-12 items-center justify-center rounded-xl bg-[#f1f2f0] dark:bg-[#303232]"><img src="https://developers.oneinsurance.shop/images/mockups/travel-insurance/shared/icons/shield-check.svg" alt="" width="28" height="28" class="size-7 dark:invert"></span>
+                            <h3 class="mt-6 text-lg font-semibold text-[#006838] dark:text-[#f4f5f2]">Personal accident</h3>
+                            <p class="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Review the accident benefits and limits available with your selected plan.</p>
+                        </article>
+                                    </div>
+                <p class="mx-auto mt-7 max-w-3xl text-center text-xs leading-6 text-[#333] dark:text-[#c4c7c5]">Benefits depend on the selected plan and provider. Review the policy’s limits, conditions, and exclusions before purchasing.</p>
+            </div>
+        </section>
+
+        <div class="bg-white dark:bg-[#1c1e1e]">
+            <section id="trip-search" aria-labelledby="search-title" class="scroll-mt-24 bg-[#006838] px-5 py-14 sm:px-8 lg:py-20">
+    <div class="mx-auto grid max-w-7xl rounded-xl border border-[#dfe7df] bg-white dark:border-[#3d4140] dark:bg-[#262828] lg:grid-cols-[31%_69%]">
+                <aside class="relative isolate flex flex-col overflow-hidden rounded-t-xl bg-[#d0e3c8] p-6 text-[#183d2c] dark:bg-[#304538] dark:text-[#f4f5f2] sm:p-8 lg:rounded-l-xl lg:rounded-tr-none">
+            <img src="https://developers.oneinsurance.shop/storage/img/logo-oi-shield-dark.svg" alt="" aria-hidden="true" width="382" height="399" class="pointer-events-none absolute -bottom-16 -left-24 -z-10 w-[280px] max-w-none opacity-10 brightness-0 dark:brightness-100">
+            <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 mb-5"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-14.489 3.883l-4.45 -5.02l2.897 -.776l2.45 1.414l2.897 -.776l-3.743 -6.244l2.898 -.777l5.675 5.727" />
+  <path d="M3 21h18" />
+</svg>            <h2 id="search-title" class="text-3xl font-bold leading-tight tracking-tight">Find travel plans for your trip</h2>
+            <p class="mt-5 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Tell us where you’re going. Start your travel insurance journey with your trip details.</p>
+            <ul class="my-8 flex flex-wrap gap-5 text-sm font-medium lg:flex-col lg:gap-6">
+                <li class="flex items-center gap-3"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+  <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0" />
+</svg>Your destination</li>
+                <li class="flex items-center gap-3"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12" />
+  <path d="M16 3v4" />
+  <path d="M8 3v4" />
+  <path d="M4 11h16" />
+  <path d="M11 15h1" />
+  <path d="M12 15v3" />
+</svg>Your travel dates</li>
+                <li class="flex items-center gap-3"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+</svg>Who’s travelling</li>
+            </ul>
+            <div class="mt-auto pt-6"><p class="text-sm text-[#333] dark:text-[#c4c7c5]">Already started?</p><button type="button" @click="$refs.retrieve.showModal()" class="mt-1 min-h-11 text-left text-sm font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Retrieve a proposal or policy →</button></div>
+        </aside>
+                <div class="min-w-0 rounded-b-xl bg-white p-5 dark:bg-[#262828] sm:p-8 lg:rounded-r-xl lg:rounded-bl-none">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div><h3  class="text-2xl font-semibold tracking-tight">Your trip details</h3><p class="mt-2 text-base text-[#333] dark:text-[#c4c7c5]">A few details to get started.</p></div>
+                <div role="group" aria-label="Trip type" class="inline-flex max-w-full rounded-lg bg-[#f1f2f0] p-1 dark:bg-[#171919]">
+                    <button type="button" @click="tripType = 'single'" :aria-pressed="tripType === 'single'" :class="tripType === 'single' ? 'bg-[#006838] text-white' : 'text-[#333] dark:text-[#c4c7c5]'" class="min-h-11 rounded-md px-3 text-sm font-semibold">Single trip</button>
+                    <button type="button" @click="tripType = 'annual'" :aria-pressed="tripType === 'annual'" :class="tripType === 'annual' ? 'bg-[#006838] text-white' : 'text-[#333] dark:text-[#c4c7c5]'" class="min-h-11 rounded-md px-3 text-sm font-semibold">Annual multi-trip</button>
+                </div>
+            </div>
+            <form @submit.prevent="previewTrip()" class="mt-6" aria-label="Travel insurance trip details">
+                <fieldset>
+                    <legend class="text-sm font-medium">Coverage type</legend>
+                    <div class="mt-2 grid grid-cols-2 gap-3">
+                                                    <label class="relative flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-[#006838] dark:has-focus-visible:outline-white" :class="coverageType === 'individual' ? 'border-[#006838] bg-[#d0e3c8] text-[#006838]' : 'border-[#c7d4c9] bg-white text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]'">
+                                <input type="radio" name="coverage_type" value="individual" x-model="coverageType" required class="sr-only">
+                                <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>                                <span class="text-sm font-medium">Individual</span>
+                            </label>
+                                                    <label class="relative flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-[#006838] dark:has-focus-visible:outline-white" :class="coverageType === 'family' ? 'border-[#006838] bg-[#d0e3c8] text-[#006838]' : 'border-[#c7d4c9] bg-white text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]'">
+                                <input type="radio" name="coverage_type" value="family" x-model="coverageType" required class="sr-only">
+                                <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+</svg>                                <span class="text-sm font-medium">Family</span>
+                            </label>
+                                            </div>
+                </fieldset>
+                <div class="mt-5 grid items-start gap-x-5 gap-y-5 sm:grid-cols-2">
+                    <div><label for="trip-from" class="flex min-h-11 items-center text-sm font-medium">Travelling from</label><div class="relative"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 pointer-events-none absolute top-3 left-3 text-[#333] dark:text-[#c4c7c5]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-14.489 3.883l-4.45 -5.02l2.897 -.776l2.45 1.414l2.897 -.776l-3.743 -6.244l2.898 -.777l5.675 5.727" />
+  <path d="M3 21h18" />
+</svg><select id="trip-from" name="origin" class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838] pl-11"><option>Philippines</option></select></div></div>
+                    <fieldset class="min-w-0"><legend class="sr-only">Destination</legend><div class="flex min-h-11 flex-wrap items-center gap-x-3 text-sm"><span class="font-medium">Destination</span><label class="flex min-h-11 items-center gap-1.5"><input type="radio" name="destination_type" value="international" x-model="destinationType" class="size-4 accent-[#006838]">International</label><label class="flex min-h-11 items-center gap-1.5"><input type="radio" name="destination_type" value="domestic" x-model="destinationType" class="size-4 accent-[#006838]">Domestic</label></div><label for="trip-country" class="sr-only">Destination country</label><select id="trip-country" name="country" x-model="country" :required="destinationType === 'international'" :disabled="destinationType === 'domestic'" class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838] disabled:opacity-60"><option value="" x-text="destinationType === 'domestic' ? 'Philippines' : 'Select country'">Select country</option><option>Japan</option><option>Singapore</option><option>Thailand</option><option>South Korea</option><option>United States</option><option>United Kingdom</option><option>France</option><option>Australia</option></select></fieldset>
+                    <div><label for="trip-departure" class="text-sm font-medium" x-text="tripType === 'annual' ? 'First trip departure' : 'Departure date'">Departure date</label><input id="trip-departure" name="departure" type="date" x-model="departure" :min="today" required class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838]"></div>
+                    <div><label for="trip-return" class="text-sm font-medium" x-text="tripType === 'annual' ? 'First trip return' : 'Return date'">Return date</label><input id="trip-return" name="return" type="date" x-model="returnDate" :min="departure || today" required class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838]"><p x-show="tripType === 'annual'" x-transition.duration.240ms x-cloak class="mt-2 text-xs text-[#333] dark:text-[#c4c7c5]">Annual coverage terms depend on the selected provider.</p></div>
+                    <div><label for="trip-birth" class="text-sm font-medium">Lead traveller’s date of birth</label><input id="trip-birth" name="date_of_birth" type="date" x-model="birthDate" :max="today" required class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838]"></div>
+                    <div class="relative" @click.outside="if (travellersOpen) closeTravellers()" @keydown.escape.stop.prevent="if (travellersOpen) closeTravellers()" @focusout="$nextTick(() => { if (travellersOpen && document.activeElement !== document.body && !$el.contains(document.activeElement)) closeTravellers(false) })">
+                        <span id="travellers-label" class="text-sm font-medium">Travellers</span>
+                        <button id="travellers-toggle" x-ref="travellersToggle" type="button" @click="toggleTravellers()" :aria-expanded="travellersOpen" aria-controls="travellers-popover" aria-haspopup="dialog" aria-labelledby="travellers-label travellers-summary" class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838] flex items-center gap-3 text-left"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+</svg><span id="travellers-summary" class="grow" x-text="travellerSummary">1 adult · 0 children</span><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg></button>
+                        <input type="hidden" name="adults" :value="adults"><input type="hidden" name="children" :value="children">
+                        <div id="travellers-popover" x-show="travellersOpen" x-transition.duration.240ms x-cloak role="dialog" aria-labelledby="travellers-popover-title" class="absolute right-0 left-0 z-20 mt-2 rounded-lg border border-[#c7d4c9] bg-white p-4 shadow-xl dark:border-[#565c58] dark:bg-[#262828]">
+                            <h4 id="travellers-popover-title" class="font-semibold">Who’s travelling?</h4>
+                                                            <div class="mt-3 flex items-center justify-between gap-2"><span id="adults-label" class="text-sm">Adults</span><div role="group" aria-labelledby="adults-label" class="flex items-center gap-2">
+                                    <button type="button" @click="adults--; if (adults === 1) $nextTick(() => $refs.travellersDone.focus())" :disabled="adults <= 1" aria-label="Remove adults" class="inline-flex size-11 items-center justify-center rounded-md border border-[#c7d4c9] focus-visible:outline-2 disabled:opacity-40 dark:border-[#565c58]">−</button>
+                                    <output class="min-w-5 text-center" aria-live="polite" x-text="adults"></output>
+                                    <button  x-ref="adultsIncrease"  type="button" @click="adults++; if (travellerCount === 9) $nextTick(() => $refs.travellersDone.focus())" :disabled="travellerCount >= 9" aria-label="Add adults" class="inline-flex size-11 items-center justify-center rounded-md border border-[#c7d4c9] focus-visible:outline-2 disabled:opacity-40 dark:border-[#565c58]">+</button>
+                                </div></div>
+                                                            <div class="mt-3 flex items-center justify-between gap-2"><span id="children-label" class="text-sm">Children</span><div role="group" aria-labelledby="children-label" class="flex items-center gap-2">
+                                    <button type="button" @click="children--; if (children === 0) $nextTick(() => $refs.travellersDone.focus())" :disabled="children <= 0" aria-label="Remove children" class="inline-flex size-11 items-center justify-center rounded-md border border-[#c7d4c9] focus-visible:outline-2 disabled:opacity-40 dark:border-[#565c58]">−</button>
+                                    <output class="min-w-5 text-center" aria-live="polite" x-text="children"></output>
+                                    <button  type="button" @click="children++; if (travellerCount === 9) $nextTick(() => $refs.travellersDone.focus())" :disabled="travellerCount >= 9" aria-label="Add children" class="inline-flex size-11 items-center justify-center rounded-md border border-[#c7d4c9] focus-visible:outline-2 disabled:opacity-40 dark:border-[#565c58]">+</button>
+                                </div></div>
+                                                        <p class="mt-3 text-xs text-[#333] dark:text-[#c4c7c5]">Up to 9 travellers.</p><button x-ref="travellersDone" type="button" @click="closeTravellers()" class="mt-3 w-full inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white">Done</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 border-t border-[#dfe7df] pt-5 dark:border-[#3d4140]">
+                    <label class="flex items-start gap-3 text-sm leading-6"><input type="checkbox" x-model="reviewed" required class="mt-1 size-4 shrink-0 accent-[#006838]"><span>I confirm the trip details are correct.</span></label>
+                    <p id="trip-conditions" class="mt-2 scroll-mt-28 text-xs leading-5 text-[#333] dark:text-[#c4c7c5]">For air travel only. Benefits and eligibility vary by plan and provider.</p>
+                    <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex w-full items-center justify-end gap-3 sm:w-auto">
+                                                        <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#006838] px-5 py-3 text-base font-semibold text-white hover:bg-[#00552e] active:bg-[#004525] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white w-full sm:w-auto">Find plans <span aria-hidden="true">→</span></button>
+                        </div>
+                    </div>
+                </div>
+                <p x-ref="formError" x-show="formError" x-transition.duration.240ms x-text="formError" x-cloak role="alert" tabindex="-1" class="mt-5 rounded-md border border-red-200 bg-red-50 p-4 text-base text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"></p>
+            </form>
+        </div>
+    </div>
+</section>
+
+
+        </div>
+
+        <section id="how-it-works" aria-labelledby="steps-title" class="w-full scroll-mt-24 px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
+            <div class="grid items-start gap-y-10 lg:grid-cols-2 lg:gap-0">
+                <div class="family-phone-stage min-w-0 lg:p-[6.25rem]">
+                    <div class="family-phone">
+                    <section aria-labelledby="why-title" tabindex="0" aria-label="Travel information inside the phone; scroll to read more" class="family-phone__screen bg-white dark:bg-[#262828]">
+                        <img src="https://developers.oneinsurance.shop/images/mockups/travel-insurance/one/family-seaside.png" alt="A Filipino family enjoying a quiet walk together along the beach" width="1672" height="941" loading="lazy" class="aspect-[4/3] w-full object-cover object-[65%_center]">
+                    <div class="p-6 sm:p-8"><h2 id="why-title" class="text-3xl font-semibold tracking-tight sm:text-4xl">More time for what matters.</h2><p class="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Choose your cover. Enjoy the people and places ahead.</p><dl class="mt-5 space-y-4"><div><dt class="font-semibold">Clear choices</dt><dd class="mt-1 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Compare cover, limits, and terms.</dd></div><div><dt class="font-semibold">One simple journey</dt><dd class="mt-1 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">From trip details to policy, in one place.</dd></div><div><dt class="font-semibold">Details close by</dt><dd class="mt-1 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Keep your policy and assistance contacts handy.</dd></div></dl></div>
+                    </section>
+                    </div>
+                </div>
+                <div class="min-w-0 rounded-2xl p-4 sm:p-6 lg:p-[6.25rem]">
+                    <h2 id="steps-title" class="text-3xl font-semibold tracking-tight sm:text-4xl">From trip details to take-off.</h2>
+                    <p class="mt-5 max-w-2xl text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Five steps from trip details to travel cover.</p>
+                    <ol data-travel-journey class="travel-journey mt-10">
+                                                    <li data-journey-step class="travel-journey__step">
+                                <span data-journey-marker class="travel-journey__marker" aria-hidden="true"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+  <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0" />
+</svg></span>
+                                <div class="travel-journey__panel"><h3 class="travel-journey__title text-lg font-semibold sm:text-xl"><span class="sr-only">Step 1: </span>Trip details</h3><p class="mt-2 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Enter your destination, travel dates and who is travelling.</p></div>
+                            </li>
+                                                    <li data-journey-step class="travel-journey__step">
+                                <span data-journey-marker class="travel-journey__marker" aria-hidden="true"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M11 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+  <path d="M18.5 18.5l2.5 2.5" />
+  <path d="M4 6h16" />
+  <path d="M4 12h4" />
+  <path d="M4 18h4" />
+</svg></span>
+                                <div class="travel-journey__panel"><h3 class="travel-journey__title text-lg font-semibold sm:text-xl"><span class="sr-only">Step 2: </span>Choose a plan</h3><p class="mt-2 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Compare available plans, coverage, benefits and prices, then select your plan.</p></div>
+                            </li>
+                                                    <li data-journey-step class="travel-journey__step">
+                                <span data-journey-marker class="travel-journey__marker" aria-hidden="true"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v10a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -10" />
+  <path d="M7 10a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+  <path d="M15 8l2 0" />
+  <path d="M15 12l2 0" />
+  <path d="M7 16l10 0" />
+</svg></span>
+                                <div class="travel-journey__panel"><h3 class="travel-journey__title text-lg font-semibold sm:text-xl"><span class="sr-only">Step 3: </span>Generate quote</h3><p class="mt-2 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Review your selected plan, choose optional add-ons and complete each traveller’s personal, identity and beneficiary details to generate your quote.</p></div>
+                            </li>
+                                                    <li data-journey-step class="travel-journey__step">
+                                <span data-journey-marker class="travel-journey__marker" aria-hidden="true"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+  <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+  <path d="M9 15l2 2l4 -4" />
+</svg></span>
+                                <div class="travel-journey__panel"><h3 class="travel-journey__title text-lg font-semibold sm:text-xl"><span class="sr-only">Step 4: </span>Review quote</h3><p class="mt-2 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Check the generated quote or proposal, including traveller details, selected add-ons and the total premium, before proceeding to payment.</p></div>
+                            </li>
+                                                    <li data-journey-step class="travel-journey__step">
+                                <span data-journey-marker class="travel-journey__marker" aria-hidden="true"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -8" />
+  <path d="M3 10l18 0" />
+  <path d="M7 15l.01 0" />
+  <path d="M11 15l2 0" />
+</svg></span>
+                                <div class="travel-journey__panel"><h3 class="travel-journey__title text-lg font-semibold sm:text-xl"><span class="sr-only">Step 5: </span>Payment</h3><p class="mt-2 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Complete payment, then receive your policy or Certificate of Cover (COC) and payment receipt.</p></div>
+                            </li>
+                                            </ol>
+                </div>
+            </div>
+        </section>
+
+        <section id="faqs" aria-labelledby="faq-title" class="mx-auto max-w-7xl scroll-mt-24 px-5 py-14 sm:px-8 lg:py-20">
+            <div class="rounded-2xl border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#262828] sm:p-8 lg:p-12">
+                <span class="inline-flex rounded-full bg-[#f1f2f0] px-3 py-1 text-xs font-semibold text-[#006838] dark:bg-[#303232] dark:text-[#d0e3c8]">FAQs</span>
+                <h2 id="faq-title" class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Frequently asked questions</h2>
+                <p class="mt-4 max-w-2xl text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Find answers to common travel-cover questions. Your selected policy remains the source for the exact terms.</p>
+                <div class="mt-9 grid items-start gap-x-8 lg:grid-cols-2 lg:gap-x-12">
+                                            <div>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">What does travel insurance cover?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Depending on the plan, benefits may include emergency medical expenses, travel disruption, baggage, and personal accident. Review the selected insurer’s benefits, limits, exclusions, and policy wording before purchasing.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">Can I choose a single-trip or annual plan?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">The search provides both options. A single-trip plan is intended for one journey; annual-plan eligibility and per-trip limits depend on the provider. Confirm the applicable terms when comparing plans.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">Is this cover available for domestic travel?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Choose Domestic for travel within the Philippines, or International to select a country abroad. Available plans and benefits depend on the destination and provider. Cover is for air travel only.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">Is COVID-19 covered?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Check the selected plan’s wording for any COVID-19 benefits, conditions, and exclusions. Do not assume that every available plan includes the same protection.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">Are pre-existing medical conditions covered?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Providers may apply exclusions or specific conditions. Review the selected policy wording and confirm eligibility with the insurer before purchase.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">What about pregnancy and adventure activities?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Pregnancy-related expenses and activities such as adventure sports can have specific exclusions or limits. Check the insurer’s terms for your intended activities and circumstances.</p></div>
+                                </details>
+                                                    </div>
+                                            <div>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">What is the difference between cancellation and interruption?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Cancellation relates to a trip that does not start; interruption relates to a trip that has already begun. Covered reasons, evidence requirements, and benefit limits are set by the selected policy.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">What happens if my baggage is lost or delayed?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">A plan may provide benefits for eligible baggage events. Keep the travel provider’s reports and supporting documents, then follow the insurer’s claim requirements.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">What medical and evacuation benefits are available?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Medical treatment and emergency evacuation benefits vary by plan. Review the limits and assistance arrangements, including any requirement to contact the insurer before making arrangements.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">Can I include my family?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Use the traveller control to describe your group. Eligibility, age limits, and family-plan availability depend on the provider. You can include up to nine travellers in a quote.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">How do I make a claim or get emergency assistance?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Use the assistance and claims contacts on the issued policy or certificate. The insurer’s required documents and notification time limits apply.</p></div>
+                                </details>
+                                                            <details data-travel-faq class="travel-faq border-b border-[#dfe7df] dark:border-[#3d4140]">
+                                    <summary class="travel-faq__question flex min-h-16 cursor-pointer list-none items-start gap-3 px-3 py-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838] dark:focus-visible:outline-white">
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__help mt-0.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+  <path d="M12 16v.01" />
+  <path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+</svg>                                        <span class="grow leading-6">Can I retrieve an existing proposal?</span>
+                                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 travel-faq__chevron mt-0.5 shrink-0 text-[#808080] dark:text-[#b2b7b4]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M6 9l6 6l6 -6" />
+</svg>                                    </summary>
+                                    <div data-faq-answer class="px-3 pb-5 pl-11"><p class="text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">Use Retrieve proposal with your proposal reference and email address, or contact our team for help.</p></div>
+                                </details>
+                                                    </div>
+                                    </div>
+                <a href="#trip-search" class="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#006838] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-[#f4f5f2]">Back to trip details <span aria-hidden="true">↑</span></a>
+            </div>
+        </section>
+    </main>
+    <footer class="bg-white p-3 dark:bg-[#171919] sm:p-5" x-data="{ footerNotice: 'Contact our team for product information and agent enquiries.' }">
+        <div class="px-6 pt-10 pb-6 text-[#183d2c] dark:text-[#f4f5f2] sm:px-10 lg:px-12 lg:pt-12">
+            <div class="grid gap-10 md:grid-cols-2 xl:grid-cols-[1.1fr_1fr_1.1fr] xl:gap-16">
+                <div>
+                    <a href="#main" aria-label="One Insurance home" class="inline-block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006838] dark:focus-visible:outline-white"><img src="https://developers.oneinsurance.shop/storage/img/logo-oi-light.png" alt="One Insurance" width="6720" height="1689" loading="lazy" class="h-auto w-44 dark:hidden"><img src="https://developers.oneinsurance.shop/storage/img/logo-oi-dark.png" alt="One Insurance" width="6720" height="1689" loading="lazy" class="hidden h-auto w-44 dark:block"></a>
+                    <p class="mt-5 max-w-xs text-xl font-semibold leading-8">Clear choices.<br>Cover for what matters.</p>
+                    <p class="mt-3 text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">A brand of <span class="font-medium text-[#183d2c] dark:text-[#f4f5f2]">IFRC Insurance</span>.</p>
+                    <a href="#footer-links-status" @click="footerNotice = 'Agent registration is coming soon. Contact sales@ifrcinsurance.com to learn about reselling insurance plans.'" class="mt-6 inline-flex min-h-11 items-center gap-3 rounded-md border border-[#006838] dark:border-[#707873] px-4 py-2 text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2] hover:bg-[#f1f2f0] dark:hover:bg-[#303232] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Become an agent <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M17 7l-10 10" />
+  <path d="M8 7l9 0l0 9" />
+</svg></a>
+                    <p class="mt-2 text-xs text-[#808080] dark:text-[#b2b7b4]">Interested in selling insurance?</p>
+                </div>
+                <nav aria-label="Insurance products">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-[#006838] dark:text-[#d0e3c8]">Explore insurance</h2>
+                    <ul class="mt-4 space-y-1 text-sm text-[#333] dark:text-[#c4c7c5]">
+                                                <li><a href="https://developers.oneinsurance.shop/mockups/travel/landing-page" class="inline-flex min-h-11 items-center rounded-sm py-2 hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Travel Insurance</a></li>
+                                                                            <li><a href="#footer-links-status" @click="footerNotice = 'Health Insurance information is available from our team.'" class="inline-flex min-h-11 items-center rounded-sm py-2 hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Health Insurance</a></li>
+                                                    <li><a href="#footer-links-status" @click="footerNotice = 'CTPL information is available from our team.'" class="inline-flex min-h-11 items-center rounded-sm py-2 hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">CTPL</a></li>
+                                                    <li><a href="#footer-links-status" @click="footerNotice = 'Marine Cargo Insurance information is available from our team.'" class="inline-flex min-h-11 items-center rounded-sm py-2 hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Marine Cargo Insurance</a></li>
+                                                    <li><a href="#footer-links-status" @click="footerNotice = 'Engineering Insurance (Engineering Lines) information is available from our team.'" class="inline-flex min-h-11 items-center rounded-sm py-2 hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Engineering Insurance (Engineering Lines)</a></li>
+                                                    <li><a href="#footer-links-status" @click="footerNotice = 'Mandatory and Specialized Insurance Coverage information is available from our team.'" class="inline-flex min-h-11 items-center rounded-sm py-2 hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Mandatory and Specialized Insurance Coverage</a></li>
+                                            </ul>
+                </nav>
+                <div>
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-[#006838] dark:text-[#d0e3c8]">Get in touch</h2>
+                    <address class="mt-5 space-y-5 text-sm not-italic leading-7 text-[#333] dark:text-[#c4c7c5]">
+                        <div class="flex items-start gap-3"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 mt-1 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+  <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0" />
+</svg><p><span class="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">IFRC Insurance</span><br>6/F Padilla Bldg, 1605 F. Ortigas Jr. Rd,<br>Ortigas Center, Pasig, Metro Manila</p></div>
+                        <a href="tel:+63286335681" class="flex min-h-11 items-center gap-3 rounded-sm hover:text-[#006838] dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
+</svg>(02) 8633 5681</a>
+                        <a href="mailto:sales@ifrcinsurance.com" class="flex min-h-11 items-center gap-3 rounded-sm break-all hover:text-[#006838] dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6 shrink-0 text-[#006838] dark:text-[#d0e3c8]"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" />
+  <path d="M3 7l9 6l9 -6" />
+</svg>sales@ifrcinsurance.com</a>
+                    </address>
+                    <a href="#footer-links-status" @click="footerNotice = 'Contact our team for information about our providers.'" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-sm text-sm text-[#333] dark:text-[#c4c7c5] hover:text-[#006838] dark:hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Our providers <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  class="size-6"
+>
+  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+  <path d="M17 7l-10 10" />
+  <path d="M8 7l9 0l0 9" />
+</svg></a>
+                </div>
+            </div>
+            <p id="footer-links-status" x-text="footerNotice" role="status" class="mt-8 scroll-mt-28 text-xs leading-6 text-[#808080] dark:text-[#b2b7b4]">Contact our team for product information and agent enquiries.</p>
+            <div class="mt-5 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-[#dfe7df] dark:border-[#3d4140] pt-5 text-xs leading-6 text-[#808080] dark:text-[#b2b7b4]">
+                <p>© 2026 One Insurance · A brand of IFRC Insurance.</p>
+                <div class="flex flex-wrap gap-5"><a href="https://developers.oneinsurance.shop/ui" class="rounded-sm underline underline-offset-4 hover:text-[#006838] dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">UI reference</a><a href="#main" class="rounded-sm hover:text-[#006838] dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Back to top ↑</a></div>
+            </div>
+        </div>
+    </footer>
+
+
+    <dialog x-ref="tripSummary" aria-labelledby="summary-title" class="m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-xl border border-[#dfe7df] bg-white p-6 text-[#183d2c] backdrop:bg-black/50 dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2] sm:p-8">
+        <div class="flex items-start justify-between gap-5"><div><h2 id="summary-title" class="mt-2 text-2xl font-semibold tracking-tight">Your trip at a glance.</h2></div><button type="button" @click="$refs.tripSummary.close()" aria-label="Close trip summary" class="min-h-11 rounded-md px-3 text-xl">×</button></div>
+        <dl class="mt-6 grid grid-cols-2 gap-6 text-base"><div><dt class="text-sm text-[#333] dark:text-[#c4c7c5]">Coverage type</dt><dd class="mt-2 font-medium" x-text="coverageType === 'family' ? 'Family' : 'Individual'"></dd></div><div><dt class="text-sm text-[#333] dark:text-[#c4c7c5]">Trip type</dt><dd class="mt-2 font-medium" x-text="tripType === 'single' ? 'Single trip' : 'Annual multi-trip'"></dd></div><div><dt class="text-sm text-[#333] dark:text-[#c4c7c5]">Destination</dt><dd class="mt-2 font-medium" x-text="destinationLabel"></dd></div><div><dt class="text-sm text-[#333] dark:text-[#c4c7c5]">Departure</dt><dd class="mt-2 font-medium" x-text="formatDate(departure)"></dd></div><div><dt class="text-sm text-[#333] dark:text-[#c4c7c5]">Return</dt><dd class="mt-2 font-medium" x-text="formatDate(returnDate)"></dd></div><div><dt class="text-sm text-[#333] dark:text-[#c4c7c5]">Travellers</dt><dd class="mt-2 font-medium" x-text="travellerCount"></dd></div></dl>
+        <p class="mt-7 rounded-md bg-[#f1f2f0] p-4 text-base leading-7 dark:bg-[#303232]">Review your trip details before choosing a plan.</p><button type="button" @click="$refs.tripSummary.close()" class="mt-6 w-full inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#006838] px-5 py-3 text-base font-semibold text-white hover:bg-[#00552e] active:bg-[#004525] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Back to my trip</button>
+    </dialog>
+    <dialog x-ref="retrieve" aria-labelledby="retrieve-title" class="m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-xl border border-[#dfe7df] bg-white p-6 text-[#183d2c] backdrop:bg-black/50 dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2] sm:p-8">
+        <div class="flex items-start justify-between gap-5"><div><p class="text-xs font-semibold text-[#333] dark:text-[#c4c7c5]">Pick up where you left off</p><h2 id="retrieve-title" class="mt-2 text-2xl font-semibold tracking-tight">Retrieve your proposal.</h2></div><button type="button" @click="$refs.retrieve.close()" aria-label="Close proposal retrieval" class="min-h-11 rounded-md px-3 text-xl">×</button></div>
+        <p class="mt-4 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">Enter your proposal reference and the email address used for your quote.</p>
+        <form @submit.prevent="retrievalNotice = 'We’re unable to retrieve your proposal right now. Please contact our team for assistance.'" class="mt-6 space-y-5"><div><label for="proposal-reference" class="text-sm font-medium">Proposal or policy reference</label><input id="proposal-reference" name="reference" required placeholder="e.g. OI-DEMO-0001" class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838]"></div><div><label for="proposal-email" class="text-sm font-medium">Email address</label><input id="proposal-email" name="email" type="email" required autocomplete="off" placeholder="you@example.com" class="ui-form-field mt-2 block min-h-11 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-sm text-[#183d2c] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2] dark:placeholder:text-[#b2b7b4] dark:focus:border-[#006838] dark:focus:outline-[#006838]"></div><button type="submit" class="w-full inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-[#006838] px-5 py-3 text-base font-semibold text-white hover:bg-[#00552e] active:bg-[#004525] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:focus-visible:outline-white">Retrieve proposal</button><p x-show="retrievalNotice" x-transition.duration.240ms x-text="retrievalNotice" x-cloak role="status" class="rounded-md bg-[#f1f2f0] p-4 text-base leading-7 dark:bg-[#303232]"></p></form>
+    </dialog>
+
+</body>
+</html>
+
+
+
+
+

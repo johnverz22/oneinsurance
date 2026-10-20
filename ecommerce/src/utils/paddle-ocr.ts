@@ -260,7 +260,6 @@ async function preprocessImage(file: File): Promise<ImageData> {
 
 // ── PaddleOCR singleton ───────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _instancePromise: Promise<any> | null = null
 
 async function getOcrInstance() {

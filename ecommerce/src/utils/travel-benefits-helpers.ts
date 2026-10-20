@@ -198,13 +198,24 @@ export type LimitDisplay =
  * "use Silimit".
  */
 export function resolveLimitDisplay(benefit: InsuranceBenefit): LimitDisplay {
+  const normalizeAmount = (value?: string | null) => {
+    if (!value) return null
+    const normalized = value.replace(/,/g, '').trim()
+    const amount = Number(normalized)
+    return Number.isFinite(amount) ? String(amount) : null
+  }
+
   const limit = benefit.Limit
   if (limit) {
     switch (limit.Kind) {
-      case 'amount':
-        return limit.Amount
-          ? { kind: 'amount', value: limit.Amount, qualifier: limit.Qualifier ?? undefined }
-          : { kind: 'none' }
+      case 'amount': {
+        const amount = normalizeAmount(limit.Amount)
+        return amount
+          ? { kind: 'amount', value: amount, qualifier: limit.Qualifier ?? undefined }
+          : limit.Amount
+            ? { kind: 'badge', label: limit.Amount, qualifier: limit.Qualifier ?? undefined }
+            : { kind: 'none' }
+      }
       case 'label':
         return limit.Label
           ? { kind: 'badge', label: limit.Label, qualifier: limit.Qualifier ?? undefined }
@@ -217,7 +228,10 @@ export function resolveLimitDisplay(benefit: InsuranceBenefit): LimitDisplay {
   }
 
   if (benefit.Silimit && benefit.Silimit !== '0') {
-    return { kind: 'amount', value: benefit.Silimit }
+    const amount = normalizeAmount(benefit.Silimit)
+    return amount
+      ? { kind: 'amount', value: amount }
+      : { kind: 'badge', label: benefit.Silimit }
   }
   if (benefit.DefaultLimitDesc && benefit.DefaultLimitDesc !== '0') {
     return { kind: 'badge', label: benefit.DefaultLimitDesc }
