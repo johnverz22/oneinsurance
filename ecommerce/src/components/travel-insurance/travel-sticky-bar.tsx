@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { CalendarDays, MapPin, SlidersHorizontal, Users } from 'lucide-react'
+import { CalendarDays, MapPin, SlidersHorizontal, Undo2, Users } from 'lucide-react'
 import { format, isSameMonth } from 'date-fns'
 import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
-import { formatTripRange, titleCase } from '@/utils/trip-summary'
+import { formatTripRange, countryLabel } from '@/utils/trip-summary'
 
 const FALLBACK_DATE = new Date('2000-01-01')
 
@@ -34,9 +34,13 @@ export function TripSummary({
   }, [])
 
   const detail = travelDetails.travelDetailList?.[0]
-  const origin = titleCase(detail?.PlaceOfOrgin) || 'Philippines'
-  const destinations = (travelDetails.travelDetailList ?? [])
-    .map((d) => titleCase(d.TravelCountry))
+  const origin = countryLabel(detail?.PlaceOfOrgin) || 'Philippines'
+  const legs = travelDetails.travelDetailList ?? []
+  const hasReturnLeg = Boolean(travelDetails.returnDestination) && legs.length > 1
+  const returnDestination = hasReturnLeg ? countryLabel(legs[legs.length - 1].TravelCountry) : ''
+  const returnLabel = returnDestination || 'Philippines'
+  const destinations = (hasReturnLeg ? legs.slice(0, -1) : legs)
+    .map((d) => countryLabel(d.TravelCountry))
     .join(', ')
   const travellers = (travelDetails.noOfAdults || 1) + (travelDetails.noOfChildren || 0)
   const dates = formatTripRange(
@@ -51,15 +55,22 @@ export function TripSummary({
     : `${format(departure, 'MMM d')} – ${format(returning, 'MMM d')}`
   const shortOrigin = origin === 'Philippines' ? 'PH' : origin
   const [firstDest, ...moreDest] = destinations.split(', ')
-  const compactSummary = `${shortOrigin} → ${firstDest}${moreDest.length ? ` +${moreDest.length}` : ''} · ${shortDates} · ${travellers} ${travellers === 1 ? 'traveller' : 'travellers'}`
+  const compactSummary = `${shortOrigin} → ${firstDest}${moreDest.length ? ` +${moreDest.length}` : ''} ↩ ${returnLabel} · ${shortDates} · ${travellers} ${travellers === 1 ? 'traveller' : 'travellers'}`
 
   const items = (
     <>
       <div>
         <MapPin className="size-5" aria-hidden />
         <span>
-          <span className="travel-trip-label">Destination</span>
-          {origin} <span className="px-1">→</span> {destinations}
+          <span className="travel-trip-label">Trip route</span>
+          {[origin, destinations, returnLabel].join(' → ')}
+        </span>
+      </div>
+      <div>
+        <Undo2 className="size-5" aria-hidden />
+        <span>
+          <span className="travel-trip-label">Return destination</span>
+          {returnLabel}
         </span>
       </div>
       <div>

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getEcho } from '@/lib/echo'
 import { TravelInsuranceApiResponse } from '@/types/plan'
-import { InitTravelInsuranceRequest } from '@/types/travel-insurance/travel-insurance-request'
+import { InitCompareQuoteRequest } from '@/utils/mappers/travel-insurance/init-compare-quote'
 
 const MAX_WAIT_MS = 60_000 // give up after 60 s
 const POLL_DELAYS_MS = [300, 500, 700, 1_000, 1_000, 1_500, 2_000]
@@ -13,10 +13,12 @@ export type TravelCompareStatus = 'idle' | 'loading' | 'ready' | 'error'
 export interface TravelCompareError {
   code?: number
   message: string
+  /** Field-keyed validation errors returned by a 422 from compare-quote init. */
+  errors?: Record<string, string[]>
 }
 
 export interface UseTravelCompareReturn {
-  compare: (payload: InitTravelInsuranceRequest) => void
+  compare: (payload: InitCompareQuoteRequest) => void
   status: TravelCompareStatus
   cards: TravelInsuranceApiResponse | null
   clientRequestId: string | null
@@ -32,7 +34,7 @@ export function useTravelCompare(): UseTravelCompareReturn {
   const cleanupRef = useRef<() => void>(() => {})
   useEffect(() => () => cleanupRef.current(), [])
 
-  const compare = useCallback(async (payload: InitTravelInsuranceRequest) => {
+  const compare = useCallback(async (payload: InitCompareQuoteRequest) => {
     cleanupRef.current()
 
     setStatus('loading')
@@ -57,14 +59,20 @@ export function useTravelCompare(): UseTravelCompareReturn {
 
     if (!initRes.ok) {
       setStatus('error')
-      setError({ code: initRes.status, message: initBody?.message ?? initBody?.error ?? 'Failed to start comparison.' })
+      setError({
+        code: initRes.status,
+        message: initBody?.message ?? initBody?.error ?? 'Failed to start comparison.',
+        errors: initBody?.errors,
+      })
       return
     }
 
-    const id: string = initBody?.data?.ClientRequestId
+    // snake_case per api_docs_latest/compare-quote-flat-payload-fe.md;
+    // ClientRequestId kept as a fallback while the backend rolls out.
+    const id: string = initBody?.data?.client_request_id ?? initBody?.data?.ClientRequestId
     if (!id) {
       setStatus('error')
-      setError({ message: 'Unexpected response from server: missing ClientRequestId.' })
+      setError({ message: 'Unexpected response from server: missing client_request_id.' })
       return
     }
 
@@ -101,9 +109,13 @@ export function useTravelCompare(): UseTravelCompareReturn {
       }
     }
 
+    // The init response names the websocket channel; fall back to the id
+    // (channel name has historically been the request id itself).
+    const wsChannel: string = initBody?.data?.channel ?? id
+
     try {
       const echo = getEcho()
-      const channel = echo.channel(id)
+      const channel = echo.channel(wsChannel)
 
       channel.listen('.insurance.plan.received', () => {
         fetchResult()
@@ -145,7 +157,7 @@ export function useTravelCompare(): UseTravelCompareReturn {
       clearTimeout(pollTimer)
       clearTimeout(timeout)
       try {
-        getEcho().leave(id)
+        getEcho().leave(wsChannel)
       } catch {
         // ignore
       }

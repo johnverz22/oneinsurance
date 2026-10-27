@@ -1,233 +1,180 @@
-import Image from 'next/image'
+import type { Metadata } from 'next'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ApplyForm } from './form'
-import {
-  Banknote,
-  BarChart3,
-  LayoutDashboard,
-  Package,
-  Users,
-  Link2,
-  CheckCircle2,
-  ShieldCheck,
-} from 'lucide-react'
+import { Banknote, BarChart3, LayoutDashboard, Package, Users, Link2 } from 'lucide-react'
 
-const ICON_CHIP = 'bg-[#e2eddb] text-[#006838] dark:bg-[#304538] dark:text-[#d0e3c8]'
+export const metadata: Metadata = {
+  title: 'Become an agent | One Insurance',
+  description:
+    'Product assignments, commission tracking and team management in one digital sales platform.',
+}
+
+const NAV_ITEMS = [
+  { label: 'Platform features', href: '/agent-application#platform' },
+  { label: 'How it works', href: '/agent-application#commissions' },
+  { label: 'Become an agent', href: '/agent-application#application' },
+]
 
 const PLATFORM_FEATURES = [
   {
-    title: 'Commission Setup',
-    desc: 'Configure commission percentages for agents, overriders, and admin splits per product.',
+    title: 'Commission setup',
+    desc: 'Organize commission percentages for agents, overriders and administration by product.',
     icon: Banknote,
   },
   {
-    title: 'Commission Analytics',
-    desc: 'Track commission payouts, sales performance, and revenue distribution in real time.',
+    title: 'Commission analytics',
+    desc: 'Bring sales performance, payouts and revenue distribution into one view.',
     icon: BarChart3,
   },
   {
-    title: 'Agent Dashboard',
-    desc: 'Personal dashboard for agents to manage clients, policies, quotations, and earnings.',
+    title: 'Agent dashboard',
+    desc: 'Keep clients, policies, quotations and earnings together in a personal workspace.',
     icon: LayoutDashboard,
   },
   {
-    title: 'Product Assignment',
-    desc: 'Assign insurance products to agents and teams with instant access control.',
+    title: 'Product assignment',
+    desc: 'Connect insurance products to the agents and teams who sell them.',
     icon: Package,
   },
   {
-    title: 'Team Management',
-    desc: 'Manage agent hierarchies, downline structure, team performance, and overrides.',
+    title: 'Team management',
+    desc: 'Organize agent hierarchies, downlines and team performance.',
     icon: Users,
   },
   {
-    title: 'Referral Links',
-    desc: 'Generate branded referral links with built-in attribution and conversion tracking.',
+    title: 'Referral links',
+    desc: 'Connect branded quotation links with referral attribution and conversion tracking.',
     icon: Link2,
   },
+]
+
+const DISTRIBUTION_STEPS = [
+  'Assign the product and distribution roles',
+  'Define producer and override shares',
+  'Review the commission breakdown',
+]
+
+const DISTRIBUTION_GROUPS = [
+  { title: 'Agents & advisors', desc: 'For direct insurance sales and agent networks.' },
+  { title: 'Referral partners', desc: 'For referral and affiliate distribution.' },
 ]
 
 export default function AgentApplicationPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--canvas)] text-[var(--text-main)]">
-      <Header agentCode="ckO6uNx2O6" currentProductName="Agent Application" />
+      <Header
+        agentCode="ckO6uNx2O6"
+        currentProductSlug="agent-application"
+        productsLabel="Products"
+        customNavItems={NAV_ITEMS}
+        cta={{ label: 'Apply now', href: '/agent-application#application' }}
+      />
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-[#171919] text-white">
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="/images/agent-application.jpg"
-              alt="Insurance Platform Background"
-              fill
-              priority
-              className="object-cover opacity-35"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-black/70" />
-          </div>
+      <main id="main" className="flex-1">
+        <section
+          className="relative min-h-[700px] overflow-hidden bg-[#006838] bg-cover bg-[position:left_center] text-white"
+          style={{ backgroundImage: "url('/storage/img/oi-be-an-agent-1.png')" }}
+        >
+          <div className="absolute inset-0 bg-[#006838]/90" aria-hidden />
+          <div className="relative mx-auto flex min-h-[700px] w-full max-w-7xl flex-col items-stretch gap-10 px-5 py-14 sm:px-8 lg:flex-row lg:items-center lg:gap-16 lg:px-12 lg:py-20">
+            <div className="lg:w-[min(39vw,600px)] lg:shrink-0">
+              <p className="text-sm font-semibold tracking-wide text-[#d0e3c8]">
+                One Insurance Distribution Network
+              </p>
+              <h1 className="mt-4 text-[clamp(2.75rem,5vw,4.5rem)] font-semibold leading-[1.08] tracking-tight text-white">
+                Grow with
+                <br />
+                One Insurance.
+              </h1>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-white sm:text-lg">
+                Product assignments, commission tracking and team management in one digital sales
+                platform.
+              </p>
+            </div>
 
-          <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-8">
-              {/* Left Column: Platform Pitch */}
-              <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-semibold text-[#d0e3c8] backdrop-blur-sm">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span>One Insurance Distribution Network</span>
-                </div>
-
-                <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-                  Insurance Management Platform
-                </h1>
-
-                <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#c4c7c5] sm:text-lg">
-                  Streamline product assignments, commission tracking, and team management with an all-in-one digital sales infrastructure.
-                </p>
-
-                <div className="mt-8 space-y-3.5 text-sm text-[#f1f2f0]">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-[#d0e3c8]" />
-                    <span>Instant quotation links and digital affiliate tracking</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-[#d0e3c8]" />
-                    <span>Automated multi-tier commission calculation and transparent splits</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-[#d0e3c8]" />
-                    <span>Direct access to leading travel, health, and motor insurers</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Application Form Card */}
-              <div className="lg:col-span-5">
-                <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xl sm:p-8">
-                  <h2 className="text-xl font-semibold text-[var(--text-main)] sm:text-2xl">
-                    Become an Agent
-                  </h2>
-                  <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">
-                    Provide your details below to register your interest and join our network.
-                  </p>
-
-                  <div className="mt-6">
-                    <ApplyForm />
-                  </div>
-                </div>
+            <div
+              id="application"
+              className="scroll-mt-24 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 text-[var(--text-main)] shadow-2xl sm:p-8 lg:max-w-xl lg:flex-1"
+            >
+              <h2 className="text-xl font-semibold sm:text-2xl">Become an agent</h2>
+              <p className="mt-1 text-sm leading-6 text-[var(--text-sub)]">
+                Register your interest in joining our network.
+              </p>
+              <div className="mt-5">
+                <ApplyForm />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Platform Features */}
-        <section className="border-t border-[var(--border)] bg-[var(--header)] py-16 sm:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section id="platform" className="scroll-mt-24 border-t border-[var(--border)] bg-[var(--header)] py-16 sm:py-24">
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold tracking-tight text-[var(--text-main)] sm:text-3xl">
-                Platform Features
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                A clearer view of your business
               </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-muted)] sm:text-base">
-                Comprehensive tools built for independent insurance advisors, agencies, and broker networks.
+              <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-sub)] sm:text-base">
+                Platform features for independent insurance advisors, agencies and broker networks.
               </p>
             </div>
 
             <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {PLATFORM_FEATURES.map(({ title, desc, icon: Icon }) => (
-                <div
+                <article
                   key={title}
-                  className="flex flex-col items-start rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 transition hover:shadow-md"
+                  className="group flex flex-col items-start rounded-lg border border-transparent bg-[var(--card)] p-6 transition-[transform,background-color,border-color,box-shadow] duration-[240ms] motion-reduce:transition-none hover:scale-105 hover:border-[#006838] hover:bg-white hover:shadow-lg md:hover:scale-110 dark:hover:bg-[#171919] dark:hover:shadow-none"
                 >
-                  <div
-                    className={`inline-flex h-11 w-11 items-center justify-center rounded-lg ${ICON_CHIP}`}
-                  >
-                    <Icon className="h-5 w-5" />
+                  <div className="inline-flex size-11 items-center justify-center rounded-lg bg-[#e2eddb] text-[#006838] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#006838] dark:bg-[#304538] dark:text-[#d0e3c8] dark:group-hover:text-white">
+                    <Icon className="size-5" aria-hidden />
                   </div>
-                  <h3 className="mt-4 font-semibold text-base text-[var(--text-main)]">
+                  <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#006838] dark:group-hover:text-white">
                     {title}
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                  <p className="mt-2 text-sm leading-6 text-[var(--text-sub)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#333333] dark:group-hover:text-[#c4c7c5]">
                     {desc}
                   </p>
-                </div>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Commission Distribution Section */}
-        <section className="border-t border-[var(--border)] bg-[var(--canvas)] py-16 sm:py-24">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section id="commissions" className="scroll-mt-24 border-t border-[var(--border)] bg-[var(--canvas)] py-16 sm:py-24">
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold tracking-tight text-[var(--text-main)] sm:text-3xl">
-                How Commission Distribution Works
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                How commission distribution works
               </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-muted)] sm:text-base">
-                Transparent payout flows connecting products, direct producers, downlines, and managing overrides.
+              <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-sub)] sm:text-base">
+                Connect products, direct producers and managing teams with a clear distribution
+                structure.
               </p>
             </div>
 
             <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
-              {/* Agent Flow */}
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm sm:p-8">
-                <h3 className="font-semibold text-lg text-[var(--text-main)]">
-                  IFRC × Agents (30% Pool)
-                </h3>
-                <p className="mt-1 text-sm text-[var(--text-muted)]">
-                  Distribution breakdown for certified insurance agent submissions.
-                </p>
-
-                <ul className="mt-6 space-y-2.5 text-sm">
-                  <li className="flex items-center justify-between rounded-md bg-[#e2eddb] px-4 py-3 font-medium text-[#006838] dark:bg-[#304538] dark:text-[#d0e3c8]">
-                    <span>Agent / Advisor Commission</span>
-                    <span className="font-semibold">15%</span>
-                  </li>
-                  <li className="flex items-center justify-between rounded-md bg-[var(--subtle)] px-4 py-3 font-medium text-[var(--text-sub)]">
-                    <span>Agent Overriders (Downlines)</span>
-                    <span className="font-semibold">10%</span>
-                  </li>
-                  <li className="flex items-center justify-between rounded-md bg-[var(--subtle)] px-4 py-3 font-medium text-[var(--text-sub)]">
-                    <span>IFRC Admin</span>
-                    <span className="font-semibold">15%</span>
-                  </li>
-                  <li className="flex items-center justify-between rounded-md bg-[var(--subtle)] px-4 py-3 font-medium text-[var(--text-sub)]">
-                    <span>IFRC Overriders</span>
-                    <span className="font-semibold">10%</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Referral Flow */}
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm sm:p-8">
-                <h3 className="font-semibold text-lg text-[var(--text-main)]">
-                  IFRC × Referrals (30% Pool)
-                </h3>
-                <p className="mt-1 text-sm text-[var(--text-muted)]">
-                  Distribution breakdown for non-licensed referral and affiliate partners.
-                </p>
-
-                <ul className="mt-6 space-y-2.5 text-sm">
-                  <li className="flex items-center justify-between rounded-md bg-[#e2eddb] px-4 py-3 font-medium text-[#006838] dark:bg-[#304538] dark:text-[#d0e3c8]">
-                    <span>Referral (Direct Producer)</span>
-                    <span className="font-semibold">25%</span>
-                  </li>
-                  <li className="flex items-center justify-between rounded-md bg-[var(--subtle)] px-4 py-3 font-medium text-[var(--text-sub)]">
-                    <span>Referral Overriders</span>
-                    <span className="font-semibold">10%</span>
-                  </li>
-                  <li className="flex items-center justify-between rounded-md bg-[var(--subtle)] px-4 py-3 font-medium text-[var(--text-sub)]">
-                    <span>IFRC Admin</span>
-                    <span className="font-semibold">15%</span>
-                  </li>
-                  <li className="flex items-center justify-between rounded-md bg-[var(--subtle)] px-4 py-3 font-medium text-[var(--text-sub)]">
-                    <span>IFRC Overriders</span>
-                    <span className="font-semibold">10%</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800 dark:border-red-800/40 dark:bg-red-900/10 dark:text-red-300">
-              <strong className="font-semibold">Important:</strong> Overrider commissions are deducted from their upline&apos;s share. This guarantees precise commission distribution while strictly maintaining the overall percentage structure.
+              {DISTRIBUTION_GROUPS.map((g) => (
+                <div
+                  key={g.title}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8"
+                >
+                  <h3 className="text-lg font-semibold">{g.title}</h3>
+                  <p className="mt-1 text-sm text-[var(--text-sub)]">{g.desc}</p>
+                  <ol className="mt-6 space-y-3">
+                    {DISTRIBUTION_STEPS.map((step, i) => (
+                      <li
+                        key={step}
+                        className="flex items-center gap-4 rounded-md bg-[var(--subtle)] px-4 py-3 text-sm font-medium text-[var(--text-main)]"
+                      >
+                        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[#e2eddb] text-xs font-semibold text-[#006838] dark:bg-[#304538] dark:text-[#d0e3c8]">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
             </div>
           </div>
         </section>

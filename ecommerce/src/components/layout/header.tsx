@@ -276,6 +276,10 @@ interface HeaderProps {
   currentProductSlug?: string
   currentProductName?: string
   customNavItems?: NavMenuItem[]
+  productsLabel?: string
+  cta?: NavMenuItem
+  /** Element id the landing CTA stays hidden until scrolled fully past (e.g. the hero form). */
+  ctaRevealPast?: string
   onOpenRetrieveModal?: () => void
   onEditTrip?: () => void
 }
@@ -286,6 +290,9 @@ export function Header({
   currentProductSlug = 'travel-insurance',
   currentProductName,
   customNavItems,
+  productsLabel,
+  cta,
+  ctaRevealPast,
   onOpenRetrieveModal,
   onEditTrip,
 }: HeaderProps) {
@@ -304,6 +311,7 @@ export function Header({
   const isTravelLanding = activeSlug === 'travel-insurance'
 
   const activeName =
+    productsLabel ||
     currentProductName ||
     PRODUCTS_CONFIG.find((p) => p.slug === activeSlug)?.name ||
     'Travel Insurance'
@@ -335,8 +343,25 @@ export function Header({
   })
 
   const [isStuck, setIsStuck] = useState(false)
+  const [ctaRevealed, setCtaRevealed] = useState(false)
   const [activeSection, setActiveSection] = useState<string>('')
   const productsBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Reveal the landing CTA once its anchor (e.g. the hero form) is scrolled past
+  useEffect(() => {
+    if (!ctaRevealPast) return
+    const el = document.getElementById(ctaRevealPast)
+    const update = () => {
+      setCtaRevealed(el ? el.getBoundingClientRect().bottom <= 0 : true)
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [ctaRevealPast])
 
   // Scroll-spy for landing navigation links
   useEffect(() => {
@@ -474,7 +499,7 @@ export function Header({
         isLanding ? 'sticky top-0' : 'relative pt-[env(safe-area-inset-top)] md:sticky md:top-0 md:pt-0'
       } ${isStuck ? 'is-stuck' : ''}`}
     >
-      <div className={`travel-header__main-row flex w-full ${isLanding ? 'min-h-14 sm:min-h-20' : 'h-12 sm:min-h-20 lg:h-16 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8'} items-center justify-between gap-3 px-5 sm:gap-5 sm:px-8 lg:px-12`}>
+      <div className={`travel-header__main-row flex w-full ${isLanding ? 'min-h-20' : 'h-12 sm:min-h-20 lg:h-16 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8'} items-center justify-between gap-3 px-5 sm:gap-5 sm:px-8 lg:px-12`}>
         <Link
           href={homePath}
           aria-label="One Insurance home"
@@ -486,7 +511,7 @@ export function Header({
             width={160}
             height={40}
             priority
-            className="travel-header__logo-light h-auto w-24 dark:hidden sm:w-40 lg:h-8 lg:w-auto"
+            className={cn('travel-header__logo-light h-auto dark:hidden', isLanding ? 'w-28 sm:w-40' : 'w-24 sm:w-40 lg:h-8 lg:w-auto')}
           />
           <Image
             src="/storage/img/logo-oi-dark.png"
@@ -494,7 +519,7 @@ export function Header({
             width={160}
             height={40}
             priority
-            className="travel-header__logo-dark hidden h-auto w-24 dark:block sm:w-40 lg:h-8 lg:w-auto"
+            className={cn('travel-header__logo-dark hidden h-auto dark:block', isLanding ? 'w-28 sm:w-40' : 'w-24 sm:w-40 lg:h-8 lg:w-auto')}
           />
         </Link>
 
@@ -629,18 +654,18 @@ export function Header({
           </nav>
 
           {/* Primary conversion CTA — visible on SM (compact pill) and MD/LG */}
-          {isLanding && (
+          {isLanding && (!ctaRevealPast || ctaRevealed) && (
             <Link
-              href={`${homePath}#trip-search`}
-              onClick={handleGetQuoteClick}
+              href={cta?.href ?? `${homePath}#trip-search`}
+              onClick={cta ? undefined : handleGetQuoteClick}
               className={cn(
-                'inline-flex min-h-10 sm:min-h-11 items-center justify-center rounded-full sm:rounded-md px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 shadow-xs',
+                'travel-header__cta inline-flex min-h-10 sm:min-h-11 items-center justify-center rounded-full sm:rounded-md px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 shadow-xs',
                 isStuck
                   ? 'bg-white text-[#006838] hover:bg-[#f1f2f0] active:bg-[#dfe7df] focus-visible:outline-white dark:bg-[#006838] dark:text-white dark:hover:bg-[#00552e] dark:focus-visible:outline-white font-bold'
                   : 'bg-[#006838] text-white hover:bg-[#00552e] active:bg-[#004525] focus-visible:outline-[#006838] dark:focus-visible:outline-white'
               )}
             >
-              Get a quote
+              {cta?.label ?? 'Get a quote'}
             </Link>
           )}
 
@@ -818,10 +843,7 @@ export function Header({
                   aria-expanded={mobileProductsOpen}
                   className="inline-flex min-h-11 w-full items-center justify-between text-left font-semibold text-[#006838] dark:text-[#f4f5f2]"
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="text-xs uppercase tracking-wider text-[#808080] dark:text-[#b2b7b4]">Products:</span>
-                    <span>{activeName}</span>
-                  </span>
+                  <span>{activeName}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -916,11 +938,11 @@ export function Header({
                 </button>
               ) : (
                 <Link
-                  href={`${homePath}#trip-search`}
+                  href={cta?.href ?? `${homePath}#trip-search`}
                   onClick={() => setMobileMenuOpen(false)}
                   className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
                 >
-                  {isTravelLanding ? 'Explore Travel Insurance' : 'Get a travel quote'}
+                  {cta?.label ?? (isTravelLanding ? 'Explore Travel Insurance' : 'Get a travel quote')}
                 </Link>
               )}
             </div>

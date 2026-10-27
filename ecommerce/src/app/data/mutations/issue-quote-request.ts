@@ -11,9 +11,12 @@ export class IssueQuoteError extends Error {
   }
 }
 
-/** 5xx and network failures carry no useful detail for the customer — show a plain-language message instead. */
+/** 5xx and network failures carry no useful detail for the customer — show a plain-language message instead.
+ * 422 validation errors have a specific backend message that is safe to surface directly.
+ */
 function resolveIssueQuoteMessage(status: number | undefined, backendMessage?: string) {
   if (!status) return 'We couldn’t reach our servers. Check your connection and try again.'
+  if (status === 422) return backendMessage || 'The request was missing required payment information.'
   if (status >= 500) return 'We couldn’t reach the insurer to create your policy. Your payment is safe.'
   return backendMessage || 'We couldn’t create your policy this time.'
 }

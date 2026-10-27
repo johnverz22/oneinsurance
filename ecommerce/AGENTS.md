@@ -91,6 +91,7 @@ The application communicates with the One Insurance Backend through Next.js App 
 - **TanStack Query Mutations**:
   - `useFullQuoteRequest`: Handles proposal generation.
   - `useIssueQuoteRequest`: Handles policy issuance.
+- **Proposal state guard** (`src/utils/proposal-loader.ts`): `GET full-quote/{proposalNo}` classifies a proposal (`resumable` | `expired` | `completed` | `paid_not_issued` | `not_found` | `invalid` | `unavailable`). `completed`/`paid_not_issued` are recovered via `recoverIssuedPolicy` — POST `issue-quote` is idempotent and returns the full policy payload for issued proposals, so it doubles as the "fetch issued policy" read (`single_attempt: true` keeps the probe off the retry schedule). Review and retrieval flows forward `next: 'policy' | 'issuance'` results; `/issuance?paid=1` skips DLT sync and goes straight to `issue()`.
 
 ---
 
@@ -101,6 +102,9 @@ The application communicates with the One Insurance Backend through Next.js App 
 3. **Class Names**: Use Tailwind CSS utility classes and `cn()` from `@/lib/utils`.
 4. **No Arbitrary Colors**: Stick to the CSS custom properties and color tokens defined in `src/app/globals.css`.
 5. **Strict TypeScript**: Never use `any` unless required by legacy third-party payloads. Define schemas with `zod`.
+6. **Sticky header CTA**: Once scrolled, `.travel-header.is-stuck` turns green and forces every link/button to white text (`globals.css` ~line 762). Any header CTA other than white text on the green bar (i.e. the primary pill, e.g. "Get a quote" / "Apply now") MUST carry the `travel-header__cta` class so it gets the white-background/green-text treatment in light mode and green/white in dark mode. Configure it via the `Header` `cta` prop (`{ label, href }`) — do not hardcode anchor-specific selectors like `a[href$="#trip-search"]` in the stylesheet.
+7. **Error pages**: All HTTP error states share one template — `ErrorPage` in `src/components/error-page.tsx` (shared `Header`/`Footer`, centered code + heading + copy + "Back to home"/"Get in touch" actions). Per-code copy lives in `src/lib/error-pages.ts`; add/adjust copy there, never inline. Wired into `app/not-found.tsx` (404 + unmatched URLs), `app/error.tsx` and `app/global-error.tsx` (500), `app/forbidden.tsx` (403) and `app/unauthorized.tsx` (401 — both require `experimental.authInterrupts` in `next.config.ts`, already enabled). Preview every code at `/errors` or `/errors/<code>`; unknown codes return the real 404.
+
 
 <!-- BEGIN:nextjs-agent-rules -->
 

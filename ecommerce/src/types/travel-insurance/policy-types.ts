@@ -224,8 +224,11 @@ export type FullQuoteResponse = z.infer<typeof FullQuoteResponseSchema>
 export const IssueQuoteTravellerSchema = z.object({
   is_principal_applicant: z.boolean().optional(),
   first_name: z.string(),
+  middle_name: z.string().nullable().optional(),
   last_name: z.string(),
+  suffix: z.string().nullable().optional(),
   date_of_birth: z.string().optional(),
+  selected_addons: z.array(z.string()).optional(),
   certificate_number: z.string().nullable().optional(),
 })
 
@@ -234,10 +237,28 @@ export const IssueQuoteDataSchema = z.object({
   proposal_number: z.string(),
   status: z.string().optional(),
   policy_no: z.string().nullable().optional(),
+  external_reference: z.string().nullable().optional(),
+  /** Insurer-hosted electronic Certificate of Coverage (eCOC) URL, when available */
   certificate_url: z.string().nullable().optional(),
-  other_details: z.record(z.unknown()).optional(),
+  /** Insurer-issued invoice URL, when available */
+  invoice_url: z.string().nullable().optional(),
+  other_details: z.record(z.string(), z.unknown()).optional(),
   issued_at: z.string().optional(),
+  created_at: z.string().optional(),
+  expires_at: z.string().nullable().optional(),
   insurer: z
+    .object({
+      code: z.string().optional(),
+      name: z.string().optional(),
+    })
+    .optional(),
+  product: z
+    .object({
+      code: z.string().optional(),
+      name: z.string().optional(),
+    })
+    .optional(),
+  plan: z
     .object({
       code: z.string().optional(),
       name: z.string().optional(),
@@ -249,6 +270,15 @@ export const IssueQuoteDataSchema = z.object({
       currency: z.string().optional(),
     })
     .optional(),
+  trip: z
+    .object({
+      origin_country: z.string().optional(),
+      departure_date: z.string().optional(),
+      return_date: z.string().optional(),
+      traveler_count: z.number().optional(),
+      destination_countries: z.array(z.string()).optional(),
+    })
+    .optional(),
   travellers: z.array(IssueQuoteTravellerSchema).optional(),
 })
 
@@ -256,7 +286,7 @@ export const IssueQuoteResponseSchema = z.object({
   success: z.boolean(),
   message: z.string().optional(),
   data: IssueQuoteDataSchema.nullable().optional(),
-  errors: z.record(z.array(z.string())).optional(),
+  errors: z.record(z.string(), z.array(z.string())).optional(),
 })
 
 export type IssueQuoteResponse = z.infer<typeof IssueQuoteResponseSchema>
@@ -290,11 +320,16 @@ export interface FullQuoteRequest {
 export type IssueQuoteRequest = {
   proposal_number: string
   payment: {
+    /** Merchant reference number from the payment provider. Required, max 100 chars. */
     reference: string
+    /** Status returned by the payment provider. Optional — the API does not check it. */
+    status?: string
+    /** ISO 8601 datetime the payment was made. Optional. */
+    paid_at?: string
   }
-  CustomField?: {
-    PlanName?: string
-    PaymentBrand?: string
+  custom_field?: {
+    plan_name?: string
+    payment_brand?: string
     [key: string]: any
   }
 }

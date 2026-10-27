@@ -16,7 +16,6 @@ import { toPHP } from '@/utils/fx'
 import { PlanFilterSidebar, PLAN_SORT_OPTIONS, type PlanSortKey } from '@/components/travel-insurance/plan-filter-sidebar'
 import { PlanFilterSheet } from '@/components/travel-insurance/plan-filter-sheet'
 import { ModifySearchModal } from '@/components/travel-insurance/modify-search-modal'
-import type { InitTravelInsuranceRequest } from '@/types/travel-insurance/travel-insurance-request'
 import {
   Search,
   Filter,
@@ -31,6 +30,7 @@ import {
   HeartPulse,
   type LucideIcon,
 } from 'lucide-react'
+import { KeyConditions } from '@/components/travel-insurance/key-conditions'
 import { PlanCardSkeleton } from '@/components/travel-insurance/plan-card-skeleton'
 import { TripSummary } from '@/components/travel-insurance/travel-sticky-bar'
 import {
@@ -111,7 +111,7 @@ export default function Step2ChoosePlanPage() {
   const runCompare = useCallback(() => {
     try {
       const details = useTravelInsuranceStore.getState().travelDetails
-      compare(travelInsuranceSchemaToInitCompareQuote(details, agentCode) as InitTravelInsuranceRequest)
+      compare(travelInsuranceSchemaToInitCompareQuote(details, agentCode))
     } catch (err) {
       console.error('Failed to initialize compare quote:', err)
     }
@@ -606,6 +606,7 @@ export default function Step2ChoosePlanPage() {
                                               }
                                             >
                                               {row.value}
+                                              {row.note && <span className="travel-benefit-note">{row.note}</span>}
                                             </dd>
                                           </div>
                                         ))}
@@ -615,6 +616,7 @@ export default function Step2ChoosePlanPage() {
                               </div>
                             ))}
                           </div>
+                          <KeyConditions />
                           <p className="mt-4 text-xs leading-5 text-[#69756e] dark:text-[#b2b7b4]">
                             Refer to the policy wording for full benefits, limits and exclusions.
                           </p>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -22,9 +22,10 @@ import { PersonalInfoFormData } from '@/types/travel-insurance/travel-insurance-
 import { igwFullQuoteToPolicyData, mapToIgwFullQuoteRequest } from '@/utils/mappers/travel-insurance/full-quote'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { formatBenefitLimit, groupBenefits } from '@/utils/travel-benefits'
-import { emptyTraveller, travellerOf, validateTravellers } from '@/utils/traveller-form'
+import { KeyConditions } from '@/components/travel-insurance/key-conditions'
+import { emptyTraveller, fieldRulesForCarrier, principalIndex, travellerOf, validateTravellers } from '@/utils/traveller-form'
 import { toPHP } from '@/utils/fx'
-import { formatDays, formatTripRange, getTripDays, titleCase } from '@/utils/trip-summary'
+import { formatDays, formatTripRange, getTripDays, titleCase, countryLabel } from '@/utils/trip-summary'
 import type { InsuranceBenefit } from '@/types/plan'
 
 const money = (n: number) =>
@@ -133,20 +134,46 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
   const adults = travelDetails.noOfAdults || 1
   const total = adults + (travelDetails.noOfChildren || 0)
 
+  const [initialPrincipal] = useState(() => {
+    const saved = principalIndex(travelersInfo)
+    return saved < total ? saved : 0
+  })
   const [travellers, setTravellers] = useState<PersonalInfoFormData[]>(() =>
     Array.from({ length: total }, (_, i) => {
       const saved = travelersInfo[i] ?? emptyTraveller()
-      return { ...saved, idFrontUploaded: !!idFilesStore.get(i)?.frontId, idBackUploaded: !!idFilesStore.get(i)?.backId }
+      let data = { ...saved, idFrontUploaded: !!idFilesStore.get(i)?.frontId, idBackUploaded: !!idFilesStore.get(i)?.backId }
+
+      // Pre-fill traveller 1's date of birth from the landing-page DOB field when
+      // the traveller form hasn't been filled in yet (firstName still blank) and
+      // a real DOB was captured on the landing page (not the 1990-01-01 default).
+      if (i === 0 && !saved.firstName) {
+        const landingDob = travelDetails.dateOfBirth
+        if (
+          landingDob instanceof Date &&
+          !isNaN(landingDob.getTime()) &&
+          landingDob.toISOString().split('T')[0] !== '1990-01-01'
+        ) {
+          data = { ...data, dateOfBirth: landingDob }
+        }
+      }
+
+      data = { ...data, isPrincipalApplicant: i === initialPrincipal }
+
+      return data
     })
   )
   const [openIdx, setOpenIdx] = useState<Set<number>>(() => new Set([0]))
+  const [principalIdx, setPrincipalIdx] = useState(initialPrincipal)
   const [attempted, setAttempted] = useState(false)
   const [agreementOpen, setAgreementOpen] = useState(false)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [submitError, setSubmitError] = useState<{ message: string; details: string[] } | null>(null)
   const [addons, setAddons] = useState<string[]>(coverageOption.selectedAddonBenefits ?? [])
   const [planExpanded, setPlanExpanded] = useState(false)
-  const errorSummaryRef = useRef<HTMLDivElement>(null)
+  // Track which traveller cards have an active ID scan so the submit button
+  // can be disabled while any scan is in-flight.
+  const [scanningTravellers, setScanningTravellers] = useState<Set<number>>(() => new Set())
+  const anyScanning = scanningTravellers.size > 0
 
   /* Input focus detection for hiding sticky bar on mobile */
   const [inputFocused, setInputFocused] = useState(false)
@@ -168,8 +195,11 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
     updateTravelersInfo(travellers)
   }, [travellers, updateTravelersInfo])
 
+  const carrierCode = coverageOption.carrierCode
+  const fieldRules = useMemo(() => fieldRulesForCarrier(carrierCode), [carrierCode])
+
   /* Auto-expand next traveller when current completes */
-  const errors = useMemo(() => validateTravellers(travellers, adults), [travellers, adults])
+  const errors = useMemo(() => validateTravellers(travellers, adults, fieldRules), [travellers, adults, fieldRules])
 
   const handleTravellerChange = useCallback(
     (i: number, update: (prev: PersonalInfoFormData) => PersonalInfoFormData) => {
@@ -177,19 +207,18 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
         const next = prev.map((p, j) => (j === i ? update(p) : p))
         // Auto-expand next traveller if this one just became error-free
         const wasComplete =
-          !Object.keys(validateTravellers(prev, adults)).some((k) => k.startsWith(`${i}.`))
+          !Object.keys(validateTravellers(prev, adults, fieldRules)).some((k) => k.startsWith(`${i}.`))
         const isNowComplete =
-          !Object.keys(validateTravellers(next, adults)).some((k) => k.startsWith(`${i}.`))
+          !Object.keys(validateTravellers(next, adults, fieldRules)).some((k) => k.startsWith(`${i}.`))
         if (!wasComplete && isNowComplete && i < total - 1) {
           setOpenIdx((s) => new Set([...s, i + 1]))
         }
         return next
       })
     },
-    [adults, total]
+    [adults, total, fieldRules]
   )
 
-  const carrierCode = coverageOption.carrierCode
   const provider = COMPANIES.find((c) => c.carrierCode === carrierCode)
   const brand = CARRIER_BRAND_COLORS[carrierCode]
   const insurer = provider?.companyName || plan.CarrierProductName || carrierCode
@@ -219,6 +248,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
   }
 
   const focusFirstError = useCallback((keys: string[]) => {
+    // Wait for the traveller accordions to expand before hunting for the field
     window.setTimeout(() => {
       const els = Array.from(document.querySelectorAll<HTMLElement>('[data-field]')).filter((el) =>
         keys.includes(el.dataset.field ?? '')
@@ -226,7 +256,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
       const el = els[0]
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       el?.focus({ preventScroll: true })
-    }, 60)
+    }, 120)
   }, [])
 
   const handleReview = (e: React.FormEvent) => {
@@ -236,12 +266,9 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
     if (keys.length) {
       const bad = new Set(keys.map(travellerOf))
       setOpenIdx((prev) => new Set([...prev, ...bad]))
-      // scroll to error summary
-      window.setTimeout(() => {
-        errorSummaryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        errorSummaryRef.current?.focus()
-      }, 80)
-      focusFirstError(keys.filter((k) => travellerOf(k) === Math.min(...bad)))
+      // Focus + scroll to the first invalid field; the role=alert summary
+      // above the form announces the error count on its own.
+      focusFirstError(keys)
       return
     }
     setSubmitError(null)
@@ -301,7 +328,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
   const departure = new Date(travelDetails.departureDate)
   const returning = new Date(travelDetails.returnDate)
   const days = getTripDays(departure, returning)
-  const route = `${titleCase(detail?.PlaceOfOrgin) || 'Philippines'} → ${travelDetails.travelDetailList.map((d) => titleCase(d.TravelCountry)).join(', ')}`
+  const route = `${countryLabel(detail?.PlaceOfOrgin) || 'Philippines'} → ${travelDetails.travelDetailList.map((d) => countryLabel(d.TravelCountry)).join(', ')}`
 
   const hasErrors = attempted && Object.keys(errors).length > 0
   const errorCount = Object.keys(errors).length
@@ -313,7 +340,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
 
         {/* Desktop: show TripSummary inline (it manages its own floating state).
             Mobile: trip summary is shown inline as compact chip row — see below. */}
-        <TripSummary onEdit={onEditTrip} hideFloatingBelowLg />
+        <TripSummary onEdit={onEditTrip} premium={`PHP ${money(basePremium)}`} />
 
         {/* ── Mobile compact trip chip (spec E) ── */}
         <div className="sm:hidden mt-4">
@@ -323,7 +350,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
             className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--subtle)] px-3 py-2.5 text-left text-sm"
           >
             <span className="min-w-0 truncate text-[var(--text-sub)]">
-              {titleCase(detail?.PlaceOfOrgin) || 'PH'} → {travelDetails.travelDetailList.map((d) => titleCase(d.TravelCountry)).join(', ')} · {formatTripRange(departure, returning)} · {plural(total, 'traveller')}
+              {countryLabel(detail?.PlaceOfOrgin) || 'PH'} → {travelDetails.travelDetailList.map((d) => countryLabel(d.TravelCountry)).join(', ')} · {formatTripRange(departure, returning)} · {plural(total, 'traveller')}
             </span>
             <span className="shrink-0 text-xs font-semibold text-[var(--primary)] dark:text-[#d0e3c8]">Modify</span>
           </button>
@@ -340,9 +367,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
         {/* ── Error summary (spec A) ── */}
         {hasErrors && (
           <div
-            ref={errorSummaryRef}
             role="alert"
-            tabIndex={-1}
             className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm dark:border-red-800/40 dark:bg-red-900/10"
           >
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-600 dark:text-red-400" aria-hidden />
@@ -356,7 +381,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
         <div className="w-full quote-page-layout mt-6 lg:mt-8">
 
           {/* ── Left: form column ── */}
-          <div className="min-w-0 space-y-6">
+          <div className="flex min-w-0 flex-col gap-6">
 
             {/* Plan coverage accordion */}
             <details open className="travel-applicant-card travel-coverage">
@@ -400,18 +425,22 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
                         {group.rows.map((row, i) => (
                           <div key={i} className="travel-coverage__row">
                             <dt>{row.label}</dt>
-                            <dd className="font-medium sm:text-right">{row.value}</dd>
+                            <dd className="font-medium sm:text-right">
+                              {row.value}
+                              {row.note && <span className="travel-benefit-note">{row.note}</span>}
+                            </dd>
                           </div>
                         ))}
                       </dl>
                     </section>
                   ))}
+                  <KeyConditions className="mt-0" />
                 </div>
               </div>
             </details>
 
             {/* ── Mobile compact plan summary row (spec E) ── */}
-            <div className="lg:hidden">
+            <div className="order-first sm:order-none lg:hidden">
               <div className="travel-applicant-card p-0 overflow-hidden">
                 <button
                   type="button"
@@ -547,6 +576,11 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
                 <p className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">
                   Enter details as shown on each traveller&apos;s ID.
                 </p>
+                {total > 1 && (
+                  <p className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">
+                    The <strong className="font-semibold text-[var(--text-sub)]">principal applicant</strong> is the policyholder. Their contact details are used for the policy and payment. Use &ldquo;Make principal&rdquo; on a traveller to change it.
+                  </p>
+                )}
               </div>
 
               {travellers.map((t, i) => (
@@ -569,31 +603,55 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
                   }
                   onChange={(update) => handleTravellerChange(i, update)}
                   onOpenAgreement={() => setAgreementOpen(true)}
-                  traveller0={i > 0 ? travellers[0] : undefined}
+                  isPrincipal={principalIdx === i}
+                  onSetPrincipal={() => {
+                    setPrincipalIdx(i)
+                    // Keep isPrincipalApplicant in sync on every traveller so
+                    // the mapper can read it directly from the travellers array.
+                    setTravellers((prev) =>
+                      prev.map((t, j) => ({ ...t, isPrincipalApplicant: j === i }))
+                    )
+                  }}
+                  principalTraveller={i !== principalIdx ? travellers[principalIdx] : undefined}
+                  rules={fieldRules}
+                  onScanningChange={(scanning) =>
+                    setScanningTravellers((prev) => {
+                      const next = new Set(prev)
+                      if (scanning) next.add(i)
+                      else next.delete(i)
+                      return next
+                    })
+                  }
                 />
               ))}
 
               {/* ── Desktop: notice above CTA (spec D) ── */}
+              <div className="hidden sm:block lg:hidden">
+                <ProposalNotice />
+              </div>
               <div className="hidden lg:block">
                 <ProposalNotice />
               </div>
 
               {/* ── Desktop action row ── */}
-              <div className="hidden lg:flex flex-wrap items-center justify-between gap-4 pt-2">
+              <div className="hidden sm:flex flex-wrap items-center justify-between gap-4 pt-2">
                 <Link
                   href={`/${agentCode}/travel-insurance/plans`}
                   className="inline-flex min-h-11 items-center justify-center rounded-md border border-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[var(--subtle)]"
                 >
-                  ← Back to plans
+                  <span className="lg:hidden">← Change plan</span>
+                  <span className="max-lg:hidden">← Back to plans</span>
                 </Link>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || anyScanning}
                   aria-haspopup="dialog"
                   className="btn-primary inline-flex min-h-11 items-center justify-center gap-2 px-5 py-3 text-base font-semibold disabled:opacity-50"
                 >
                   {submitting ? (
                     <><Loader2 className="size-4 animate-spin" aria-hidden /> Generating…</>
+                  ) : anyScanning ? (
+                    <><Loader2 className="size-4 animate-spin" aria-hidden /> Scanning ID…</>
                   ) : (
                     'Review application →'
                   )}
@@ -601,7 +659,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
               </div>
 
               {/* ── Mobile: Back to plans text link ── */}
-              <div className="lg:hidden text-center pt-2">
+              <div className="sm:hidden text-center pt-2">
                 <Link
                   href={`/${agentCode}/travel-insurance/plans`}
                   className="inline-flex min-h-11 items-center text-sm text-[var(--primary)] underline underline-offset-4 dark:text-[#d0e3c8]"
@@ -703,12 +761,14 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
         <button
           type="submit"
           form="traveller-form"
-          disabled={submitting}
+          disabled={submitting || anyScanning}
           aria-haspopup="dialog"
           className="btn-primary flex shrink-0 items-center gap-2 px-5 py-3 text-sm font-semibold"
         >
           {submitting ? (
             <><Loader2 className="size-4 animate-spin" aria-hidden /> Generating…</>
+          ) : anyScanning ? (
+            <><Loader2 className="size-4 animate-spin" aria-hidden /> Scanning ID…</>
           ) : (
             'Review application →'
           )}

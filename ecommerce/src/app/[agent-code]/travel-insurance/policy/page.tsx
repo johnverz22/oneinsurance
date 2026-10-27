@@ -3,14 +3,17 @@
 import { useMemo, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowUpRight, ChevronDown, CircleHelp, CreditCard, FileCheck2, Mail, PlaneTakeoff } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, CircleHelp, Clock, CreditCard, FileCheck2, FileText, FileX, Mail, PlaneTakeoff, Receipt } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { idFilesStore, useFullQuoteResponseStore, useTravelInsuranceStore } from '@/store/travel-insurance-store'
-import { COMPANIES } from '@/constants/companies'
+import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
+import { COUNTRIES } from '@/constants/countries'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { groupBenefits } from '@/utils/travel-benefits'
-import { formatBenefitLimit } from '@/utils/travel-benefits'
-import { formatDays, formatTravelers, formatTripRange, getTripDays, titleCase } from '@/utils/trip-summary'
+import { getPrincipal } from '@/utils/traveller-form'
+import { benefitNote, formatBenefitLimit } from '@/utils/travel-benefits'
+import { KeyConditions } from '@/components/travel-insurance/key-conditions'
+import { formatDays, formatTravelers, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import type { PolicyDocData } from '@/utils/generate-policy-pdfs'
 
 const money = (n: number) => n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -52,6 +55,146 @@ export default function PolicyIssuedPage() {
   )
 }
 
+// ── Insurer-hosted document card ─────────────────────────────────────────────
+
+type DocStatus = 'available' | 'pending' | 'unavailable'
+
+function docStatus(url: string | null | undefined): DocStatus {
+  if (url) return 'available'
+  // null = explicitly absent; undefined = not yet known (treat as pending)
+  if (url === null) return 'unavailable'
+  return 'pending'
+}
+
+function InsurerDocuments({
+  certUrl,
+  invoiceUrl,
+  insurer,
+  policyNo,
+  email,
+}: {
+  certUrl: string | null
+  invoiceUrl: string | null
+  insurer: string
+  policyNo: string
+  email: string
+}) {
+  const certStatus = docStatus(certUrl)
+  const invoiceStatus = docStatus(invoiceUrl)
+
+  // If both are explicitly unavailable we can skip the entire block.
+  if (certStatus === 'unavailable' && invoiceStatus === 'unavailable') return null
+
+  return (
+    <section className="issued-insurer-docs" aria-labelledby="insurer-docs-title">
+      <div className="issued-insurer-docs__header">
+        <div>
+          <h2 id="insurer-docs-title" className="text-base font-semibold">
+            {insurer} documents
+          </h2>
+          <p className="issued-muted mt-1 text-xs leading-5">
+            Official documents issued by the insurer. Your eCOC is also sent to{email ? ` ${email}` : ' your email'}.
+          </p>
+        </div>
+      </div>
+
+      <div className="issued-insurer-docs__grid">
+        <DocCard
+          status={certStatus}
+          url={certUrl}
+          icon={FileCheck2}
+          label="Electronic Certificate of Cover"
+          hint="eCOC · PDF"
+          accessibleLabel={`Open electronic Certificate of Cover for policy ${policyNo}, opens in new tab`}
+          pendingNote="The eCOC will appear here once the insurer finalises the policy. It will also be emailed to you."
+          unavailableNote="The eCOC is not available via link. Check your email or contact the insurer."
+        />
+        <DocCard
+          status={invoiceStatus}
+          url={invoiceUrl}
+          icon={Receipt}
+          label="Insurer invoice"
+          hint="Invoice · PDF"
+          accessibleLabel={`Open insurer invoice for policy ${policyNo}, opens in new tab`}
+          pendingNote="The insurer invoice will appear here once it has been generated."
+          unavailableNote="An invoice is not available via link for this policy."
+        />
+      </div>
+    </section>
+  )
+}
+
+function DocCard({
+  status,
+  url,
+  icon: Icon,
+  label,
+  hint,
+  accessibleLabel,
+  pendingNote,
+  unavailableNote,
+}: {
+  status: DocStatus
+  url: string | null
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>
+  label: string
+  hint: string
+  accessibleLabel: string
+  pendingNote: string
+  unavailableNote: string
+}) {
+  if (status === 'available') {
+    return (
+      <a
+        href={url!}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={accessibleLabel}
+        className="issued-doc-card issued-doc-card--available group"
+      >
+        <span className="issued-doc-card__icon">
+          <Icon className="size-5" aria-hidden />
+        </span>
+        <span className="issued-doc-card__body">
+          <span className="issued-doc-card__label">{label}</span>
+          <span className="issued-doc-card__hint">{hint}</span>
+        </span>
+        <ArrowUpRight className="issued-doc-card__arrow size-4 shrink-0" aria-hidden />
+      </a>
+    )
+  }
+
+  if (status === 'pending') {
+    return (
+      <div className="issued-doc-card issued-doc-card--pending" aria-label={`${label} — pending`}>
+        <span className="issued-doc-card__icon">
+          <Clock className="size-5" aria-hidden />
+        </span>
+        <span className="issued-doc-card__body">
+          <span className="issued-doc-card__label">{label}</span>
+          <span className="issued-doc-card__hint">{pendingNote}</span>
+        </span>
+        <span className="issued-doc-card__badge">Pending</span>
+      </div>
+    )
+  }
+
+  // unavailable
+  return (
+    <div className="issued-doc-card issued-doc-card--unavailable" aria-label={`${label} — not available`}>
+      <span className="issued-doc-card__icon">
+        <FileX className="size-5" aria-hidden />
+      </span>
+      <span className="issued-doc-card__body">
+        <span className="issued-doc-card__label">{label}</span>
+        <span className="issued-doc-card__hint">{unavailableNote}</span>
+      </span>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function PolicyContent({ agentCode }: { agentCode: string }) {
   const router = useRouter()
   const base = `/${agentCode}/travel-insurance`
@@ -73,11 +216,15 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
     const addons = Object.entries(groupPlanBenefits(plan).groupedAddonBenefits)
       .filter(([code, a]) => a.children.length > 0 && coverageOption.selectedAddonBenefits?.includes(code))
       .flatMap(([, a]) => a.children)
-      .map((b) => ({ label: b.BenefitDesc, value: formatBenefitLimit(b) }))
+      .map((b) => ({ label: b.BenefitDesc, value: formatBenefitLimit(b), note: benefitNote(b) }))
     return addons.length ? [...g, { title: 'Selected add-ons', rows: addons }] : g
   }, [plan, coverageOption.selectedAddonBenefits])
 
-  const hasPolicy = !!proposalNo && !!plan && !!issued && issued.proposal_number === proposalNo
+  // The issue-quote response is the source of truth — a policy exists once
+  // the IGW returns a policy_no. We deliberately do NOT cross-check against
+  // apiData.ProposalNo: the quote store can hold a stale/absent proposal in
+  // recovered sessions while the issued payload is always authoritative.
+  const hasPolicy = !!issued?.policy_no
 
   if (!hasPolicy) {
     return (
@@ -101,34 +248,54 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
     )
   }
 
+  // Prefer the issued payload — it's authoritative even when the quote store
+  // wasn't hydrated (e.g. recovered session). Store data is the fallback.
+  const issuedTrip = issued.trip
+  const issuedLead = issued.travellers?.find((t) => t.is_principal_applicant) || issued.travellers?.[0]
   const adults = travelDetails.noOfAdults || 1
   const children = travelDetails.noOfChildren || 0
-  const departure = new Date(travelDetails.departureDate)
-  const returning = new Date(travelDetails.returnDate)
+  const departure = new Date(issuedTrip?.departure_date || travelDetails.departureDate)
+  const returning = new Date(issuedTrip?.return_date || travelDetails.returnDate)
   const days = getTripDays(departure, returning)
   const first = travelDetails.travelDetailList[0]
-  const origin = titleCase(first?.PlaceOfOrgin) || 'Philippines'
-  const destination = travelDetails.travelDetailList.map((d) => titleCase(d.TravelCountry)).join(', ')
-  const insurer = COMPANIES.find((c) => c.carrierCode === apiData.CarrierCode)?.companyName || apiData.CarrierCode
-  const planName = plan.CarrierPlanDesc.trim()
-  const customer = apiData.PolicyCustomerList?.[0]
-  const lead = travelersInfo[0]
+  const origin = countryLabel(first?.PlaceOfOrgin) || 'Philippines'
+  const destination = issuedTrip?.destination_countries?.length
+    ? issuedTrip.destination_countries
+        .map((c) => COUNTRIES.find((x) => x.code === c)?.name || c)
+        .join(', ')
+    : travelDetails.travelDetailList.map((d) => countryLabel(d.TravelCountry)).filter(Boolean).join(', ')
+  const carrierCode = apiData?.CarrierCode || coverageOption.carrierCode
+  const provider = COMPANIES.find((c) => c.carrierCode === carrierCode)
+  const brand = CARRIER_BRAND_COLORS[carrierCode]
+  const insurer =
+    provider?.companyName ||
+    issued.insurer?.name ||
+    apiData?.CarrierCode ||
+    coverageOption.carrierCode ||
+    '—'
+  const planName = plan?.CarrierPlanDesc?.trim() || issued.plan?.name || apiData?.ProductName || 'Travel insurance'
+  const customer = apiData?.PolicyCustomerList?.[0]
+  const lead = getPrincipal(travelersInfo)
   const recipient =
     [paymentBillingDetails?.first_name, paymentBillingDetails?.last_name].filter(Boolean).join(' ') ||
     [customer?.FirstName, customer?.LastName].filter(Boolean).join(' ') ||
-    [lead?.firstName, lead?.lastName].filter(Boolean).join(' ')
+    [lead?.firstName, lead?.lastName].filter(Boolean).join(' ') ||
+    [issuedLead?.first_name, issuedLead?.last_name].filter(Boolean).join(' ')
   const email = paymentBillingDetails?.email || customer?.Email || lead?.email || ''
   const policyNo = issued.policy_no || 'Pending'
-  const paymentRef = paymentSubmitResponse?.data?.merchant_transaction_id || ''
-  const total = Number(apiData.DuePremium) || 0
+  const proposalNumber = proposalNo || issued.proposal_number
+  const paymentRef = paymentSubmitResponse?.data?.merchant_transaction_id || issued.external_reference || ''
+  const total = Number(apiData?.DuePremium) || Number(issued.premium?.amount) || 0
   const method = selectedPaymentBrand?.value || '—'
   const paidAt = fmtPaidAt(issued.issued_at || paymentSubmitResponse?.data?.timestamp)
   const dates = formatTripRange(departure, returning)
-  const travellers = formatTravelers(adults, children)
+  const travellers = issuedTrip?.traveler_count
+    ? formatTravelers(issuedTrip.traveler_count, 0)
+    : formatTravelers(adults, children)
 
   const refs = [
     { label: 'Policy number', value: policyNo },
-    { label: 'Proposal number', value: proposalNo },
+    { label: 'Proposal number', value: proposalNumber },
     ...(paymentRef ? [{ label: 'Payment reference', value: paymentRef }] : []),
   ]
 
@@ -144,11 +311,12 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
 
   const docData: PolicyDocData = {
     policyNo,
-    proposalNo,
+    proposalNo: proposalNumber,
     paymentRef: paymentRef || '—',
     planName,
     insurer,
-    route: `${origin} to ${destination}`,
+    insurerLogoUrl: brand?.cardLogoTight || brand?.planCardLogo || provider?.image || plan?.LogoUrl || null,
+    route: [origin, ...destination.split(', ')].join(' - '),
     dates,
     duration: formatDays(days),
     travellers,
@@ -164,8 +332,8 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
     setPdfError('')
     try {
       const m = await import('@/utils/generate-policy-pdfs')
-      if (kind === 'coverage') m.downloadCoverageSummary(docData)
-      else m.downloadReceipt(docData)
+      if (kind === 'coverage') await m.downloadCoverageSummary(docData)
+      else await m.downloadReceipt(docData)
     } catch (err) {
       console.error('Policy PDF failed:', err)
       setPdfError('We could not create the PDF. Please try again.')
@@ -233,6 +401,15 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
           {copyStatus}
         </p>
 
+        {/* ── Insurer documents ── */}
+        <InsurerDocuments
+          certUrl={issued.certificate_url ?? null}
+          invoiceUrl={issued.invoice_url ?? null}
+          insurer={insurer}
+          policyNo={policyNo}
+          email={email}
+        />
+
         <div className="issued-layout">
           <section className="travel-applicant-card issued-documents" aria-labelledby="documents-title">
             <div className="issued-section-top">
@@ -285,12 +462,16 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
                     <dd>{dates}</dd>
                   </div>
                   <div>
-                    <dt>Destination</dt>
-                    <dd>{destination}</dd>
+                    <dt>Trip route</dt>
+                    <dd>{docData.route}</dd>
                   </div>
                   <div>
                     <dt>Travellers</dt>
                     <dd>{travellers}</dd>
+                  </div>
+                  <div>
+                    <dt>Total premium paid</dt>
+                    <dd>₱{money(total)}</dd>
                   </div>
                 </dl>
 
@@ -309,13 +490,17 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
                         {g.rows.map((r, i) => (
                           <div key={i} className="issued-benefit-row">
                             <dt>{r.label}</dt>
-                            <dd className="font-semibold">{r.value}</dd>
+                            <dd className="font-semibold">
+                              {r.value}
+                              {r.note && <span className="travel-benefit-note">{r.note}</span>}
+                            </dd>
                           </div>
                         ))}
                       </dl>
                     </div>
                   </details>
                 ))}
+                {groups.length > 0 && <KeyConditions />}
                 {!groups.length && (
                   <p className="issued-muted text-sm">Benefit details are listed in your policy wording.</p>
                 )}
@@ -329,21 +514,10 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
                 </div>
                 <button type="button" disabled={busy !== null} onClick={() => download('coverage')} className={downloadCls}>
                   <FileCheck2 className="size-5" aria-hidden />
-                  {busy === 'coverage' ? 'Preparing PDF…' : 'Download coverage summary (PDF)'}
+                  {busy === 'coverage' ? 'Preparing PDF…' : 'Download cover notes (PDF)'}
                 </button>
-                {issued.certificate_url && (
-                  <a
-                    href={issued.certificate_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-[#006838] px-5 py-3 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
-                  >
-                    Open official certificate
-                    <ArrowUpRight className="size-4" aria-hidden />
-                  </a>
-                )}
                 <p className="issued-muted mt-3 text-center text-xs leading-5">
-                  The official eCOC is delivered by email.
+                  The official eCOC is delivered by email and shown in the insurer documents section above.
                 </p>
               </section>
             ) : (

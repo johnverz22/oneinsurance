@@ -41,7 +41,7 @@ The coverage section presents plan/provider/travel type, recipient, coverage per
 
 Keep long notes beneath their associated benefit rather than in a detached footnote. Group headings must follow the shared green light/soft sage dark rule. Benefits come from the JSON fixture and are not verified insurer mappings.
 
-The action downloads a coverage summary PDF. The interface explicitly says that the official eCOC is delivered by email; the downloadable summary must not be relabelled as an official eCOC. The insurer's official wording governs cover, as the on-page note explains.
+The action downloads a cover note PDF. The interface explicitly says that the official eCOC is delivered by email; the downloadable summary must not be relabelled as an official eCOC. The insurer's official wording governs cover, as the on-page note explains.
 
 ## Receipt view
 

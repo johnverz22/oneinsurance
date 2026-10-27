@@ -2,7 +2,6 @@
 
 import {
   Suspense,
-  useEffectEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -17,20 +16,17 @@ import {
   AlertCircle,
   CalendarDays,
   Check,
-  CheckCircle2,
   ChevronDown,
   CreditCard,
   Loader2,
   MapPin,
-  RefreshCw,
   ShieldCheck,
   Users,
   X,
 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { useGetPaymentBrands } from '@/app/data/queries/payment'
-import { useIssueQuoteRequest } from '@/app/data/mutations/issue-quote-request'
-import { usePaymentSubmit, usePaymentSync } from '@/app/data/mutations/payment'
+import { usePaymentSubmit } from '@/app/data/mutations/payment'
 import { COUNTRIES } from '@/constants/countries'
 import { storePaymentBrand } from '@/utils/custom-fields-storage'
 import { mapToHostedCheckoutRequest, pesosToDltString, type BillingFormData } from '@/utils/payment-mappers'
@@ -40,8 +36,9 @@ import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { toPHP } from '@/utils/fx'
+import { getPrincipal } from '@/utils/traveller-form'
 import { toTitleCase } from '@/lib/utils'
-import { formatDays, formatTripRange, getTripDays, titleCase } from '@/utils/trip-summary'
+import { formatDays, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import { isProposalExpired, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
 
 const money = (n: number) =>
@@ -53,7 +50,7 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 type Payer = BillingFormData
 type Errors = Partial<Record<keyof Payer, string>>
-type Phase = 'idle' | 'verifying' | 'issuing' | 'issueError' | 'unknown'
+type Phase = 'idle' | 'unknown'
 
 const validate = (p: Payer): Errors => {
   const e: Errors = {}
@@ -78,26 +75,41 @@ const validate = (p: Payer): Errors => {
 }
 
 function Field({
+  id,
   label,
   error,
+  optional = false,
   className = '',
   children,
 }: {
+  id: string
   label: string
   error?: string
+  optional?: boolean
   className?: string
   children: React.ReactNode
 }) {
   return (
-    <label className={`block min-w-0 text-sm ${className}`}>
-      {label}
+    <div className={`min-w-0 text-sm ${className}`}>
+      <label htmlFor={id} className="block">
+        {label}{' '}
+        {optional ? (
+          <span className="text-xs font-normal text-[var(--text-muted)]">(optional)</span>
+        ) : (
+          <span aria-hidden className="text-red-600">*</span>
+        )}
+      </label>
       {children}
       {error && (
-        <span role="alert" className="mt-1.5 block text-sm text-red-700 dark:text-red-300">
+        <span
+          id={`${id}-error`}
+          role="alert"
+          className="mt-1.5 block text-sm text-red-700 dark:text-red-300"
+        >
           {error}
         </span>
       )}
-    </label>
+    </div>
   )
 }
 
@@ -199,11 +211,11 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
   const departure = new Date(travelDetails.departureDate)
   const returning = new Date(travelDetails.returnDate)
   const days = getTripDays(departure, returning)
-  const origin = titleCase(detail?.PlaceOfOrgin) || 'Philippines'
-  const destinations = travelDetails.travelDetailList.map((d) => titleCase(d.TravelCountry)).join(', ')
+  const origin = countryLabel(detail?.PlaceOfOrgin) || 'Philippines'
+  const destinations = travelDetails.travelDetailList.map((d) => countryLabel(d.TravelCountry)).join(', ')
 
   const customer = apiData.PolicyCustomerList?.[0]
-  const lead = travelersInfo[0]
+  const lead = getPrincipal(travelersInfo)
   const leadAddress = useMemo(
     () => ({
       country: 'PH',
@@ -213,7 +225,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
       ),
       cityMunicipality: toTitleCase(getCityNameByCityCode(customer?.City ?? lead?.address?.city ?? '') ?? ''),
       addressLineOne: customer?.AddressLine1 ?? lead?.address?.line1 ?? '',
-      addressLineTwo: customer?.AddressLine2 || lead?.address?.line2 || 'N/A',
+      addressLineTwo: customer?.AddressLine2 || lead?.address?.line2 || '',
     }),
     [customer, lead],
   )
@@ -230,21 +242,16 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
     setSelectedPaymentBrand,
     setPaymentBillingDetails,
     setPaymentSubmitResponse,
-    setIssueQuoteResponse,
-    setPolicyNo,
-    setStep,
   } = useTravelInsuranceStore.getState()
 
   const { mutateAsync: submitPayment } = usePaymentSubmit()
-  const { mutateAsync: syncPayment } = usePaymentSync()
-  const { mutateAsync: issueQuote } = useIssueQuoteRequest()
   const searchParams = useSearchParams()
 
   const [txnId, setTxnId] = useState<string | null>(null)
   const [txnError, setTxnError] = useState(false)
   const returnTxn = searchParams.get('txn')
   const returnStatus = searchParams.get('status') || (searchParams.get('reference_id') ? 'success' : null)
-  const [phase, setPhase] = useState<Phase>(returnTxn && returnStatus !== 'failure' ? 'verifying' : 'idle')
+  const [phase, setPhase] = useState<Phase>('idle')
   const [notice, setNotice] = useState<{
     kind: 'error' | 'info'
     text: string
@@ -253,9 +260,6 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
       ? { kind: 'error', text: 'Payment was not completed. Please try again.' }
       : null,
   )
-  const [issueFailures, setIssueFailures] = useState(0)
-  const [retryError, setRetryError] = useState<string | null>(null)
-  const [paidTxn, setPaidTxn] = useState<string | null>(null)
   const returnHandled = useRef(false)
 
   const summaryRef = useRef<HTMLElement>(null)
@@ -269,7 +273,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
   const [useLeadAddress, setUseLeadAddress] = useState(true)
   const manualAddress = useRef<Partial<Payer> | null>(null)
   const [attempted, setAttempted] = useState(false)
-  const [processing, setProcessing] = useState(phase === 'verifying')
+  const [processing, setProcessing] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
   const cancelRef = useRef<HTMLDialogElement>(null)
   const cancelTrigger = useRef<HTMLButtonElement>(null)
@@ -326,65 +330,15 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
     }
   }
 
-  const handleIssue = async (txn: string) => {
-    setPaidTxn(txn)
-    setRetryError(null)
-    setPhase('issuing')
-    try {
-      const brandName = useTravelInsuranceStore.getState().selectedPaymentBrand?.value
-      const res = await issueQuote({
-        issueQuoteRequest: {
-          proposal_number: proposalNo,
-          payment: { reference: txn },
-          CustomField: {
-            PlanName: planName,
-            ...(brandName ? { PaymentBrand: brandName } : {}),
-          },
-        },
-      })
-      setIssueQuoteResponse(res)
-      setPolicyNo(res.data?.policy_no ?? '')
-      setStep(6)
-      router.push(`/${agentCode}/travel-insurance/policy`)
-    } catch (err) {
-      setRetryError(err instanceof Error ? err.message : 'We couldn’t create your policy this time.')
-      setIssueFailures((n) => n + 1)
-      setPhase('issueError')
-    } finally {
-      setProcessing(false)
-    }
-  }
-  const onPaid = useEffectEvent((txn: string) => handleIssue(txn))
-
+  // The issuance page owns the post-payment journey — forward the gateway
+  // return params (txn / status / reference_id) untouched and let /issuance
+  // verify the payment and record the policy there.
   useEffect(() => {
     if (returnHandled.current || !returnTxn) return
     returnHandled.current = true
-    window.history.replaceState({}, '', window.location.pathname)
     if (returnStatus === 'failure') return
-    syncPayment({ merchant_transaction_id: returnTxn })
-      .then((r) => {
-        const st = r.data.payment_status
-        if (st === 'PAID') return onPaid(returnTxn)
-        setNotice(
-          st === 'REJECTED'
-            ? {
-                kind: 'error',
-                text: 'Payment was rejected. Please try again with a different payment method.',
-              }
-            : {
-                kind: 'info',
-                text: 'Payment is being processed. Please wait a moment and try again.',
-              },
-        )
-        setPhase('idle')
-        setProcessing(false)
-      })
-      .catch(() => {
-        setProcessing(false)
-        setPaidTxn(returnTxn)
-        setPhase('issueError')
-      })
-  }, [returnTxn, returnStatus, syncPayment])
+    router.replace(`/${agentCode}/travel-insurance/issuance${window.location.search}`)
+  }, [returnTxn, returnStatus, router, agentCode])
 
   const checkStatus = async () => {
     if (!txnId) return
@@ -395,8 +349,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
       })
       const st = r.data?.data?.payment_status
       if (st === 'PAID') {
-        setPhase('idle')
-        await handleIssue(txnId)
+        router.push(`/${agentCode}/travel-insurance/issuance?paid=1&txn=${encodeURIComponent(txnId)}`)
         return
       }
       if (st === 'REJECTED') {
@@ -538,7 +491,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
   const travellerNames = travelersInfo
     .map((t, i) => {
       const n = [t.firstName, t.middleName, t.lastName].filter(Boolean).join(' ') || 'Name not provided'
-      return `${n} (${i < adults ? 'Adult' : 'Child'})`
+      return `${n} (${i < adults ? 'Adult' : 'Child'}${t.isPrincipalApplicant && travelersInfo.length > 1 ? ', Principal' : ''})`
     })
     .join(', ')
 
@@ -558,67 +511,12 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
     </button>
   )
 
-  if (phase !== 'idle' || txnError) {
-    const steps = ['Payment confirmed', 'Issuing your policy']
-    const active = phase === 'verifying' ? 0 : 1
+  if (phase === 'unknown' || txnError) {
     return (
       <>
         <Header agentCode={agentCode} currentStep={5} />
         <div className="mx-auto max-w-2xl px-4 pb-16 pt-8 sm:px-6">
-          {phase === 'verifying' || phase === 'issuing' ? (
-            <section className="travel-applicant-card" role="status" aria-live="polite">
-              <h1 className="text-xl font-semibold text-[var(--primary)] dark:text-[#d0e3c8] sm:text-2xl">
-                Finalizing your policy
-              </h1>
-              <p className="mt-2 text-sm text-[var(--text-muted)]">
-                Please keep this page open while we confirm your payment and issue your policy.
-              </p>
-              <ol className="mt-6 divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
-                {steps.map((label, i) => (
-                  <li key={label} className="flex items-center gap-3 p-4">
-                    {i < active ? (
-                      <CheckCircle2 className="size-6 text-[var(--primary)] dark:text-[#d0e3c8]" aria-hidden />
-                    ) : i === active ? (
-                      <Loader2 className="size-6 animate-spin text-[var(--primary)] dark:text-[#d0e3c8]" aria-hidden />
-                    ) : (
-                      <span className="size-5 rounded-full border-2 border-[var(--border)]" />
-                    )}
-                    <span className="text-sm font-semibold">{label}</span>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : phase === 'issueError' ? (
-            <section className="travel-applicant-card" role="alert">
-              <h1 className="flex items-center gap-2 text-xl font-semibold sm:text-2xl">
-                <AlertCircle className="size-6 text-red-700 dark:text-red-300" aria-hidden />
-                Your payment was received, but your policy isn’t issued yet
-              </h1>
-              <p className="mt-3 text-sm leading-6">
-                {retryError || 'We couldn’t create your policy this time.'} Your payment is safe. Keep these references
-                and try again.
-              </p>
-              <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-                <div>
-                  <dt className="text-[var(--text-muted)]">Proposal number</dt>
-                  <dd className="break-all font-semibold">{proposalNo}</dd>
-                </div>
-                <div>
-                  <dt className="text-[var(--text-muted)]">Payment reference</dt>
-                  <dd className="break-all font-semibold">{paidTxn ?? txnId}</dd>
-                </div>
-              </dl>
-              <button
-                type="button"
-                disabled={!paidTxn}
-                onClick={() => paidTxn && handleIssue(paidTxn)}
-                className="btn-primary mt-6 inline-flex min-h-11 items-center justify-center gap-2 px-5 py-3 text-base font-semibold"
-              >
-                <RefreshCw className="size-4" aria-hidden />
-                {issueFailures > 1 ? 'Try again' : 'Issue my policy'}
-              </button>
-            </section>
-          ) : phase === 'unknown' ? (
+          {phase === 'unknown' ? (
             <section className="travel-applicant-card" role="alert">
               <h1 className="flex items-center gap-2 text-xl font-semibold sm:text-2xl">
                 <AlertCircle className="size-6 text-amber-600" aria-hidden />
@@ -807,6 +705,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                           value={b.code}
                           checked={selectedBrand?.code === b.code}
                           onChange={() => selectBrand(b)}
+                          required
                           className="sr-only"
                         />
                         <span title={b.value}>
@@ -833,55 +732,67 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                   payment page to complete payment.
                 </p>
                 <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                  <Field label="First name" error={errors.firstName}>
+                  <Field id="payer-first-name" label="First name" error={errors.firstName}>
                     <input
+                      id="payer-first-name"
                       type="text"
                       name="firstName"
                       value={payer.firstName}
                       onChange={set('firstName')}
                       autoComplete="given-name"
+                      required
                       aria-invalid={!!errors.firstName}
+                      aria-describedby={errors.firstName ? 'payer-first-name-error' : undefined}
                       maxLength={50}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Last name" error={errors.lastName}>
+                  <Field id="payer-last-name" label="Last name" error={errors.lastName}>
                     <input
+                      id="payer-last-name"
                       type="text"
                       name="lastName"
                       value={payer.lastName}
                       onChange={set('lastName')}
                       autoComplete="family-name"
+                      required
                       aria-invalid={!!errors.lastName}
+                      aria-describedby={errors.lastName ? 'payer-last-name-error' : undefined}
                       maxLength={50}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Email address" error={errors.email}>
+                  <Field id="payer-email" label="Email address" error={errors.email}>
                     <input
+                      id="payer-email"
                       type="email"
                       name="email"
                       value={payer.email}
                       onChange={set('email')}
                       autoComplete="email"
+                      required
                       aria-invalid={!!errors.email}
+                      aria-describedby={errors.email ? 'payer-email-error' : undefined}
                       maxLength={150}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Phone number" error={errors.phone}>
+                  <Field id="payer-phone" label="Phone number" error={errors.phone}>
                     <span className="relative mt-2 block">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]">
                         +63
                       </span>
                       <input
+                        id="payer-phone"
                         type="tel"
                         name="phone"
                         inputMode="numeric"
                         value={payer.phone}
                         onChange={set('phone', true)}
                         autoComplete="tel-national"
+                        required
                         aria-invalid={!!errors.phone}
+                        aria-describedby={errors.phone ? 'payer-phone-error' : undefined}
                         maxLength={15}
                         placeholder="9XX XXX XXXX"
                         className="ui-form-field block min-h-11 w-full pl-12"
@@ -906,15 +817,19 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                     onChange={(e) => toggleLeadAddress(e.target.checked)}
                     className="size-4 shrink-0 accent-[var(--primary)]"
                   />
-                  Use lead traveller’s address
+                  Use principal traveller’s address
                 </label>
                 <div className="mt-3 grid gap-5 sm:grid-cols-6">
-                  <Field label="Country" className="sm:col-span-4" error={errors.country}>
+                  <Field id="billing-country" label="Country" className="sm:col-span-4" error={errors.country}>
                     <select
+                      id="billing-country"
                       name="country"
                       value={payer.country}
                       onChange={set('country')}
                       autoComplete="country"
+                      required
+                      aria-invalid={!!errors.country}
+                      aria-describedby={errors.country ? 'billing-country-error' : undefined}
                       className={inputCls}
                     >
                       {COUNTRIES.map((c) => (
@@ -924,63 +839,78 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                       ))}
                     </select>
                   </Field>
-                  <Field label="Postal code" className="sm:col-span-2" error={errors.postalCode}>
+                  <Field id="billing-postal-code" label="Postal code" className="sm:col-span-2" error={errors.postalCode}>
                     <input
+                      id="billing-postal-code"
                       type="text"
                       name="postalCode"
                       inputMode="numeric"
                       value={payer.postalCode}
                       onChange={set('postalCode', true)}
                       autoComplete="postal-code"
+                      required
                       aria-invalid={!!errors.postalCode}
+                      aria-describedby={errors.postalCode ? 'billing-postal-code-error' : undefined}
                       maxLength={10}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="State / Province / Region" className="sm:col-span-3" error={errors.stateProvinceRegion}>
+                  <Field id="billing-region" label="State / Province / Region" className="sm:col-span-3" error={errors.stateProvinceRegion}>
                     <input
+                      id="billing-region"
                       type="text"
                       name="stateProvinceRegion"
                       value={payer.stateProvinceRegion}
                       onChange={set('stateProvinceRegion')}
                       autoComplete="address-level1"
+                      required
                       aria-invalid={!!errors.stateProvinceRegion}
+                      aria-describedby={errors.stateProvinceRegion ? 'billing-region-error' : undefined}
                       maxLength={40}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="City / Municipality" className="sm:col-span-3" error={errors.cityMunicipality}>
+                  <Field id="billing-city" label="City / Municipality" className="sm:col-span-3" error={errors.cityMunicipality}>
                     <input
+                      id="billing-city"
                       type="text"
                       name="cityMunicipality"
                       value={payer.cityMunicipality}
                       onChange={set('cityMunicipality')}
                       autoComplete="address-level2"
+                      required
                       aria-invalid={!!errors.cityMunicipality}
+                      aria-describedby={errors.cityMunicipality ? 'billing-city-error' : undefined}
                       maxLength={60}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Address line 1" className="sm:col-span-6" error={errors.addressLineOne}>
+                  <Field id="billing-address-1" label="Address line 1" className="sm:col-span-6" error={errors.addressLineOne}>
                     <input
+                      id="billing-address-1"
                       type="text"
                       name="addressLineOne"
                       value={payer.addressLineOne}
                       onChange={set('addressLineOne')}
                       autoComplete="address-line1"
+                      required
                       aria-invalid={!!errors.addressLineOne}
+                      aria-describedby={errors.addressLineOne ? 'billing-address-1-error' : undefined}
                       maxLength={80}
                       className={inputCls}
                     />
                   </Field>
-                  <Field label="Address line 2" className="sm:col-span-6" error={errors.addressLineTwo}>
+                  <Field id="billing-address-2" label="Address line 2" className="sm:col-span-6" error={errors.addressLineTwo}>
                     <input
+                      id="billing-address-2"
                       type="text"
                       name="addressLineTwo"
                       value={payer.addressLineTwo}
                       onChange={set('addressLineTwo')}
                       autoComplete="address-line2"
+                      required
                       aria-invalid={!!errors.addressLineTwo}
+                      aria-describedby={errors.addressLineTwo ? 'billing-address-2-error' : undefined}
                       maxLength={80}
                       placeholder="Apartment, suite, building, etc."
                       className={inputCls}
@@ -993,7 +923,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
 
           <aside
             ref={summaryRef}
-            className="travel-applicant-card travel-selected-plan"
+            className="order-first sm:order-none travel-applicant-card travel-selected-plan"
             aria-labelledby="selected-plan-title"
           >
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--primary)] dark:text-[#d0e3c8]">

@@ -53,7 +53,7 @@ export default async function ProviderDetailPage({ params }: PageProps) {
       <Header
         agentCode={agentCode}
         currentProductSlug="travel-insurance"
-        currentProductName="Our Providers"
+        productsLabel="Products"
         customNavItems={navItems}
       />
 

@@ -78,7 +78,11 @@ function summarize(benefits: InsuranceBenefit[] | undefined, currency: string) {
   return {
     text: limitText(top, currency),
     more: benefits.length - 1,
-    detail: benefits.map((b) => `${b.BenefitDesc}: ${limitText(b, currency)}`).join('\n'),
+    items: benefits.map((b) => {
+      const d = resolveLimitDisplay(b)
+      const note = d.kind === 'amount' || d.kind === 'badge' ? d.qualifier : undefined
+      return { name: b.BenefitDesc, value: limitText(b, currency), note: note?.trim() && note !== '0' ? note : undefined }
+    }),
   }
 }
 
@@ -100,9 +104,23 @@ function CompareCell({
   const s = summarize(benefits, currency)
   if (!s) return <span className="travel-compare-empty">—</span>
   return (
-    <span title={s.detail} className="travel-compare-cell">
+    <span className="travel-compare-cell">
       <strong>{s.text}</strong>
-      {s.more > 0 && <small>+{s.more} more</small>}
+      {s.more > 0 ? (
+        <details className="travel-compare-details">
+          <summary>+{s.more} more</summary>
+          <ul>
+            {s.items.map((it, i) => (
+              <li key={i}>
+                <span className="font-medium">{it.name}:</span> {it.value}
+                {it.note && <span className="travel-benefit-note">{it.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : (
+        s.items[0]?.note && <small>{s.items[0].note}</small>
+      )}
     </span>
   )
 }

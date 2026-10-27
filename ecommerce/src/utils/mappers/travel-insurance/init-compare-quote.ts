@@ -1,7 +1,20 @@
-import {
-  InitTravelInsuranceRequest,
-  TravelInsuranceFormData,
-} from '@/types/travel-insurance/travel-insurance-request'
+import { TravelInsuranceFormData } from '@/types/travel-insurance/travel-insurance-request'
+
+/**
+ * Flat compare-quote init payload — docs/api_docs_latest/compare-quote-flat-payload-fe.md.
+ * The backend rejects the old InsureMo-shaped body with a 422.
+ */
+export interface InitCompareQuoteRequest {
+  origin_country: string
+  destination_countries: string[]
+  return_destination?: string
+  departure_date: string | null
+  return_date: string | null
+  traveler_count: number
+  principal_date_of_birth: string | null
+  agent_code: string
+  slug: string
+}
 
 /**
  * Maps internal coverage-map country codes to ISO 3166-1 alpha-2 codes
@@ -269,7 +282,7 @@ function toIso2(code: string): string {
 export function travelInsuranceSchemaToInitCompareQuote(
   travelInsurance: TravelInsuranceFormData,
   agentCode?: string
-) {
+): InitCompareQuoteRequest {
   const dateOfBirth = travelInsurance.dateOfBirth
     ? new Date(travelInsurance.dateOfBirth).toISOString().split('T').at(0)
     : null
@@ -282,65 +295,31 @@ export function travelInsuranceSchemaToInitCompareQuote(
     ? new Date(travelInsurance.returnDate).toISOString().split('T').at(0)
     : null
 
-  const age = (dob: Date | string) => {
-    const dobDate = new Date(dob)
-    const today = new Date()
-    return today.getFullYear() - dobDate.getFullYear()
-  }
+  const returnDestination = travelInsurance.returnDestination
+  const outboundLegs =
+    returnDestination && travelInsurance.travelDetailList.length > 1
+      ? travelInsurance.travelDetailList.slice(0, -1)
+      : travelInsurance.travelDetailList
 
-  const travelDetailList = travelInsurance.travelDetailList.map((td) => ({
-    TravelCoverageArea: td.TravelCoverageArea,
-    PlaceOfOrgin: toIso2(td.PlaceOfOrgin),
-    TravelCountry: toIso2(td.TravelCountry),
-    DisplaySequence: td.DisplaySequence,
-  }))
+  // One entry per destination country — the API requires each once.
+  const destinationCountries = [
+    ...new Set(outboundLegs.map((td) => toIso2(td.TravelCountry))),
+  ]
 
   return {
-    AgentCode: agentCode ?? '',
-    Slug: 'travel-insurance',
-    ProductCode: 'TRAVEL',
-    ProductVersion: '1.0',
-    EffectiveDate: departureDate,
-    ExpiryDate: returnDate,
-    TripType: travelInsurance.isAnnualMultiTrip ? 'ANNUAL' : 'SINGLE',
-    TravelType: travelInsurance.travelType.toUpperCase(),
-    Age: travelInsurance.dateOfBirth ? age(travelInsurance.dateOfBirth) : 0,
-    NoOfTravellers: travelInsurance.noOfAdults + travelInsurance.noOfChildren,
-    BranchCode: 'HO',
-    LGT: 0.75,
-    PromoCodeList: [],
-    TravelDetailList: travelDetailList,
-    PolicyCustomerList: [
-      {
-        DateOfBirth: dateOfBirth,
-      },
-    ],
-    PolicyLobList: [
-      {
-        ProductCode: 'TRAVEL',
-        PolicyRiskList: [
-          {
-            ProductElementCode: 'R00001',
-            IsMainInsured: 'Y',
-            DateOfBirth: dateOfBirth,
-            IsAdultTraveller: '',
-            FirstName: '',
-            MiddleName: '',
-            LastName: '',
-            IdNo: '',
-            IdTypeCode: '',
-            Suffix: '',
-            Gender: '',
-            AddrProvince: '',
-            City: '',
-            PostCode: '',
-            AddressLine1: '',
-            AddressLine2: '',
-            Email: '',
-            Mobile: '',
-          },
-        ],
-      },
-    ],
-  } as InitTravelInsuranceRequest
+    origin_country: toIso2(
+      travelInsurance.travelDetailList[0]?.PlaceOfOrgin ?? 'PHILIPPINES'
+    ),
+    destination_countries: destinationCountries,
+    // Omit the key entirely when there is no return destination (per spec).
+    ...(returnDestination
+      ? { return_destination: toIso2(returnDestination) }
+      : {}),
+    departure_date: departureDate ?? null,
+    return_date: returnDate ?? null,
+    traveler_count: travelInsurance.noOfAdults + travelInsurance.noOfChildren,
+    principal_date_of_birth: dateOfBirth ?? null,
+    agent_code: agentCode ?? '',
+    slug: 'travel-insurance',
+  }
 }

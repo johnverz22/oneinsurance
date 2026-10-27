@@ -1,63 +1,28 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
-import { Loader2, X } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { PH_ID_TYPES, PersonalInfoFormData } from '@/types/travel-insurance/travel-insurance-request'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { titleCase } from '@/utils/trip-summary'
+import { ScrollableModal } from '@/components/ui/scrollable-modal'
 
 const outlineBtn =
   'inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
 
-function useDialog(open: boolean, onClose: () => void) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    if (open && !el.open) el.showModal()
-    if (!open && el.open) el.close()
-  }, [open])
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.addEventListener('close', onClose)
-    return () => el.removeEventListener('close', onClose)
-  }, [onClose])
-  return ref
-}
-
-function CloseX({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      autoFocus
-      onClick={onClick}
-      aria-label={label}
-      className="inline-flex size-11 shrink-0 items-center justify-center rounded-md hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232]"
-    >
-      <X className="size-5" aria-hidden />
-    </button>
-  )
-}
-
 export function DataSharingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const ref = useDialog(open, onClose)
   return (
-    <dialog
-      ref={ref}
-      aria-labelledby="data-sharing-title"
-      aria-describedby="data-sharing-intro"
-      className="travel-plan-dialog"
-      onClick={(e) => e.target === ref.current && onClose()}
+    <ScrollableModal
+      open={open}
+      onClose={onClose}
+      title="Data sharing agreement"
+      titleId="data-sharing-title"
+      descriptionId="data-sharing-intro"
+      maxWidth="max-w-7xl"
+      closeLabel="Close data sharing agreement"
     >
-      <div className="flex items-start justify-between gap-4">
-        <h2 id="data-sharing-title" className="text-xl font-semibold">
-          Data sharing agreement
-        </h2>
-        <CloseX label="Close data sharing agreement" onClick={onClose} />
-      </div>
-      <p id="data-sharing-intro" className="mt-4 text-sm leading-6">
+      <p id="data-sharing-intro" className="text-sm leading-6">
         By agreeing, you authorise the use and sharing of the information provided for this insurance application,
         subject to the following:
       </p>
@@ -71,7 +36,7 @@ export function DataSharingDialog({ open, onClose }: { open: boolean; onClose: (
       <button type="button" onClick={onClose} className={`${outlineBtn} mt-6`}>
         Close
       </button>
-    </dialog>
+    </ScrollableModal>
   )
 }
 
@@ -112,6 +77,15 @@ function ApprovalForm({
   error,
 }: Pick<ReviewDialogProps, 'onClose' | 'onSubmit' | 'submitting' | 'error'>) {
   const [approved, setApproved] = useState(false)
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    if (!submitting) return
+    const t = setTimeout(() => setSlow(true), 10_000)
+    return () => {
+      clearTimeout(t)
+      setSlow(false)
+    }
+  }, [submitting])
   return (
     <form
       className="mt-6 border-t border-[#dfe7df] pt-6 dark:border-[#3d4140]"
@@ -132,7 +106,14 @@ function ApprovalForm({
       <p className="mt-3 text-xs leading-5 text-[#808080] dark:text-[#c4c7c5]">
         Generated proposals cannot be edited. Changes after submission require cancellation and a new quote.
       </p>
-      {error && (
+      <p role="status" className="mt-3 text-sm text-[#808080] dark:text-[#c4c7c5]">
+        {submitting
+          ? slow
+            ? 'This is taking longer than usual. Please keep this page open — we will stop and let you retry after 60 seconds.'
+            : 'Verifying your details and generating your quote…'
+          : ''}
+      </p>
+      {error && !submitting && (
         <div role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
           <p>{error.message}</p>
           {error.details.length > 0 && (
@@ -158,7 +139,7 @@ function ApprovalForm({
               <Loader2 className="size-4 animate-spin" aria-hidden /> Generating quote…
             </>
           ) : (
-            'Approve and submit →'
+            error ? 'Try again →' : 'Approve and submit →'
           )}
         </button>
       </div>
@@ -181,22 +162,18 @@ export function ReviewDialog({
   planName,
   addons,
 }: ReviewDialogProps) {
-  const ref = useDialog(open, onClose)
+  // Prevent backdrop-click dismissal while a submission is in flight
+  const handleClose = () => !submitting && onClose()
+
   return (
-    <dialog
-      ref={ref}
-      aria-labelledby="application-review-title"
-      aria-describedby="application-review-description"
-      className="travel-plan-dialog travel-application-review"
-      onClick={(e) => e.target === ref.current && !submitting && onClose()}
+    <ScrollableModal
+      open={open}
+      onClose={handleClose}
+      title="Review your application"
+      titleId="application-review-title"
+      closeLabel="Close application review"
     >
-      <div className="flex items-start justify-between gap-4">
-        <h2 id="application-review-title" className="text-xl font-semibold">
-          Review your application
-        </h2>
-        <CloseX label="Close application review" onClick={onClose} />
-      </div>
-      <p id="application-review-description" className="mt-3 text-sm leading-6 text-[#808080] dark:text-[#c4c7c5]">
+      <p className="text-sm leading-6 text-[#808080] dark:text-[#c4c7c5]">
         Check the travel, identity and plan details below before approving and submitting your application.
       </p>
 
@@ -289,9 +266,7 @@ export function ReviewDialog({
         </section>
       </div>
 
-      {open && (
-        <ApprovalForm onClose={onClose} onSubmit={onSubmit} submitting={submitting} error={error} />
-      )}
-    </dialog>
+      <ApprovalForm onClose={handleClose} onSubmit={onSubmit} submitting={submitting} error={error} />
+    </ScrollableModal>
   )
 }

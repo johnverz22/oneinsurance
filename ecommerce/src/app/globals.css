@@ -464,6 +464,73 @@ select.ui-form-field {
     }
   }
 
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .travel-trip-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px 20px;
+      padding: 18px 20px;
+      font-size: 0.9375rem;
+    }
+    .travel-trip-summary > div:first-child {
+      grid-column: 1 / -1;
+    }
+    .travel-trip-summary .travel-modify,
+    .travel-trip-summary .travel-trip-status {
+      grid-column: 1 / -1;
+      width: 100%;
+      margin-left: 0;
+    }
+    .travel-trip-summary--floating {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 24px calc(10px + env(safe-area-inset-bottom));
+      font-size: 0.875rem;
+      line-height: 1.3;
+    }
+    .travel-trip-summary--floating > div {
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .travel-trip-summary--floating > div:first-child {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .travel-trip-summary--floating > div:first-child > span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .travel-trip-summary--floating > div:nth-child(2),
+    .travel-trip-summary--floating svg {
+      display: none;
+    }
+    .travel-trip-summary--floating .travel-trip-label {
+      margin-bottom: 2px;
+      font-size: 0.75rem;
+    }
+    .travel-trip-summary--floating .travel-modify {
+      grid-column: auto;
+      flex-shrink: 0;
+      width: auto;
+      margin-left: 0;
+      min-height: 40px;
+      padding: 8px 14px;
+      white-space: nowrap;
+    }
+    .travel-trip-summary--floating .travel-trip-premium {
+      margin-left: 0;
+      padding-left: 20px;
+    }
+    .travel-trip-summary--floating .travel-trip-status {
+      grid-column: auto;
+      margin-inline: 0;
+    }
+  }
+
   .travel-plan-list {
     display: grid;
     gap: 24px;
@@ -670,6 +737,70 @@ select.ui-form-field {
     text-align: right;
     font-weight: 600;
   }
+  .travel-benefit-note {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--plan-muted);
+  }
+  .travel-key-conditions {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--plan-border);
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+  .travel-key-conditions h4 {
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+  .dark .travel-key-conditions h4 {
+    color: #d0e3c8;
+  }
+  .travel-key-conditions ul {
+    padding-left: 18px;
+    list-style: disc;
+  }
+  .travel-key-conditions li + li {
+    margin-top: 4px;
+  }
+  .travel-key-conditions p {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--plan-muted);
+  }
+  .travel-compare-details {
+    margin-top: 4px;
+    font-size: 0.6875rem;
+    text-align: left;
+  }
+  .travel-compare-details summary {
+    min-height: 24px;
+    cursor: pointer;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .dark .travel-compare-details summary {
+    color: #d0e3c8;
+  }
+  .travel-compare-details summary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 0;
+  }
+  .travel-compare-details ul {
+    margin-top: 4px;
+    display: grid;
+    gap: 4px;
+    color: var(--text-sub);
+  }
   .travel-benefit-included {
     padding: 2px 6px;
     border-radius: 4px;
@@ -768,19 +899,19 @@ select.ui-form-field {
 .travel-header.is-stuck :is(a, button):focus-visible {
   outline-color: #fff;
 }
-.travel-header.is-stuck a[href$="#trip-search"] {
+.travel-header.is-stuck a.travel-header__cta {
   background-color: #ffffff;
   color: #006838;
 }
-.travel-header.is-stuck a[href$="#trip-search"]:hover {
+.travel-header.is-stuck a.travel-header__cta:hover {
   background-color: #f1f2f0;
   color: #00552e;
 }
-.dark .travel-header.is-stuck a[href$="#trip-search"] {
+.dark .travel-header.is-stuck a.travel-header__cta {
   background-color: #006838;
   color: #ffffff;
 }
-.dark .travel-header.is-stuck a[href$="#trip-search"]:hover {
+.dark .travel-header.is-stuck a.travel-header__cta:hover {
   background-color: #00552e;
   color: #ffffff;
 }
@@ -803,6 +934,23 @@ select.ui-form-field {
 .travel-header.is-stuck #mobile-navigation > div > div > div {
   background: var(--header);
   border-color: var(--field-border);
+}
+.travel-header.is-stuck #mobile-navigation > div > div > div :is(a, button) {
+  color: var(--text-sub);
+}
+.travel-header.is-stuck #mobile-navigation > div > div > div a:hover {
+  color: var(--primary);
+  background-color: var(--subtle);
+}
+.travel-header.is-stuck #mobile-navigation > div > div > div a[aria-current='page'] {
+  color: var(--primary);
+  background-color: var(--subtle);
+}
+.dark .travel-header.is-stuck #mobile-navigation > div > div > div :is(a, button) {
+  color: var(--text-sub);
+}
+.dark .travel-header.is-stuck #mobile-navigation > div > div > div a[aria-current='page'] {
+  color: #d0e3c8;
 }
 
 /* Stepper on the green header */
@@ -1248,7 +1396,6 @@ select.ui-form-field {
     flex-direction: column;
     align-items: inherit;
     gap: 2px;
-    cursor: help;
   }
   .travel-compare-cell strong {
     font-size: 0.875rem;
@@ -2114,7 +2261,13 @@ select.ui-form-field {
   .travel-trip-summary--floating .travel-trip-status {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    min-height: 44px;
     margin-inline: auto;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--subtle);
     color: var(--primary);
     font-size: 0.875rem;
     font-weight: 600;
@@ -2138,6 +2291,11 @@ select.ui-form-field {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    align-self: flex-start;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--subtle);
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--primary);
@@ -2599,7 +2757,7 @@ select.ui-form-field {
 .issued-document-button svg{flex-shrink:0}
 .issued-document-heading{padding-block:4px 24px}
 .issued-facts{border-block:1px solid var(--plan-border);grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding-block:24px;display:grid}
-.issued-facts dt{color:#59645d;font-size:12px}
+.issued-facts dt{color:#59645d;font-size:12px;display:block}
 .issued-facts dd{overflow-wrap:anywhere;margin-top:6px;font-size:14px;font-weight:500;line-height:1.7}
 .issued-benefits-heading{justify-content:space-between;align-items:center;gap:16px;margin-block:28px 10px;display:flex}
 .issued-benefit-group{border-top:1px solid var(--plan-border)}
@@ -2608,7 +2766,7 @@ select.ui-form-field {
 .issued-benefit-group[open]>summary svg{transform:rotate(180deg)}
 .issued-benefit-group>summary svg{transition:transform .24s}
 .issued-benefit-row{border-top:1px solid var(--plan-border);grid-template-columns:minmax(0,1fr) auto;gap:24px;padding:14px 0;font-size:14px;line-height:1.6;display:grid}
-.issued-benefit-row dd{text-align:right}
+.issued-benefit-row dt{overflow-wrap:anywhere}.issued-benefit-row dd{text-align:right;overflow-wrap:anywhere;min-width:0}
 .issued-document-note{background:var(--plan-subtle);color:#59645d;border-radius:6px;gap:12px;margin-block:24px;padding:18px;font-size:13px;line-height:1.8;display:flex}
 .issued-document-note svg{color:#006838}
 .issued-sidebar{position:sticky;top:104px}
@@ -2628,7 +2786,7 @@ select.ui-form-field {
 .dark :is(.issued-badge,.issued-confirmation__icon){color:#d0e3c8;background:#303b32}
 @media (width<=1023px){.issued-layout{grid-template-columns:minmax(0,1fr) 280px;gap:24px}.issued-reference{gap:8px;padding:16px}.issued-section-top{flex-wrap:wrap}.issued-document-button{padding-inline:8px;font-size:13px}}
 @media (width<=767px){.issued-layout{grid-template-columns:minmax(0,1fr)}.issued-sidebar{position:static}.issued-confirmation{gap:16px}.issued-confirmation__icon{width:44px;height:44px}.issued-references{grid-template-columns:minmax(0,1fr)}.issued-reference+.issued-reference{border-left:0;border-top:1px solid var(--plan-border)}.issued-trip-facts{grid-template-columns:1fr 1fr}}
-@media (width<=540px){.issued-confirmation{display:block}.issued-confirmation__icon{margin-bottom:20px}.issued-document-switch{grid-template-columns:minmax(0,1fr)}.issued-facts{gap:20px 16px}.issued-benefit-row{grid-template-columns:minmax(0,1fr) minmax(80px,auto);gap:12px;font-size:13px}}
+@media (width<=540px){.issued-confirmation{display:block}.issued-confirmation__icon{margin-bottom:20px}.issued-document-switch{grid-template-columns:minmax(0,1fr)}.issued-facts{gap:20px 16px}.issued-benefit-row{grid-template-columns:minmax(0,1fr);gap:4px;font-size:13px}.issued-benefit-row dd{text-align:left}}
 @media (prefers-reduced-motion:reduce){[data-issued-page] *,[data-issued-page] :before,[data-issued-page] :after{transition-duration:0s!important;animation-duration:0s!important}}
 @keyframes travel-issuance-spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.travel-issuance-spinner{animation:none}}
@@ -2642,3 +2800,47 @@ select.ui-form-field {
 @media (width>=640px){.travel-results{padding-inline:24px}}
 @media (width>=1024px){.travel-results{padding-inline:32px}}
 .issued-confirmation .issued-eyebrow{margin:0}
+
+/* ── Insurer documents ── */
+.issued-insurer-docs{border:1px solid var(--plan-border);background:var(--plan-surface);border-radius:8px;padding:20px 24px;margin-block:0 0}
+.issued-insurer-docs__header{margin-bottom:16px}
+.issued-insurer-docs__grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.issued-doc-card{border:1px solid var(--plan-border);border-radius:8px;align-items:flex-start;gap:12px;padding:16px;display:flex;text-decoration:none;min-height:72px}
+.issued-doc-card__icon{border-radius:6px;flex-shrink:0;place-items:center;width:36px;height:36px;display:grid;margin-top:2px}
+.issued-doc-card__body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.issued-doc-card__label{font-size:13px;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.issued-doc-card__hint{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.issued-doc-card__arrow{margin-top:4px;opacity:.6;flex-shrink:0;transition:opacity .15s,transform .15s}
+.issued-doc-card__badge{border-radius:4px;align-self:flex-start;flex-shrink:0;padding:2px 7px;font-size:11px;font-weight:600;line-height:1.6;display:inline-flex;white-space:nowrap;margin-top:2px}
+/* available state */
+.issued-doc-card--available{background:var(--plan-surface);cursor:pointer;transition:border-color .15s,background .15s}
+.issued-doc-card--available:hover{border-color:#006838;background:var(--plan-subtle)}
+.issued-doc-card--available:hover .issued-doc-card__arrow{opacity:1;transform:translate(2px,-2px)}
+.issued-doc-card--available .issued-doc-card__icon{background:#eaf3e7;color:#006838}
+.issued-doc-card--available .issued-doc-card__label{color:#006838}
+.issued-doc-card--available .issued-doc-card__hint{color:#59645d}
+/* pending state */
+.issued-doc-card--pending{background:var(--plan-subtle)}
+.issued-doc-card--pending .issued-doc-card__icon{background:#fef9ec;color:#92400e}
+.issued-doc-card--pending .issued-doc-card__label{color:#1d2b22}
+.issued-doc-card--pending .issued-doc-card__hint{color:#59645d}
+.issued-doc-card--pending .issued-doc-card__badge{background:#fef3c7;color:#92400e}
+/* unavailable state */
+.issued-doc-card--unavailable{background:var(--plan-subtle);opacity:.7}
+.issued-doc-card--unavailable .issued-doc-card__icon{background:var(--plan-border);color:#59645d}
+.issued-doc-card--unavailable .issued-doc-card__label{color:#59645d}
+.issued-doc-card--unavailable .issued-doc-card__hint{color:#59645d}
+/* dark overrides */
+.dark .issued-doc-card--available:hover{border-color:#d0e3c8;background:#1f2b23}
+.dark .issued-doc-card--available .issued-doc-card__icon{background:#1c3020;color:#d0e3c8}
+.dark .issued-doc-card--available .issued-doc-card__label{color:#d0e3c8}
+.dark .issued-doc-card--pending .issued-doc-card__icon{background:#3d2d0a;color:#fbbf24}
+.dark .issued-doc-card--pending .issued-doc-card__label{color:#f4f5f2}
+.dark .issued-doc-card--pending .issued-doc-card__badge{background:#3d2d0a;color:#fbbf24}
+.dark .issued-doc-card--pending .issued-doc-card__hint{color:#c4c7c5}
+.dark .issued-doc-card--unavailable .issued-doc-card__label{color:#c4c7c5}
+/* focus ring for available anchor */
+.issued-doc-card--available:focus-visible{outline:2px solid #006838;outline-offset:0}
+.dark .issued-doc-card--available:focus-visible{outline-color:#d0e3c8}
+/* responsive */
+@media (width<=640px){.issued-insurer-docs__grid{grid-template-columns:1fr}.issued-insurer-docs{padding:16px}}

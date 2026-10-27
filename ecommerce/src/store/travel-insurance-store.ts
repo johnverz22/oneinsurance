@@ -193,7 +193,14 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
 
       setPolicyNo: (policyNo) => set({ policyNo }),
 
-      resetForm: () => { idFilesStore.clear(); return set(initialState) },
+      resetForm: () => {
+        idFilesStore.clear()
+        // Preserve issueQuoteResponse across resets — it's post-purchase data
+        // that the /policy page depends on. Clearing it here means a page
+        // refresh on /policy would lose the policy and show the error screen.
+        const { issueQuoteResponse } = get()
+        return set({ ...initialState, issueQuoteResponse })
+      },
       resetAvailForm: () =>
         set({
           step: initialState.step,
@@ -282,18 +289,6 @@ export const useTravelInsuranceStore = create<TravelInsuranceStore>()(
             state.travelDetails.dateOfBirth = new Date(
               state.travelDetails.dateOfBirth
             )
-          }
-          
-          // Clear default destination if it's still set to JAPAN from old data
-          if (state.travelDetails.travelDetailList && state.travelDetails.travelDetailList.length > 0) {
-            const firstDestination = state.travelDetails.travelDetailList[0]
-            if (firstDestination.TravelCountry === 'JAPAN') {
-              // Clear the destination to match new default behavior
-              state.travelDetails.travelDetailList[0] = {
-                ...firstDestination,
-                TravelCountry: '',
-              }
-            }
           }
           
           // Also handle travelers dates

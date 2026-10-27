@@ -22,6 +22,8 @@ export type DestinationOption = {
 }
 
 interface DestinationComboboxProps {
+  /** id for the focusable control (trigger button in single mode, inline input in multi mode). */
+  id?: string
   options: DestinationOption[]
   value?: string
   onValueChange?: (value: string) => void
@@ -33,6 +35,10 @@ interface DestinationComboboxProps {
   label?: string
   disabled?: boolean
   error?: boolean
+  /** Marks the control as required for assistive tech. */
+  required?: boolean
+  /** id of an element describing the control (e.g. an error message). */
+  describedBy?: string
   allowClear?: boolean
   showChips?: boolean
 }
@@ -57,6 +63,7 @@ function useIsMobile() {
 }
 
 export function DestinationCombobox({
+  id: idProp,
   options,
   value = '',
   onValueChange,
@@ -68,13 +75,15 @@ export function DestinationCombobox({
   label = 'Destination',
   disabled = false,
   error = false,
+  required = false,
+  describedBy,
   allowClear = false,
   showChips = true,
 }: DestinationComboboxProps) {
-  const id = useId()
-  const listboxId = `${id}-listbox`
-  const inputId = `${id}-input`
-  const liveId = `${id}-live`
+  const uid = useId()
+  const listboxId = `${uid}-listbox`
+  const inputId = idProp ?? `${uid}-input`
+  const liveId = `${uid}-live`
 
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -289,7 +298,7 @@ export function DestinationCombobox({
             aria-hidden
           />
           <input
-            id={inputId}
+            id={`${uid}-search`}
             type="text"
             value={query}
             onChange={(e) => {
@@ -301,7 +310,7 @@ export function DestinationCombobox({
             aria-autocomplete="list"
             aria-controls={listboxId}
             aria-activedescendant={
-              flatOptions[activeIndex] ? `${id}-option-${activeIndex}` : undefined
+              flatOptions[activeIndex] ? `${uid}-option-${activeIndex}` : undefined
             }
             onClick={(e) => e.stopPropagation()}
           />
@@ -327,7 +336,7 @@ export function DestinationCombobox({
                   return (
                     <li
                       key={opt.value}
-                      id={`${id}-option-${flatIndex}`}
+                      id={`${uid}-option-${flatIndex}`}
                       data-index={flatIndex}
                       role="option"
                       aria-selected={isSelected}
@@ -391,10 +400,13 @@ export function DestinationCombobox({
       <div className="relative">
         <button
           type="button"
-          id={id}
+          id={idProp ?? uid}
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-controls={open ? listboxId : undefined}
+          aria-describedby={describedBy}
+          // role=button doesn't support aria-required — fold it into the name
+          aria-label={required ? `${label} (required)` : label}
           disabled={disabled}
           onClick={openDropdown}
           className={cn(
@@ -522,6 +534,9 @@ export function DestinationCombobox({
         aria-controls={open ? listboxId : undefined}
         aria-multiselectable
         aria-disabled={disabled}
+        aria-required={required || undefined}
+        aria-invalid={error || undefined}
+        aria-label={label}
         onClick={() => {
           if (!disabled) {
             inputRef.current?.focus()
@@ -597,11 +612,14 @@ export function DestinationCombobox({
             placeholder={showPlaceholder ? placeholder : ''}
             disabled={disabled}
             aria-label={label}
+            aria-required={required || undefined}
+            aria-invalid={error || undefined}
+            aria-describedby={describedBy}
             aria-autocomplete="list"
             aria-controls={open ? listboxId : undefined}
             aria-activedescendant={
               open && flatOptions[activeIndex]
-                ? `${id}-option-${activeIndex}`
+                ? `${uid}-option-${activeIndex}`
                 : undefined
             }
             className="min-w-[5rem] shrink-0 bg-transparent text-sm text-[#183d2c] placeholder-[#808080] outline-none dark:text-[#f4f5f2] dark:placeholder-[#b2b7b4]"

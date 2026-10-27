@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { format, subYears } from 'date-fns'
-import { AlertCircle, CheckCircle2, ChevronDown, Info } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ChevronDown, Info, UserCheck } from 'lucide-react'
 import { idFilesStore } from '@/store/travel-insurance-store'
 import {
   PH_ID_TYPES,
@@ -12,7 +12,7 @@ import {
 import { provinces } from '@/constants/phil-prov'
 import { citiesMunicipalities } from '@/constants/phil-city-mun'
 import { getZipCodeByCityCode } from '@/utils/address-util'
-import { setPath } from '@/utils/traveller-form'
+import { setPath, TravellerFieldRules } from '@/utils/traveller-form'
 import type { IdOcrResult } from '@/utils/paddle-ocr-types'
 import { IdUpload } from '@/components/travel-insurance/id-upload'
 
@@ -34,8 +34,19 @@ interface TravellerCardProps {
   onToggle: (open: boolean) => void
   onChange: (update: (prev: PersonalInfoFormData) => PersonalInfoFormData) => void
   onOpenAgreement: () => void
-  /** First traveller data for copying address/contact */
-  traveller0?: PersonalInfoFormData
+  /** Whether this traveller is the principal applicant */
+  isPrincipal: boolean
+  /** Called when the user clicks "Principal" to make this traveller the principal */
+  onSetPrincipal: () => void
+  /** Principal traveller data for copying address/contact (omit for the principal card itself) */
+  principalTraveller?: PersonalInfoFormData
+  /** Selected insurer's field rules — drive required vs optional marking */
+  rules: TravellerFieldRules
+  /**
+   * Called when the ID scan lock changes for this traveller.
+   * Parent form should disable the submit button while any scan is in-flight.
+   */
+  onScanningChange?: (scanning: boolean) => void
 }
 
 /* ── Small helpers ── */
@@ -60,7 +71,11 @@ export function TravellerCard({
   onToggle,
   onChange,
   onOpenAgreement,
-  traveller0,
+  isPrincipal,
+  onSetPrincipal,
+  principalTraveller,
+  rules,
+  onScanningChange,
 }: TravellerCardProps) {
   const prefix = `traveller-${index}`
 
@@ -83,9 +98,10 @@ export function TravellerCard({
   )
 
   /* ── field / label / error helpers ── */
-  const field = (path: string) => ({
+  const field = (path: string, opts?: { optional?: boolean }) => ({
     id: `${prefix}-${path}`,
     'data-field': `${index}.${path}`,
+    required: opts?.optional ? undefined : true,
     'aria-invalid': err(path) ? (true as const) : undefined,
     'aria-describedby': err(path) ? `${prefix}-${path}-error` : undefined,
     className: `ui-form-field mt-1.5 block min-h-11 w-full text-base sm:text-sm${err(path) ? ' border-red-600 outline-red-600' : ''}`,
@@ -140,15 +156,15 @@ export function TravellerCard({
   /* ── Copy helpers for same-as-T1 ── */
   const copySameAddress = (on: boolean) => {
     setSameAddress(on)
-    if (on && traveller0) {
-      onChange((d) => ({ ...d, address: { ...traveller0.address } }))
+    if (on && principalTraveller) {
+      onChange((d) => ({ ...d, address: { ...principalTraveller.address } }))
     }
   }
 
   const copySameContact = (on: boolean) => {
     setSameContact(on)
-    if (on && traveller0) {
-      onChange((d) => ({ ...d, email: traveller0.email, mobileNumber: traveller0.mobileNumber }))
+    if (on && principalTraveller) {
+      onChange((d) => ({ ...d, email: principalTraveller.email, mobileNumber: principalTraveller.mobileNumber }))
     }
   }
 
@@ -190,6 +206,34 @@ export function TravellerCard({
               </span>
             )
           )}
+
+          {/* ── Principal checkbox ── */}
+          {/* Stopgap: prevent the accordion toggle button from receiving this click */}
+          <span
+            role="none"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center"
+          >
+            <label
+              className={`flex min-h-8 cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold select-none transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-[#006838]
+                ${isPrincipal
+                  ? 'bg-[#e2eddb] text-[var(--primary)] dark:bg-[#1c3020] dark:text-[#d0e3c8]'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--subtle)]'
+                }`}
+            >
+              <input
+                type="radio"
+                name="principal-applicant"
+                checked={isPrincipal}
+                onChange={onSetPrincipal}
+                aria-label={`Traveller ${index + 1} is the principal applicant`}
+                className="sr-only"
+              />
+              <UserCheck className="size-4 shrink-0" aria-hidden />
+              <span>{isPrincipal ? 'Principal' : 'Make principal'}</span>
+            </label>
+          </span>
+
           <ChevronDown
             className={`size-5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
             aria-hidden
@@ -213,15 +257,19 @@ export function TravellerCard({
 
           <IdUpload
             label={`ID images for traveller ${index + 1}`}
+            required={rules.requiresIdFront}
+            backRequired={rules.requiresIdBack}
             initialFront={idFilesStore.get(index)?.frontId ?? null}
             initialBack={idFilesStore.get(index)?.backId ?? null}
             onChange={onIdChange}
             onOcrResult={applyOcr}
+            onScanningChange={onScanningChange}
           />
           {showErrors && err('idFrontUploaded') && (
             <p
               role="alert"
               data-field={`${index}.idFrontUploaded`}
+              tabIndex={-1}
               className="mt-1.5 flex items-center gap-1 text-xs text-red-700 dark:text-red-300"
             >
               <AlertCircle className="size-3.5 shrink-0" aria-hidden /> {err('idFrontUploaded')}
@@ -258,7 +306,7 @@ export function TravellerCard({
               </div>
               <div>
                 {lbl('middleName', 'Middle name', true)}
-                <input {...field('middleName')} value={data.middleName ?? ''} maxLength={100} autoComplete="off" onChange={(e) => set('middleName', e.target.value)} />
+                <input {...field('middleName', { optional: true })} value={data.middleName ?? ''} maxLength={100} autoComplete="off" onChange={(e) => set('middleName', e.target.value)} />
               </div>
               <div>
                 {lbl('lastName', 'Last name')}
@@ -271,7 +319,7 @@ export function TravellerCard({
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div>
                 {lbl('suffix', 'Suffix', true)}
-                <select {...field('suffix')} value={data.suffix ?? 'No Suffix'} onChange={(e) => set('suffix', e.target.value)}>
+                <select {...field('suffix', { optional: true })} value={data.suffix ?? 'No Suffix'} onChange={(e) => set('suffix', e.target.value)}>
                   {SuffixEnum.options.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
@@ -306,7 +354,7 @@ export function TravellerCard({
             <SectionHeading>3 &middot; Contact</SectionHeading>
 
             {/* Same-contact toggle for T2+ */}
-            {index > 0 && traveller0 && (
+            {index > 0 && principalTraveller && (
               <label className="mb-4 flex min-h-11 cursor-pointer items-center gap-3 text-sm">
                 <input
                   type="checkbox"
@@ -314,7 +362,7 @@ export function TravellerCard({
                   onChange={(e) => copySameContact(e.target.checked)}
                   className="size-4 accent-[var(--primary)]"
                 />
-                Same contact details as Traveller 1
+                Same contact details as primary traveller
               </label>
             )}
 
@@ -328,7 +376,7 @@ export function TravellerCard({
                 <div>
                   {lbl('mobileNumber', 'Mobile number')}
                   <div className="relative">
-                    <span className="pointer-events-none absolute top-1/2 left-3 mt-0.5 -translate-y-1/2 select-none text-sm text-[var(--text-muted)]">+63</span>
+                    <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 select-none text-sm text-[var(--text-muted)]">+63</span>
                     <input
                       {...field('mobileNumber')}
                       className={`ui-form-field mt-1.5 block min-h-11 w-full pl-12 text-base sm:text-sm${err('mobileNumber') ? ' border-red-600 outline-red-600' : ''}`}
@@ -351,7 +399,7 @@ export function TravellerCard({
             <SectionHeading>4 &middot; Address</SectionHeading>
 
             {/* Same-address toggle for T2+ */}
-            {index > 0 && traveller0 && (
+            {index > 0 && principalTraveller && (
               <label className="mb-4 flex min-h-11 cursor-pointer items-center gap-3 text-sm">
                 <input
                   type="checkbox"
@@ -359,7 +407,7 @@ export function TravellerCard({
                   onChange={(e) => copySameAddress(e.target.checked)}
                   className="size-4 accent-[var(--primary)]"
                 />
-                Same address as Traveller 1
+                Same address as primary traveller
               </label>
             )}
 
@@ -373,8 +421,8 @@ export function TravellerCard({
                     {errText('address.line1')}
                   </div>
                   <div>
-                    {lbl('address.line2', 'Address line 2')}
-                    <input {...field('address.line2')} maxLength={40} placeholder="Barangay / Subdivision / Details" value={data.address.line2 ?? ''} onChange={(e) => set('address.line2', e.target.value)} />
+                    {lbl('address.line2', 'Address line 2', !rules.requiresAddressLine2)}
+                    <input {...field('address.line2', { optional: !rules.requiresAddressLine2 })} maxLength={40} placeholder="Barangay / Subdivision / Details" value={data.address.line2 ?? ''} onChange={(e) => set('address.line2', e.target.value)} />
                     {errText('address.line2')}
                   </div>
                 </div>
@@ -445,7 +493,8 @@ export function TravellerCard({
                 onChange={(e) => set('isCovidVaccinated', e.target.checked)}
                 className="size-4 accent-[var(--primary)]"
               />
-              I am fully vaccinated against COVID-19
+              I am fully vaccinated against COVID-19{' '}
+              <span className="text-xs font-normal text-[var(--text-muted)]">(optional)</span>
             </label>
 
             {/* Data sharing consent */}
@@ -454,8 +503,10 @@ export function TravellerCard({
                 <input
                   data-field={`${index}.is_data_sharing_consent`}
                   type="checkbox"
+                  required
                   checked={data.is_data_sharing_consent}
                   aria-invalid={err('is_data_sharing_consent') ? true : undefined}
+                  aria-describedby={err('is_data_sharing_consent') ? `${prefix}-is_data_sharing_consent-error` : undefined}
                   onChange={(e) => set('is_data_sharing_consent', e.target.checked)}
                   className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"
                 />
@@ -526,7 +577,7 @@ export function TravellerCard({
                     <label htmlFor={`${prefix}-beneficiary.middleName`} className="block text-sm font-medium">
                       Middle name <span className="text-xs font-normal text-[var(--text-muted)]">(optional)</span>
                     </label>
-                    <input {...field('beneficiary.middleName')} maxLength={100} value={data.beneficiary.middleName ?? ''} onChange={(e) => set('beneficiary.middleName', e.target.value)} />
+                    <input {...field('beneficiary.middleName', { optional: true })} maxLength={100} value={data.beneficiary.middleName ?? ''} onChange={(e) => set('beneficiary.middleName', e.target.value)} />
                   </div>
                   <div>
                     <label htmlFor={`${prefix}-beneficiary.lastName`} className="block text-sm font-medium">Last name <span aria-hidden className="text-red-600">*</span></label>
@@ -544,7 +595,7 @@ export function TravellerCard({
                   </div>
                 </div>
                 {err('beneficiary') && (
-                  <p role="alert" data-field={`${index}.beneficiary`} className="mt-3 flex items-center gap-1 text-xs text-red-700 dark:text-red-300">
+                  <p role="alert" data-field={`${index}.beneficiary`} tabIndex={-1} className="mt-3 flex items-center gap-1 text-xs text-red-700 dark:text-red-300">
                     <AlertCircle className="size-3.5 shrink-0" aria-hidden /> {err('beneficiary')}
                   </p>
                 )}

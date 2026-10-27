@@ -219,6 +219,20 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
       )
       return
     }
+    // Already paid/issued elsewhere — continue the post-payment journey
+    // instead of dead-ending on a notice.
+    if (result.status === 'issued' && result.next === 'policy') {
+      setRetrieveOpen(false)
+      router.push(`/${agentCode}/travel-insurance/policy`)
+      return
+    }
+    if (result.status === 'issued' && result.next === 'issuance') {
+      setRetrieveOpen(false)
+      router.push(
+        `/${agentCode}/travel-insurance/issuance?paid=1${result.paymentRef ? `&txn=${encodeURIComponent(result.paymentRef)}` : ''}`
+      )
+      return
+    }
     setRetrievalNotice({
       kind: result.status,
       message:
@@ -274,6 +288,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
       <Header
         agentCode={agentCode}
         currentStep={1}
+        ctaRevealPast="trip-search"
         onOpenRetrieveModal={() => setRetrieveOpen(true)}
       />
 

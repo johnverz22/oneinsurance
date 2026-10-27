@@ -19,7 +19,7 @@ export type TravelCoverage = Record<TravelCoverageArea, Country[]>
 export const travelInsuranceSchema = z
   .object({
     travelType: z.enum(['INDIVIDUAL', 'FAMILY'], {
-      required_error: 'Please select individual or family coverage',
+      error: 'Please select individual or family coverage',
     }),
     travelDetailList: z
       .array(TravelDetailSchema)
@@ -30,6 +30,7 @@ export const travelInsuranceSchema = z
     noOfAdults: z.number().min(1, 'At least one adult is required').max(10, 'Maximum 10 adults'),
     noOfChildren: z.number().min(0).max(10, 'Maximum 10 children'),
     isAnnualMultiTrip: z.boolean(),
+    returnDestination: z.string().optional(),
     agreedToTerms: z.boolean().refine((val) => val === true, {
       message: 'You must agree to the terms and conditions',
     }),
@@ -69,14 +70,14 @@ export const travelInsuranceSchema = z
 
       if (currentAge < 18) {
         ctx.addIssue({
-          code: z.ZodIssueCode.invalid_date,
+          code: 'custom',
           path: ['dateOfBirth'],
           message: 'You must be 18 years old and above',
         })
       }
     } else {
       ctx.addIssue({
-        code: z.ZodIssueCode.invalid_date,
+        code: 'custom',
         path: ['dateOfBirth'],
         message: 'Date of Birth is required',
       })
@@ -276,12 +277,10 @@ export const personalInfoSchema = z
   .object({
     idType: PhilippineIdType,
     idNumber: z.string().min(1, 'ID number is required'),
-    idFrontUploaded: z.boolean().refine((val) => val === true, {
-      message: 'Front ID upload is required',
-    }),
-    idBackUploaded: z.boolean().refine(() => true, {
-      message: 'Back ID upload is required',
-    }),
+    // Requiredness is insurer-specific — enforced via TravellerFieldRules in
+    // validateTravellers(), not here.
+    idFrontUploaded: z.boolean(),
+    idBackUploaded: z.boolean(),
     firstName: z.string().min(1, 'First name is required'),
     middleName: z.string().nullable().optional(),
     lastName: z.string().min(1, 'Last name is required'),
@@ -306,9 +305,10 @@ export const personalInfoSchema = z
 
       line2: z
         .string()
-        .min(1, 'Address Line 2 is required')
-        .max(40, 'Address Line 2 must not exceed 40 characters'),
+        .max(40, 'Address Line 2 must not exceed 40 characters')
+        .optional(),
     }),
+    isPrincipalApplicant: z.boolean().optional(),
     isCovidVaccinated: z.boolean().optional(),
     is_data_sharing_consent: z.boolean().refine((val) => val === true, {
       message: 'Required *',
@@ -322,10 +322,10 @@ export const personalInfoSchema = z
       const result = validator.safeParse(data.idNumber)
       if (!result.success) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['idNumber'],
           message:
-            result.error.errors[0]?.message ||
+            result.error.issues[0]?.message ||
             `Invalid format for ${data.idType}`,
         })
       }
@@ -341,7 +341,7 @@ export const personalInfoSchema = z
         !b?.relationship
       ) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['beneficiary'],
           message:
             'All beneficiary fields are required if you have a beneficiary',

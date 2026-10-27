@@ -37,13 +37,16 @@ import { PH_ID_TYPES, type PersonalInfoFormData } from '@/types/travel-insurance
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { formatBenefitLimit, groupBenefits } from '@/utils/travel-benefits'
+import { KeyConditions } from '@/components/travel-insurance/key-conditions'
 import { toPHP } from '@/utils/fx'
-import { formatDays, formatTripRange, getTripDays, titleCase } from '@/utils/trip-summary'
+import { formatDays, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import {
+  checkProposalState,
   isProposalExpired,
   loadProposalIntoStore,
   PROPOSAL_VALIDITY_HOURS,
   proposalExpiresAt,
+  recoverIssuedPolicy,
   RETRIEVED_PROPOSAL_KEY,
   type ProposalLoadResult,
 } from '@/utils/proposal-loader'
@@ -118,6 +121,8 @@ function ReviewRoute() {
 
   const [loaded, setLoaded] = useState<{ key: string; result: ProposalLoadResult } | null>(null)
   const [attempt, setAttempt] = useState(0)
+  const [guardNotice, setGuardNotice] = useState<RetrieveNotice>(null)
+  const base = `/${agentCode}/travel-insurance`
 
   useEffect(() => {
     if (!needsLoad || !target) return
@@ -132,6 +137,48 @@ function ReviewRoute() {
 
   const loadResult = loaded?.key === `${target}:${attempt}` ? loaded.result : null
   const loading = needsLoad && !loadResult
+
+  // Forward recovered issued proposals to the rest of the post-payment journey.
+  useEffect(() => {
+    if (!loadResult || loadResult.status !== 'issued' || !loadResult.next) return
+    if (loadResult.next === 'policy') {
+      router.replace(`${base}/policy`)
+    } else if (loadResult.next === 'issuance') {
+      router.replace(
+        `${base}/issuance?paid=1${loadResult.paymentRef ? `&txn=${encodeURIComponent(loadResult.paymentRef)}` : ''}`
+      )
+    }
+  }, [loadResult, router, base])
+
+  // In-session guard: a proposal already in the store renders without the
+  // resumption check, so verify its state — it may have been paid (or issued)
+  // elsewhere since.  State-only check: never touches the hydrated data.
+  useEffect(() => {
+    if (!hydrated || !ready || !target || loadResult) return
+    let cancelled = false
+    checkProposalState(target).then(async (check) => {
+      if (cancelled || (check.state !== 'completed' && check.state !== 'paid_not_issued')) return
+      const policyNo = await recoverIssuedPolicy(target, check.paymentRef)
+      if (cancelled) return
+      if (policyNo) {
+        router.replace(`${base}/policy`)
+      } else if (check.state === 'paid_not_issued') {
+        router.replace(
+          `${base}/issuance?paid=1${check.paymentRef ? `&txn=${encodeURIComponent(check.paymentRef)}` : ''}`
+        )
+      } else {
+        setGuardNotice({
+          kind: 'issued',
+          message: check.policyNo
+            ? `This proposal has already been issued. Policy number: ${check.policyNo}.`
+            : 'This proposal has already been issued and can no longer be resumed.',
+        })
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [hydrated, ready, target, loadResult, router, base])
 
   const startNewQuote = () => {
     useTravelInsuranceStore.getState().resetForm()
@@ -153,8 +200,8 @@ function ReviewRoute() {
     setAttempt((a) => a + 1)
   }, [target])
 
-  let notice: RetrieveNotice = null
-  if (loadResult && loadResult.status !== 'ok') {
+  let notice: RetrieveNotice = guardNotice
+  if (!notice && loadResult && loadResult.status !== 'ok') {
     notice = {
       kind: loadResult.status,
       message:
@@ -164,12 +211,17 @@ function ReviewRoute() {
     }
   }
 
+  // Redirect is in flight for recovered issued/paid proposals — keep the
+  // skeleton up rather than flashing the review or a notice.
+  const forwarding =
+    loadResult?.status === 'issued' && (loadResult.next === 'policy' || loadResult.next === 'issuance')
+
   return (
     <>
       <Header agentCode={agentCode} currentStep={4} />
-      {!hydrated || loading ? (
+      {!hydrated || loading || forwarding ? (
         <ReviewSkeleton />
-      ) : ready ? (
+      ) : ready && !guardNotice ? (
         <ReviewContent agentCode={agentCode} onStartNewQuote={startNewQuote} />
       ) : (
         <div className="w-full mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 lg:px-8">
@@ -267,9 +319,9 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
   const departure = new Date(travelDetails.departureDate)
   const returning = new Date(travelDetails.returnDate)
   const days = getTripDays(departure, returning)
-  const origin = titleCase(detail?.PlaceOfOrgin) || 'Philippines'
+  const origin = countryLabel(detail?.PlaceOfOrgin) || 'Philippines'
   const destinations = travelDetails.travelDetailList
-    .map((d) => titleCase(d.TravelCountry))
+    .map((d) => countryLabel(d.TravelCountry))
     .filter(Boolean)
     .join(', ')
 
@@ -363,7 +415,6 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
             onEdit={() => {}}
             readOnlyLabel="Proposal generated · Read-only"
             premium={`PHP ${money(totalPremium)}`}
-            hideFloatingBelowLg
           />
         </div>
 
@@ -516,12 +567,16 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
                         {group.rows.map((row, i) => (
                           <div key={i} className="travel-coverage__row">
                             <dt>{row.label}</dt>
-                            <dd className="font-medium sm:text-right">{row.value}</dd>
+                            <dd className="font-medium sm:text-right">
+                              {row.value}
+                              {row.note && <span className="travel-benefit-note">{row.note}</span>}
+                            </dd>
                           </div>
                         ))}
                       </dl>
                     </section>
                   ))}
+                  {benefitGroups.length > 0 && <KeyConditions className="mt-0" />}
                   {!benefitGroups.length && (
                     <p className="text-sm text-[var(--text-muted)]">Benefit details are listed in your policy wording.</p>
                   )}
@@ -574,13 +629,13 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
               )}
               <div className="space-y-4">
                 {travellers.map((t, i) => (
-                  <TravellerReview key={i} index={i} isAdult={i < adults} t={t} masked={retrieved} />
+                  <TravellerReview key={i} index={i} isAdult={i < adults} t={t} masked={retrieved} showPrincipal={travellers.length > 1} />
                 ))}
               </div>
             </section>
           </div>
 
-          <aside className="travel-applicant-card travel-selected-plan" aria-labelledby="selected-plan-title">
+          <aside className="order-first sm:order-none travel-applicant-card travel-selected-plan" aria-labelledby="selected-plan-title">
             <p className="text-xs font-semibold uppercase tracking-wider text-[var(--primary)] dark:text-[#d0e3c8]">
               Your selected plan
             </p>
@@ -768,11 +823,13 @@ function TravellerReview({
   isAdult,
   t,
   masked,
+  showPrincipal,
 }: {
   index: number
   isAdult: boolean
   t: PersonalInfoFormData
   masked: boolean
+  showPrincipal: boolean
 }) {
   const name = [t.firstName, t.middleName, t.lastName].filter(Boolean).join(' ') +
     (t.suffix && t.suffix !== 'No Suffix' ? `, ${t.suffix}` : '')
@@ -822,6 +879,7 @@ function TravellerReview({
           <span className="min-w-0">
             <span className="travel-review-person__caption">
               Traveller {index + 1} · {isAdult ? 'Adult' : 'Child'}
+              {showPrincipal && t.isPrincipalApplicant ? ' · Principal applicant' : ''}
             </span>
             <h3 className="text-lg font-semibold">{name || 'Name not provided'}</h3>
           </span>

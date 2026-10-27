@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server'
 /**
  * Expand bracket-notation FormData keys back into a nested object.
  *
- * "travellers[0][first_name]" → obj.travellers[0].first_name
- * "CustomField[PlanName]"     → obj.CustomField.PlanName
- * "ClientRequestId"           → obj.ClientRequestId
+ * "travellers[0][first_name]"   → obj.travellers[0].first_name
+ * "custom_field[plan_name]"     → obj.custom_field.plan_name
+ * "client_request_id"           → obj.client_request_id
  *
  * Booleans sent as "1"/"0" by the browser (multipart can't send real booleans)
  * are left as strings here; the upstream IGW accepts "1"/"0" for boolean fields
@@ -64,9 +64,9 @@ function expandFormDataToObject(formData: FormData): Record<string, unknown> {
  *
  * BASE_URL = https://stage-api.oneinsurance.shop/api/v1  (no /igw — dropped Oct 2026)
  *
- * The IGW v4 body shape (api_docs/travel_compare_quote_api2.md §3):
- *   { ClientRequestId, AgentCode, insurer_code, product_code, plan_code,
- *     travellers[], CustomField: { PlanName, TravellerLists[] } }
+ * The full-quote body shape (docs/api_docs_latest/full-quote-fe.md):
+ *   { client_request_id, agent_code, insurer_code, product_code, plan_code,
+ *     travellers[], custom_field: { plan_name, id_images[] } }
  */
 export async function POST(req: NextRequest) {
   try {

@@ -105,12 +105,13 @@ export function ProposalRetrieve({
         }}
       >
         <label htmlFor="proposal-search" className="block text-sm font-medium">
-          Proposal number
+          Proposal number <span aria-hidden className="text-red-600">*</span>
         </label>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row">
           <input
             id="proposal-search"
             value={value}
+            required
             onChange={(e) => setValue(e.target.value)}
             disabled={loading}
             autoComplete="off"

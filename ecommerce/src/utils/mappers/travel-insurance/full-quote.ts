@@ -45,27 +45,15 @@ export interface IgwFullQuoteTraveller {
   selected_addons: string[]
 }
 
-export interface IgwTravellerListEntry {
-  first_name: string
-  middle_name: string
-  last_name: string
-  date_of_birth: string // MM-DD-YYYY (kept from the old flow — API-only field)
-  contact_number: string
-  is_covid_vaccinated: boolean
-  is_data_sharing_consent: boolean
-}
-
 export interface IgwFullQuoteRequest {
-  ClientRequestId: string
-  AgentCode: string
+  client_request_id: string
+  agent_code: string
   insurer_code: string
   product_code: string
   plan_code: string
-  client_email: string
   travellers: IgwFullQuoteTraveller[]
-  CustomField: {
-    PlanName: string
-    TravellerLists: IgwTravellerListEntry[]
+  custom_field: {
+    plan_name: string
   }
 }
 
@@ -136,7 +124,7 @@ export function mapToIgwFullQuoteRequest(
 
   const travellers: IgwFullQuoteTraveller[] = state.travelersInfo.map(
     (t, index) => ({
-      is_principal_applicant: index === 0,
+      is_principal_applicant: t.isPrincipalApplicant === true,
       first_name: t.firstName,
       middle_name: t.middleName || null,
       last_name: t.lastName,
@@ -163,35 +151,16 @@ export function mapToIgwFullQuoteRequest(
     })
   )
 
-  // Kept from the old flow — CustomField is used only by this API,
-  // never forwarded to the insurer gateway.
-  const travellerLists: IgwTravellerListEntry[] = state.travelersInfo.map(
-    (t) => {
-      const dob = toDate(t.dateOfBirth)
-      const formattedDob = `${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}-${dob.getFullYear()}`
-      return {
-        first_name: t.firstName,
-        middle_name: t.middleName || '',
-        last_name: t.lastName,
-        date_of_birth: formattedDob,
-        contact_number: t.mobileNumber,
-        is_covid_vaccinated: t.isCovidVaccinated || false,
-        is_data_sharing_consent: t.is_data_sharing_consent || false,
-      }
-    }
-  )
-
   return {
-    ClientRequestId: clientRequestId,
-    AgentCode: agentCode,
+    client_request_id: clientRequestId,
+    agent_code: agentCode,
     insurer_code: plan.InsurerCode ?? '',
     product_code: plan.CarrierProductCode,
     plan_code: plan.CarrierPlanCode,
-    client_email: state.travelersInfo[0]?.email ?? '',
     travellers,
-    CustomField: {
-      PlanName: plan.CarrierPlanDesc,
-      TravellerLists: travellerLists,
+    // custom_field is used only by this API, never forwarded to the insurer.
+    custom_field: {
+      plan_name: plan.CarrierPlanDesc,
     },
   }
 }

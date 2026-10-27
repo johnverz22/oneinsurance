@@ -63,7 +63,22 @@ export function normalizeStaticPlan(plan: InsurancePlan): InsurancePlan {
   }
 }
 
-export type BenefitRow = { label: string; value: string }
+export type BenefitRow = { label: string; value: string; note?: string }
+
+export function benefitNote(benefit: InsuranceBenefit): string | undefined {
+  const limit = benefit.Limit
+  if (!limit || limit.Kind === 'none' || limit.Kind === 'text') return undefined
+  const note = (limit.Qualifier ?? '').trim()
+  if (!note || note === '0') return undefined
+  return note === formatBenefitLimit(benefit) ? undefined : note
+}
+
+export const KEY_CONDITIONS = [
+  'Pre-existing medical conditions, unless expressly covered by the plan.',
+  'Injuries from hazardous or professional sports and activities not listed in the plan.',
+  'Losses arising from war, riots, or other events the insurer excludes.',
+  'Claims caused by intentional acts, illegal activity, or travel against medical advice.',
+]
 
 export function getHighlightBenefits(plan: InsurancePlan, max = 6): BenefitRow[] {
   return (plan.MainBenefits ?? [])
@@ -81,7 +96,7 @@ export function groupBenefits(plan: InsurancePlan): { title: string; rows: Benef
   for (const b of sorted) {
     const title = b.CoverageName || 'Benefit overview'
     if (!groups.has(title)) groups.set(title, [])
-    groups.get(title)!.push({ label: b.BenefitDesc, value: formatBenefitLimit(b) })
+    groups.get(title)!.push({ label: b.BenefitDesc, value: formatBenefitLimit(b), note: benefitNote(b) })
   }
   return [...groups.entries()].map(([title, rows]) => ({ title, rows }))
 }

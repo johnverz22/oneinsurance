@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo, useSyncExternalStore } from 'react'
-import Link from 'next/link'
+import { useState, useRef, useEffect, useMemo, useSyncExternalStore, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plane, Calendar, Users, MapPin, ArrowRight } from 'lucide-react'
-import { useTravelInsuranceStore } from '@/store/travel-insurance-store'
+import { TermsAndConditionsModal } from '@/components/travel-insurance/terms-and-conditions-modal'
+import { TripSummaryModal } from '@/components/travel-insurance/trip-summary-modal'
+import { idFilesStore, useFullQuoteResponseStore, useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { TravelCoverageMap } from '@/constants/travel-coverage'
 import { getNormalizedTravelCoverages } from '@/utils/travel-coverages-helpers'
 import {
@@ -14,6 +15,33 @@ import {
 import { travelInsuranceSchema } from '@/types/travel-insurance/travel-insurance-request'
 import { cn } from '@/lib/utils'
 
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+
+function parseYmd(s: string) {
+  const [y, m, d] = s.split('-').map(Number)
+  return y && m && d ? { y, m: m - 1, d } : null
+}
+
+function formatDateRange(dep: string, ret: string) {
+  const a = parseYmd(dep)
+  const b = parseYmd(ret)
+  if (!a || !b) return '—'
+  const mon = (x: { m: number }) => MONTHS[x.m]
+  if (a.y === b.y && a.m === b.m) {
+    return a.d === b.d ? `${mon(a)} ${a.d}, ${a.y}` : `${mon(a)} ${a.d}–${b.d}, ${a.y}`
+  }
+  if (a.y === b.y) return `${mon(a)} ${a.d} – ${mon(b)} ${b.d}, ${a.y}`
+  return `${mon(a)} ${a.d}, ${a.y} – ${mon(b)} ${b.d}, ${b.y}`
+}
+
+function tripDaysLabel(dep: string, ret: string) {
+  const a = parseYmd(dep)
+  const b = parseYmd(ret)
+  if (!a || !b) return '—'
+  const days = Math.round((Date.UTC(b.y, b.m, b.d) - Date.UTC(a.y, a.m, a.d)) / 86400000) + 1
+  return days < 1 ? '—' : `${days} day${days > 1 ? 's' : ''}`
+}
+
 interface TripDetailsFormProps {
   agentCode: string
   onOpenRetrieve?: () => void
@@ -21,7 +49,42 @@ interface TripDetailsFormProps {
   onSubmitted?: () => void
 }
 
-export function TripDetailsForm({
+// Error keys → the focusable control for each field (comboboxes carry the id
+// on their inner button/input, not the wrapper div).
+const ERROR_FIELD_IDS: Record<string, string> = {
+  origin: 'trip-from',
+  travelDetailList: 'trip-destination',
+  returnDestination: 'trip-return-country',
+  departureDate: 'trip-departure',
+  returnDate: 'trip-return',
+  dateOfBirth: 'trip-birth',
+  noOfAdults: 'travellers-toggle',
+  agreedToTerms: 'trip-terms',
+}
+
+function focusErrorField(key: string) {
+  const el = document.getElementById(ERROR_FIELD_IDS[key] ?? '')
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  el.focus({ preventScroll: true })
+}
+
+export function TripDetailsForm(props: TripDetailsFormProps) {
+  const [nonce, setNonce] = useState(0)
+  useEffect(() => {
+    if (props.variant === 'modal') return
+    const store = useTravelInsuranceStore.getState()
+    if (!store.issueQuoteResponse) return
+    store.setIssueQuoteResponse(null)
+    store.resetForm()
+    useFullQuoteResponseStore.getState().resetApiResponse()
+    idFilesStore.clear()
+    setNonce((n) => n + 1)
+  }, [props.variant])
+  return <TripDetailsFormInner key={nonce} {...props} />
+}
+
+function TripDetailsFormInner({
   agentCode,
   onOpenRetrieve,
   variant = 'page',
@@ -36,7 +99,9 @@ export function TripDetailsForm({
     setFormModified,
     resetQuoteRefetchCount,
     setStep,
+    highestVisitedStep,
   } = useTravelInsuranceStore()
+  const hasSavedTrip = highestVisitedStep > 1
 
   // Hydration guard — avoid SSR mismatch for date inputs / persisted state
   const hydrated = useSyncExternalStore(
@@ -47,6 +112,11 @@ export function TripDetailsForm({
 
   const normalizedTravelDetails = useMemo(() => {
     const details = { ...travelDetails }
+    if (!hasSavedTrip) {
+      details.departureDate = undefined as unknown as Date
+      details.returnDate = undefined as unknown as Date
+      details.dateOfBirth = undefined
+    }
     if (details.departureDate && typeof details.departureDate === 'string') {
       details.departureDate = new Date(details.departureDate)
     }
@@ -57,7 +127,7 @@ export function TripDetailsForm({
       details.dateOfBirth = new Date(details.dateOfBirth)
     }
     return details
-  }, [travelDetails])
+  }, [travelDetails, hasSavedTrip])
 
   const storedArea = normalizedTravelDetails.travelDetailList?.[0]?.TravelCoverageArea
   const isStoredDomestic = storedArea === 'DOMESTIC'
@@ -72,11 +142,17 @@ export function TripDetailsForm({
   const [destinationType, setDestinationType] = useState<'international' | 'domestic'>(
     isStoredDomestic ? 'domestic' : 'international'
   )
-  const [countryCodes, setCountryCodes] = useState<string[]>(
-    (normalizedTravelDetails.travelDetailList ?? [])
+  const storedReturn = hasSavedTrip && !isStoredDomestic ? normalizedTravelDetails.returnDestination : undefined
+  const [countryCodes, setCountryCodes] = useState<string[]>(() => {
+    const codes = (normalizedTravelDetails.travelDetailList ?? [])
       .map((d) => d?.TravelCountry)
       .filter((c): c is string => Boolean(c && c.trim()))
-  )
+    return storedReturn && codes.length > 1 && codes[codes.length - 1] === storedReturn
+      ? codes.slice(0, -1)
+      : codes
+  })
+  const [returnsToPH, setReturnsToPH] = useState<boolean>(!storedReturn)
+  const [returnCode, setReturnCode] = useState<string>(storedReturn ?? '')
   const [originCode, setOriginCode] = useState<string>(
     normalizedTravelDetails.travelDetailList?.[0]?.PlaceOfOrgin || 'PHILIPPINES'
   )
@@ -93,25 +169,29 @@ export function TripDetailsForm({
       const dep = normalizedTravelDetails.departureDate.toISOString().split('T')[0]
       if (dep >= todayStr) return dep
     }
+    if (hasSavedTrip) return ''
     const d = new Date()
     d.setDate(d.getDate() + 7)
     return d.toISOString().split('T')[0]
-  }, [normalizedTravelDetails.departureDate, todayStr])
+  }, [normalizedTravelDetails.departureDate, todayStr, hasSavedTrip])
 
   const defaultReturnStr = useMemo(() => {
     if (
+      defaultDepartureStr &&
       normalizedTravelDetails.returnDate instanceof Date &&
       !isNaN(normalizedTravelDetails.returnDate.getTime())
     ) {
       const ret = normalizedTravelDetails.returnDate.toISOString().split('T')[0]
       if (ret >= defaultDepartureStr) return ret
     }
-    const d = new Date()
-    d.setDate(d.getDate() + 14)
-    return d.toISOString().split('T')[0]
-  }, [normalizedTravelDetails.returnDate, defaultDepartureStr])
+    if (!hasSavedTrip && defaultDepartureStr) {
+      const d = new Date(defaultDepartureStr)
+      d.setDate(d.getDate() + 7)
+      return d.toISOString().split('T')[0]
+    }
+    return ''
+  }, [normalizedTravelDetails.returnDate, defaultDepartureStr, hasSavedTrip])
 
-  // DO NOT prefill birthdate to 01/01/1990 — leave empty unless already saved
   const defaultDobStr = useMemo(() => {
     if (
       normalizedTravelDetails.dateOfBirth instanceof Date &&
@@ -119,8 +199,8 @@ export function TripDetailsForm({
     ) {
       return normalizedTravelDetails.dateOfBirth.toISOString().split('T')[0]
     }
-    return ''
-  }, [normalizedTravelDetails.dateOfBirth])
+    return hasSavedTrip ? '' : '1990-01-01'
+  }, [normalizedTravelDetails.dateOfBirth, hasSavedTrip])
 
   const [departure, setDeparture] = useState<string>(defaultDepartureStr)
   const [returnDate, setReturnDate] = useState<string>(defaultReturnStr)
@@ -134,6 +214,10 @@ export function TripDetailsForm({
   const [formError, setFormError] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  const [previewPayload, setPreviewPayload] = useState<Parameters<typeof updateTravelDetails>[0] | null>(null)
+  const [tcOpen, setTcOpen] = useState(false)
+  const closeTc = useCallback(() => setTcOpen(false), [])
 
   const travellersRef = useRef<HTMLDivElement>(null)
   const destTypeGroupRef = useRef<HTMLDivElement>(null)
@@ -196,6 +280,18 @@ export function TripDetailsForm({
     )
   }, [allDestinationOptions, destinationType])
 
+  const hasReturnLeg = destinationType === 'international' && !returnsToPH
+  const lastDestination = countryCodes[countryCodes.length - 1]
+  const returnOptions = useMemo(
+    () =>
+      allDestinationOptions.filter(
+        (opt) => opt.area !== 'DOMESTIC' && opt.value !== 'PHILIPPINES' && opt.value !== lastDestination
+      ),
+    [allDestinationOptions, lastDestination]
+  )
+  const destinationLabelOf = (code: string) =>
+    allDestinationOptions.find((o) => o.value === code)?.label || code
+
   // Close travellers popover on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -208,7 +304,7 @@ export function TripDetailsForm({
   }, [])
 
   const travellerCount = adults + children
-  const effectiveCoverageType = travellerCount > 1 ? 'family' : coverageType
+  const effectiveCoverageType = children > 0 ? 'family' : coverageType
   const travellerSummary = `${adults} adult${adults > 1 ? 's' : ''}${
     children > 0 ? ` · ${children} child${children === 1 ? '' : 'ren'}` : ''
   }`
@@ -227,11 +323,6 @@ export function TripDetailsForm({
 
   const handleTripTypeChange = (type: 'single' | 'annual') => {
     setTripType(type)
-    if (type === 'annual') {
-      const d = new Date(departure || todayStr)
-      d.setFullYear(d.getFullYear() + 1)
-      setReturnDate(d.toISOString().split('T')[0])
-    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -245,6 +336,9 @@ export function TripDetailsForm({
     }
     if (countryCodes.length === 0) {
       errors.travelDetailList = 'Please select at least one destination'
+    }
+    if (hasReturnLeg && !returnCode) {
+      errors.returnDestination = 'Please select a return destination'
     }
     if (!departure) {
       errors.departureDate = 'Please select a departure date'
@@ -269,24 +363,11 @@ export function TripDetailsForm({
       setFieldErrors(errors)
       const firstKey = Object.keys(errors)[0]
       setFormError(errors[firstKey])
-
-      const fieldIdMap: Record<string, string> = {
-        origin: 'travelling-from',
-        travelDetailList: 'destination-field',
-        departureDate: 'trip-departure',
-        returnDate: 'trip-return',
-        dateOfBirth: 'trip-birth',
-        agreedToTerms: 'trip-terms',
-      }
-      const targetId = fieldIdMap[firstKey]
-      if (targetId) {
-        const el = document.getElementById(targetId)
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        el?.focus()
-      }
+      focusErrorField(firstKey)
       return
     }
 
+    const allCountryCodes = hasReturnLeg ? [...countryCodes, returnCode] : countryCodes
     const payload: Parameters<typeof updateTravelDetails>[0] = {
       travelType: effectiveCoverageType === 'family' ? 'FAMILY' : 'INDIVIDUAL',
       isAnnualMultiTrip: tripType === 'annual',
@@ -295,7 +376,8 @@ export function TripDetailsForm({
       dateOfBirth: new Date(birthDate),
       noOfAdults: adults,
       noOfChildren: children,
-      travelDetailList: countryCodes.map((code, idx, arr) => ({
+      returnDestination: hasReturnLeg ? returnCode : undefined,
+      travelDetailList: allCountryCodes.map((code, idx, arr) => ({
         TravelCoverageArea: resolveCoverageArea(code),
         PlaceOfOrgin: idx === 0 ? originCode : arr[idx - 1],
         TravelCountry: code,
@@ -312,15 +394,22 @@ export function TripDetailsForm({
         if (!zodErrors[key]) zodErrors[key] = issue.message
       }
       setFieldErrors(zodErrors)
-      const firstMessage = result.error.issues[0]?.message || 'Please check the form for errors.'
-      setFormError(firstMessage)
+      const firstIssue = result.error.issues[0]
+      setFormError(firstIssue?.message || 'Please check the form for errors.')
       setIsSubmitting(false)
+      focusErrorField(String(firstIssue?.path[0] ?? ''))
       return
     }
 
-    setIsSubmitting(true)
+    if (variant === 'modal') {
+      commitSearch(payload)
+      return
+    }
+    setPreviewPayload(payload)
+  }
 
-    // Update Zustand Store exactly as in @ecommerce
+  const commitSearch = (payload: Parameters<typeof updateTravelDetails>[0]) => {
+    setIsSubmitting(true)
     updateTravelDetails(payload)
     setInsurancePlans(null)
     resetQuoteRefetchCount()
@@ -342,13 +431,14 @@ export function TripDetailsForm({
 
   // Selected destination summary label for left panel
   const destinationSummary = useMemo(() => {
-    if (countryCodes.length === 0) return 'Not selected'
-    if (countryCodes.length === 1) {
+    const total = countryCodes.length + (hasReturnLeg && returnCode ? 1 : 0)
+    if (total === 0) return 'Not selected'
+    if (total === 1) {
       const opt = destinationOptions.find((o) => o.value === countryCodes[0])
       return opt?.label || countryCodes[0]
     }
-    return `${countryCodes.length} countries selected`
-  }, [countryCodes, destinationOptions])
+    return `${total} countries selected`
+  }, [countryCodes, destinationOptions, hasReturnLeg, returnCode])
 
   const formBody = (
     <div
@@ -501,23 +591,26 @@ export function TripDetailsForm({
                     htmlFor="trip-from"
                     className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
                   >
-                    Travelling from
+                    Travelling from <span aria-hidden className="text-red-600">*</span>
                   </label>
                 </div>
                 <div className="mt-2">
                   <DestinationCombobox
+                    id="trip-from"
                     mode="domestic"
                     options={fromOptions}
                     value={originCode}
                     onValueChange={setOriginCode}
                     placeholder="Select origin"
                     label="Travelling from"
+                    required
                     error={Boolean(fieldErrors.origin)}
+                    describedBy={fieldErrors.origin ? 'travelling-from-error' : undefined}
                     allowClear={false}
                   />
                 </div>
                 {fieldErrors.origin && (
-                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
+                  <p id="travelling-from-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
                     {fieldErrors.origin}
                   </p>
                 )}
@@ -532,7 +625,7 @@ export function TripDetailsForm({
                 */}
                 <div className="flex min-h-6 flex-wrap items-center justify-between gap-2 text-sm">
                   <legend className="font-medium text-[#183d2c] dark:text-[#f4f5f2]">
-                    Destination
+                    Destination <span aria-hidden className="text-red-600">*</span>
                   </legend>
 
                   {/* SM / MD: compact pill segmented control (hidden on LG) */}
@@ -540,7 +633,7 @@ export function TripDetailsForm({
                     ref={destTypeGroupRef}
                     role="radiogroup"
                     aria-label="Destination region"
-                    className="inline-flex rounded-lg bg-[#f1f2f0] p-0.5 dark:bg-[#171919] lg:hidden"
+                    className="inline-flex rounded-lg bg-[#f1f2f0] p-0.5 dark:bg-[#171919] md:hidden"
                     onKeyDown={(e) => {
                       const opts = ['international', 'domestic'] as const
                       const idx = opts.indexOf(destinationType)
@@ -582,7 +675,7 @@ export function TripDetailsForm({
                   <div
                     role="radiogroup"
                     aria-label="Destination region"
-                    className="hidden items-center gap-4 lg:flex"
+                    className="hidden items-center gap-4 md:flex"
                     onKeyDown={(e) => {
                       const opts = ['international', 'domestic'] as const
                       const idx = opts.indexOf(destinationType)
@@ -643,6 +736,7 @@ export function TripDetailsForm({
 
                 <div className="mt-2">
                   <DestinationCombobox
+                    id="trip-destination"
                     mode={destinationType}
                     options={destinationOptions}
                     multiple
@@ -654,14 +748,60 @@ export function TripDetailsForm({
                         : 'Select countries'
                     }
                     label="Destination"
+                    required
                     error={Boolean(fieldErrors.travelDetailList)}
+                    describedBy={fieldErrors.travelDetailList ? 'destination-error' : undefined}
                     showChips={true}
                   />
                 </div>
                 {fieldErrors.travelDetailList && (
-                  <p className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
+                  <p id="destination-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
                     {fieldErrors.travelDetailList}
                   </p>
+                )}
+
+                {destinationType === 'international' && (
+                  <div className="mt-3">
+                    <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-[#183d2c] dark:text-[#f4f5f2]">
+                      <input
+                        type="checkbox"
+                        checked={returnsToPH}
+                        onChange={(e) => {
+                          setReturnsToPH(e.target.checked)
+                          if (e.target.checked) setReturnCode('')
+                        }}
+                        className="size-4 shrink-0 accent-[#006838]"
+                      />
+                      Return destination is Philippines
+                    </label>
+                    {!returnsToPH && (
+                      <div className="mt-1">
+                        <span className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">
+                          Return destination <span aria-hidden className="text-red-600">*</span>
+                        </span>
+                        <div className="mt-2">
+                          <DestinationCombobox
+                            id="trip-return-country"
+                            mode="international"
+                            options={returnOptions}
+                            value={returnCode === lastDestination ? '' : returnCode}
+                            onValueChange={setReturnCode}
+                            placeholder="Select a country"
+                            label="Return destination"
+                            required
+                            error={Boolean(fieldErrors.returnDestination)}
+                            describedBy={fieldErrors.returnDestination ? 'return-destination-error' : undefined}
+                            allowClear={false}
+                          />
+                        </div>
+                        {fieldErrors.returnDestination && (
+                          <p id="return-destination-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
+                            {fieldErrors.returnDestination}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </fieldset>
 
@@ -671,7 +811,8 @@ export function TripDetailsForm({
                   htmlFor="trip-departure"
                   className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
                 >
-                  {tripType === 'annual' ? 'First trip departure' : 'Departure date'}
+                  {tripType === 'annual' ? 'First trip departure' : 'Departure date'}{' '}
+                  <span aria-hidden className="text-red-600">*</span>
                 </label>
                 <input
                   id="trip-departure"
@@ -681,18 +822,11 @@ export function TripDetailsForm({
                   min={todayStr}
                   required
                   aria-invalid={Boolean(fieldErrors.departureDate)}
+                  aria-describedby={fieldErrors.departureDate ? 'trip-departure-error' : undefined}
                   onChange={(e) => {
                     const nextDep = e.target.value
                     setDeparture(nextDep)
-                    if (tripType === 'annual') {
-                      const d = new Date(nextDep)
-                      d.setFullYear(d.getFullYear() + 1)
-                      setReturnDate(d.toISOString().split('T')[0])
-                    } else if (nextDep && returnDate < nextDep) {
-                      const d = new Date(nextDep)
-                      d.setDate(d.getDate() + 7)
-                      setReturnDate(d.toISOString().split('T')[0])
-                    }
+                    if (nextDep && returnDate && returnDate < nextDep) setReturnDate('')
                   }}
                   className={cn(
                     'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
@@ -702,7 +836,7 @@ export function TripDetailsForm({
                 {/* Reserved-height row: green formatted date OR error — prevents row jump */}
                 <div className="mt-1 min-h-[1.25rem]">
                   {fieldErrors.departureDate ? (
-                    <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+                    <p id="trip-departure-error" className="text-xs text-red-600 dark:text-red-400" role="alert">
                       {fieldErrors.departureDate}
                     </p>
                   ) : departure ? (
@@ -719,7 +853,8 @@ export function TripDetailsForm({
                   htmlFor="trip-return"
                   className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
                 >
-                  {tripType === 'annual' ? 'First trip return' : 'Return date'}
+                  {tripType === 'annual' ? 'First trip return' : 'Return date'}{' '}
+                  <span aria-hidden className="text-red-600">*</span>
                 </label>
                 <input
                   id="trip-return"
@@ -729,6 +864,7 @@ export function TripDetailsForm({
                   min={departure || todayStr}
                   required
                   aria-invalid={Boolean(fieldErrors.returnDate)}
+                  aria-describedby={fieldErrors.returnDate ? 'trip-return-error' : undefined}
                   onChange={(e) => setReturnDate(e.target.value)}
                   className={cn(
                     'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
@@ -738,7 +874,7 @@ export function TripDetailsForm({
                 {/* Reserved-height row: green formatted date OR error — prevents row jump */}
                 <div className="mt-1 min-h-[1.25rem]">
                   {fieldErrors.returnDate ? (
-                    <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+                    <p id="trip-return-error" className="text-xs text-red-600 dark:text-red-400" role="alert">
                       {fieldErrors.returnDate}
                     </p>
                   ) : returnDate ? (
@@ -879,7 +1015,7 @@ export function TripDetailsForm({
                   htmlFor="trip-birth"
                   className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
                 >
-                  Lead traveller’s date of birth
+                  Lead traveller’s date of birth <span aria-hidden className="text-red-600">*</span>
                 </label>
                 <input
                   id="trip-birth"
@@ -890,6 +1026,9 @@ export function TripDetailsForm({
                   placeholder="DD / MM / YYYY"
                   required
                   aria-invalid={Boolean(fieldErrors.dateOfBirth)}
+                  aria-describedby={
+                    fieldErrors.dateOfBirth ? 'trip-birth-error' : 'trip-birth-hint'
+                  }
                   onChange={(e) => setBirthDate(e.target.value)}
                   className={cn(
                     'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
@@ -899,7 +1038,7 @@ export function TripDetailsForm({
                 {/* Reserved-height row: green formatted date OR hint OR error */}
                 <div className="mt-1 min-h-[1.25rem]">
                   {fieldErrors.dateOfBirth ? (
-                    <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+                    <p id="trip-birth-error" className="text-xs text-red-600 dark:text-red-400" role="alert">
                       {fieldErrors.dateOfBirth}
                     </p>
                   ) : birthDate ? (
@@ -907,7 +1046,7 @@ export function TripDetailsForm({
                       {formatDateDisplay(birthDate)}
                     </p>
                   ) : (
-                    <p className="text-xs leading-snug text-[#808080] dark:text-[#b2b7b4]">
+                    <p id="trip-birth-hint" className="text-xs leading-snug text-[#808080] dark:text-[#b2b7b4]">
                       Used for plan eligibility &amp; rates.
                     </p>
                   )}
@@ -918,41 +1057,42 @@ export function TripDetailsForm({
             {/* Checkbox & Submit */}
             <div className="mt-6 border-t border-[#dfe7df] pt-5 dark:border-[#3d4140]">
               <label
-                id="trip-terms"
-                tabIndex={-1}
                 className={cn(
                   'flex items-start gap-3 text-sm leading-snug cursor-pointer',
                   fieldErrors.agreedToTerms && 'text-red-600'
                 )}
               >
                 <input
+                  id="trip-terms"
                   type="checkbox"
                   checked={reviewed}
                   onChange={(e) => setReviewed(e.target.checked)}
+                  required
                   aria-invalid={Boolean(fieldErrors.agreedToTerms)}
+                  aria-describedby={fieldErrors.agreedToTerms ? 'trip-terms-error' : undefined}
                   className="mt-0.5 size-5 shrink-0 rounded border-[#c7d4c9] accent-[#006838] focus:ring-[#006838]"
                 />
                 <span className="text-[#183d2c] dark:text-[#f4f5f2]">
                   I agree to the{' '}
-                  <Link
-                    href="/travel-insurance-terms"
-                    target="_blank"
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setTcOpen(true) }}
                     className="font-semibold underline underline-offset-2 text-[#006838] hover:text-[#00552e] dark:text-[#d0e3c8] dark:hover:text-white"
-                    onClick={(e) => e.stopPropagation()}
                   >
-                    Terms & Conditions
-                  </Link>{' '}
-                  and confirm the trip details are correct.
+                    Terms &amp; Conditions
+                  </button>{' '}
+                  and confirm the trip details are correct.{' '}
+                  <span aria-hidden className="text-red-600">*</span>
                 </span>
               </label>
               {fieldErrors.agreedToTerms && (
-                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
+                <p id="trip-terms-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
                   {fieldErrors.agreedToTerms}
                 </p>
               )}
 
-              {/* Form Error Banner */}
-              {formError && (
+              {/* Form Error Banner — hidden when the error is already shown inline (e.g. agreedToTerms) */}
+              {formError && formError !== fieldErrors.agreedToTerms && (
                 <p
                   role="alert"
                   tabIndex={-1}
@@ -985,10 +1125,16 @@ export function TripDetailsForm({
     </div>
   )
 
-  if (variant === 'modal') return formBody
+  if (variant === 'modal') return (
+    <>
+      {formBody}
+      <TermsAndConditionsModal open={tcOpen} onClose={closeTc} />
+    </>
+  )
 
   return (
-    <section
+    <>
+      <section
       id="trip-search"
       aria-labelledby="search-title"
       className="scroll-mt-20 bg-[#006838] px-5 py-8 sm:px-8 sm:py-12 lg:py-16"
@@ -1110,5 +1256,28 @@ export function TripDetailsForm({
         {formBody}
       </div>
     </section>
+    <TermsAndConditionsModal open={tcOpen} onClose={closeTc} />
+    <TripSummaryModal
+      open={previewPayload !== null}
+      onClose={() => setPreviewPayload(null)}
+      onContinue={() => previewPayload && commitSearch(previewPayload)}
+      isSubmitting={isSubmitting}
+      stops={[
+        { kind: 'Travelling from', name: destinationLabelOf(originCode) },
+        ...countryCodes.map((c, i) => ({
+          kind: countryCodes.length > 1 ? `Destination ${i + 1}` : 'Destination',
+          name: destinationLabelOf(c),
+        })),
+        { kind: 'Return to', name: hasReturnLeg ? destinationLabelOf(returnCode) : 'Philippines' },
+      ]}
+      dates={formatDateRange(departure, returnDate)}
+      days={tripDaysLabel(departure, returnDate)}
+      rows={[
+        { label: 'Travellers', value: String(travellerCount) },
+        { label: 'Coverage', value: effectiveCoverageType === 'family' ? 'Family' : 'Individual' },
+        { label: 'Trip type', value: tripType === 'annual' ? 'Annual multi-trip' : 'Single trip' },
+      ]}
+    />
+    </>
   )
 }

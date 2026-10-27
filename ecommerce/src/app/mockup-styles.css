@@ -92,7 +92,6 @@
   height: auto;
   margin-inline: auto;
   position: relative;
-  overflow: clip;
 }
 
 .travel-one-hero__image {
@@ -173,11 +172,11 @@
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     width: 100%;
     max-width: 390px;
     margin-inline: auto;
-    aspect-ratio: 16 / 10;
+    height: calc(min(100vw, 390px) * 0.625 + 15px);
   }
   .travel-one-hero__image {
     position: relative;
@@ -227,7 +226,7 @@
     position: absolute;
     bottom: 0;
     right: max(16px, 50vw - 720px);
-    overflow: clip;
+    clip-path: inset(-60px 0 0 -140px);
   }
   .travel-one-hero__image {
     width: min(45vw, 580px);

@@ -7,6 +7,8 @@ import { InsuranceBenefit } from '@/types/plan'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { getCanonicalConfigForBenefit, resolveLimitDisplay } from '@/utils/travel-benefits-helpers'
 import { buildProposalUrl, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
+import { countryLabel } from '@/utils/trip-summary'
+import { getPrincipal } from '@/utils/traveller-form'
 
 interface QuotePDFData {
   travelDetails: TravelInsuranceFormData
@@ -332,13 +334,13 @@ function renderQuote(
   const children = travelDetails.noOfChildren
   const counts = travelerCounts(adults, children)
   const destinations =
-    [...new Set(travelDetails.travelDetailList.map((t) => normalizeCase(t.TravelCountry)).filter(Boolean))].join(', ') || 'N/A'
-  const origin = normalizeCase(travelDetails.travelDetailList[0]?.PlaceOfOrgin) || 'N/A'
+    [...new Set(travelDetails.travelDetailList.map((t) => clean(countryLabel(t.TravelCountry))).filter(Boolean))].join(', ') || 'N/A'
+  const origin = clean(countryLabel(travelDetails.travelDetailList[0]?.PlaceOfOrgin)) || 'N/A'
   const coverageAreaRaw = (travelDetails.travelDetailList[0]?.TravelCoverageArea || '').trim()
   const AREA_LABELS: Record<string, string> = { APAC: 'APAC', WORLD: 'Worldwide', SCHENGEN: 'Schengen', DOMESTIC: 'Domestic' }
   const coverageArea = coverageAreaRaw ? (AREA_LABELS[coverageAreaRaw.toUpperCase()] ?? titleCase(coverageAreaRaw)) : 'N/A'
 
-  const holder = travelersInfo?.[0]
+  const holder = getPrincipal(travelersInfo)
   const risks = d?.PolicyLobList?.[0]?.PolicyRiskList ?? []
   const travelers = risks.length
     ? risks.map((r) => {
@@ -359,7 +361,7 @@ function renderQuote(
       }))
   const holderName = holder ? fullName(holder.firstName, holder.middleName, holder.lastName, holder.suffix) : ''
   const sameAsTraveler = !!holder && travelers.length === 1 && travelers[0].name.toLowerCase() === holderName.toLowerCase()
-  const primaryTraveler = travelers[0]?.name || holderName || 'N/A'
+  const primaryTraveler = holderName || travelers[0]?.name || 'N/A'
 
   // ---------- document metadata / accessibility ----------
   doc.setProperties({
@@ -520,7 +522,7 @@ function renderQuote(
   font(FS.body, 'normal', INK)
   doc.text(`Generated: ${fmtDateTimePHT(now)}`, rx, base(hy, FS.body), { align: 'right' })
   hy += lh(FS.body)
-  doc.text(`Pay by: ${fmtDateTimePHT(validUntil)}`, rx, base(hy, FS.body), { align: 'right' })
+  doc.text(`Unpaid. Quote valid until: ${fmtDateTimePHT(validUntil)}`, rx, base(hy, FS.body), { align: 'right' })
   hy += lh(FS.body)
   if (agentCode) {
     doc.text(`Agent code: ${agentCode}`, rx, base(hy, FS.body), { align: 'right' })
@@ -696,7 +698,36 @@ function renderQuote(
           { label: 'Date of birth', w: w[3] },
           { label: 'Age', w: w[4], align: 'right' },
         ],
-        travelers.map((t, i) => ({ cells: [String(i + 1), t.name, t.type, t.dob, t.age] }))
+        travelers.map((t, i) => ({
+          cells: [
+            String(i + 1),
+            holderName && t.name.toLowerCase() === holderName.toLowerCase() ? `${t.name} (Principal)` : t.name,
+            t.type,
+            t.dob,
+            t.age,
+          ],
+        }))
+      )
+    })
+  }
+
+  const otherBeneficiaries = (travelersInfo ?? []).filter((t) => t !== holder && t.hasBeneficiary && t.beneficiary?.firstName)
+  if (otherBeneficiaries.length > 0) {
+    card('Other travelers\u2019 beneficiaries', () => {
+      const w = [innerW * 0.35, innerW * 0.4, innerW * 0.25]
+      table(
+        [
+          { label: 'Traveler', w: w[0] },
+          { label: 'Beneficiary', w: w[1] },
+          { label: 'Relationship', w: w[2] },
+        ],
+        otherBeneficiaries.map((t) => ({
+          cells: [
+            fullName(t.firstName, t.middleName, t.lastName, t.suffix),
+            fullName(t.beneficiary.firstName, t.beneficiary.middleName, t.beneficiary.lastName),
+            normalizeCase(t.beneficiary.relationship),
+          ],
+        }))
       )
     })
   }
