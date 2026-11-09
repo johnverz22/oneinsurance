@@ -1,30 +1,18 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { type FlatConfig } from '@eslint/eslintrc'
 import { FlatCompat } from '@eslint/eslintrc'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
 const compat = new FlatCompat({
-  baseDirectory: __dirname,
+  baseDirectory: import.meta.dirname,
 })
 
-const eslintConfig = [
-  ...compat.config({
-    extends: [
-      'next/core-web-vitals',
-      'next/typescript',
-    ],
+const config: FlatConfig.Config[] = [
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  {
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      'react/no-children-prop': 'warn', // Changed from error to warning
-      'react/no-unescaped-entities': 'warn', // Changed from error to warning
-      'react-hooks/rules-of-hooks': 'warn', // Changed from error to warning
-      '@typescript-eslint/no-unused-expressions': 'warn', // Changed from error to warning
-      'prefer-const': 'warn', // Changed from error to warning
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
-  }),
+  },
 ]
 
-export default eslintConfig
+export default config

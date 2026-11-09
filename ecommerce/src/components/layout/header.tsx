@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes'
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 import { PRODUCT_FLAGS } from '@/lib/product-flags'
 import { cn } from '@/lib/utils'
 
@@ -277,7 +278,7 @@ interface HeaderProps {
   currentProductName?: string
   customNavItems?: NavMenuItem[]
   productsLabel?: string
-  cta?: NavMenuItem
+  cta?: NavMenuItem | null
   /** Element id the landing CTA stays hidden until scrolled fully past (e.g. the hero form). */
   ctaRevealPast?: string
   onOpenRetrieveModal?: () => void
@@ -285,7 +286,7 @@ interface HeaderProps {
 }
 
 export function Header({
-  agentCode = 'ckO6uNx2O6',
+  agentCode = PRIMARY_AGENT_CODE,
   currentStep,
   currentProductSlug = 'travel-insurance',
   currentProductName,
@@ -499,7 +500,7 @@ export function Header({
         isLanding ? 'sticky top-0' : 'relative pt-[env(safe-area-inset-top)] md:sticky md:top-0 md:pt-0'
       } ${isStuck ? 'is-stuck' : ''}`}
     >
-      <div className={`travel-header__main-row flex w-full ${isLanding ? 'min-h-20' : 'h-12 sm:min-h-20 lg:h-16 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8'} items-center justify-between gap-3 px-5 sm:gap-5 sm:px-8 lg:px-12`}>
+      <div className={`travel-header__main-row flex w-full ${isLanding ? 'min-h-20' : 'min-h-16 sm:min-h-20 lg:h-16 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8'} items-center justify-between gap-3 px-5 sm:gap-5 sm:px-8 lg:px-12`}>
         <Link
           href={homePath}
           aria-label="One Insurance home"
@@ -654,7 +655,7 @@ export function Header({
           </nav>
 
           {/* Primary conversion CTA — visible on SM (compact pill) and MD/LG */}
-          {isLanding && (!ctaRevealPast || ctaRevealed) && (
+          {isLanding && cta !== null && (!ctaRevealPast || ctaRevealed) && (
             <Link
               href={cta?.href ?? `${homePath}#trip-search`}
               onClick={cta ? undefined : handleGetQuoteClick}

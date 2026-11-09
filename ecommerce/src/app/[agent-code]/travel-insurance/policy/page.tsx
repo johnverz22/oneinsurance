@@ -3,7 +3,7 @@
 import { useMemo, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowUpRight, ChevronDown, CircleHelp, Clock, CreditCard, FileCheck2, FileText, FileX, Mail, PlaneTakeoff, Receipt } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, CircleHelp, Clock, CreditCard, FileCheck2, FileText, FileX, Mail, Receipt } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { idFilesStore, useFullQuoteResponseStore, useTravelInsuranceStore } from '@/store/travel-insurance-store'
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
@@ -14,9 +14,11 @@ import { getPrincipal } from '@/utils/traveller-form'
 import { benefitNote, formatBenefitLimit } from '@/utils/travel-benefits'
 import { KeyConditions } from '@/components/travel-insurance/key-conditions'
 import { formatDays, formatTravelers, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
+import { formatAmount as money } from '@/utils/currency'
 import type { PolicyDocData } from '@/utils/generate-policy-pdfs'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { cn } from '@/lib/utils'
 
-const money = (n: number) => n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmtPaidAt = (iso?: string | null) => {
   const d = iso ? new Date(iso) : null
   if (!d || isNaN(d.getTime())) return '—'
@@ -35,7 +37,7 @@ type Doc = 'coverage' | 'receipt'
 
 export default function PolicyIssuedPage() {
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || 'ckO6uNx2O6'
+  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -43,7 +45,7 @@ export default function PolicyIssuedPage() {
   )
   return (
     <>
-      <Header agentCode={agentCode} />
+      <Header agentCode={agentCode} cta={null} />
       {hydrated ? (
         <PolicyContent agentCode={agentCode} />
       ) : (
@@ -233,7 +235,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
           <h1 id="no-policy" className="text-2xl font-semibold text-[#006838] dark:text-[#d0e3c8]">
             We couldn’t find an issued policy
           </h1>
-          <p className="mt-3 text-sm leading-7 text-[#333] dark:text-[#c4c7c5]">
+          <p className="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
             Your session may have ended, or your policy hasn’t been issued yet. If you’ve already paid, check your email
             for the eCOC, or retrieve your proposal with its number.
           </p>
@@ -259,11 +261,30 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
   const days = getTripDays(departure, returning)
   const first = travelDetails.travelDetailList[0]
   const origin = countryLabel(first?.PlaceOfOrgin) || 'Philippines'
-  const destination = issuedTrip?.destination_countries?.length
-    ? issuedTrip.destination_countries
-        .map((c) => COUNTRIES.find((x) => x.code === c)?.name || c)
-        .join(', ')
-    : travelDetails.travelDetailList.map((d) => countryLabel(d.TravelCountry)).filter(Boolean).join(', ')
+  // The store keeps the return leg as the last entry when a return destination
+  // is set — same convention as travel-sticky-bar and the compare-quote mapper.
+  const legs = travelDetails.travelDetailList ?? []
+  const hasReturnLeg = Boolean(travelDetails.returnDestination) && legs.length > 1
+  const returnTo = hasReturnLeg ? countryLabel(legs[legs.length - 1].TravelCountry) : 'Philippines'
+  // issued.trip.destination_countries is ISO2 and can include the return
+  // country — resolve to display names, then drop anything matching the
+  // origin so "PH" never shows up as a visited destination.
+  const countryName = (code: string) =>
+    COUNTRIES.find((x) => x.code === code.toUpperCase())?.name || countryLabel(code)
+  const issuedDests = (issuedTrip?.destination_countries ?? []).map(countryName).filter(Boolean)
+  const storeDests = (hasReturnLeg ? legs.slice(0, -1) : legs)
+    .map((d) => countryLabel(d.TravelCountry))
+    .filter(Boolean)
+  const dests = [...new Set(issuedDests.length ? issuedDests : storeDests)]
+  const routeDests = dests.filter((d) => d !== origin)
+  const stops = [
+    { kind: 'Travelling from', name: origin },
+    ...(routeDests.length ? routeDests : dests).map((name, i, arr) => ({
+      kind: arr.length > 1 ? `Destination ${i + 1}` : 'Destination',
+      name,
+    })),
+    { kind: 'Return to', name: returnTo },
+  ]
   const carrierCode = apiData?.CarrierCode || coverageOption.carrierCode
   const provider = COMPANIES.find((c) => c.carrierCode === carrierCode)
   const brand = CARRIER_BRAND_COLORS[carrierCode]
@@ -316,7 +337,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
     planName,
     insurer,
     insurerLogoUrl: brand?.cardLogoTight || brand?.planCardLogo || provider?.image || plan?.LogoUrl || null,
-    route: [origin, ...destination.split(', ')].join(' - '),
+    route: stops.map((s) => s.name).join(' - '),
     dates,
     duration: formatDays(days),
     travellers,
@@ -417,7 +438,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
                 <h2 id="documents-title" className="text-xl font-semibold">
                   Your documents
                 </h2>
-                <p className="issued-muted mt-2 text-sm leading-6">View your cover and keep a copy for your records.</p>
+                <p className="issued-muted mt-2 text-base leading-6">View your cover and keep a copy for your records.</p>
               </div>
               <span className="issued-badge">Ready to download</span>
             </div>
@@ -561,7 +582,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
                 <div className="issued-receipt-line">
                   <div>
                     <h4 className="font-semibold">Travel insurance premium</h4>
-                    <p className="issued-muted mt-2 text-sm leading-6">
+                    <p className="issued-muted mt-2 text-base leading-6">
                       {planName}
                       <br />
                       {dates} · {travellers}
@@ -593,11 +614,35 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
           <aside className="issued-sidebar" aria-label="Your trip and payment summary">
             <section className="travel-applicant-card issued-trip">
               <p className="issued-eyebrow">Your insured trip</p>
-              <div className="issued-trip-route">
-                <span>{origin}</span>
-                <PlaneTakeoff className="size-6" aria-hidden />
-                <span>{destination}</span>
-              </div>
+              <ol aria-label="Travel route" className="m-0 mt-5 mb-6 list-none p-0">
+                {stops.map((stop, i) => {
+                  const isFirst = i === 0
+                  const isLast = i === stops.length - 1
+                  return (
+                    <li key={`${stop.kind}-${i}`} className="relative flex gap-3 pb-4 last:pb-0">
+                      {!isLast && (
+                        <span
+                          aria-hidden
+                          className="absolute top-5 left-[7px] h-[calc(100%-12px)] w-0.5 bg-[#c7d4c9] dark:bg-[#565c58]"
+                        />
+                      )}
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'relative mt-1 size-4 shrink-0 rounded-full border-2 border-[#006838] dark:border-[#d0e3c8]',
+                          isFirst || isLast
+                            ? 'bg-[#006838] dark:bg-[#d0e3c8]'
+                            : 'bg-white dark:bg-[#262828]'
+                        )}
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-[#333333] dark:text-[#c4c7c5]">{stop.kind}</p>
+                        <p className="text-base font-semibold break-words">{stop.name}</p>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ol>
               <dl className="issued-trip-facts">
                 <div>
                   <dt>Travel dates</dt>
@@ -626,7 +671,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
             </section>
             <section className="issued-next">
               <h2 className="font-semibold">Before you travel</h2>
-              <p className="issued-muted mt-2 text-sm leading-7">
+              <p className="issued-muted mt-2 text-base leading-7">
                 Save your documents offline and check your emailed eCOC for the insurer’s assistance and claims contact
                 details.
               </p>

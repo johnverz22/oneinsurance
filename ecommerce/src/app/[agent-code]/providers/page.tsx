@@ -138,7 +138,7 @@ export default async function ProvidersPage({ params }: PageProps) {
                       />
                     </span>
                     <span
-                      className="mt-3 line-clamp-4 text-sm leading-6 text-[var(--text-sub)]"
+                      className="mt-3 line-clamp-4 text-base leading-6 text-[var(--text-sub)]"
                       dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(company.description),
                       }}

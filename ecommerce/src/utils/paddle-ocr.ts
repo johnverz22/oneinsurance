@@ -199,7 +199,46 @@ function extractLabeledNames(lines: string[]): { first: string; middle: string; 
   return result
 }
 
+// ── Passport (PAS) extraction ─────────────────────────────────────────────────
+
+function parsePassportMrz(lines: string[]): { first: string; last: string } | null {
+  for (const raw of lines) {
+    const m = raw.replace(/\s+/g, '').toUpperCase().match(/^P[<A-Z]PHL([A-Z<]+?)<<([A-Z<]+)/)
+    if (!m) continue
+    const clean = (v: string) => v.replace(/<+/g, ' ').trim()
+    const last = clean(m[1])
+    const first = clean(m[2])
+    if (last && first) return { last: toTitleCase(last), first: toTitleCase(first) }
+  }
+  return null
+}
+
+function extractPassportNames(lines: string[]): { first: string; middle: string; last: string } | null {
+  const mrz = parsePassportMrz(lines)
+  if (!mrz) return null
+  let middle = ''
+  const idx = lines.findIndex((l) => /middle\s*name/i.test(l))
+  if (idx !== -1) {
+    const v = lines[idx + 1]?.trim() || ''
+    if (v && !isLabelLine(v) && /^[A-Za-z][A-Za-z\s'-]*$/.test(v)) middle = toTitleCase(v)
+  }
+  return { ...mrz, middle }
+}
+
+function extractPassportNumber(lines: string[]): string {
+  for (const line of lines) {
+    for (const tok of line.toUpperCase().match(/\b[A-Z][A-Z0-9]{7}[A-Z]\b/g) ?? []) {
+      if ((tok.match(/\d/g) ?? []).length >= 4) return tok
+    }
+  }
+  return ''
+}
+
 function extractNames(lines: string[], idType: string): { first: string; middle: string; last: string } {
+  if (idType === 'PAS') {
+    const pas = extractPassportNames(lines)
+    if (pas) return pas
+  }
   const labeled = extractLabeledNames(lines)
   if (labeled.last || labeled.first) return labeled
   
@@ -305,7 +344,7 @@ export async function runPaddleOCR(file: File): Promise<IdOcrResult> {
   const idType = detectIdType(fullText)
   const { first, middle, last } = extractNames(lines, idType)
   return {
-    id_number: extractIdNumber(fullText),
+    id_number: (idType === 'PAS' && extractPassportNumber(lines)) || extractIdNumber(fullText),
     first_name: first,
     middle_name: middle,
     last_name: last,

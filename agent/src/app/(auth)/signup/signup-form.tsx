@@ -1,397 +1,351 @@
 'use client'
 
-import { useForm } from '@tanstack/react-form'
-import { useRouter, useSearchParams } from 'next/navigation'
-
-import {
-  RegisterAgentBaseSchema,
-  type RegisterAgent,
-  RegisterAgentValidationError,
-  RegisterAgentSchema,
-} from '@/types/agent/auth'
-import { useAgentRegistrationStore } from '@/store/agent-registration-store'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { FieldInfo } from '@/components/ui/form'
-import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
-import {
-  useRegisterAgent,
-} from '@/app/data/mutations/agent/auth-agent'
-import Link from 'next/link'
-import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { useEffect, useState } from 'react'
-import { cn } from '@/lib/utils'
-import { useGetSignUpAutoFill } from '@/app/data/mutations/signup'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
-import type { AgentSignUpAutoFillResponse } from '@/types/agent/auth'
 
-const INPUT_FIELD = 'bg-[#F3F5FC] border-0 dark:bg-[#1A1A1A] w-full'
+import { RegisterAgentSchema, type RegisterAgent, type AgentSignUpAutoFillResponse } from '@/types/agent/auth'
+import { useIsAuthenticated } from '@/store/agent-auth-store'
 
 export default function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { mutateAsync: registerAgent } = useRegisterAgent()
-  const { mutateAsync: getSignUpAutoFill, isPending: isLoadingAutoFill } = useGetSignUpAutoFill()
-  const [autofillData, setAutofillData] = useState<AgentSignUpAutoFillResponse | null>(null)
+  const isAuthenticated = useIsAuthenticated()
+
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoadingAutofill, setIsLoadingAutofill] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  const token = searchParams.get('token') ?? ''
 
   const {
-    credentials,
-    setIsRegistering,
-    setRegistrationError,
-    setRegistrationSuccess,
-    setValidationErrors,
-    clearValidationErrors,
-    getFieldErrors,
-    registrationResult,
-    isRegistering,
-    registrationError,
-    registrationSuccess,
-    validationErrors,
-  } = useAgentRegistrationStore()
-  const { isAuthenticated } = useAgentAuthStore()
-
-  const form = useForm({
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterAgent>({
+    resolver: zodResolver(RegisterAgentSchema),
     defaultValues: {
-      email: '',
       firstName: '',
       lastName: '',
+      email: '',
       phone: '',
       password: '',
       confirmPassword: '',
-      token: searchParams.get('token') || '',
-    } as RegisterAgent,
-    validators: {
-      onSubmit: RegisterAgentSchema,
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        setIsRegistering(true)
-        clearValidationErrors()
-        
-        // Step 1: Register the agent
-        const registrationResponse = await registerAgent({ data: value })
-        
-        if (registrationResponse.success) {
-          // Registration succeeded - clear any errors and show success
-          clearValidationErrors()
-          setRegistrationSuccess('Account created successfully! Redirecting to login...')
-          setTimeout(() => {
-            router.push('/login')
-          }, 1500)
-        }
-      } catch (error: any) {
-        console.error('Registration/Login error:', error)
-
-        // Check if it's a 422 validation error
-        if (error.status === 422 || error.response?.status === 422) {
-          try {
-            // Try to parse the validation error response
-            const errorData = error.response?.data || error.data
-
-            if (errorData) {
-              // It's a validation error, store field-specific errors
-              setValidationErrors(errorData.error?.errors || errorData.errors)
-              setRegistrationError(
-                errorData.message || 'Please fix the validation errors below.'
-              )
-            } else {
-              // Unknown 422 format, show generic message
-              setRegistrationError(
-                'Validation failed. Please check your input and try again.'
-              )
-            }
-          } catch (parseError) {
-            console.error('Failed to parse validation error:', parseError)
-            setRegistrationError(
-              'Validation failed. Please check your input and try again.'
-            )
-          }
-        } else {
-          // Other errors (network, server, etc.)
-          const errorMessage =
-            error instanceof Error ? error.message : 'Registration failed'
-          setRegistrationError(errorMessage)
-        }
-      } finally {
-        setIsRegistering(false)
-      }
+      token,
     },
   })
 
+  // Redirect authenticated users away
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/')
-    }
+    if (isAuthenticated) router.replace('/dashboard')
   }, [isAuthenticated, router])
 
+  // Keep hidden token field in sync if searchParams change
   useEffect(() => {
-    const token = searchParams.get('token')
-    if (!token) {
-      setRegistrationError('Invalid or missing invitation token. Please use the signup link provided in your invitation email.')
-    } else if (token.length < 10) {
-      setRegistrationError('Invalid invitation token format. Please use the correct signup link provided in your invitation email.')
-    } else {
-      clearValidationErrors()
-      // Fetch autofill data
-      getSignUpAutoFill(token)
-        .then((response) => {
-          setAutofillData(response)
-        })
-        .catch((error) => {
-          console.error('Failed to fetch autofill data:', error)
-          toast.error('Failed to load your information. Please enter your details manually.', {
-            description: error.response?.data?.message || error.message || 'An error occurred',
-          })
-        })
-    }
-  }, [searchParams, setRegistrationError, clearValidationErrors, getSignUpAutoFill, setAutofillData])
+    setValue('token', token)
+  }, [token, setValue])
 
+  // Fetch autofill data from the invitation token
   useEffect(() => {
-    if (autofillData?.data) {
-      form.setFieldValue('email', autofillData.data.email || '')
-      form.setFieldValue('firstName', autofillData.data.first_name || '')
-      form.setFieldValue('lastName', autofillData.data.last_name || '')
-      form.setFieldValue('phone', autofillData.data.contact_number || '')
+    if (!token || token.length < 10) return
+
+    setIsLoadingAutofill(true)
+    fetch('/api/agent/auth/signup-autofill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    })
+      .then(async (res) => {
+        const data: AgentSignUpAutoFillResponse = await res.json().catch(() => null)
+        if (res.ok && data?.data) {
+          setValue('firstName', data.data.first_name ?? '')
+          setValue('lastName', data.data.last_name ?? '')
+          setValue('email', data.data.email ?? '')
+          setValue('phone', data.data.contact_number ?? '')
+        } else if (!res.ok) {
+          toast.error(data?.message ?? 'Could not load invitation details. Please fill in your information manually.')
+        }
+      })
+      .catch(() => {
+        toast.error('Could not load invitation details. Please fill in your information manually.')
+      })
+      .finally(() => setIsLoadingAutofill(false))
+  }, [token, setValue])
+
+  const onSubmit = async (values: RegisterAgent) => {
+    setServerError(null)
+    setFieldErrors({})
+
+    try {
+      const res = await fetch('/api/agent/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      })
+
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        // 422 validation errors from backend
+        if (res.status === 422 && data?.errors) {
+          setFieldErrors(data.errors)
+          setServerError(data.message ?? 'Please fix the errors below.')
+        } else {
+          setServerError(data?.message ?? 'Registration failed. Please try again.')
+        }
+        return
+      }
+
+      setSuccessMessage('Account created successfully! Redirecting to login…')
+      setTimeout(() => router.push('/login'), 1500)
+    } catch {
+      setServerError('An unexpected error occurred. Please try again.')
     }
-  }, [autofillData])
+  }
+
+  const INPUT_BASE =
+    'min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]'
+  const INPUT_ERROR = 'border-red-400 focus:border-red-500 focus:outline-red-500'
+  const LABEL_BASE = 'block text-sm font-semibold'
+  const ERROR_TEXT = 'mt-1.5 text-xs text-[#dc2626]'
+
+  // Gather any backend field error for a given field name
+  const backendError = (field: string) => fieldErrors[field]?.[0]
 
   return (
-    <div className="flex w-full flex-col justify-center gap-6">
-      {isLoadingAutoFill && (
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading your information...</span>
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[.16em] text-[#006838] dark:text-[#d0e3c8]">
+        Agent Portal
+      </p>
+
+      <h1 className="mt-4 text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.08] tracking-[-.05em]">
+        Create your account
+      </h1>
+      <p className="mt-3 text-base leading-7 text-[#5b6e61] dark:text-[#c4c7c5]">
+        Complete your registration using the invitation link sent to your email.
+      </p>
+
+      {/* Token missing warning */}
+      {!token && (
+        <div
+          role="alert"
+          className="mt-6 rounded-md border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300"
+        >
+          No invitation token found. Please use the signup link provided in your invitation email.
+        </div>
+      )}
+
+      {/* Autofill loading indicator */}
+      {isLoadingAutofill && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-[#5b6e61] dark:text-[#c4c7c5]">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          <span>Loading your invitation details…</span>
+        </div>
+      )}
+
+      {/* Server error */}
+      {serverError && (
+        <div
+          role="alert"
+          className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
+        >
+          {serverError}
+        </div>
+      )}
+
+      {/* Success */}
+      {successMessage && (
+        <div
+          role="status"
+          className="mt-6 rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-700 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-300"
+        >
+          {successMessage}
         </div>
       )}
 
       <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-        className="w-full"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        aria-label="Agent registration"
+        className="mt-8 space-y-5"
       >
-        <div className="flex w-full flex-col gap-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <form.Field name="firstName">
-              {(field) => (
-                <div className="flex w-full flex-col gap-2">
-                  <Label htmlFor={field.name} className="required-field">
-                    First Name
-                  </Label>
-                  <Input
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value)
-                    }}
-                    placeholder="Enter your first name"
-                    className={cn(
-                      getFieldErrors('firstName').length > 0
-                        ? 'border-destructive'
-                        : '',
-                      INPUT_FIELD
-                    )}
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )}
-            </form.Field>
+        {/* Hidden token */}
+        <input type="hidden" {...register('token')} />
 
-            <form.Field name="lastName">
-              {(field) => (
-                <div className="flex w-full flex-col gap-2">
-                  <Label htmlFor={field.name} className="required-field">
-                    Last Name
-                  </Label>
-                  <Input
-                    name={field.name}
-                    value={field.state.value}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value)
-                    }}
-                    placeholder="Enter your last name"
-                    className={cn(
-                      getFieldErrors('firstName').length > 0
-                        ? 'border-destructive'
-                        : '',
-                      INPUT_FIELD
-                    )}
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )}
-            </form.Field>
+        {/* Name row */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="signup-firstName" className={LABEL_BASE}>
+              First Name <span aria-hidden="true" className="text-red-500">*</span>
+            </label>
+            <input
+              id="signup-firstName"
+              type="text"
+              autoComplete="given-name"
+              placeholder="Juan"
+              aria-invalid={!!(errors.firstName || backendError('first_name'))}
+              className={`${INPUT_BASE} mt-2 ${errors.firstName || backendError('first_name') ? INPUT_ERROR : ''}`}
+              {...register('firstName')}
+            />
+            {(errors.firstName || backendError('first_name')) && (
+              <p role="alert" className={ERROR_TEXT}>
+                {errors.firstName?.message ?? backendError('first_name')}
+              </p>
+            )}
           </div>
 
-          <form.Field name="token">
-            {(field) => (
-              <input
-                type="hidden"
-                name={field.name}
-                value={field.state.value}
-              />
+          <div>
+            <label htmlFor="signup-lastName" className={LABEL_BASE}>
+              Last Name <span aria-hidden="true" className="text-red-500">*</span>
+            </label>
+            <input
+              id="signup-lastName"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Dela Cruz"
+              aria-invalid={!!(errors.lastName || backendError('last_name'))}
+              className={`${INPUT_BASE} mt-2 ${errors.lastName || backendError('last_name') ? INPUT_ERROR : ''}`}
+              {...register('lastName')}
+            />
+            {(errors.lastName || backendError('last_name')) && (
+              <p role="alert" className={ERROR_TEXT}>
+                {errors.lastName?.message ?? backendError('last_name')}
+              </p>
             )}
-          </form.Field>
-
-          <form.Field name="email">
-            {(field) => (
-              <div className="flex w-full flex-col gap-2">
-                <Label htmlFor={field.name} className="required-field">
-                  Email
-                </Label>
-                <Input
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                  }}
-                  placeholder="Enter your email"
-                  className={cn(
-                    getFieldErrors('email').length > 0
-                      ? 'border-destructive'
-                      : '',
-                    INPUT_FIELD
-                  )}
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-
-
-
-          <form.Field name="phone">
-            {(field) => (
-              <div className="flex w-full flex-col gap-2">
-                <Label htmlFor={field.name} className="required-field">
-                  Phone
-                </Label>
-                <Input
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                  }}
-                  placeholder="Enter your phone number"
-                  className={cn(
-                    getFieldErrors('firstName').length > 0
-                      ? 'border-destructive'
-                      : '',
-                    INPUT_FIELD
-                  )}
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="password">
-            {(field) => (
-              <div className="flex w-full flex-col gap-2">
-                <Label htmlFor={field.name} className="required-field">
-                  Password
-                </Label>
-                <Input
-                  type="password"
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                  }}
-                  placeholder="Create password"
-                  className={cn(
-                    getFieldErrors('firstName').length > 0
-                      ? 'border-destructive'
-                      : '',
-                    INPUT_FIELD
-                  )}
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-
-          <form.Field name="confirmPassword">
-            {(field) => (
-              <div className="flex w-full flex-col gap-2">
-                <Label htmlFor={field.name} className="required-field">
-                  Confirm Password
-                </Label>
-                <Input
-                  type="password"
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                  }}
-                  placeholder="Confirm password"
-                  className={cn(
-                    getFieldErrors('firstName').length > 0
-                      ? 'border-destructive'
-                      : '',
-                    INPUT_FIELD
-                  )}
-                />
-                <FieldInfo field={field} />
-              </div>
-            )}
-          </form.Field>
-
-          {registrationSuccess && (
-            <div className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 rounded-md p-3 text-sm">
-              {registrationSuccess}
-            </div>
-          )}
-
-          {registrationError && (
-            <div className="bg-destructive/15 text-destructive rounded-md p-3 text-sm">
-              {registrationError}
-              {validationErrors &&
-                Object.entries(validationErrors).map(([field, errors]) => (
-                  <div key={field}>
-                    <strong>{field}:</strong> {errors.join(', ')}
-                  </div>
-                ))}
-            </div>
-          )}
-
-
-
-          <div className="flex w-full justify-end">
-            <Button
-              type="submit"
-              disabled={isRegistering || !searchParams.get('token')}
-              className="from-primary to-lilac hover:from-primary/90 hover:to-lilac/90 focus:from-primary/90 focus:to-lilac/90 rounded-full bg-gradient-to-r text-white"
-            >
-              {isRegistering ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  <span className="px-3">Creating Account...</span>
-                </>
-              ) : (
-                <span className="px-5">Create Account</span>
-              )}
-            </Button>
           </div>
         </div>
+
+        {/* Email */}
+        <div>
+          <label htmlFor="signup-email" className={LABEL_BASE}>
+            Email address <span aria-hidden="true" className="text-red-500">*</span>
+          </label>
+          <input
+            id="signup-email"
+            type="email"
+            autoComplete="username"
+            placeholder="juan@example.com"
+            aria-invalid={!!(errors.email || backendError('email'))}
+            className={`${INPUT_BASE} mt-2 ${errors.email || backendError('email') ? INPUT_ERROR : ''}`}
+            {...register('email')}
+          />
+          {(errors.email || backendError('email')) && (
+            <p role="alert" className={ERROR_TEXT}>
+              {errors.email?.message ?? backendError('email')}
+            </p>
+          )}
+        </div>
+
+        {/* Phone */}
+        <div>
+          <label htmlFor="signup-phone" className={LABEL_BASE}>
+            Phone number <span aria-hidden="true" className="text-red-500">*</span>
+          </label>
+          <input
+            id="signup-phone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="09171234567"
+            aria-invalid={!!(errors.phone || backendError('phone'))}
+            className={`${INPUT_BASE} mt-2 ${errors.phone || backendError('phone') ? INPUT_ERROR : ''}`}
+            {...register('phone')}
+          />
+          {(errors.phone || backendError('phone')) && (
+            <p role="alert" className={ERROR_TEXT}>
+              {errors.phone?.message ?? backendError('phone')}
+            </p>
+          )}
+        </div>
+
+        {/* Password */}
+        <div>
+          <label htmlFor="signup-password" className={LABEL_BASE}>
+            Password <span aria-hidden="true" className="text-red-500">*</span>
+          </label>
+          <div className="relative mt-2">
+            <input
+              id="signup-password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Create a strong password"
+              aria-invalid={!!(errors.password || backendError('password'))}
+              className={`${INPUT_BASE} pr-17 ${errors.password || backendError('password') ? INPUT_ERROR : ''}`}
+              {...register('password')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="absolute inset-y-0 right-1 min-w-14 rounded-md px-2 text-sm font-semibold text-[#006838] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {(errors.password || backendError('password')) && (
+            <p role="alert" className={ERROR_TEXT}>
+              {errors.password?.message ?? backendError('password')}
+            </p>
+          )}
+        </div>
+
+        {/* Confirm password */}
+        <div>
+          <label htmlFor="signup-confirmPassword" className={LABEL_BASE}>
+            Confirm Password <span aria-hidden="true" className="text-red-500">*</span>
+          </label>
+          <div className="relative mt-2">
+            <input
+              id="signup-confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              placeholder="Re-enter your password"
+              aria-invalid={!!errors.confirmPassword}
+              className={`${INPUT_BASE} pr-17 ${errors.confirmPassword ? INPUT_ERROR : ''}`}
+              {...register('confirmPassword')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+              aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              className="absolute inset-y-0 right-1 min-w-14 rounded-md px-2 text-sm font-semibold text-[#006838] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <p role="alert" className={ERROR_TEXT}>
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || !token || !!successMessage}
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-[#006838] px-6 py-3 text-sm font-semibold text-white hover:bg-[#00552e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] disabled:opacity-60"
+        >
+          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+          {isSubmitting ? 'Creating account…' : 'Create Account'}
+        </button>
       </form>
 
-      {/* Additional Actions */}
-      <div className="flex w-full items-center justify-start py-4">
-        <div className="text-muted-foreground flex flex-col items-start gap-2 text-sm">
-          <p>
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="hover:text-primary text-blue-800 underline underline-offset-4"
-            >
-              Log In Here
-            </Link>
-          </p>
-        </div>
-      </div>
+      <p className="mt-6 text-sm text-[#5b6e61] dark:text-[#c4c7c5]">
+        Already have an account?{' '}
+        <Link
+          href="/login"
+          className="font-semibold text-[#006838] underline-offset-4 hover:underline dark:text-[#d0e3c8]"
+        >
+          Sign in
+        </Link>
+      </p>
     </div>
   )
 }

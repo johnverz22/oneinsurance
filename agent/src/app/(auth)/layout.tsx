@@ -1,40 +1,29 @@
 'use client'
 
-import { ThemeToggle } from '@/components/theme/toggle'
-import Image from 'next/image'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useIsAuthenticated, useHasHydrated } from '@/store/agent-auth-store'
+import { AuthLayout } from '@/components/auth/auth-layout'
 
-export default function AuthLayout({
+/**
+ * Auth route group layout.
+ * Redirects already-authenticated users directly to the dashboard.
+ * Waits for Zustand hydration before redirecting to prevent flash.
+ */
+export default function AuthGroupLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div className="relative min-h-screen w-screen overflow-hidden">
-      <Image
-        className=""
-        src="/images/agent-auth-bg.png"
-        alt="bg"
-        fill
-        style={{ objectFit: 'cover' }}
-      />
+  const isAuthenticated = useIsAuthenticated()
+  const hasHydrated = useHasHydrated()
+  const router = useRouter()
 
-      <div className="absolute inset-0 z-5 bg-black/50" />
+  useEffect(() => {
+    if (hasHydrated && isAuthenticated) {
+      router.replace('/dashboard')
+    }
+  }, [hasHydrated, isAuthenticated, router])
 
-      <div className="relative z-10 grid min-h-screen w-full lg:grid-cols-2">
-        {/* Left column: auth card (on large screens this will be on the left) */}
-        <div className="flex min-h-screen w-full items-center justify-center px-4 py-8">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 sm:p-10 lg:max-w-[30rem] dark:bg-black">
-            {children}
-          </div>
-        </div>
-
-        {/* Right column: decorative / empty (keeps background visible) */}
-        <div className="hidden lg:block" />
-      </div>
-
-      <div className="bg-background absolute top-4 right-4 z-10 flex size-12 items-center justify-center rounded-full lg:top-8 lg:right-8">
-        <ThemeToggle className="text-foreground rounded-full" />
-      </div>
-    </div>
-  )
+  return <AuthLayout>{children}</AuthLayout>
 }

@@ -1,48 +1,30 @@
-import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
-import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
-
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import axios from 'axios'
+import { BASE_URL, buildApiHeaders, handleAxiosError, unauthorized } from '@/lib/api-helpers'
 
 export async function GET(req: NextRequest) {
+  const headers = buildApiHeaders(req)
   const token = req.headers.get('Authorization')
-  const searchParams = req.nextUrl.searchParams
-  const dateFrom = searchParams.get('date_from')
-  const dateTo = searchParams.get('date_to')
+  if (!token) return unauthorized(req)
 
-  if (!token) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401, headers }
-    )
-  }
+  const { searchParams } = req.nextUrl
+  const params = new URLSearchParams()
+
+  const now = new Date()
+  const defaultDateFrom = `${now.getFullYear() - 1}-01-01`
+  const defaultDateTo = now.toISOString().split('T')[0]
+
+  params.set('date_from', searchParams.get('date_from') || defaultDateFrom)
+  params.set('date_to', searchParams.get('date_to') || defaultDateTo)
 
   try {
-    const params = new URLSearchParams()
-    if (dateFrom) params.append('date_from', dateFrom)
-    if (dateTo) params.append('date_to', dateTo)
-
-    const url = `${process.env.BASE_URL}/agents/statistics${params.toString() ? `?${params.toString()}` : ''}`
-
+    const url = `${BASE_URL}/agents/statistics?${params.toString()}`
     const response = await axios.get(url, {
-      headers: {
-        Authorization: token,
-        Accept: 'application/json',
-      },
+      headers: { Authorization: token, Accept: 'application/json' },
     })
-
     return NextResponse.json(response.data, { status: 200, headers })
   } catch (error) {
-    console.error('Error fetching agent statistics:', error)
-    if (axios.isAxiosError(error)) {
-      return handleServerSideAxiosError(error)
-    }
-
-    return NextResponse.json({ error: error }, { status: 500, headers })
+    if (axios.isAxiosError(error)) return handleAxiosError(error, req)
+    return NextResponse.json({ message: 'Server error' }, { status: 500, headers })
   }
 }

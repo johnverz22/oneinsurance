@@ -1,72 +1,91 @@
 import { NextRequest, NextResponse } from 'next/server'
-import axios from 'axios'
-import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
+import { BASE_URL, buildApiHeaders, getAuthToken, unauthorized } from '@/lib/api-helpers'
 
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
+/**
+ * GET /api/admin/agents/[id]/documents
+ *
+ * Lists the files an agent uploaded to Google Drive (verification documents,
+ * profile photo). Proxies GET /admin/files/user/{id} upstream and normalises
+ * each record into the AgentDocument shape used by the portal.
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const token = req.headers.get('Authorization')
   const { id } = await params
-
-  if (!token) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401, headers }
-    )
-  }
+  const headers = buildApiHeaders(req)
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
 
   try {
-    const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
-    
-    // Use the correct admin endpoint to get files for a specific user/agent
-    // From Google Drive File Management API: GET /admin/files/user/{user_id}
-    const url = `${baseUrl}/admin/files/user/${id}?limit=50&page=1`
-    
-    console.log('Admin: Fetching agent documents from:', url)
+    const upstreamRes = await fetch(
+      `${BASE_URL}/admin/files/user/${encodeURIComponent(id)}?limit=50&page=1`,
+      { headers: { Authorization: token, Accept: 'application/json' } }
+    )
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: token,
-        Accept: 'application/json',
-      },
-    })
-
-    console.log('Admin: Agent documents response:', response.status, response.data)
-
-    return NextResponse.json(response.data, { status: 200, headers })
-  } catch (error) {
-    console.error('Admin: Error fetching agent documents:', error)
-    
-    if (axios.isAxiosError(error)) {
-      // If the endpoint doesn't exist or returns 404/422, return empty data
-      if (error.response?.status === 404 || error.response?.status === 422) {
-        return NextResponse.json({
-          success: true,
-          message: 'No documents found',
-          data: [],
-          errors: []
-        }, { status: 200, headers })
-      }
-      
-      return handleServerSideAxiosError(error)
+    // No files on record is not an error for the profile page
+    if (upstreamRes.status === 404 || upstreamRes.status === 422) {
+      return NextResponse.json(
+        { success: true, data: [] },
+        { status: 200, headers }
+      )
     }
 
+    if (!upstreamRes.ok) {
+      return NextResponse.json(
+        { success: false, message: 'Failed to fetch documents', data: [] },
+        { status: upstreamRes.status, headers }
+      )
+    }
+
+    const json = await upstreamRes.json().catch(() => ({}))
+
+    // Support the response shapes the backend might return:
+    //   { data: [...] }  { data: { files: [...] } }  { data: { data: [...] } }  { files: [...] }  [...]
+    let raw: Record<string, unknown>[] = []
+    if (Array.isArray(json?.data)) raw = json.data
+    else if (Array.isArray(json?.data?.files)) raw = json.data.files
+    else if (Array.isArray(json?.data?.data)) raw = json.data.data
+    else if (Array.isArray(json?.files)) raw = json.files
+    else if (Array.isArray(json)) raw = json
+
     return NextResponse.json(
-      { 
-        success: true,
-        message: 'No documents found',
-        data: [],
-        errors: []
-      },
+      { success: true, data: raw.map(normaliseFile) },
       { status: 200, headers }
     )
+  } catch (error) {
+    console.error(`[admin/agents/${id}/documents] Error:`, error)
+    return NextResponse.json(
+      { success: false, message: 'Server error', data: [] },
+      { status: 500, headers }
+    )
+  }
+}
+
+/**
+ * Map a raw backend file record to the portal's document shape.
+ *
+ * The backend ignores `tag` on upload (list always returns "document"), so the
+ * agent portal encodes the real tag into the filename as
+ * "<tag>__<random_hex>.<ext>" (see agent/docs/skills/google-drive-file-upload-flow.md).
+ * Parse the prefix back out here so the UI can label each document.
+ */
+function normaliseFile(f: Record<string, unknown>) {
+  const rawName = String(f.file_name ?? f.original_name ?? '')
+
+  let tag = String(f.tag ?? 'document')
+  const sepIdx = rawName.indexOf('__')
+  if (sepIdx > 0) {
+    const prefix = rawName.slice(0, sepIdx)
+    // Only treat it as a tag prefix if it looks like a known slug (no spaces/dots)
+    if (/^[a-z0-9_]+$/.test(prefix)) tag = prefix
+  }
+
+  return {
+    id: f.id,
+    tag,
+    mime_type: f.mime_type ?? '',
+    status: f.status ?? 'pending',
+    created_at: f.created_at ?? null,
   }
 }

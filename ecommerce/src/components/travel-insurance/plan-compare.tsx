@@ -17,7 +17,10 @@ import {
   getComparisonRowConfigs,
   groupBenefitsByCanonical,
   resolveLimitDisplay,
+  sanitizeLabel,
 } from '@/utils/travel-benefits-helpers'
+import { formatAmount as money } from '@/utils/currency'
+import { formatFreeTextMoney } from '@/utils/fx'
 import type { InsuranceBenefit, InsurancePlan } from '@/types/plan'
 
 export const MAX_COMPARE = 3
@@ -45,25 +48,17 @@ const ICONS: Record<string, React.ElementType> = {
   Circle,
 }
 
-const money = (n: number) =>
-  n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
-const compactAmount = (value: string) => {
-  const n = Number(value)
-  if (Number.isNaN(n)) return value
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`
-  return n.toLocaleString('en-PH', { maximumFractionDigits: 0 })
-}
-
 const symbol = (currency: string) =>
   currency === 'PHP' ? '₱' : currency === 'USD' ? '$' : currency === 'EUR' ? '€' : `${currency} `
 
 const limitText = (b: InsuranceBenefit, currency: string) => {
   const d = resolveLimitDisplay(b)
-  if (d.kind === 'amount') return `${symbol(currency)}${compactAmount(d.value)}`
-  if (d.kind === 'badge') return d.label
-  if (d.kind === 'text') return d.text
+  if (d.kind === 'amount') return `${symbol(currency)}${money(d.value)}`
+  if (d.kind === 'badge') {
+    const safe = sanitizeLabel(d.label)
+    return safe ? formatFreeTextMoney(safe) : '—'
+  }
+  if (d.kind === 'text') return formatFreeTextMoney(d.text)
   return '—'
 }
 
@@ -81,7 +76,7 @@ function summarize(benefits: InsuranceBenefit[] | undefined, currency: string) {
     items: benefits.map((b) => {
       const d = resolveLimitDisplay(b)
       const note = d.kind === 'amount' || d.kind === 'badge' ? d.qualifier : undefined
-      return { name: b.BenefitDesc, value: limitText(b, currency), note: note?.trim() && note !== '0' ? note : undefined }
+      return { name: b.BenefitDesc, value: limitText(b, currency), note: note?.trim() && note !== '0' ? formatFreeTextMoney(note) : undefined }
     }),
   }
 }

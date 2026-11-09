@@ -38,7 +38,7 @@ export function ProposalRetrieve({
           <h1 id="retrieve-title" className="text-2xl font-semibold tracking-tight">
             Retrieve your proposal
           </h1>
-          <p className="mt-2 text-sm leading-6 text-[var(--text-sub)]">
+          <p className="mt-2 text-base leading-6 text-[var(--text-sub)]">
             Enter your proposal number to review your saved quote and continue to payment. You can also scan the QR
             code on your proposal.
           </p>

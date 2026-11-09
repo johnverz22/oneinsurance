@@ -1,80 +1,60 @@
-import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
-import { config } from '@/config/env'
+import {
+  BASE_URL,
+  buildApiHeaders,
+  getAuthToken,
+  handleAxiosError,
+  unauthorized,
+} from '@/lib/api-helpers'
 
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
+/**
+ * Single commission log. Falls back to scanning the full list when the
+ * by-ID endpoint does not resolve the record.
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const token = req.headers.get('Authorization')
-  const { id } = await params
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
 
-  if (!token) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401, headers }
-    )
+  const { id } = await params
+  const headers = { Authorization: token, Accept: 'application/json' }
+
+  try {
+    const res = await axios.get(`${BASE_URL}/admin/commission-logs/${id}`, { headers })
+    return NextResponse.json(res.data, {
+      status: res.status,
+      headers: buildApiHeaders(req),
+    })
+  } catch {
+    // fall through to list lookup
   }
 
   try {
-    // Try to get the specific commission log by ID
-    const url = `${config.BASE_URL}/admin/commission-logs/${id}`
-    console.log('Fetching commission log by ID:', url)
+    const res = await axios.get(`${BASE_URL}/admin/commission-logs?per_page=100`, { headers })
+    const list = res.data?.data?.data ?? res.data?.data ?? []
+    const match = Array.isArray(list)
+      ? list.find((c: { id?: number | string }) => String(c.id) === id)
+      : null
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: token,
-        Accept: 'application/json',
-      },
-    })
-
-    return NextResponse.json(response.data, { status: 200, headers })
-  } catch (error: any) {
-    console.error('Error fetching commission log by ID:', error)
-    
-    // If the specific endpoint doesn't exist, try to get all commission logs and find the one with matching ID
-    try {
-      console.log('Trying to fetch all commission logs and find by ID')
-      const allLogsUrl = `${config.BASE_URL}/admin/commission-logs?per_page=100`
-      
-      const allLogsResponse = await axios.get(allLogsUrl, {
-        headers: {
-          Authorization: token,
-          Accept: 'application/json',
-        },
-      })
-      
-      if (allLogsResponse.data?.data?.data && Array.isArray(allLogsResponse.data.data.data)) {
-        const commission = allLogsResponse.data.data.data.find((c: any) => 
-          c.id.toString() === id.toString()
-        )
-        
-        if (commission) {
-          return NextResponse.json({
-            success: true,
-            data: commission
-          }, { status: 200, headers })
-        }
-      }
-      
+    if (match) {
       return NextResponse.json(
-        { success: false, message: 'Commission log not found' },
-        { status: 404, headers }
+        { success: true, message: 'Commission log found', data: match },
+        { status: 200, headers: buildApiHeaders(req) }
       )
-    } catch (fallbackError) {
-      console.error('Fallback commission log fetch also failed:', fallbackError)
-      if (axios.isAxiosError(fallbackError)) {
-        return handleServerSideAxiosError(fallbackError)
-      }
-      return NextResponse.json({ error: 'Failed to fetch commission log' }, { status: 500, headers })
     }
+
+    return NextResponse.json(
+      { success: false, message: 'Commission log not found' },
+      { status: 404, headers: buildApiHeaders(req) }
+    )
+  } catch (error) {
+    if (axios.isAxiosError(error)) return handleAxiosError(error, req)
+    return NextResponse.json(
+      { success: false, message: 'Failed to fetch commission log' },
+      { status: 500, headers: buildApiHeaders(req) }
+    )
   }
 }

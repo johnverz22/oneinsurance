@@ -1,52 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { LoginAgentSchema } from '@/types/agent/auth'
 import axios from 'axios'
-import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
+import { z } from 'zod'
+import { BASE_URL, buildApiHeaders, handleAxiosError } from '@/lib/api-helpers'
 
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+})
 
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  const headers = buildApiHeaders(req)
+  const body = await req.json().catch(() => null)
+  if (!body)
+    return NextResponse.json({ message: 'No data provided' }, { status: 400, headers })
 
-  if (!body) {
+  const parsed = LoginSchema.safeParse(body)
+  if (!parsed.success)
     return NextResponse.json(
-      { message: 'No data provided' },
-      { status: 400, headers }
-    )
-  }
-  const parseBody = LoginAgentSchema.safeParse(body)
-  if (!parseBody.success) {
-    return NextResponse.json(
-      { message: 'Invalid data', errors: parseBody.error.flatten() },
+      { message: 'Invalid data', errors: parsed.error.flatten() },
       { status: 422, headers }
     )
-  }
 
-  // Debug environment variables
-  console.log('BASE_URL:', process.env.BASE_URL)
-  console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL)
-  console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('BASE')))
-
-  // Use fallback if BASE_URL is undefined
-  const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-one-insurance.intel-soln.com.ph/api/v1'
-  
   try {
-    const response = await axios.post(
-      `${baseUrl}/agents/login`,
-      parseBody.data
-    )
-
+    const response = await axios.post(`${BASE_URL}/agents/login`, parsed.data)
     return NextResponse.json(response.data, { status: 200, headers })
   } catch (error) {
-    console.error('Login error:', error)
-    if (axios.isAxiosError(error)) {
-      return handleServerSideAxiosError(error)
-    }
-    return NextResponse.json({ message: error }, { status: 500, headers })
+    if (axios.isAxiosError(error)) return handleAxiosError(error, req)
+    return NextResponse.json({ message: 'Server error' }, { status: 500, headers })
   }
 }

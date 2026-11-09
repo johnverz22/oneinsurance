@@ -5,9 +5,10 @@ import { TravelInsuranceFormData, PersonalInfoFormData, PH_ID_TYPES } from '@/ty
 import { FullQuoteResponse } from '@/types/travel-insurance/policy-types'
 import { InsuranceBenefit } from '@/types/plan'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
-import { getCanonicalConfigForBenefit, resolveLimitDisplay } from '@/utils/travel-benefits-helpers'
+import { getCanonicalConfigForBenefit, resolveLimitDisplay, sanitizeLabel } from '@/utils/travel-benefits-helpers'
 import { buildProposalUrl, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
 import { countryLabel } from '@/utils/trip-summary'
+import { formatPHPAmount } from '@/utils/currency'
 import { getPrincipal } from '@/utils/traveller-form'
 
 interface QuotePDFData {
@@ -110,7 +111,11 @@ const titleCase = (s: string) =>
     .join('')
 const normalizeCase = (s: string | undefined | null) => {
   const v = clean(s ?? '')
-  return v && v === v.toUpperCase() ? titleCase(v) : v
+  if (!v) return v
+  // Preserve pure acronyms / abbreviations (all-caps, no spaces, 2–6 chars):
+  // NCR, APAC, USA, NAIA, etc. should never be title-cased.
+  if (/^[A-Z0-9]{2,6}$/.test(v)) return v
+  return v === v.toUpperCase() ? titleCase(v) : v
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
@@ -127,8 +132,8 @@ const fmtDateTimePHT = (d: Date) =>
 const fmtDatePHT = (d: Date) =>
   new Intl.DateTimeFormat('en-US', { timeZone: PHT, month: 'short', day: 'numeric', year: 'numeric' }).format(d)
 
-export const money = (n: number) => `PHP ${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-const limitMoney = (n: number) => `PHP ${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+export const money = (n: number | string) => formatPHPAmount(n)
+const limitMoney = (n: number | string) => formatPHPAmount(n)
 const toNum = (v: unknown) => {
   const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''))
   return Number.isFinite(n) ? n : 0
@@ -188,8 +193,11 @@ function limitText(b: InsuranceBenefit, name: string, category: string, unavaila
       const isDeductible = /\b(excess|deductible)\b/i.test(name)
       return join([isDeductible ? `Deductible ${amt}` : amt, d.qualifier ? clean(d.qualifier) : mode])
     }
-    case 'badge':
-      return join([/^included$/i.test(d.label.trim()) ? `Included in ${category} limit` : clean(d.label), d.qualifier ? clean(d.qualifier) : mode])
+    case 'badge': {
+      const safe = sanitizeLabel(d.label)
+      if (!safe) return 'Per policy wording'
+      return join([/^included$/i.test(safe.trim()) ? `Included in ${category} limit` : clean(safe), d.qualifier ? clean(d.qualifier) : mode])
+    }
     case 'text':
       return clean(d.text)
     default:

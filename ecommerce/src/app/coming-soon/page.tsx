@@ -1,11 +1,12 @@
 import { HoldingPage } from '@/components/holding-page'
+import { getPersistedAgentCode } from '@/lib/agent-code-server'
 
-export default function RootComingSoonPage() {
+export default async function RootComingSoonPage() {
   return (
     <HoldingPage
       productSlug="coming-soon"
       productName="New Insurance Products"
-      agentCode="ckO6uNx2O6"
+      agentCode={await getPersistedAgentCode()}
     />
   )
 }

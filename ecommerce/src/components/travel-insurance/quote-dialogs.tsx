@@ -22,20 +22,22 @@ export function DataSharingDialog({ open, onClose }: { open: boolean; onClose: (
       maxWidth="max-w-7xl"
       closeLabel="Close data sharing agreement"
     >
-      <p id="data-sharing-intro" className="text-sm leading-6">
+      <p id="data-sharing-intro" className="text-base leading-6">
         By agreeing, you authorise the use and sharing of the information provided for this insurance application,
         subject to the following:
       </p>
-      <ol className="mt-5 list-decimal space-y-4 pl-5 text-sm leading-6">
+      <ol className="mt-5 list-decimal space-y-4 pl-5 text-base leading-6">
         <li><strong>Purpose.</strong> Information may be used to assess the application, verify identity, administer cover and process claims.</li>
         <li><strong>Recipients.</strong> Relevant information may be shared with the selected insurer and authorised service providers only as needed for these purposes or as required by law.</li>
         <li><strong>Protection.</strong> Information should be handled securely and retained only for the applicable service and legal requirements.</li>
         <li><strong>Your choices.</strong> You may request access or corrections, or ask about withdrawing consent, by contacting One Insurance. Withdrawal may affect the services that can be provided.</li>
         <li><strong>Other travellers.</strong> When providing information for another person, you confirm that you have their authority or are authorised to act for a minor.</li>
       </ol>
-      <button type="button" onClick={onClose} className={`${outlineBtn} mt-6`}>
-        Close
-      </button>
+      <div className="mt-6 flex justify-end sm:justify-start">
+        <button type="button" onClick={onClose} className={outlineBtn}>
+          Close
+        </button>
+      </div>
     </ScrollableModal>
   )
 }
@@ -94,7 +96,7 @@ function ApprovalForm({
         if (approved && !submitting) onSubmit()
       }}
     >
-      <label className="flex items-start gap-3 text-sm leading-6">
+      <label className="flex items-start gap-3 text-base leading-6">
         <input
           type="checkbox"
           checked={approved}
@@ -114,7 +116,7 @@ function ApprovalForm({
           : ''}
       </p>
       {error && !submitting && (
-        <div role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
+        <div role="alert" className="mt-3 min-w-0 wrap-anywhere text-base leading-6 text-red-700 dark:text-red-300">
           <p>{error.message}</p>
           {error.details.length > 0 && (
             <ul className="mt-1 list-disc pl-5">
@@ -173,7 +175,7 @@ export function ReviewDialog({
       titleId="application-review-title"
       closeLabel="Close application review"
     >
-      <p className="text-sm leading-6 text-[#808080] dark:text-[#c4c7c5]">
+      <p className="text-base leading-6 text-[#808080] dark:text-[#c4c7c5]">
         Check the travel, identity and plan details below before approving and submitting your application.
       </p>
 

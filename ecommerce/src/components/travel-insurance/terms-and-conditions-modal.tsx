@@ -98,12 +98,12 @@ export function TermsAndConditionsModal({ open, onClose }: TermsAndConditionsMod
       descriptionId="tc-modal-desc"
       closeLabel="Close Terms and Conditions"
     >
-      <p className="text-sm leading-6 text-[#333333] dark:text-[#c4c7c5]">
+      <p className="text-base leading-6 text-[#333333] dark:text-[#c4c7c5]">
         By clicking the agreement checkbox, you acknowledge and agree to the following terms
         and conditions:
       </p>
 
-      <div className="mt-6 space-y-8 text-justify text-sm leading-7 text-[#333333] dark:text-[#c4c7c5] sm:text-base">
+      <div className="mt-6 space-y-8 text-justify text-base leading-7 text-[#333333] dark:text-[#c4c7c5] sm:text-base">
         {SECTIONS.map((s) => (
           <section key={s.title}>
             <h3 className="text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2] sm:text-lg">

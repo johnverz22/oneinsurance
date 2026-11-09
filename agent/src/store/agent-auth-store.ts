@@ -1,49 +1,27 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import { LoginAgentResponse } from '@/types/agent/auth'
-
-type AgentUser = {
-  id: number
-  name: string
-  email: string
-  role: string
-  designation: string
-  phone: string
-  status: string
-  profile_photo_url?: string | null
-  created_at: string
-  updated_at: string
-}
+import type { AgentUser, LoginAgentResponse } from '@/types/agent/auth'
+import { getInitials } from '@/lib/utils'
 
 type AgentAuthState = {
-  // Authentication status
   isAuthenticated: boolean
-
-  // Token information
   accessToken: string | null
   tokenType: string | null
-
-  // User information
   user: AgentUser | null
+  /** True once the persisted store has been rehydrated from localStorage. */
+  _hasHydrated: boolean
 
-  // Authentication actions
+  // Actions
   login: (response: LoginAgentResponse) => void
   logout: () => void
-
-  // Token management
-  setToken: (token: string, tokenType: string) => void
-  clearToken: () => void
-
-  // User information management
   setUser: (user: AgentUser) => void
   updateUser: (updates: Partial<AgentUser>) => void
-  clearUser: () => void
+  setHasHydrated: (state: boolean) => void
 
-  // Helper methods
+  // Computed helpers (called as functions to stay reactive)
   getInitials: () => string
-  getAuthToken: () => string | null
+  getAuthHeader: () => string | null
   isTokenValid: () => boolean
-  hasRole: (role: string) => boolean
 }
 
 const initialState = {
@@ -51,6 +29,7 @@ const initialState = {
   accessToken: null,
   tokenType: null,
   user: null,
+  _hasHydrated: false,
 }
 
 export const useAgentAuthStore = create<AgentAuthState>()(
@@ -58,114 +37,57 @@ export const useAgentAuthStore = create<AgentAuthState>()(
     (set, get) => ({
       ...initialState,
 
-      // Authentication actions
       login: (response: LoginAgentResponse) => {
         const { access_token, token_type, user } = response.data
-        set({
-          isAuthenticated: true,
-          accessToken: access_token,
-          tokenType: token_type,
-          user: user,
-        })
+        set({ isAuthenticated: true, accessToken: access_token, tokenType: token_type, user })
       },
 
       logout: () => {
-        set({
-          ...initialState,
-        })
+        // Keep _hasHydrated true — logout only runs in an already-hydrated
+        // session, and resetting it leaves the store permanently "unhydrated"
+        // (portal/auth layouts gate on it) until the next full page load.
+        set({ ...initialState, _hasHydrated: true })
       },
 
-      // Token management
-      setToken: (token: string, tokenType: string) => {
-        set({
-          accessToken: token,
-          tokenType: tokenType,
-          isAuthenticated: !!token,
-        })
-      },
-
-      clearToken: () => {
-        set({
-          accessToken: null,
-          tokenType: null,
-          isAuthenticated: false,
-        })
-      },
-
-      // User information management
-      setUser: (user: AgentUser) => {
-        set({ user })
-      },
+      setUser: (user: AgentUser) => set({ user }),
 
       updateUser: (updates: Partial<AgentUser>) => {
-        const currentUser = get().user
-        if (currentUser) {
-          set({
-            user: { ...currentUser, ...updates },
-          })
-        }
+        const current = get().user
+        if (current) set({ user: { ...current, ...updates } })
       },
 
-      clearUser: () => {
-        set({ user: null })
-      },
+      setHasHydrated: (state: boolean) => set({ _hasHydrated: state }),
 
-      // Helper methods
-      getInitials: () => {
-        const { user } = get()
+      getInitials: () => getInitials(get().user?.name),
 
-        if (user) {
-          return user?.name
-            ?.split(' ')
-            .map((word) => word[0])
-            .join('')
-            .toUpperCase()
-        }
-
-        return ''
-      },
-
-      getAuthToken: () => {
+      getAuthHeader: () => {
         const { accessToken, tokenType } = get()
-        if (accessToken && tokenType) {
-          return `${tokenType} ${accessToken}`
-        }
-        return null
+        return accessToken && tokenType ? `${tokenType} ${accessToken}` : null
       },
 
       isTokenValid: () => {
-        const { accessToken, isAuthenticated } = get()
+        const { isAuthenticated, accessToken } = get()
         return isAuthenticated && !!accessToken
-      },
-
-      hasRole: (role: string) => {
-        const { user } = get()
-        return user?.role === role || user?.designation === role
       },
     }),
     {
       name: 'agent-auth-storage',
       storage: createJSONStorage(() => localStorage),
-      // Only persist authentication data, not temporary states
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken,
         tokenType: state.tokenType,
         user: state.user,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
     }
   )
 )
 
-// Helper function to clear the auth store from localStorage
-export const clearAgentAuthStore = () => {
-  localStorage.removeItem('agent-auth-storage')
-}
-
-// Selector hooks for specific parts of the store
-export const useAgentUser = () => useAgentAuthStore((state) => state.user)
-export const useAgentAuthToken = () =>
-  useAgentAuthStore((state) => state.getAuthToken())
-export const useIsAgentAuthenticated = () =>
-  useAgentAuthStore((state) => state.isAuthenticated)
-export const useAgentRole = () => useAgentAuthStore((state) => state.user?.role)
+// Convenience selector hooks
+export const useAgentUser = () => useAgentAuthStore((s) => s.user)
+export const useIsAuthenticated = () => useAgentAuthStore((s) => s.isAuthenticated)
+export const useAgentRole = () => useAgentAuthStore((s) => s.user?.role)
+export const useHasHydrated = () => useAgentAuthStore((s) => s._hasHydrated)

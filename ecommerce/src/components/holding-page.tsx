@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft, Bell, Clock, ShieldCheck, Sparkles, WifiOff, AlertCircle } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
 interface HoldingPageProps {
   productSlug?: string
@@ -15,7 +16,7 @@ interface HoldingPageProps {
 export function HoldingPage({
   productSlug = 'coming-soon',
   productName = 'Insurance Coverage',
-  agentCode = 'ckO6uNx2O6',
+  agentCode = PRIMARY_AGENT_CODE,
   reason = 'product',
 }: HoldingPageProps) {
   if (reason === 'backend') {
@@ -38,7 +39,7 @@ export function HoldingPage({
             </div>
 
             <h1 className="mb-2 text-2xl font-bold">System Unavailable</h1>
-            <p className="mb-6 leading-relaxed text-sm text-[#505553] dark:text-[#b2b7b4]">
+            <p className="mb-6 leading-relaxed text-base text-[#505553] dark:text-[#b2b7b4]">
               Our insurance quotation services are temporarily undergoing maintenance. Please check back shortly.
             </p>
 
@@ -101,7 +102,7 @@ export function HoldingPage({
               <h3 className="mt-4 font-semibold text-base text-[#183d2c] dark:text-[#f4f5f2]">
                 Get Notified
               </h3>
-              <p className="mt-1 text-center text-xs leading-5 text-[#505553] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-center text-base leading-6 text-[#505553] dark:text-[#b2b7b4]">
                 Be the first to access quotes and instant digital applications when launched.
               </p>
             </div>
@@ -113,7 +114,7 @@ export function HoldingPage({
               <h3 className="mt-4 font-semibold text-base text-[#183d2c] dark:text-[#f4f5f2]">
                 Tailored Protection
               </h3>
-              <p className="mt-1 text-center text-xs leading-5 text-[#505553] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-center text-base leading-6 text-[#505553] dark:text-[#b2b7b4]">
                 Backed by leading underwriters with comprehensive, reliable claim benefits.
               </p>
             </div>
@@ -125,7 +126,7 @@ export function HoldingPage({
               <h3 className="mt-4 font-semibold text-base text-[#183d2c] dark:text-[#f4f5f2]">
                 Instant Issuance
               </h3>
-              <p className="mt-1 text-center text-xs leading-5 text-[#505553] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-center text-base leading-6 text-[#505553] dark:text-[#b2b7b4]">
                 Digital policy documents and automated certificates delivered in minutes.
               </p>
             </div>

@@ -356,14 +356,14 @@ export function IdUpload({ label, required = true, backRequired = false, initial
         {/* OCR status banner */}
         <div aria-live="polite" className="mt-1.5 min-h-[18px]">
           {status === 'scanning' && (
-            <p className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
+            <p className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 wrap-anywhere text-xs leading-5 text-[var(--text-muted)]">
               <Loader2 className="size-3.5 animate-spin" aria-hidden /> Scanning ID…
             </p>
           )}
 
           {status === 'done' && (
             <div className="space-y-1">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-[var(--primary)]">
+              <p className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 wrap-anywhere text-xs leading-5 font-medium text-[var(--primary)]">
                 <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
                 Fields pre-filled — please review before continuing.
               </p>
@@ -380,7 +380,7 @@ export function IdUpload({ label, required = true, backRequired = false, initial
 
           {status === 'partial' && failureReason === 'partial' && (
             <div className="space-y-1">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+              <p className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 wrap-anywhere text-xs leading-5 font-medium text-amber-700 dark:text-amber-400">
                 <AlertCircle className="size-3.5 shrink-0" aria-hidden />
                 {OCR_ERROR_MESSAGES['partial']}
               </p>
@@ -405,7 +405,7 @@ export function IdUpload({ label, required = true, backRequired = false, initial
 
           {status === 'error' && failureReason && (
             <div className="space-y-1.5">
-              <p className="flex items-center gap-1.5 text-xs font-medium text-red-700 dark:text-red-300">
+              <p className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 wrap-anywhere text-xs leading-5 font-medium text-red-700 dark:text-red-300">
                 <AlertCircle className="size-3.5 shrink-0" aria-hidden />
                 {OCR_ERROR_MESSAGES[failureReason]}
               </p>
@@ -462,7 +462,7 @@ export function IdUpload({ label, required = true, backRequired = false, initial
 
       {/* Upload error */}
       {error && (
-        <p role="alert" className="flex items-center gap-1.5 text-xs text-red-700 dark:text-red-300">
+        <p role="alert" className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 wrap-anywhere text-xs leading-5 text-red-700 dark:text-red-300">
           <AlertCircle className="size-3.5" aria-hidden /> {error}
         </p>
       )}

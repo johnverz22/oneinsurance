@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ApplyForm } from './form'
+import { getPersistedAgentCode } from '@/lib/agent-code-server'
 import { Banknote, BarChart3, LayoutDashboard, Package, Users, Link2 } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -60,11 +61,13 @@ const DISTRIBUTION_GROUPS = [
   { title: 'Referral partners', desc: 'For referral and affiliate distribution.' },
 ]
 
-export default function AgentApplicationPage() {
+export default async function AgentApplicationPage() {
+  const agentCode = await getPersistedAgentCode()
+
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--canvas)] text-[var(--text-main)]">
       <Header
-        agentCode="ckO6uNx2O6"
+        agentCode={agentCode}
         currentProductSlug="agent-application"
         productsLabel="Products"
         customNavItems={NAV_ITEMS}
@@ -98,7 +101,7 @@ export default function AgentApplicationPage() {
               className="scroll-mt-24 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 text-[var(--text-main)] shadow-2xl sm:p-8 lg:max-w-xl lg:flex-1"
             >
               <h2 className="text-xl font-semibold sm:text-2xl">Become an agent</h2>
-              <p className="mt-1 text-sm leading-6 text-[var(--text-sub)]">
+              <p className="mt-1 text-base leading-6 text-[var(--text-sub)]">
                 Register your interest in joining our network.
               </p>
               <div className="mt-5">
@@ -114,7 +117,7 @@ export default function AgentApplicationPage() {
               <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 A clearer view of your business
               </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-sub)] sm:text-base">
+              <p className="mx-auto mt-3 max-w-2xl text-base text-[var(--text-sub)] sm:text-base">
                 Platform features for independent insurance advisors, agencies and broker networks.
               </p>
             </div>
@@ -131,7 +134,7 @@ export default function AgentApplicationPage() {
                   <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#006838] dark:group-hover:text-white">
                     {title}
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--text-sub)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#333333] dark:group-hover:text-[#c4c7c5]">
+                  <p className="mt-2 text-base leading-6 text-[var(--text-sub)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#333333] dark:group-hover:text-[#c4c7c5]">
                     {desc}
                   </p>
                 </article>
@@ -146,7 +149,7 @@ export default function AgentApplicationPage() {
               <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 How commission distribution works
               </h2>
-              <p className="mx-auto mt-3 max-w-2xl text-sm text-[var(--text-sub)] sm:text-base">
+              <p className="mx-auto mt-3 max-w-2xl text-base text-[var(--text-sub)] sm:text-base">
                 Connect products, direct producers and managing teams with a clear distribution
                 structure.
               </p>
@@ -159,7 +162,7 @@ export default function AgentApplicationPage() {
                   className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8"
                 >
                   <h3 className="text-lg font-semibold">{g.title}</h3>
-                  <p className="mt-1 text-sm text-[var(--text-sub)]">{g.desc}</p>
+                  <p className="mt-1 text-base text-[var(--text-sub)]">{g.desc}</p>
                   <ol className="mt-6 space-y-3">
                     {DISTRIBUTION_STEPS.map((step, i) => (
                       <li
@@ -180,7 +183,7 @@ export default function AgentApplicationPage() {
         </section>
       </main>
 
-      <Footer agentCode="ckO6uNx2O6" />
+      <Footer agentCode={agentCode} />
     </div>
   )
 }

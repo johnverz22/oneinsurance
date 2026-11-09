@@ -24,20 +24,20 @@ import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { formatBenefitLimit, groupBenefits } from '@/utils/travel-benefits'
 import { KeyConditions } from '@/components/travel-insurance/key-conditions'
 import { emptyTraveller, fieldRulesForCarrier, principalIndex, travellerOf, validateTravellers } from '@/utils/traveller-form'
-import { toPHP } from '@/utils/fx'
+import { toPHP, formatFreeTextMoney } from '@/utils/fx'
+import { formatAmount as money, formatPHPAmount } from '@/utils/currency'
 import { formatDays, formatTripRange, getTripDays, titleCase, countryLabel } from '@/utils/trip-summary'
 import type { InsuranceBenefit } from '@/types/plan'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
-const money = (n: number) =>
-  n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 const addonLimit = (b: InsuranceBenefit) => {
   const limit = formatBenefitLimit(b)
   if (limit !== '—') return limit
-  if (b.DefaultLimitDesc && b.DefaultLimitDesc !== '0') return b.DefaultLimitDesc
+  if (b.DefaultLimitDesc && b.DefaultLimitDesc !== '0') return formatFreeTextMoney(b.DefaultLimitDesc)
   const si = Number(b.Silimit)
-  return si > 0 ? `Up to PHP ${si.toLocaleString('en-PH')}` : 'Included'
+  return si > 0 ? `Up to ${formatPHPAmount(si)}` : 'Included'
 }
 
 /* ── Critical notice (spec D) ── */
@@ -58,7 +58,7 @@ function ProposalNotice() {
 export default function Step3GenerateQuotePage() {
   const router = useRouter()
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || 'ckO6uNx2O6'
+  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -143,18 +143,15 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
       const saved = travelersInfo[i] ?? emptyTraveller()
       let data = { ...saved, idFrontUploaded: !!idFilesStore.get(i)?.frontId, idBackUploaded: !!idFilesStore.get(i)?.backId }
 
-      // Pre-fill traveller 1's date of birth from the landing-page DOB field when
-      // the traveller form hasn't been filled in yet (firstName still blank) and
-      // a real DOB was captured on the landing page (not the 1990-01-01 default).
-      if (i === 0 && !saved.firstName) {
-        const landingDob = travelDetails.dateOfBirth
-        if (
-          landingDob instanceof Date &&
-          !isNaN(landingDob.getTime()) &&
-          landingDob.toISOString().split('T')[0] !== '1990-01-01'
-        ) {
-          data = { ...data, dateOfBirth: landingDob }
-        }
+      // Persist the lead traveller's DOB captured on the landing-page search
+      // onto the principal traveller — unless that traveller already has a
+      // real DOB. 1990-01-01 is the store's "unset" sentinel on both sides.
+      const isRealDob = (d: unknown): d is Date =>
+        d instanceof Date &&
+        !isNaN(d.getTime()) &&
+        d.toISOString().split('T')[0] !== '1990-01-01'
+      if (i === initialPrincipal && isRealDob(travelDetails.dateOfBirth) && !isRealDob(saved.dateOfBirth)) {
+        data = { ...data, dateOfBirth: travelDetails.dateOfBirth }
       }
 
       data = { ...data, isPrincipalApplicant: i === initialPrincipal }
@@ -358,7 +355,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
 
         {/* ── Page heading (spec E: no eyebrow on mobile, keep title + subtitle) ── */}
         <h1 className="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">Quote details</h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-sub)] sm:text-base sm:leading-7">
+        <p className="mt-2 text-base leading-6 text-[var(--text-sub)] sm:text-base sm:leading-7">
           {addonGroups.length > 0
             ? 'Review your plan, select add-ons and enter traveller details to generate your quote.'
             : 'Review your plan and enter traveller details to generate your quote.'}
@@ -371,7 +368,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
             className="mt-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm dark:border-red-800/40 dark:bg-red-900/10"
           >
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-600 dark:text-red-400" aria-hidden />
-            <p className="text-red-800 dark:text-red-300">
+            <p className="min-w-0 wrap-anywhere leading-6 text-red-800 dark:text-red-300">
               Please fix {plural(errorCount, 'field')} highlighted below before continuing.
             </p>
           </div>
@@ -386,7 +383,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
             {/* Plan coverage accordion */}
             <details open className="travel-applicant-card travel-coverage">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold sm:text-xl">Plan coverage &amp; benefits</h2>
+                <h2 className="text-base font-semibold">Coverage &amp; benefits</h2>
                 <ChevronDown className="size-5 shrink-0 transition-transform [details[open]_&]:rotate-180" aria-hidden />
               </summary>
               <div className="mt-4">
@@ -440,7 +437,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
             </details>
 
             {/* ── Mobile compact plan summary row (spec E) ── */}
-            <div className="order-first sm:order-none lg:hidden">
+            <div className="order-first lg:hidden">
               <div className="travel-applicant-card p-0 overflow-hidden">
                 <button
                   type="button"
@@ -449,19 +446,8 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
                   aria-controls="mobile-plan-details"
                   className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                 >
-                  {logo && (
-                    <Image
-                      src={logo}
-                      alt=""
-                      width={28}
-                      height={28}
-                      unoptimized
-                      aria-hidden
-                      className="size-7 shrink-0 rounded object-contain"
-                    />
-                  )}
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 text-sm font-semibold leading-snug">{planName}</p>
+                    <p className="line-clamp-2 text-base font-semibold leading-snug">{planName}</p>
                     <p className="mt-0.5 text-xs text-[var(--text-muted)]">{insurer}</p>
                   </div>
                   <div className="shrink-0 text-right">
@@ -519,7 +505,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
             {/* Optional add-ons — always shown, content conditional */}
             <details className="travel-applicant-card travel-addons">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold sm:text-xl">Optional add-ons</h2>
+                <h2 className="text-base font-semibold">Add-ons</h2>
                 <span className="flex items-center gap-3 text-sm">
                   {addonGroups.length === 0
                     ? 'None available'
@@ -535,7 +521,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
                 </p>
               ) : (
                 <>
-                  <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                  <p className="mt-2 text-base leading-6 text-[var(--text-muted)]">
                     Select additional cover for your plan. Add-on pricing is applied when your quote is generated.
                   </p>
                   <div className="mt-6 space-y-3">
@@ -551,7 +537,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
                           />
                           <span className="min-w-0 flex-1">
                             <span className="travel-addon-title block font-semibold">{addon.name}</span>
-                            <span className="travel-addon-copy mt-2 block space-y-1 text-sm leading-6">
+                            <span className="travel-addon-copy mt-2 block space-y-1 text-base leading-6">
                               {addon.benefits.map((b, i) => (
                                 <span key={`${b.BenefitCode}-${i}`} className="flex justify-between gap-3">
                                   <span className="min-w-0">{b.BenefitDesc}</span>
@@ -573,11 +559,11 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
             <form noValidate className="space-y-5" onSubmit={handleReview} id="traveller-form">
               <div>
                 <h2 className="text-lg font-semibold sm:text-xl">Traveller information</h2>
-                <p className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">
+                <p className="mt-1.5 text-base leading-6 text-[var(--text-muted)]">
                   Enter details as shown on each traveller&apos;s ID.
                 </p>
                 {total > 1 && (
-                  <p className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">
+                  <p className="mt-1.5 text-base leading-6 text-[var(--text-muted)]">
                     The <strong className="font-semibold text-[var(--text-sub)]">principal applicant</strong> is the policyholder. Their contact details are used for the policy and payment. Use &ldquo;Make principal&rdquo; on a traveller to change it.
                   </p>
                 )}

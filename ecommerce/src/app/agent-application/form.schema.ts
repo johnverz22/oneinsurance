@@ -18,7 +18,7 @@ export const applyFormSchema = z.object({
     .trim()
     .min(1, 'Contact number is required')
     .regex(
-      /^([0-9]\d{10}|\+63\s?\d{3}\s?\d{3}\s?\d{4}|\+?[0-9]{10,13})$/,
+      /^([0-9]\d{10}|\+63\s\d{3}\s\d{3}\s\d{4})$/,
       'Invalid phone number (e.g. 09171234567 or +63 917 123 4567)'
     ),
   role: z.enum(['agent', 'referral'], {

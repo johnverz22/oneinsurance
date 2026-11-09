@@ -222,7 +222,7 @@ function FaqItem({ faq, index, open, onToggle }: {
       </button>
       {open && (
         <div className="px-4 pb-4 pl-[52px] border-t border-[#dfe7df] dark:border-[#3d4140] pt-3">
-          <p className="text-sm text-[#808080] leading-relaxed">{faq.a}</p>
+          <p className="text-base text-[#808080] leading-relaxed">{faq.a}</p>
         </div>
       )}
     </div>
@@ -257,7 +257,7 @@ export default function PacificCrossHealthBrochurePage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug mb-3">
             Select Prepaid Insurance Plans
           </h1>
-          <p className="text-green-200 text-sm max-w-xl leading-relaxed mb-5">
+          <p className="text-green-200 text-base max-w-xl leading-relaxed mb-5">
             Reimbursement and cash assistance for medical emergencies, COVID-19, dengue, and
             post-hospitalization medicines — valid for 1 year.
           </p>
@@ -348,7 +348,7 @@ export default function PacificCrossHealthBrochurePage() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">{b.title}</p>
-                  <p className="text-xs text-[#808080] mt-1 leading-relaxed">{b.desc}</p>
+                  <p className="text-base text-[#808080] mt-1 leading-relaxed">{b.desc}</p>
                 </div>
               </div>
             ))}

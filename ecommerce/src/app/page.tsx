@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 
-export default function RootPage() {
-  redirect('/ckO6uNx2O6/travel-insurance')
+import { getPersistedAgentCode } from '@/lib/agent-code-server'
+
+export default async function RootPage() {
+  redirect(`/${await getPersistedAgentCode()}`)
 }

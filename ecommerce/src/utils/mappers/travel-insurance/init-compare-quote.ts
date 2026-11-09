@@ -14,6 +14,8 @@ export interface InitCompareQuoteRequest {
   principal_date_of_birth: string | null
   agent_code: string
   slug: string
+  /** Sent only for annual multi-trip; omitted for single trips. */
+  trip_type?: 'annual'
 }
 
 /**
@@ -321,5 +323,6 @@ export function travelInsuranceSchemaToInitCompareQuote(
     principal_date_of_birth: dateOfBirth ?? null,
     agent_code: agentCode ?? '',
     slug: 'travel-insurance',
+    ...(travelInsurance.isAnnualMultiTrip ? { trip_type: 'annual' as const } : {}),
   }
 }

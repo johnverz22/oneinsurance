@@ -3,12 +3,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight, ArrowUp, Phone, Mail, MapPin } from 'lucide-react'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
 interface FooterProps {
   agentCode?: string
 }
 
-export function Footer({ agentCode = 'ckO6uNx2O6' }: FooterProps) {
+export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -45,7 +46,7 @@ export function Footer({ agentCode = 'ckO6uNx2O6' }: FooterProps) {
               <br />
               Cover for what matters.
             </p>
-            <p className="mt-3 text-sm leading-snug text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-3 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
               A brand of{' '}
               <span className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
                 IFRC Insurance

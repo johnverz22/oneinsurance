@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useSyncExternalStore, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { addYears, format, parseISO } from 'date-fns'
 import { Plane, Calendar, Users, MapPin, ArrowRight } from 'lucide-react'
 import { TermsAndConditionsModal } from '@/components/travel-insurance/terms-and-conditions-modal'
 import { TripSummaryModal } from '@/components/travel-insurance/trip-summary-modal'
@@ -203,7 +204,10 @@ function TripDetailsFormInner({
   }, [normalizedTravelDetails.dateOfBirth, hasSavedTrip])
 
   const [departure, setDeparture] = useState<string>(defaultDepartureStr)
-  const [returnDate, setReturnDate] = useState<string>(defaultReturnStr)
+  const [singleReturnDate, setReturnDate] = useState<string>(defaultReturnStr)
+  const returnDate = tripType === 'annual'
+    ? departure ? format(addYears(parseISO(departure), 1), 'yyyy-MM-dd') : ''
+    : singleReturnDate
   const [birthDate, setBirthDate] = useState<string>(defaultDobStr)
   const [adults, setAdults] = useState<number>(normalizedTravelDetails.noOfAdults || 1)
   const [children, setChildren] = useState<number>(normalizedTravelDetails.noOfChildren || 0)
@@ -471,7 +475,7 @@ function TripDetailsFormInner({
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight text-[#183d2c] dark:text-[#f4f5f2]">
               Your trip details
             </h3>
-            <p className="mt-1 text-sm sm:text-base leading-snug text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
               Compare plans and rates with a few trip details.
             </p>
           </div>
@@ -826,7 +830,7 @@ function TripDetailsFormInner({
                   onChange={(e) => {
                     const nextDep = e.target.value
                     setDeparture(nextDep)
-                    if (nextDep && returnDate && returnDate < nextDep) setReturnDate('')
+                    if (nextDep && singleReturnDate && singleReturnDate < nextDep) setReturnDate('')
                   }}
                   className={cn(
                     'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
@@ -853,7 +857,7 @@ function TripDetailsFormInner({
                   htmlFor="trip-return"
                   className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
                 >
-                  {tripType === 'annual' ? 'First trip return' : 'Return date'}{' '}
+                  Return date{' '}
                   <span aria-hidden className="text-red-600">*</span>
                 </label>
                 <input
@@ -862,12 +866,14 @@ function TripDetailsFormInner({
                   type="date"
                   value={returnDate}
                   min={departure || todayStr}
+                  disabled={tripType === 'annual'}
                   required
                   aria-invalid={Boolean(fieldErrors.returnDate)}
-                  aria-describedby={fieldErrors.returnDate ? 'trip-return-error' : undefined}
+                  aria-describedby={fieldErrors.returnDate ? 'trip-return-error' : tripType === 'annual' ? 'trip-return-hint' : undefined}
                   onChange={(e) => setReturnDate(e.target.value)}
                   className={cn(
                     'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
+                    'disabled:cursor-not-allowed disabled:bg-[var(--subtle)] disabled:text-[var(--text-muted)] disabled:opacity-60',
                     fieldErrors.returnDate && 'border-red-600 outline-red-600'
                   )}
                 />
@@ -876,6 +882,10 @@ function TripDetailsFormInner({
                   {fieldErrors.returnDate ? (
                     <p id="trip-return-error" className="text-xs text-red-600 dark:text-red-400" role="alert">
                       {fieldErrors.returnDate}
+                    </p>
+                  ) : tripType === 'annual' ? (
+                    <p id="trip-return-hint" className="text-xs font-semibold text-[#006838] dark:text-[#d0e3c8]" aria-live="polite">
+                      Automatically set to one year after departure.
                     </p>
                   ) : returnDate ? (
                     <p className="text-xs font-semibold text-[#006838] dark:text-[#d0e3c8]" aria-live="polite">
@@ -1194,7 +1204,7 @@ function TripDetailsFormInner({
             <h2 id="search-title" className="mt-4 text-2xl font-bold leading-tight tracking-tight">
               Find travel plans for your trip
             </h2>
-            <p className="mt-2 text-sm leading-6 text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-2 text-base leading-6 text-[#333333] dark:text-[#c4c7c5]">
               Real-time rate comparison and immediate coverage from accredited insurers.
             </p>
 

@@ -38,7 +38,8 @@ import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/addres
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { formatBenefitLimit, groupBenefits } from '@/utils/travel-benefits'
 import { KeyConditions } from '@/components/travel-insurance/key-conditions'
-import { toPHP } from '@/utils/fx'
+import { toPHP, formatFreeTextMoney } from '@/utils/fx'
+import { formatAmount as money, formatPHPAmount } from '@/utils/currency'
 import { formatDays, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import {
   checkProposalState,
@@ -51,8 +52,8 @@ import {
   type ProposalLoadResult,
 } from '@/utils/proposal-loader'
 import type { InsuranceBenefit } from '@/types/plan'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
-const money = (n: number) => n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 const mask = (v: string, keep = 3) => (v.length > keep ? `${'•'.repeat(v.length - keep)}${v.slice(-keep)}` : v)
 const dateOf = (d?: Date | string | null) => {
@@ -61,9 +62,9 @@ const dateOf = (d?: Date | string | null) => {
 }
 
 const addonLimit = (b: InsuranceBenefit) => {
-  if (b.DefaultLimitDesc && b.DefaultLimitDesc !== '0') return b.DefaultLimitDesc
+  if (b.DefaultLimitDesc && b.DefaultLimitDesc !== '0') return formatFreeTextMoney(b.DefaultLimitDesc)
   const si = Number(b.Silimit)
-  return si > 0 ? `Up to PHP ${si.toLocaleString('en-PH')}` : 'Included'
+  return si > 0 ? `Up to ${formatPHPAmount(si)}` : 'Included'
 }
 
 export default function Step4ReviewQuotePage() {
@@ -104,7 +105,7 @@ function ReviewRoute() {
   const router = useRouter()
   const params = useParams()
   const search = useSearchParams()
-  const agentCode = (params['agent-code'] as string) || 'ckO6uNx2O6'
+  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
   const proposalParam = search.get('proposal')?.trim() || null
 
   const hydrated = useSyncExternalStore(
@@ -257,7 +258,7 @@ function Disclosure({
   return (
     <details open={open} className={`travel-applicant-card travel-coverage review-collapsible ${className}`}>
       <summary className="flex min-h-11 cursor-pointer flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <h2 className="text-lg font-semibold sm:text-xl">{title}</h2>
+        <h2 className="text-base font-semibold">{title}</h2>
         <span className="ml-auto flex items-center gap-3 whitespace-nowrap text-sm">
           {meta}
           <ChevronDown className="size-5 shrink-0 transition-transform [details[open]_&]:rotate-180" aria-hidden />
@@ -412,6 +413,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
       <div className="w-full mx-auto max-w-7xl px-4 pb-28 pt-4 sm:px-6 sm:pt-8 sm:pb-10 lg:px-8">
         <div className="no-print">
           <TripSummary
+            hideMobile
             onEdit={() => {}}
             readOnlyLabel="Proposal generated · Read-only"
             premium={`PHP ${money(totalPremium)}`}
@@ -422,7 +424,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
           Travel insurance · Step 4 of 5
         </p>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">Review your proposal</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--text-sub)] sm:text-base sm:leading-7">
+        <p className="mt-3 text-base leading-6 text-[var(--text-sub)] sm:text-base sm:leading-7">
           Your insurance proposal has been generated. Review the details below before proceeding to payment.
         </p>
 
@@ -439,7 +441,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
         ) : (
           <div className="mt-6 rounded-md border border-[var(--field-border)] bg-[var(--subtle)] p-5">
             <h2 className="font-semibold">Need to change something?</h2>
-            <p className="mt-2 text-sm leading-7">
+            <p className="mt-2 text-base leading-7">
               Generated proposals cannot be edited. To update your trip, plan or traveller information, cancel this
               and start a new quote.
             </p>
@@ -530,7 +532,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
               </div>
             </Disclosure>
 
-            <Disclosure title="Plan coverage & benefits">
+            <Disclosure title="Coverage & benefits">
               <div className="mt-4">
                 <div className="travel-coverage__plan">
                   <div className="travel-coverage__logo">
@@ -585,7 +587,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
             </Disclosure>
 
             <Disclosure
-              title="Selected add-ons"
+              title="Add-ons"
               meta={selectedAddons.length ? `${selectedAddons.length} selected` : 'None selected'}
             >
               {selectedAddons.length ? (
@@ -594,7 +596,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
                     <li key={a.code} className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold">{a.name}</h3>
-                        <div className="mt-2 space-y-1 text-sm leading-6 text-[var(--text-muted)]">
+                        <div className="mt-2 space-y-1 text-base leading-6 text-[var(--text-muted)]">
                           {a.benefits.map((b, i) => (
                             <p
                               key={`${b.BenefitCode}-${i}`}
@@ -650,7 +652,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
               />
             )}
             <p className="text-sm text-[var(--text-muted)]">{insurer}</p>
-            <h2 id="selected-plan-title" className="mt-2 text-lg font-semibold">
+            <h2 id="selected-plan-title" className="mt-2 text-base font-semibold">
               {planName}
             </h2>
 
@@ -742,17 +744,17 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
       <div
         role="region"
         aria-label="Review proposal action bar"
-        className="quote-sticky-bar sm:hidden no-print"
+        className="quote-sticky-bar md:hidden no-print"
       >
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-[var(--text-main)]">PHP {money(totalPremium)}</p>
-          <p className="truncate text-xs text-[var(--text-muted)]">for {plural(total, 'traveller')}</p>
+        <div className="shrink-0">
+          <p className="whitespace-nowrap text-base font-semibold text-[var(--text-main)]">PHP {money(totalPremium)}</p>
+          <p className="text-xs text-[var(--text-muted)]">for {plural(total, 'traveller')}</p>
         </div>
         {expired ? (
           <button
             type="button"
             onClick={onStartNewQuote}
-            className="btn-primary flex shrink-0 items-center gap-2 px-5 py-3 text-sm font-semibold"
+            className="btn-primary inline-flex min-h-11 min-w-0 items-center justify-center px-3 py-2 text-center text-sm font-semibold leading-5"
           >
             Start a new quote
           </button>
@@ -760,7 +762,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
           <button
             type="button"
             onClick={proceed}
-            className="btn-primary flex shrink-0 items-center gap-2 px-5 py-3 text-sm font-semibold"
+            className="btn-primary inline-flex min-h-11 min-w-0 items-center justify-center px-3 py-2 text-center text-sm font-semibold leading-5"
           >
             Proceed to payment →
           </button>
@@ -787,10 +789,10 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
             <X className="size-5" aria-hidden />
           </button>
         </div>
-        <p id="cancel-proposal-description" className="mt-4 text-sm leading-7">
+        <p id="cancel-proposal-description" className="mt-4 text-base leading-7">
           You can cancel now and return to pay for this proposal within {PROPOSAL_VALIDITY_HOURS} hours of its creation.
         </p>
-        <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm leading-7">
+        <ol className="mt-5 list-decimal space-y-3 pl-5 text-base leading-7">
           <li>Keep your proposal number so you can retrieve the proposal and resume payment.</li>
           <li>
             Complete payment within {PROPOSAL_VALIDITY_HOURS} hours of creating the proposal. After that, you will need
@@ -881,7 +883,7 @@ function TravellerReview({
               Traveller {index + 1} · {isAdult ? 'Adult' : 'Child'}
               {showPrincipal && t.isPrincipalApplicant ? ' · Principal applicant' : ''}
             </span>
-            <h3 className="text-lg font-semibold">{name || 'Name not provided'}</h3>
+            <h3 className="text-base font-semibold">{name || 'Name not provided'}</h3>
           </span>
         </span>
         <ChevronDown className="size-5 shrink-0 transition-transform [details[open]_&]:rotate-180" aria-hidden />

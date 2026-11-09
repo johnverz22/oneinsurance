@@ -19,7 +19,12 @@ import OcrCalibrationClient from './client'
 export default function OcrCalibrationPage() {
   // Hard-kill in production: renders a 404 at the Next.js level so the page
   // is not even included in the build route manifest when NODE_ENV=production.
-  if (process.env.NODE_ENV === 'production') {
+  // Stage can opt back in by setting NEXT_PUBLIC_OCR_CALIBRATION=on before
+  // building (the value is inlined at build time).
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.NEXT_PUBLIC_OCR_CALIBRATION !== 'on'
+  ) {
     notFound()
   }
 

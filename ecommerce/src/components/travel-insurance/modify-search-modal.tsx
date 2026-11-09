@@ -33,24 +33,42 @@ export function ModifySearchModal({ agentCode, open, onClose, onSubmitted }: Mod
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center overflow-y-auto sm:items-start sm:p-8" role="presentation">
-      <div className="fixed inset-0 bg-black/50" aria-hidden onClick={onClose} />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" aria-hidden onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Modify your search"
         tabIndex={-1}
-        className="relative w-full max-w-3xl rounded-t-2xl border border-[#dfe7df] bg-white p-5 pt-16 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl outline-none max-sm:max-h-[92dvh] max-sm:overflow-y-auto dark:border-[#3d4140] dark:bg-[#262828] sm:my-auto sm:rounded-xl sm:p-8 sm:pt-16"
+        className="relative w-full max-w-3xl rounded-t-2xl bg-white shadow-2xl outline-none dark:bg-[#262828] max-sm:mt-auto max-sm:max-h-[92dvh] max-sm:overflow-y-auto sm:my-auto sm:rounded-xl sm:border sm:border-[#dfe7df] sm:dark:border-[#3d4140]"
       >
+        <div className="flex justify-center pb-1 pt-3 sm:hidden" aria-hidden="true">
+          <div className="h-1 w-10 rounded-full bg-[#dfe7df] dark:bg-[#3d4140]" />
+        </div>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[#dfe7df] bg-white px-4 py-3 dark:border-[#3d4140] dark:bg-[#262828] sm:hidden">
+          <h2 className="text-base font-semibold leading-tight tracking-tight text-[#183d2c] dark:text-[#f4f5f2]">
+            Modify your search
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[#808080] hover:bg-[#f1f2f0] hover:text-[#183d2c] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2]"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
+        </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 inline-flex size-11 items-center justify-center rounded-md text-[#183d2c] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
+          className="absolute right-3 top-3 z-10 hidden size-11 items-center justify-center rounded-md text-[#183d2c] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] sm:inline-flex"
         >
           <X className="size-5" aria-hidden />
         </button>
-        <TripDetailsForm agentCode={agentCode} variant="modal" onSubmitted={onSubmitted} />
+        <div className="px-4 pb-[max(2.5rem,calc(1.5rem+env(safe-area-inset-bottom,0px)))] pt-5 sm:p-8 sm:pt-16">
+          <TripDetailsForm agentCode={agentCode} variant="modal" onSubmitted={onSubmitted} />
+        </div>
       </div>
     </div>
   )

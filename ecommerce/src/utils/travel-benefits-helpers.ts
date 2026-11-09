@@ -175,6 +175,28 @@ export function getComparisonRowConfigs(plans: InsurancePlan[]): CategoryConfig[
   return [...ordered, ...others]
 }
 
+// ─── label sanitization ─────────────────────────────────────────────────────
+
+/**
+ * Some insurers (e.g. Malayan via IGW) send a limit note that is just a
+ * dangling prefix with no actual value — "Up to.", "Up to", "Per policy.",
+ * "Subject to." — because the real amount lives in a separate field that
+ * wasn't mapped, or the backend didn't populate it.
+ *
+ * Returns the original label when it contains meaningful content, or `null`
+ * when it matches a known stub pattern so callers can fall back gracefully
+ * (e.g. "Per policy wording" in the PDF, "—" on the plans page).
+ */
+export function sanitizeLabel(label: string): string | null {
+  const trimmed = label.trim()
+  if (!trimmed) return null
+  // Stub patterns: a single prefix word/phrase followed only by optional
+  // punctuation and whitespace, with no subsequent content.
+  const STUB = /^(up\s+to|per|subject\s+to|based\s+on|as\s+per|refer\s+to)[.\s]*$/i
+  if (STUB.test(trimmed)) return null
+  return trimmed
+}
+
 // ─── limit display helper ────────────────────────────────────────────────────
 
 export type LimitDisplay =

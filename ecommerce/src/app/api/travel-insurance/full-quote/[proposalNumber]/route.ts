@@ -29,7 +29,9 @@ export async function GET(
 
   // Validate proposal number format: {insurer}-{plan}-{yymmdd}-{6 digits}
   // e.g. MIC-TMPHPC1-261019-000002 — backend reports this state as `invalid`
-  if (!proposalNumber || !/^[A-Z0-9]+-[A-Z0-9]+-\d{6}-\d{6}$/i.test(proposalNumber)) {
+  // Plan codes may themselves contain dashes (e.g. OONA-TRVL-APAC-01-261028-000005),
+  // so only the trailing date + sequence segments are fixed.
+  if (!proposalNumber || !/^[A-Z0-9]+(?:-[A-Z0-9]+)+-\d{6}-\d{6}$/i.test(proposalNumber)) {
     return NextResponse.json(
       {
         success: false,

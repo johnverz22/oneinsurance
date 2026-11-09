@@ -307,7 +307,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                 Enjoy every<br className="hidden sm:inline" /> part of your<br className="hidden sm:inline" />{' '}
                 <span className="text-[#006838] dark:text-[#d0e3c8]">journey.</span>
               </h1>
-              <p className="mx-auto mt-3 sm:mt-4 max-w-md text-sm sm:text-base leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5] lg:mx-0">
+              <p className="mx-auto mt-3 sm:mt-4 max-w-md text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5] lg:mx-0">
                 A weekend getaway or a long-awaited adventure. Compare accredited plans with clear benefits and comprehensive protection.
               </p>
               <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
@@ -387,7 +387,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
               >
                 Cover for the journey ahead.
               </h2>
-              <p className="mt-2 sm:mt-3 text-sm sm:text-base leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]">
+              <p className="mt-2 sm:mt-3 text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]">
                 Compare verified benefits that protect against unexpected travel delays, medical concerns, and baggage disruptions.
               </p>
             </div>
@@ -408,7 +408,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                 <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold leading-tight text-[#006838] dark:text-[#f4f5f2]">
                   Medical emergencies
                 </h3>
-                <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                <p className="mt-1.5 sm:mt-2 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                   Cashless hospitalisation, outpatient consultations, and emergency repatriation while away from home.
                 </p>
               </article>
@@ -427,7 +427,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                 <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold leading-tight text-[#006838] dark:text-[#f4f5f2]">
                   Trip disruptions
                 </h3>
-                <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                <p className="mt-1.5 sm:mt-2 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                   Reimbursement for covered flight delays, cancellations, and trip interruptions before and during travel.
                 </p>
               </article>
@@ -446,7 +446,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                 <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold leading-tight text-[#006838] dark:text-[#f4f5f2]">
                   Baggage & personal effects
                 </h3>
-                <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                <p className="mt-1.5 sm:mt-2 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                   Allowances for delayed luggage after 6 hours and compensation for damaged or lost belongings.
                 </p>
               </article>
@@ -465,7 +465,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                 <h3 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold leading-tight text-[#006838] dark:text-[#f4f5f2]">
                   Personal accident
                 </h3>
-                <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                <p className="mt-1.5 sm:mt-2 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                   Lump-sum benefits and accidental death & disablement protection up to plan maximums.
                 </p>
               </article>
@@ -566,7 +566,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
               >
                 From trip details to take&#8209;off.
               </h2>
-              <p className="mt-2 sm:mt-3 max-w-xl text-sm leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5] sm:text-base">
+              <p className="mt-2 sm:mt-3 max-w-xl text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5] sm:text-base">
                 Five straightforward steps from selecting your destinations to receiving your official policy and certificate.
               </p>
 
@@ -580,7 +580,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                     <h3 className="travel-journey__title text-base font-semibold sm:text-lg">
                       <span className="sr-only">Step 1: </span>1. Trip details
                     </h3>
-                    <p className="mt-1 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                    <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                       Enter your destination, departure and return dates, and traveller count.
                     </p>
                   </div>
@@ -595,7 +595,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                     <h3 className="travel-journey__title text-base font-semibold sm:text-lg">
                       <span className="sr-only">Step 2: </span>2. Choose a plan
                     </h3>
-                    <p className="mt-1 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                    <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                       Compare live plans side by side, review medical limits and Schengen eligibility, then choose your tier.
                     </p>
                   </div>
@@ -610,7 +610,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                     <h3 className="travel-journey__title text-base font-semibold sm:text-lg">
                       <span className="sr-only">Step 3: </span>3. Generate quote
                     </h3>
-                    <p className="mt-1 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                    <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                       Add optional riders and fill in traveller passport & beneficiary details to create your proposal.
                     </p>
                   </div>
@@ -625,7 +625,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                     <h3 className="travel-journey__title text-base font-semibold sm:text-lg">
                       <span className="sr-only">Step 4: </span>4. Review quote
                     </h3>
-                    <p className="mt-1 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                    <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                       Inspect your locked proposal, verify traveller information, and confirm the final premium.
                     </p>
                   </div>
@@ -640,7 +640,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                     <h3 className="travel-journey__title text-base font-semibold sm:text-lg">
                       <span className="sr-only">Step 5: </span>5. Payment & issuance
                     </h3>
-                    <p className="mt-1 text-xs sm:text-sm leading-snug sm:leading-normal text-[#333333] dark:text-[#c4c7c5]">
+                    <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
                       Pay via GCash, Maya, cards, or bank channels and instantly download your Certificate of Cover (eCOC).
                     </p>
                   </div>
@@ -678,7 +678,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
             >
               Frequently asked questions
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5] sm:text-base">
+            <p className="mt-2 max-w-2xl text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5] sm:text-base">
               Key questions about coverage, eligibility, and claims. Your selected policy wording remains the authoritative source.
             </p>
 
@@ -713,7 +713,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                         id={panelId}
                         role="region"
                         aria-labelledby={buttonId}
-                        className="pt-1 pb-3 text-xs sm:text-sm leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]"
+                        className="pt-1 pb-3 text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]"
                       >
                         <p>{faq.a}</p>
                       </div>
@@ -768,7 +768,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                           id={panelId}
                           role="region"
                           aria-labelledby={buttonId}
-                          className="pt-1 pb-3 text-sm leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]"
+                          className="pt-1 pb-3 text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]"
                         >
                           <p>{faq.a}</p>
                         </div>
@@ -809,7 +809,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
                           id={panelId}
                           role="region"
                           aria-labelledby={buttonId}
-                          className="pt-1 pb-3 text-sm leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]"
+                          className="pt-1 pb-3 text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]"
                         >
                           <p>{faq.a}</p>
                         </div>
@@ -866,7 +866,7 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
               </button>
             </div>
 
-            <p className="mt-2 sm:mt-3 text-sm sm:text-base leading-snug sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-2 sm:mt-3 text-base leading-normal sm:leading-relaxed text-[#333333] dark:text-[#c4c7c5]">
               Enter your proposal reference to review your saved quote and proceed to policy payment.
             </p>
 

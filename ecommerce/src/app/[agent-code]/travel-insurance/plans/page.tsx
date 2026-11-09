@@ -13,6 +13,7 @@ import pacificCrossAsiaPlansData from '@/constants/pacific-cross-travel-plans-as
 import pacificCrossDomesticPlansData from '@/constants/pacific-cross-travel-plans-domestic.json'
 import { CARRIER_BRAND_COLORS, COMPANIES } from '@/constants/companies'
 import { toPHP } from '@/utils/fx'
+import { formatAmount as money } from '@/utils/currency'
 import { PlanFilterSidebar, PLAN_SORT_OPTIONS, type PlanSortKey } from '@/components/travel-insurance/plan-filter-sidebar'
 import { PlanFilterSheet } from '@/components/travel-insurance/plan-filter-sheet'
 import { ModifySearchModal } from '@/components/travel-insurance/modify-search-modal'
@@ -46,6 +47,8 @@ import {
   getKeyBenefits,
   normalizeStaticPlan,
 } from '@/utils/travel-benefits'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { PACIFIC_CROSS_STATIC_PLANS } from '@/lib/feature-flags'
 
 const BENEFIT_ICONS: [RegExp, LucideIcon][] = [
   [/evacuat|repatriat|ambulance/i, Ambulance],
@@ -77,13 +80,10 @@ const staticPlansFor = (area: string): StaticPlanSource[] => {
   return [pacificCrossPlansData]
 }
 
-const money = (n: number) =>
-  n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
 export default function Step2ChoosePlanPage() {
   const router = useRouter()
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || 'ckO6uNx2O6'
+  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
 
   const {
     travelDetails,
@@ -197,13 +197,15 @@ export default function Step2ChoosePlanPage() {
           plan,
         }))
       ),
-      ...staticPlansFor(area).flatMap((src) =>
-        src.Plans.map((raw) => ({
-          carrierCode: src.CarrierCode,
-          redirectUrl: src.IsExternalLink === 'Y' ? src.RedirectUrl : undefined,
-          plan: normalizeStaticPlan(raw as InsurancePlan),
-        }))
-      ),
+      ...(PACIFIC_CROSS_STATIC_PLANS
+        ? staticPlansFor(area).flatMap((src) =>
+            src.Plans.map((raw) => ({
+              carrierCode: src.CarrierCode,
+              redirectUrl: src.IsExternalLink === 'Y' ? src.RedirectUrl : undefined,
+              plan: normalizeStaticPlan(raw as InsurancePlan),
+            }))
+          )
+        : []),
     ]
     return sources.map(({ carrierCode, redirectUrl, plan }, index) => {
       const keyBenefits = getKeyBenefits(plan)

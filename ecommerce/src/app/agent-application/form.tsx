@@ -26,6 +26,7 @@ export function ApplyForm() {
     register,
     handleSubmit,
     reset,
+    setError,
     control,
     formState: { errors },
   } = useForm<ApplyFormValues>({
@@ -69,7 +70,36 @@ export function ApplyForm() {
       })
       const resData = await response.json()
       if (!response.ok || resData.success === false) {
-        throw new Error(resData.message || 'Failed to submit application. Please try again.')
+        // Map backend field errors onto the form when available
+        const backendErrors: Record<string, string[]> = resData.errors ?? {}
+
+        // Backend field names → RHF field names
+        const fieldMap: Record<string, keyof ApplyFormValues> = {
+          first_name: 'firstName',
+          last_name: 'lastName',
+          email: 'email',
+          contact_number: 'contact_number',
+          application_type: 'role',
+        }
+
+        const unmapped: string[] = []
+        for (const [backendKey, messages] of Object.entries(backendErrors)) {
+          const rhfKey = fieldMap[backendKey]
+          const message = Array.isArray(messages) ? messages[0] : String(messages)
+          if (rhfKey) {
+            setError(rhfKey, { type: 'server', message })
+          } else {
+            unmapped.push(message)
+          }
+        }
+
+        // Show a toast: prefer unmapped messages, then fall back to the top-level message
+        const toastMessage =
+          unmapped.length > 0
+            ? unmapped.join(' ')
+            : resData.message || 'Failed to submit application. Please try again.'
+
+        throw new Error(toastMessage)
       }
       reset()
       setConfirmed(true)
@@ -87,7 +117,7 @@ export function ApplyForm() {
       onChange={() => confirmed && setConfirmed(false)}
       className="space-y-4"
     >
-      <p className="text-sm text-[var(--text-sub)]">
+      <p className="text-base text-[var(--text-sub)]">
         Fields marked <Req /> are required.
       </p>
 
@@ -149,6 +179,7 @@ export function ApplyForm() {
           type="tel"
           required
           autoComplete="tel"
+          placeholder="09171234567"
           aria-invalid={!!errors.contact_number}
           {...register('contact_number')}
           className="ui-form-field mt-1.5"

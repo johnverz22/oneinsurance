@@ -53,7 +53,7 @@ interface TravellerCardProps {
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-4 flex items-center gap-3">
-      <p className="shrink-0 text-xs font-semibold uppercase tracking-wider text-[var(--primary)] dark:text-[#d0e3c8]">
+      <p className="min-w-0 text-xs leading-5 font-semibold uppercase tracking-wider text-[var(--primary)] dark:text-[#d0e3c8]">
         {children}
       </p>
       <div className="h-px flex-1 bg-[var(--border)]" aria-hidden />
@@ -123,9 +123,10 @@ export function TravellerCard({
       <p
         id={`${prefix}-${path}-error`}
         role="alert"
-        className="mt-1 flex items-center gap-1 text-xs text-red-700 dark:text-red-300"
+        className="mt-1 flex min-w-0 items-start gap-1 text-xs leading-5 text-red-700 dark:text-red-300"
       >
-        <AlertCircle className="size-3.5 shrink-0" aria-hidden /> {err(path)}
+        <AlertCircle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+        <span className="min-w-0 wrap-anywhere">{err(path)}</span>
       </p>
     ) : null
 
@@ -187,26 +188,25 @@ export function TravellerCard({
         onClick={() => onToggle(!open)}
         aria-expanded={open}
         aria-controls={`${prefix}-body`}
-        className="flex w-full min-h-11 cursor-pointer items-center justify-between gap-4 text-left"
+        className="grid w-full min-h-11 cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 text-left sm:flex sm:justify-between"
       >
-        <h3 className="text-lg font-semibold">
+        <h3 className="min-w-0 text-base font-semibold">
           Traveller {index + 1} <span className="font-normal text-[var(--text-muted)]">· {type}</span>
         </h3>
+        {showErrors && chipLabel && (
+          missingCount > 0 ? (
+            <span className="order-last col-span-2 flex min-w-0 max-w-full items-start gap-1 justify-self-start rounded-full bg-red-50 px-2.5 py-1 text-xs leading-5 font-semibold text-red-700 sm:order-none sm:py-0.5 dark:bg-red-900/20 dark:text-red-300">
+              <AlertCircle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <span className="min-w-0 wrap-anywhere">{chipLabel}</span>
+            </span>
+          ) : (
+            <span className="order-last col-span-2 flex items-center gap-1 justify-self-start rounded-full bg-[#e2eddb] px-2.5 py-1 text-xs leading-5 font-semibold text-[var(--primary)] sm:order-none sm:py-0.5 dark:bg-[#1c3020] dark:text-[#d0e3c8]">
+              <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+              Complete
+            </span>
+          )
+        )}
         <span className="flex shrink-0 items-center gap-3">
-          {showErrors && chipLabel && (
-            missingCount > 0 ? (
-              <span className="flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-900/20 dark:text-red-300">
-                <AlertCircle className="size-3.5" aria-hidden />
-                {chipLabel}
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 rounded-full bg-[#e2eddb] px-2.5 py-0.5 text-xs font-semibold text-[var(--primary)] dark:bg-[#1c3020] dark:text-[#d0e3c8]">
-                <CheckCircle2 className="size-3.5" aria-hidden />
-                Complete
-              </span>
-            )
-          )}
-
           {/* ── Principal checkbox ── */}
           {/* Stopgap: prevent the accordion toggle button from receiving this click */}
           <span
@@ -270,9 +270,10 @@ export function TravellerCard({
               role="alert"
               data-field={`${index}.idFrontUploaded`}
               tabIndex={-1}
-              className="mt-1.5 flex items-center gap-1 text-xs text-red-700 dark:text-red-300"
+              className="mt-1.5 flex min-w-0 items-start gap-1 text-xs leading-5 text-red-700 dark:text-red-300"
             >
-              <AlertCircle className="size-3.5 shrink-0" aria-hidden /> {err('idFrontUploaded')}
+              <AlertCircle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <span className="min-w-0 wrap-anywhere">{err('idFrontUploaded')}</span>
             </p>
           )}
 
@@ -385,7 +386,15 @@ export function TravellerCard({
                       maxLength={10}
                       placeholder="9171234567"
                       value={data.mobileNumber}
-                      onChange={(e) => set('mobileNumber', e.target.value.replace(/\D/g, ''))}
+                      onChange={(e) => {
+                        let v = e.target.value.replace(/\D/g, '')
+                        // Strip the Philippine trunk prefix '0' automatically.
+                        // Typing 09171234567 is the same as +63 9171234567 —
+                        // remove the leading 0 so the stored value matches the
+                        // field's +63 prefix and the 9XXXXXXXXX validation.
+                        if (v.startsWith('0')) v = v.slice(1)
+                        set('mobileNumber', v)
+                      }}
                     />
                   </div>
                   {errText('mobileNumber')}
@@ -486,44 +495,44 @@ export function TravellerCard({
             <SectionHeading>5 &middot; Consent &amp; beneficiary</SectionHeading>
 
             {/* COVID vaccination checkbox */}
-            <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+            <label className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm leading-6">
               <input
                 type="checkbox"
                 checked={!!data.isCovidVaccinated}
                 onChange={(e) => set('isCovidVaccinated', e.target.checked)}
-                className="size-4 accent-[var(--primary)]"
+                className="mt-1 size-4 shrink-0 accent-[var(--primary)]"
               />
-              I am fully vaccinated against COVID-19{' '}
-              <span className="text-xs font-normal text-[var(--text-muted)]">(optional)</span>
+              <span className="min-w-0">
+                I am fully vaccinated against <span className="whitespace-nowrap">COVID-19</span>{' '}
+                <span className="whitespace-nowrap text-xs font-normal text-[var(--text-muted)]">(optional)</span>
+              </span>
             </label>
 
             {/* Data sharing consent */}
-            <div className="mt-3 flex min-h-11 items-center justify-between gap-3">
-              <label className="flex cursor-pointer items-start gap-3 text-sm">
-                <input
-                  data-field={`${index}.is_data_sharing_consent`}
-                  type="checkbox"
-                  required
-                  checked={data.is_data_sharing_consent}
-                  aria-invalid={err('is_data_sharing_consent') ? true : undefined}
-                  aria-describedby={err('is_data_sharing_consent') ? `${prefix}-is_data_sharing_consent-error` : undefined}
-                  onChange={(e) => set('is_data_sharing_consent', e.target.checked)}
-                  className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]"
-                />
-                <span>
-                  I agree to the Data sharing agreement.{' '}
-                  <span aria-hidden className="text-red-600">*</span>
-                </span>
-              </label>
-              <button
-                type="button"
-                onClick={onOpenAgreement}
-                aria-haspopup="dialog"
-                className="shrink-0 inline-flex min-h-11 items-center justify-center rounded-md px-3 text-sm font-semibold text-[var(--primary)] underline underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:text-[#d0e3c8]"
-              >
-                Read agreement
-              </button>
-            </div>
+            <label className="mt-1 flex min-h-11 min-w-0 cursor-pointer items-start gap-3 py-2 text-sm leading-6">
+              <input
+                data-field={`${index}.is_data_sharing_consent`}
+                type="checkbox"
+                required
+                checked={data.is_data_sharing_consent}
+                aria-invalid={err('is_data_sharing_consent') ? true : undefined}
+                aria-describedby={err('is_data_sharing_consent') ? `${prefix}-is_data_sharing_consent-error` : undefined}
+                onChange={(e) => set('is_data_sharing_consent', e.target.checked)}
+                className="mt-1 size-4 shrink-0 accent-[var(--primary)]"
+              />
+              <span>
+                I agree to the Data sharing agreement.{' '}
+                <span aria-hidden className="text-red-600">*</span>{' '}
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); onOpenAgreement() }}
+                  aria-haspopup="dialog"
+                  className="font-semibold text-[var(--primary)] underline underline-offset-4 hover:no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:text-[#d0e3c8]"
+                >
+                  Read agreement
+                </button>
+              </span>
+            </label>
             {errText('is_data_sharing_consent')}
 
             {/* Beneficiary toggle (switch row) */}
@@ -590,13 +599,14 @@ export function TravellerCard({
                     <input {...field('beneficiary.dateOfBirth')} type="date" max={toInput(new Date())} value={toInput(data.beneficiary.dateOfBirth)} onChange={(e) => set('beneficiary.dateOfBirth', fromInput(e.target.value))} />
                   </div>
                   <div>
-                    <label htmlFor={`${prefix}-beneficiary.relationship`} className="block text-sm font-medium">Relationship <span aria-hidden className="text-red-600">*</span></label>
+                    <label htmlFor={`${prefix}-beneficiary.relationship`} className="block text-sm font-medium">Relationship to the applicant <span aria-hidden className="text-red-600">*</span></label>
                     <input {...field('beneficiary.relationship')} placeholder="e.g. Spouse, Parent, Child" value={data.beneficiary.relationship ?? ''} onChange={(e) => set('beneficiary.relationship', e.target.value)} />
                   </div>
                 </div>
                 {err('beneficiary') && (
-                  <p role="alert" data-field={`${index}.beneficiary`} tabIndex={-1} className="mt-3 flex items-center gap-1 text-xs text-red-700 dark:text-red-300">
-                    <AlertCircle className="size-3.5 shrink-0" aria-hidden /> {err('beneficiary')}
+                  <p role="alert" data-field={`${index}.beneficiary`} tabIndex={-1} className="mt-3 flex min-w-0 items-start gap-1 text-xs leading-5 text-red-700 dark:text-red-300">
+                    <AlertCircle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                    <span className="min-w-0 wrap-anywhere">{err('beneficiary')}</span>
                   </p>
                 )}
               </div>

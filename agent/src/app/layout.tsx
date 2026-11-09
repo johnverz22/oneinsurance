@@ -1,26 +1,24 @@
-import type { Metadata } from 'next'
-import { Open_Sans, Montserrat } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
-
-import { cn } from '@/lib/utils'
 import { Providers } from '@/components/providers'
-import { Toaster } from '@/components/ui/sonner'
 
-const openSans = Open_Sans({
-  variable: '--font-open-sans',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-})
-
-const montserrat = Montserrat({
-  variable: '--font-montserrat',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-})
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
-  title: 'One Insurance',
-  description: 'One Insurance',
+  title: 'One Insurance — Agent Portal',
+  description: 'Agent portal for managing sales, referrals, and commissions.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png' }],
+  },
+  manifest: '/site.webmanifest',
 }
 
 export default function RootLayout({
@@ -30,9 +28,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn('antialiased', montserrat.variable)}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-dvh bg-[#fcfdfb] text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
         <Providers>{children}</Providers>
-        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   )

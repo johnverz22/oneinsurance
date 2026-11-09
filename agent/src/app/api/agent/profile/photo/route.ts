@@ -1,208 +1,192 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import path from 'path'
-import axios from 'axios'
+import { BASE_URL, buildApiHeaders, getAuthToken, unauthorized } from '@/lib/api-helpers'
 
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+/**
+ * Profile photo upload / delete.
+ *
+ * Previously this route wrote the photo to the Next.js local filesystem
+ * (public/uploads/profiles/) which broke in staging because the container
+ * filesystem is ephemeral.
+ *
+ * Now the photo is uploaded directly to the backend via POST /agents/files/upload
+ * with tag "profile_photo".  The backend stores it on Google Drive and returns
+ * the file record.  The photo URL stored on the user profile is a proxy URL
+ * pointing to our own /api/agent/files/[id]/serve endpoint so it renders
+ * reliably without exposing a Google Drive auth cookie requirement.
+ */
 
-// Upload profile photo
+const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+
+/**
+ * POST /api/agent/profile/photo
+ *
+ * Body (multipart/form-data):
+ *   photo  File  — the new profile photo
+ *
+ * Response:
+ *   { success: true, data: { profile_photo_url: string } }
+ *
+ * The returned profile_photo_url is a relative Next.js proxy path of the form
+ * /api/agent/files/<id>/serve  so it works in any environment.
+ */
 export async function POST(req: NextRequest) {
-  const token = req.headers.get('Authorization')
-  if (!token) {
-    return NextResponse.json(
-      { 
-        success: false,
-        message: 'Unauthorized',
-        data: null,
-        errors: ['No authorization token']
-      },
-      { status: 401, headers }
-    )
-  }
+  const headers = buildApiHeaders(req)
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
 
   try {
     const formData = await req.formData()
-    const photo = formData.get('photo') as File
-    
-    console.log('=== PHOTO UPLOAD DEBUG ===')
-    console.log('Token:', token ? 'Present' : 'Missing')
-    console.log('Photo:', photo ? `${photo.name} (${photo.size} bytes, ${photo.type})` : 'Missing')
-    
-    if (!photo) {
-      console.log('ERROR: No photo provided')
+    const photo = formData.get('photo') as File | null
+
+    if (!photo || typeof photo === 'string')
       return NextResponse.json(
-        { 
-          success: false,
-          message: 'No photo provided',
-          data: null,
-          errors: ['No photo provided']
-        },
+        { success: false, message: 'No photo provided' },
         { status: 400, headers }
       )
-    }
 
-    // Validate file type
-    if (!photo.type.startsWith('image/')) {
+    const isImage =
+      photo.type.startsWith('image/') ||
+      /\.(jpe?g|png|webp|gif|avif)$/i.test(photo.name)
+
+    if (!isImage)
       return NextResponse.json(
-        { 
-          success: false,
-          message: 'Invalid file type. Please upload an image.',
-          data: null,
-          errors: ['Invalid file type']
-        },
+        { success: false, message: 'Invalid file type. Please upload an image.' },
         { status: 400, headers }
       )
-    }
 
-    // Validate file size (5MB max)
-    if (photo.size > 5 * 1024 * 1024) {
+    if (photo.size > MAX_BYTES)
       return NextResponse.json(
-        { 
-          success: false,
-          message: 'File too large. Maximum size is 5MB.',
-          data: null,
-          errors: ['File too large']
-        },
+        { success: false, message: 'File too large. Maximum size is 5 MB.' },
         { status: 400, headers }
       )
-    }
 
-    console.log('Uploading photo:', photo.name, photo.size, photo.type)
+    // Generate an opaque filename: "profile_photo__<8-char random hex>.<ext>"
+    // The original client filename is discarded — the tag prefix is all that matters.
+    const ext = photo.type === 'image/png' ? 'png'
+      : photo.type === 'image/webp' ? 'webp'
+      : photo.type === 'image/gif' ? 'gif'
+      : photo.type === 'image/avif' ? 'avif'
+      : 'jpg'
+    const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+    const fileName = `profile_photo__${randomHex}.${ext}`
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'profiles')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
+    const outbound = new FormData()
+    outbound.append('file', photo)
+    outbound.append('file_name', fileName)
+    outbound.append('tag', 'profile_photo')
 
-    // Generate unique filename
-    const timestamp = Date.now()
-    const extension = photo.name.split('.').pop() || 'jpg'
-    const filename = `profile_${timestamp}.${extension}`
-    const filepath = path.join(uploadsDir, filename)
+    const upstreamRes = await fetch(`${BASE_URL}/agents/files/upload`, {
+      method: 'POST',
+      headers: { Authorization: token, Accept: 'application/json' },
+      body: outbound,
+    })
 
-    // Convert file to buffer and save
-    const bytes = await photo.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
+    const data = await upstreamRes.json().catch(() => null)
 
-    const photoUrl = `/uploads/profiles/${filename}`
-
-    console.log('Photo saved successfully:', photoUrl)
-
-    // Update the user's profile photo URL in the backend
-    try {
-      const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
-      const updateResponse = await axios.put(
-        `${baseUrl}/profile`,
-        { profile_photo_url: photoUrl },
-        {
-          headers: {
-            Authorization: token,
-            'Content-Type': 'application/json',
-          },
-        }
+    if (!upstreamRes.ok)
+      return NextResponse.json(
+        data || { success: false, message: 'Photo upload failed' },
+        { status: upstreamRes.status, headers }
       )
-      console.log('Backend profile update response:', updateResponse.status)
-    } catch (backendError) {
-      console.error('Failed to update profile photo URL in backend:', backendError)
-      // Continue anyway - the photo is saved locally
-    }
 
-    console.log('Returning response with data:', { profile_photo_url: photoUrl })
+    const raw = data?.data ?? data
+    const fileId = raw?.id
 
-    // Return success response in the format expected by the axios interceptor
-    const responseData = {
-      success: true,
-      message: 'Profile photo uploaded successfully',
-      data: {
-        profile_photo_url: photoUrl
-      },
-      errors: null
-    }
-    
-    console.log('Full response:', responseData)
-    return NextResponse.json(responseData, { status: 200, headers })
+    if (!fileId)
+      return NextResponse.json(
+        { success: false, message: 'Upload succeeded but file ID was missing in response' },
+        { status: 500, headers }
+      )
 
-  } catch (error) {
-    console.error('Error uploading profile photo:', error)
+    // Build a proxy URL that goes through our serve route — works in all envs
+    const proxyUrl = `/api/agent/files/${fileId}/serve`
+
+    // Persist the proxy URL on the backend agent profile so it is returned
+    // on subsequent profile fetches.
+    await updateProfilePhotoUrl(token, proxyUrl)
+
     return NextResponse.json(
-      { 
-        success: false,
-        message: 'Failed to upload photo. Please try again.',
-        data: null,
-        errors: ['Upload failed']
-      }, 
+      {
+        success: true,
+        message: 'Profile photo updated successfully',
+        data: { profile_photo_url: proxyUrl },
+      },
+      { status: 200, headers }
+    )
+  } catch (error: any) {
+    console.error('[profile/photo] POST error:', error)
+    return NextResponse.json(
+      { success: false, message: error?.message || 'Failed to upload photo' },
       { status: 500, headers }
     )
   }
 }
 
-// Delete profile photo
+/**
+ * DELETE /api/agent/profile/photo
+ *
+ * Clears the profile_photo_url on the backend profile record.
+ * Does not delete the underlying Drive file (leave that to the user if needed).
+ */
 export async function DELETE(req: NextRequest) {
-  const token = req.headers.get('Authorization')
-  if (!token) {
+  const headers = buildApiHeaders(req)
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
+
+  try {
+    await updateProfilePhotoUrl(token, null)
+
     return NextResponse.json(
-      { 
-        success: false,
-        message: 'Unauthorized',
-        data: null,
-        errors: ['No authorization token']
-      },
-      { status: 401, headers }
+      { success: true, message: 'Profile photo removed' },
+      { status: 200, headers }
     )
+  } catch (error: any) {
+    console.error('[profile/photo] DELETE error:', error)
+    return NextResponse.json(
+      { success: false, message: error?.message || 'Failed to remove photo' },
+      { status: 500, headers }
+    )
+  }
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Attempt to persist the profile_photo_url field on the agent profile.
+ * Tries /agents/profile first, falls back to /profile silently.
+ */
+async function updateProfilePhotoUrl(
+  token: string,
+  url: string | null
+): Promise<void> {
+  const payload = JSON.stringify({ profile_photo_url: url })
+  const reqHeaders = {
+    Authorization: token,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
   }
 
   try {
-    console.log('Deleting profile photo')
+    const res = await fetch(`${BASE_URL}/agents/profile`, {
+      method: 'PUT',
+      headers: reqHeaders,
+      body: payload,
+    })
+    if (res.ok) return
+  } catch {
+    // fall through to secondary endpoint
+  }
 
-    // Update the user's profile to remove the photo URL in the backend
-    try {
-      const baseUrl = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL
-      const updateResponse = await axios.put(
-        `${baseUrl}/profile`,
-        { profile_photo_url: null },
-        {
-          headers: {
-            Authorization: token,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      console.log('Backend profile photo deletion response:', updateResponse.status)
-    } catch (backendError) {
-      console.error('Failed to clear profile photo URL in backend:', backendError)
-      // Continue anyway
-    }
-
-    // In a real implementation, you would also:
-    // 1. Get the current photo URL from the user's profile
-    // 2. Delete the file from the filesystem
-    // For now, just return success
-
-    return NextResponse.json({
-      success: true,
-      message: 'Profile photo deleted successfully',
-      data: null,
-      errors: null
-    }, { status: 200, headers })
-
-  } catch (error) {
-    console.error('Error deleting profile photo:', error)
-    return NextResponse.json(
-      { 
-        success: false,
-        message: 'Failed to delete photo. Please try again.',
-        data: null,
-        errors: ['Delete failed']
-      }, 
-      { status: 500, headers }
-    )
+  try {
+    await fetch(`${BASE_URL}/profile`, {
+      method: 'PUT',
+      headers: reqHeaders,
+      body: payload,
+    })
+  } catch (err) {
+    // Non-fatal — the file has been uploaded; the profile link is best-effort
+    console.warn('[profile/photo] Could not persist profile_photo_url:', err)
   }
 }

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ERROR_PAGES } from '@/lib/error-pages'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
 interface ErrorPageProps {
   code: number
@@ -14,7 +15,7 @@ interface ErrorPageProps {
  * handoff). Open centered layout — no card, illustration, or red alarm
  * treatment. Reuses the consumer navbar and footer.
  */
-export function ErrorPage({ code, agentCode = 'ckO6uNx2O6' }: ErrorPageProps) {
+export function ErrorPage({ code, agentCode = PRIMARY_AGENT_CODE }: ErrorPageProps) {
   const copy = ERROR_PAGES[code] ?? ERROR_PAGES[500]
   const homePath = `/${agentCode}/travel-insurance`
 
@@ -49,7 +50,7 @@ export function ErrorPage({ code, agentCode = 'ckO6uNx2O6' }: ErrorPageProps) {
           </div>
           <p
             id="error-support"
-            className="mt-8 text-sm leading-relaxed text-[#808080] dark:text-[#b2b7b4]"
+            className="mt-8 text-base leading-relaxed text-[#808080] dark:text-[#b2b7b4]"
           >
             Need a hand?{' '}
             <a

@@ -50,36 +50,41 @@ export function TripSummaryModal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4" role="presentation">
-      <div className="fixed inset-0 bg-black/50" aria-hidden onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto sm:items-center sm:p-4" role="presentation">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" aria-hidden onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="trip-summary-title"
         tabIndex={-1}
-        className="relative my-auto max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#dfe7df] bg-white p-5 text-[#183d2c] shadow-2xl outline-none dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2] sm:p-8"
+        className="relative mt-auto max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl rounded-b-none bg-white text-[#183d2c] shadow-2xl outline-none dark:bg-[#262828] dark:text-[#f4f5f2] sm:my-auto sm:max-h-[90dvh] sm:rounded-xl sm:border sm:border-[#dfe7df] sm:p-8 sm:dark:border-[#3d4140]"
       >
-        <div className="flex items-start justify-between gap-5">
-          <div>
-            <p className="text-xs font-semibold tracking-wider text-[#006838] uppercase dark:text-[#d0e3c8]">
+        <div className="flex justify-center pb-1 pt-3 sm:hidden" aria-hidden="true">
+          <div className="h-1 w-10 rounded-full bg-[#dfe7df] dark:bg-[#3d4140]" />
+        </div>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[#dfe7df] bg-white px-4 py-3 dark:border-[#3d4140] dark:bg-[#262828] sm:static sm:z-auto sm:items-start sm:gap-5 sm:border-b-0 sm:bg-transparent sm:p-0 sm:dark:bg-transparent">
+          <div className="min-w-0">
+            <p className="hidden text-xs font-semibold tracking-wider text-[#006838] uppercase dark:text-[#d0e3c8] sm:block">
               Review your trip
             </p>
-            <h2 id="trip-summary-title" className="mt-1 text-2xl font-semibold tracking-tight">
-              Your trip at a glance
+            <h2 id="trip-summary-title" className="text-base font-semibold leading-tight tracking-tight sm:mt-1 sm:text-2xl">
+              <span className="sm:hidden">Review your trip</span>
+              <span className="hidden sm:inline">Your trip at a glance</span>
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close trip summary"
-            className="-mt-1 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-md hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232]"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[#808080] hover:bg-[#f1f2f0] hover:text-[#183d2c] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2] sm:-mt-1 sm:-mr-2 sm:text-inherit"
           >
             <X className="size-5" aria-hidden />
           </button>
         </div>
+        <div className="px-4 pb-[max(2.5rem,calc(1.5rem+env(safe-area-inset-bottom,0px)))] pt-5 sm:p-0">
 
-        <section aria-label="Travel route" className="mt-6 rounded-lg bg-[#f1f2f0] p-4 dark:bg-[#303232]">
+        <section aria-label="Travel route" className="rounded-lg bg-[#f1f2f0] p-4 dark:bg-[#303232] sm:mt-6">
           <ol className="m-0 list-none p-0">
             {stops.map((stop, i) => {
               const first = i === 0
@@ -149,6 +154,7 @@ export function TripSummaryModal({
         >
           Back to my trip
         </button>
+        </div>
       </div>
     </div>
   )

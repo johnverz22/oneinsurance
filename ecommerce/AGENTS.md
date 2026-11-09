@@ -98,7 +98,7 @@ The application communicates with the One Insurance Backend through Next.js App 
 ## 5. Development Guidelines
 
 1. **App Router Conventions**: Routes belong in `src/app/[agent-code]/travel-insurance/`.
-2. **Affiliate Route Support**: The `[agent-code]` parameter supports affiliate attribution. Default to `DIRECT` when not provided.
+2. **Affiliate Route Support**: The `[agent-code]` parameter supports affiliate attribution. Default to `DIRECT` when not provided. `/[agent-code]` itself is the general product-hub landing page. The agent code persists via the `oi-agent-code` cookie, written by `AgentCodeSync` in `src/app/[agent-code]/layout.tsx` (last visited code wins, 1-year expiry). Agent-less server code reads it via `getPersistedAgentCode()` from `src/lib/agent-code-server.ts`; the primary/fallback code is `PRIMARY_AGENT_CODE` in `src/lib/agent-code.ts` — never hardcode the literal.
 3. **Class Names**: Use Tailwind CSS utility classes and `cn()` from `@/lib/utils`.
 4. **No Arbitrary Colors**: Stick to the CSS custom properties and color tokens defined in `src/app/globals.css`.
 5. **Strict TypeScript**: Never use `any` unless required by legacy third-party payloads. Define schemas with `zod`.

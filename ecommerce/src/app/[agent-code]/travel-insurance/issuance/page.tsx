@@ -23,8 +23,10 @@ import { useFullQuoteResponseStore, useTravelInsuranceStore } from '@/store/trav
 import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
+import { formatAmount } from '@/utils/currency'
 import { getPrincipal } from '@/utils/traveller-form'
 import { cn } from '@/lib/utils'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
 type Stage = 'verifying' | 'issuing' | 'pending' | 'rejected' | 'unknown' | 'issueError' | 'noPayment' | 'noSession'
 
@@ -46,7 +48,7 @@ export default function PolicyIssuancePage() {
 
 function IssuanceRoute() {
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || 'ckO6uNx2O6'
+  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -55,7 +57,7 @@ function IssuanceRoute() {
   if (!hydrated) {
     return (
       <>
-        <Header agentCode={agentCode} />
+        <Header agentCode={agentCode} cta={null} />
         <main id="main" className="travel-results travel-issuance-main" aria-busy="true">
           <div className="travel-applicant-card travel-issuance-card h-80 animate-pulse" />
         </main>
@@ -276,7 +278,7 @@ function IssuanceContent({ agentCode }: { agentCode: string }) {
 
   return (
     <>
-      <Header agentCode={agentCode} />
+      <Header agentCode={agentCode} cta={null} />
       <main id="main" className="travel-results travel-issuance-main">
         {stage === 'verifying' || stage === 'issuing' ? (
           <section
@@ -290,7 +292,7 @@ function IssuanceContent({ agentCode }: { agentCode: string }) {
             >
               Finalizing your policy
             </h1>
-            <p id="issuance-description" className="mt-3 text-sm leading-7 text-[#333] dark:text-[#c4c7c5]">
+            <p id="issuance-description" className="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
               Please keep this page open. We&rsquo;re getting your electronic Certificate of Coverage (eCOC) and
               acknowledgement receipt ready.
             </p>
@@ -299,7 +301,7 @@ function IssuanceContent({ agentCode }: { agentCode: string }) {
 
             <div className="travel-issuance-email">
               <Mail className="mt-0.5 size-5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
-              <p className="text-sm leading-7 text-[#333] dark:text-[#c4c7c5]">
+              <p className="text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
                 Once your policy is issued, we&rsquo;ll send your eCOC and acknowledgement receipt to{' '}
                 {email ? (
                   <strong className="break-all font-semibold">{email}</strong>
@@ -383,8 +385,7 @@ function PaymentSidebar({
   basePremium,
   travellers,
 }: PaymentSidebarProps) {
-  const fmt = (n: number) =>
-    new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
+  const fmt = formatAmount
 
   return (
     <aside aria-label="Payment received summary">
@@ -684,7 +685,7 @@ function NeedsAttention({
             <p className="text-sm font-semibold text-amber-900 dark:text-amber-300">
               Please do not make another payment.
             </p>
-            <p className="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-400">
+            <p className="mt-1 text-base leading-6 text-amber-800 dark:text-amber-400">
               We’ve emailed you an update. Our team is working to resolve the issue with your policy and will keep
               you informed. Your coverage is confirmed only once your policy is issued. If your trip starts soon,
               contact us with the references below.
@@ -748,7 +749,7 @@ function NeedsAttention({
           {/* Need help */}
           <div className="rounded-md border border-[#dfe7df] px-4 py-4 dark:border-[#3d4140]">
             <h2 className="text-base font-semibold text-[#006838] dark:text-[#d0e3c8]">Need help?</h2>
-            <p className="mt-1 text-sm leading-6 text-[#333] dark:text-[#c4c7c5]">
+            <p className="mt-1 text-base leading-6 text-[#333] dark:text-[#c4c7c5]">
               Contact IFRC Insurance about this paid proposal. Keep your proposal and payment references handy.
             </p>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
@@ -899,7 +900,7 @@ function Outcome({
         )}
         {o.title}
       </h1>
-      <p id="issuance-description" className="mt-3 text-sm leading-7 text-[#333] dark:text-[#c4c7c5]">
+      <p id="issuance-description" className="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
         {o.body}
       </p>
       {(proposalNo || txn) && stage !== 'noSession' && (

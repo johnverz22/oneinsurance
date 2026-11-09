@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { getPersistedAgentCode } from '@/lib/agent-code-server'
 
 export const metadata: Metadata = {
   title: 'Travel Insurance Terms and Conditions | One Insurance',
@@ -88,22 +89,24 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
   },
 ]
 
-export default function TravelInsuranceTermsPage() {
+export default async function TravelInsuranceTermsPage() {
+  const agentCode = await getPersistedAgentCode()
+
   return (
     <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
-      <Header agentCode="ckO6uNx2O6" currentProductName="Terms & Conditions" />
+      <Header agentCode={agentCode} currentProductName="Terms & Conditions" />
 
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Travel Insurance Terms and Conditions
           </h1>
-          <p className="mt-4 text-sm leading-6 text-[#333333] dark:text-[#c4c7c5]">
+          <p className="mt-4 text-base leading-6 text-[#333333] dark:text-[#c4c7c5]">
             By clicking the agreement checkbox, you acknowledge and agree to the following terms
             and conditions:
           </p>
 
-          <div className="mt-6 space-y-8 text-justify text-sm leading-7 text-[#333333] dark:text-[#c4c7c5] sm:text-base">
+          <div className="mt-6 space-y-8 text-justify text-base leading-7 text-[#333333] dark:text-[#c4c7c5] sm:text-base">
             {SECTIONS.map((s) => (
               <section key={s.title}>
                 <h2 className="text-lg font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
@@ -113,7 +116,7 @@ export default function TravelInsuranceTermsPage() {
               </section>
             ))}
 
-            <p className="border-t border-[#dfe7df] pt-6 text-sm text-[#808080] dark:border-[#3d4140] dark:text-[#b2b7b4]">
+            <p className="border-t border-[#dfe7df] pt-6 text-base text-[#808080] dark:border-[#3d4140] dark:text-[#b2b7b4]">
               These Terms and Conditions shall be construed and governed in accordance with the
               laws of the Republic of the Philippines. We reserve the right to amend these terms at
               any time, and all revisions shall be communicated through our official channels.
@@ -122,7 +125,7 @@ export default function TravelInsuranceTermsPage() {
         </div>
       </main>
 
-      <Footer />
+      <Footer agentCode={agentCode} />
     </div>
   )
 }

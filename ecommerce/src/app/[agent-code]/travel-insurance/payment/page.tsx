@@ -36,16 +36,13 @@ import { COMPANIES, CARRIER_BRAND_COLORS } from '@/constants/companies'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { groupPlanBenefits } from '@/utils/travel-benefits-helpers'
 import { toPHP } from '@/utils/fx'
+import { formatAmount as money } from '@/utils/currency'
 import { getPrincipal } from '@/utils/traveller-form'
 import { toTitleCase } from '@/lib/utils'
 import { formatDays, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import { isProposalExpired, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 
-const money = (n: number) =>
-  n.toLocaleString('en-PH', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 type Payer = BillingFormData
@@ -126,7 +123,7 @@ export default function Step5PaymentPage() {
 function PaymentRoute() {
   const router = useRouter()
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || 'ckO6uNx2O6'
+  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
 
   const hydrated = useSyncExternalStore(
     () => () => {},
@@ -522,7 +519,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                 <AlertCircle className="size-6 text-amber-600" aria-hidden />
                 Payment status unknown
               </h1>
-              <p className="mt-3 text-sm leading-6">
+              <p className="mt-3 text-base leading-6">
                 We could not confirm whether your payment went through. Check the status before retrying — paying again
                 without verifying may result in a duplicate charge.
               </p>
@@ -585,7 +582,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
           Travel insurance · Step 5 of 5
         </p>
         <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">Payment</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--text-sub)] sm:text-base sm:leading-7">
+        <p className="mt-3 text-base leading-6 text-[var(--text-sub)] sm:text-base sm:leading-7">
           Choose your payment method and confirm your billing details.
         </p>
 
@@ -623,7 +620,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
           <div className="min-w-0 space-y-7">
             <details className="travel-applicant-card travel-coverage travel-payment-summary">
               <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold sm:text-xl">Travel details</h2>
+                <h2 className="text-base font-semibold">Travel details</h2>
                 <ChevronDown
                   className="size-5 shrink-0 transition-transform [details[open]_&]:rotate-180"
                   aria-hidden
@@ -674,7 +671,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
               >
                 Payment method
               </h2>
-              <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">Select one payment option.</p>
+              <p className="mt-1 text-base leading-6 text-[var(--text-muted)]">Select one payment option.</p>
               <fieldset className="mt-4">
                 <legend className="sr-only">Select a payment method</legend>
                 {brandsLoading ? (
@@ -727,7 +724,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                 >
                   Payer details
                 </h3>
-                <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">
+                <p className="mt-1 text-base leading-6 text-[var(--text-muted)]">
                   Prefilled from the lead traveller. All fields are required. You will be redirected to the secure
                   payment page to complete payment.
                 </p>
@@ -809,7 +806,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                 >
                   Billing address
                 </h3>
-                <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">All fields are required.</p>
+                <p className="mt-1 text-base leading-6 text-[var(--text-muted)]">All fields are required.</p>
                 <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 text-sm">
                   <input
                     type="checkbox"
@@ -910,11 +907,18 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
                       autoComplete="address-line2"
                       required
                       aria-invalid={!!errors.addressLineTwo}
-                      aria-describedby={errors.addressLineTwo ? 'billing-address-2-error' : undefined}
+                      aria-describedby={
+                        errors.addressLineTwo
+                          ? 'billing-address-2-note billing-address-2-error'
+                          : 'billing-address-2-note'
+                      }
                       maxLength={80}
                       placeholder="Apartment, suite, building, etc."
                       className={inputCls}
                     />
+                    <p id="billing-address-2-note" className="mt-1 text-base leading-6 text-[var(--text-muted)]">
+                      Required by the payment gateway before payment can be submitted.
+                    </p>
                   </Field>
                 </div>
               </section>
@@ -940,7 +944,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
               />
             )}
             <p className="text-sm text-[var(--text-muted)]">{insurer}</p>
-            <h2 id="selected-plan-title" className="mt-2 text-lg font-semibold">
+            <h2 id="selected-plan-title" className="mt-2 text-base font-semibold">
               {planName}
             </h2>
 

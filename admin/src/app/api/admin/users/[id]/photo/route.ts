@@ -1,98 +1,55 @@
-import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
-import { config } from '@/config/env'
+import {
+  BASE_URL,
+  buildApiHeaders,
+  getAuthToken,
+  handleAxiosError,
+  proxyApiRequest,
+  unauthorized,
+} from '@/lib/api-helpers'
 
-const headers = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+type Ctx = { params: Promise<{ id: string }> }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const token = req.headers.get('Authorization')
+/** Upload a user's profile photo (multipart passthrough). */
+export async function POST(req: NextRequest, { params }: Ctx) {
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
+
   const { id } = await params
+  const formData = await req.formData()
+  const file = formData.get('profile_photo')
 
-  if (!token) {
+  if (!(file instanceof File)) {
     return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401, headers }
+      { success: false, message: 'No file provided' },
+      { status: 400, headers: buildApiHeaders(req) }
     )
   }
 
+  const upstream = new FormData()
+  upstream.append('profile_photo', file)
+
   try {
-    const formData = await req.formData()
-    const file = formData.get('profile_photo') as File
-
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400, headers }
-      )
-    }
-
-    // Create FormData for the backend API
-    const backendFormData = new FormData()
-    backendFormData.append('profile_photo', file)
-
-    const response = await axios.post(
-      `${config.BASE_URL}/admin/users/${id}/photo`,
-      backendFormData,
-      {
-        headers: {
-          Authorization: token,
-          'Content-Type': 'multipart/form-data',
-        },
-      }
+    const res = await axios.post(
+      `${BASE_URL}/admin/users/${id}/photo`,
+      upstream,
+      { headers: { Authorization: token } }
     )
-
-    return NextResponse.json(response.data, { status: 200, headers })
+    return NextResponse.json(res.data, {
+      status: res.status,
+      headers: buildApiHeaders(req),
+    })
   } catch (error) {
-    console.error('Error uploading admin profile photo:', error)
-    if (axios.isAxiosError(error)) {
-      return handleServerSideAxiosError(error)
-    }
-
-    return NextResponse.json({ error: error }, { status: 500, headers })
+    if (axios.isAxiosError(error)) return handleAxiosError(error, req)
+    return NextResponse.json(
+      { success: false, message: 'Photo upload failed' },
+      { status: 500, headers: buildApiHeaders(req) }
+    )
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const token = req.headers.get('Authorization')
+export async function DELETE(req: NextRequest, { params }: Ctx) {
   const { id } = await params
-
-  if (!token) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401, headers }
-    )
-  }
-
-  try {
-    const response = await axios.delete(
-      `${config.BASE_URL}/admin/users/${id}/photo`,
-      {
-        headers: {
-          Authorization: token,
-          Accept: 'application/json',
-        },
-      }
-    )
-
-    return NextResponse.json(response.data, { status: 200, headers })
-  } catch (error) {
-    console.error('Error deleting admin profile photo:', error)
-    if (axios.isAxiosError(error)) {
-      return handleServerSideAxiosError(error)
-    }
-
-    return NextResponse.json({ error: error }, { status: 500, headers })
-  }
+  return proxyApiRequest(req, `/admin/users/${id}/photo`)
 }

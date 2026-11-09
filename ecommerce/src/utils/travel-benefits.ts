@@ -1,18 +1,20 @@
 import { InsuranceBenefit, InsurancePlan } from '@/types/plan'
+import { formatPHPAmount } from '@/utils/currency'
+import { formatFreeTextMoney } from '@/utils/fx'
 
 export function formatBenefitLimit(benefit?: InsuranceBenefit): string {
   if (!benefit || !benefit.Limit) return '—'
   const limit = benefit.Limit
   if (limit.Kind === 'none') return '—'
-  if (limit.Kind === 'label' && limit.Label) return limit.Label
-  if (limit.Kind === 'text' && limit.Label) return limit.Label
+  if (limit.Kind === 'label' && limit.Label) return formatFreeTextMoney(limit.Label)
+  if (limit.Kind === 'text' && limit.Label) return formatFreeTextMoney(limit.Label)
   if (limit.Amount) {
     const amount = Number(limit.Amount)
     if (!isNaN(amount)) {
-      return `PHP ${amount.toLocaleString('en-PH')}`
+      return formatPHPAmount(amount)
     }
   }
-  if (limit.Label) return limit.Label
+  if (limit.Label) return formatFreeTextMoney(limit.Label)
   return '—'
 }
 
@@ -36,9 +38,9 @@ export function getKeyBenefits(plan: InsurancePlan) {
 
 export function formatCurrency(value: number | string | null | undefined): string {
   if (value === null || value === undefined || value === '') return '—'
-  const num = typeof value === 'string' ? Number(value) : value
+  const num = typeof value === 'string' ? Number(value.replace(/,/g, '')) : value
   if (isNaN(num)) return '—'
-  return `PHP ${num.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+  return formatPHPAmount(num)
 }
 
 export function normalizeStaticPlan(plan: InsurancePlan): InsurancePlan {
@@ -70,7 +72,7 @@ export function benefitNote(benefit: InsuranceBenefit): string | undefined {
   if (!limit || limit.Kind === 'none' || limit.Kind === 'text') return undefined
   const note = (limit.Qualifier ?? '').trim()
   if (!note || note === '0') return undefined
-  return note === formatBenefitLimit(benefit) ? undefined : note
+  return note === formatBenefitLimit(benefit) ? undefined : formatFreeTextMoney(note)
 }
 
 export const KEY_CONDITIONS = [
