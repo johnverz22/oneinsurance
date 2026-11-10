@@ -17,6 +17,7 @@ import {
 import { formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 // ---- Status helpers ----
 function StatusIcon({ status }: { status: string }) {
@@ -30,9 +31,9 @@ function StatusIcon({ status }: { status: string }) {
 
 function StatusLabel({ status }: { status: string }) {
   const s = status.toLowerCase()
-  if (s === 'success' || s === 'completed') return <span className="badge-success">Success</span>
-  if (s === 'rejected' || s === 'failed') return <span className="badge-rejected">Rejected</span>
-  return <span className="badge-pending">Pending</span>
+  if (s === 'success' || s === 'completed') return <StatusBadge status="success" />
+  if (s === 'rejected' || s === 'failed') return <StatusBadge status="rejected" label="Rejected" />
+  return <StatusBadge status="pending" />
 }
 
 // ---- Section card wrapper ----
@@ -316,7 +317,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                       </td>
                       <td className="py-3 text-[var(--text-sub)]">
                         {c.IsPolicyHolder === 'Y' ? (
-                          <span className="badge-success">Policy Holder</span>
+                          <StatusBadge variant="success" label="Policy Holder" icon={null} />
                         ) : (
                           'Insured'
                         )}
@@ -361,7 +362,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
               {coverages.map((cov: any, idx: number) => (
                 <div key={idx} className="flex items-center justify-between py-2 text-sm">
                   <span className="text-[var(--text-main)]">{cov.CoverageName}</span>
-                  <span className="badge-success">Included</span>
+                  <StatusBadge variant="success" label="Included" icon={null} />
                 </div>
               ))}
             </div>

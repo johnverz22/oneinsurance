@@ -2,6 +2,8 @@
 
 import { CheckCircle2, Clock, XCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { StatusBadge } from '@/components/ui/status-badge'
+import type { BadgeVariant } from '@/components/ui/status-badge'
 
 /** Canonical status values used throughout the Sales page. */
 export type SaleStatus = 'success' | 'pending' | 'cancelled' | 'failed'
@@ -15,30 +17,30 @@ export type StatusPillProps = {
 
 const STATUS_CONFIG: Record<
   SaleStatus,
-  { label: string; icon: React.ElementType; pill: string; text: string }
+  { label: string; badgeVariant: BadgeVariant; icon: React.ElementType; text: string }
 > = {
   success: {
     label: 'Paid',
+    badgeVariant: 'success',
     icon: CheckCircle2,
-    pill: 'badge-success',
     text: 'text-[#166534] dark:text-[#86efac]',
   },
   pending: {
     label: 'Pending',
+    badgeVariant: 'pending',
     icon: Clock,
-    pill: 'badge-pending',
     text: 'text-[#854d0e] dark:text-[#fde047]',
   },
   cancelled: {
     label: 'Cancelled',
+    badgeVariant: 'failure',
     icon: XCircle,
-    pill: 'badge-rejected',
     text: 'text-[#991b1b] dark:text-[#fca5a5]',
   },
   failed: {
     label: 'Failed',
+    badgeVariant: 'failure',
     icon: AlertCircle,
-    pill: 'badge-rejected',
     text: 'text-[#991b1b] dark:text-[#fca5a5]',
   },
 }
@@ -56,11 +58,11 @@ export function resolveStatus(raw: string | null | undefined): SaleStatus {
 }
 
 /**
- * StatusPill — renders a colored badge (pill) or inline text indicator.
+ * StatusPill — renders the shared status badge or an inline text indicator.
  * Status is always communicated by text AND icon, never color alone.
  */
 export function StatusPill({ status, variant = 'pill', className }: StatusPillProps) {
-  const { label, icon: Icon, pill, text } = STATUS_CONFIG[status]
+  const { label, badgeVariant, icon: Icon, text } = STATUS_CONFIG[status]
 
   if (variant === 'text') {
     return (
@@ -71,10 +73,5 @@ export function StatusPill({ status, variant = 'pill', className }: StatusPillPr
     )
   }
 
-  return (
-    <span className={cn(pill, className)}>
-      <Icon className="size-3 shrink-0" aria-hidden="true" />
-      {label}
-    </span>
-  )
+  return <StatusBadge variant={badgeVariant} label={label} className={className} />
 }

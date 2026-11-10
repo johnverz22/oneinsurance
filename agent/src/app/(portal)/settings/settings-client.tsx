@@ -25,6 +25,7 @@ import { cn, getInitials } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { StatusBadge } from '@/components/ui/status-badge'
 import type { AgentFile } from '@/types/agent/profile'
 
 // ============================================================
@@ -169,9 +170,9 @@ function RequiredTag({ required }: { required: boolean }) {
 
 function DocStatusPill({ status }: { status: AgentFile['status'] | undefined }) {
   if (!status) return null
-  if (status === 'approved') return <span className="badge-success"><CheckCircle2 className="size-3" aria-hidden="true" /> Approved</span>
-  if (status === 'pending') return <span className="badge-pending">Pending review</span>
-  if (status === 'rejected') return <span className="badge-rejected">Rejected</span>
+  if (status === 'approved') return <StatusBadge status="approved" />
+  if (status === 'pending') return <StatusBadge status="pending" label="Pending review" />
+  if (status === 'rejected') return <StatusBadge status="rejected" />
   return null
 }
 
@@ -214,12 +215,7 @@ function PaymentMethodCard({
         <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-[var(--subtle)] text-[var(--text-muted)]">
           {typeTag}
         </span>
-        {isPrimary && (
-          <span className="badge-success">
-            <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-            Primary
-          </span>
-        )}
+        {isPrimary && <StatusBadge variant="success" label="Primary" icon={null} />}
       </div>
       <div className="mt-3 space-y-2">
         <div>
@@ -1061,10 +1057,10 @@ export function SettingsClient() {
   const approvedRequired = uploadedRequired.filter((d) => d.status === 'approved')
   const overallStatus =
     approvedRequired.length === requiredTags.length
-      ? { label: 'Verified', className: 'badge-success' }
+      ? { status: 'verified', label: 'Verified' }
       : uploadedRequired.length > 0
-        ? { label: 'In review', className: 'badge-pending' }
-        : { label: 'Incomplete', className: 'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-semibold bg-[var(--subtle)] text-[var(--text-muted)]' }
+        ? { status: 'in review', label: 'In review' }
+        : null
 
   if (!user) return <Skeleton />
 
@@ -1176,12 +1172,7 @@ export function SettingsClient() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-lg font-semibold text-[var(--text-main)]">{user?.name}</p>
-                  {user?.status && (
-                    <span className="badge-success">
-                      <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-                      {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                    </span>
-                  )}
+                  {user?.status && <StatusBadge status={user.status} />}
                 </div>
                 <p className="mt-1 text-sm font-medium text-[#006838] dark:text-[#d0e3c8]">
                   {accountType === 'advisor' ? 'Licensed agent / advisor' : 'Referral partner'}
@@ -1344,9 +1335,13 @@ export function SettingsClient() {
                   />
                 </div>
               </div>
-              <span className={overallStatus.className}>
-                {overallStatus.label}
-              </span>
+              {overallStatus ? (
+                <StatusBadge status={overallStatus.status} label={overallStatus.label} />
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-semibold bg-[var(--subtle)] text-[var(--text-muted)]">
+                  Incomplete
+                </span>
+              )}
             </div>
 
             {/* Document rows or loading/error */}

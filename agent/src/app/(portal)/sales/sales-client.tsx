@@ -31,10 +31,6 @@ import {
   Search,
   X,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -54,6 +50,7 @@ import { cn, formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { resolveStatus } from '@/components/sales/status-pill'
+import { PaginationBar } from '@/components/ui/pagination-bar'
 import { FilterChips } from '@/components/sales/filter-chips'
 import { TransactionCard } from '@/components/sales/transaction-card'
 import type { Transaction, AgentStatistics } from '@/types/agent/sales'
@@ -166,7 +163,7 @@ function PaymentIdCell({ paymentRef, status }: { paymentRef: string; status: Pay
   )
 }
 
-type SortField = 'created_at' | 'premium' | 'commission'
+type SortField = 'created_at' | 'premium'
 type SortDir = 'asc' | 'desc'
 // Raw values sent straight to the backend — do NOT remap these
 type StatusFilter = 'all' | 'pending' | 'completed' | 'failed' | 'cancelled'
@@ -478,9 +475,6 @@ export function SalesClient() {
     } else if (sortField === 'premium') {
       av = Number(a.amount ?? a.premium ?? 0)
       bv = Number(b.amount ?? b.premium ?? 0)
-    } else if (sortField === 'commission') {
-      av = Number(a.commission_log?.agent_commission ?? a.commission_log?.net_commission ?? a.net_commission ?? 0)
-      bv = Number(b.commission_log?.agent_commission ?? b.commission_log?.net_commission ?? b.net_commission ?? 0)
     }
     return sortDir === 'asc' ? av - bv : bv - av
   })
@@ -1177,82 +1171,17 @@ export function SalesClient() {
 
         {/* ── 4. Pagination ── */}
         {totalItems > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] px-5 py-4 text-sm sm:px-6">
-            {/* Left: range text */}
-            <p className="text-[var(--text-muted)]">
-              Showing {fromItem}–{toItem} of {totalItems.toLocaleString()} results
-            </p>
-
-            {/* Right: rows selector + page nav */}
-            <div className="flex items-center gap-2">
-              <label htmlFor="sales-rows" className="text-[var(--text-muted)]">
-                Rows
-              </label>
-              <select
-                id="sales-rows"
-                value={perPage}
-                onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1) }}
-                className="table-page-select"
-              >
-                {[10, 25, 50].map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-
-              {/* First page */}
-              <button
-                type="button"
-                disabled={safePage <= 1}
-                aria-disabled={safePage <= 1}
-                onClick={() => setPage(1)}
-                aria-label="First page"
-                className="inline-flex size-10 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-sub)] transition-colors hover:bg-[var(--subtle)] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-              >
-                <ChevronsLeft className="size-4" aria-hidden="true" />
-              </button>
-
-              {/* Previous page */}
-              <button
-                type="button"
-                disabled={safePage <= 1}
-                aria-disabled={safePage <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                aria-label="Previous page"
-                className="inline-flex size-10 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-sub)] transition-colors hover:bg-[var(--subtle)] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-              >
-                <ChevronLeft className="size-4" aria-hidden="true" />
-              </button>
-
-              {/* Page indicator — nowrap */}
-              <span className="whitespace-nowrap text-[var(--text-sub)]">
-                Page {safePage} of {totalPages}
-              </span>
-
-              {/* Next page */}
-              <button
-                type="button"
-                disabled={safePage >= totalPages}
-                aria-disabled={safePage >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                aria-label="Next page"
-                className="inline-flex size-10 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-sub)] transition-colors hover:bg-[var(--subtle)] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-              >
-                <ChevronRight className="size-4" aria-hidden="true" />
-              </button>
-
-              {/* Last page */}
-              <button
-                type="button"
-                disabled={safePage >= totalPages}
-                aria-disabled={safePage >= totalPages}
-                onClick={() => setPage(totalPages)}
-                aria-label="Last page"
-                className="inline-flex size-10 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-sub)] transition-colors hover:bg-[var(--subtle)] disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-              >
-                <ChevronsRight className="size-4" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
+          <PaginationBar
+            page={safePage}
+            totalPages={totalPages}
+            perPage={perPage}
+            onPageChange={setPage}
+            onPerPageChange={setPerPage}
+            fromItem={fromItem}
+            toItem={toItem}
+            totalItems={totalItems}
+            rowsId="sales-rows"
+          />
         )}
       </div>
 
