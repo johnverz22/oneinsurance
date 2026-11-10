@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -433,12 +434,12 @@ function Modal({
   children: React.ReactNode
   size?: 'md' | 'lg' | 'xl'
 }) {
-  if (!open) return null
+  if (!open || typeof document === 'undefined') return null
   const widthClass =
-    size === 'xl' ? 'max-w-4xl' :
+    size === 'xl' ? 'max-w-6xl' :
     size === 'lg' ? 'max-w-2xl' :
     'max-w-md'
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       role="dialog"
@@ -448,7 +449,7 @@ function Modal({
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className={`w-full ${widthClass} rounded-lg bg-[var(--card)] p-6 shadow-xl`}>
+      <div className={`max-h-[90dvh] w-full ${widthClass} overflow-y-auto rounded-lg bg-[var(--card)] p-6 shadow-xl`}>
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
             <h3 id="modal-title" className="text-base font-semibold text-[var(--text-main)]">
@@ -464,7 +465,8 @@ function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
