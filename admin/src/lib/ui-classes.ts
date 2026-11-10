@@ -35,6 +35,3 @@ export const panelTitleCls =
   'text-xl font-semibold tracking-tight text-[var(--text-main)]'
 
 export const sectionTitleCls = 'text-lg font-semibold text-[var(--text-main)]'
-
-export const panelDescCls =
-  'mt-1 text-sm text-[#5b6e61] dark:text-[#b2b7b4]'

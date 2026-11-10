@@ -22,12 +22,19 @@ export function AgentsClient() {
         description="Review registered agents and incoming applications."
       />
       <div className="mx-auto w-full max-w-7xl">
-        <section className="mt-4 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
-          <PillTabs tabs={TABS} active={activeTab} onChange={setActiveTab} />
-
-          <div className="mt-5">
-            {activeTab === 'agents' ? <AgentsTab /> : <ApplicantsTab />}
-          </div>
+        <PillTabs
+          tabs={TABS}
+          active={activeTab}
+          onChange={setActiveTab}
+          className="mt-7"
+        />
+        <section
+          className="mt-6"
+          aria-label={
+            activeTab === 'agents' ? 'Registered agents' : 'Applicants'
+          }
+        >
+          {activeTab === 'agents' ? <AgentsTab /> : <ApplicantsTab />}
         </section>
       </div>
     </>

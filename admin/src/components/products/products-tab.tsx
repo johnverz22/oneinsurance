@@ -13,17 +13,17 @@ import { StatusPill } from '@/components/ui/status-pill'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
+import { ExportMenu } from '@/components/ui/export-menu'
+import { TableHeader } from '@/components/ui/table-header'
+import { exportToCSV } from '@/lib/export-to-csv'
 import { cn } from '@/lib/utils'
 import {
   btnPrimaryCls,
   btnSecondaryCls,
   fieldCls,
   labelCls,
-  panelDescCls,
-  panelTitleCls,
 } from '@/lib/ui-classes'
 import type {
-  ApiResponse,
   CommissionConfigPayload,
   LineOfBusiness,
   Paginated,
@@ -227,48 +227,80 @@ export function ProductsTab() {
     }
   }
 
+  function handleExport() {
+    if (products.length === 0) {
+      toast.info('No products to export')
+      return
+    }
+    exportToCSV(
+      products.map((p) => ({
+        name: p.name,
+        carrier_product_code: p.carrier_product_code ?? '',
+        provider: p.provider?.name ?? '',
+        line_of_business: p.line_of_business?.name ?? '',
+        status: p.status,
+      })),
+      `products-${new Date().toISOString().split('T')[0]}.csv`
+    )
+    toast.success(`Exported ${products.length} product(s)`)
+  }
+
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className={panelTitleCls}>Products</h3>
-          <p className={panelDescCls}>
-            Assign each product to an active line of business.
-          </p>
-          {!hasActiveLobs && !isLoading && (
-            <p className="mt-1 text-sm font-medium text-[#92580a] dark:text-[#e4c27f]">
-              Add an active line of business before creating products.
-            </p>
-          )}
-        </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <button
-            type="button"
-            disabled={!hasActiveLobs}
-            title={
-              hasActiveLobs ? undefined : 'Add an active line of business first'
-            }
-            onClick={() => openForm(null)}
-            className={btnPrimaryCls}
+      <TableHeader
+        title="Insurance products"
+        count={data?.total ?? null}
+        noun="product"
+      />
+      {!hasActiveLobs && !isLoading && (
+        <p className="mt-2 text-sm font-medium text-[#92580a] dark:text-[#e4c27f]">
+          Add an active line of business before creating products.
+        </p>
+      )}
+
+      <div className="mt-5">
+        <div className="portal-table-filters">
+          <form
+            role="search"
+            aria-label="Search products"
+            className="portal-table-filters__form"
+            onSubmit={(e) => e.preventDefault()}
           >
-            <Plus className="size-4" aria-hidden="true" />
-            New product
-          </button>
-          <div className="w-full sm:w-72">
-            <SearchInput
-              value={search}
-              onChange={(v) => {
-                setSearch(v)
-                setPage(1)
-              }}
-              placeholder="Search products"
-            />
-          </div>
+            <div className="portal-table-filters__field w-full">
+              <SearchInput
+                value={search}
+                onChange={(v) => {
+                  setSearch(v)
+                  setPage(1)
+                }}
+                placeholder="Search products"
+              />
+            </div>
+            <div
+              className="portal-table-filters__actions"
+              role="group"
+              aria-label="Table actions"
+            >
+              <ActionIcon
+                label="New product"
+                hint="New product"
+                disabled={!hasActiveLobs}
+                onClick={() => openForm(null)}
+              >
+                <Plus aria-hidden="true" />
+              </ActionIcon>
+              <ExportMenu
+                items={[
+                  { id: 'csv', label: 'CSV', onSelect: handleExport },
+                ]}
+              />
+            </div>
+          </form>
         </div>
       </div>
 
       <DataTable<Product>
-        className="mt-4"
+        className="mt-5"
         columns={[
           {
             header: 'Product',
@@ -348,6 +380,7 @@ export function ProductsTab() {
 
       {data && (
         <PaginationBar
+          className="mt-5"
           currentPage={data.current_page}
           lastPage={data.last_page}
           total={data.total}

@@ -13,14 +13,15 @@ import { StatusPill } from '@/components/ui/status-pill'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
+import { ExportMenu } from '@/components/ui/export-menu'
+import { TableHeader } from '@/components/ui/table-header'
+import { exportToCSV } from '@/lib/export-to-csv'
 import { cn, formatDate } from '@/lib/utils'
 import {
   btnPrimaryCls,
   btnSecondaryCls,
   fieldCls,
   labelCls,
-  panelDescCls,
-  panelTitleCls,
 } from '@/lib/ui-classes'
 import type {
   LineOfBusiness,
@@ -144,39 +145,74 @@ export function LobsTab() {
     }
   }
 
+  function handleExport() {
+    if (lobs.length === 0) {
+      toast.info('No lines of business to export')
+      return
+    }
+    exportToCSV(
+      lobs.map((lob) => ({
+        name: lob.name,
+        slug: lob.slug ?? '',
+        status: lob.status,
+        created: formatDate(lob.created_at),
+      })),
+      `lines-of-business-${new Date().toISOString().split('T')[0]}.csv`
+    )
+    toast.success(`Exported ${lobs.length} line(s) of business`)
+  }
+
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className={panelTitleCls}>Lines of business</h3>
-          <p className={panelDescCls}>
-            Active LoBs can be assigned to new products.
-          </p>
-        </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={() => openForm(null)}
-            className={btnPrimaryCls}
+      <TableHeader
+        title="Lines of business"
+        count={data?.total ?? null}
+        noun="line of business"
+        nounPlural="lines of business"
+      />
+
+      <div className="mt-5">
+        <div className="portal-table-filters">
+          <form
+            role="search"
+            aria-label="Search lines of business"
+            className="portal-table-filters__form"
+            onSubmit={(e) => e.preventDefault()}
           >
-            <Plus className="size-4" aria-hidden="true" />
-            New LoB
-          </button>
-          <div className="w-full sm:w-72">
-            <SearchInput
-              value={search}
-              onChange={(v) => {
-                setSearch(v)
-                setPage(1)
-              }}
-              placeholder="Search lines of business"
-            />
-          </div>
+            <div className="portal-table-filters__field w-full">
+              <SearchInput
+                value={search}
+                onChange={(v) => {
+                  setSearch(v)
+                  setPage(1)
+                }}
+                placeholder="Search lines of business"
+              />
+            </div>
+            <div
+              className="portal-table-filters__actions"
+              role="group"
+              aria-label="Table actions"
+            >
+              <ActionIcon
+                label="New line of business"
+                hint="New line of business"
+                onClick={() => openForm(null)}
+              >
+                <Plus aria-hidden="true" />
+              </ActionIcon>
+              <ExportMenu
+                items={[
+                  { id: 'csv', label: 'CSV', onSelect: handleExport },
+                ]}
+              />
+            </div>
+          </form>
         </div>
       </div>
 
       <DataTable<LineOfBusiness>
-        className="mt-4"
+        className="mt-5"
         columns={[
           {
             header: 'Name',
@@ -256,6 +292,7 @@ export function LobsTab() {
 
       {data && (
         <PaginationBar
+          className="mt-5"
           currentPage={data.current_page}
           lastPage={data.last_page}
           total={data.total}

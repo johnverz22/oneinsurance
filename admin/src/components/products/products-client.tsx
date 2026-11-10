@@ -18,28 +18,18 @@ export function ProductsClient() {
   return (
     <>
       <PortalContentHeader
-        title="Products & lines of business"
-        description="Set up a line of business before adding an insurance product. Keep products grouped under the right business area."
+        title="Product catalog"
+        description="Create a line of business first, then add products to the right area."
       />
       <div className="mx-auto w-full max-w-7xl">
-        <section className="mt-4 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
-              Catalog management
-            </h2>
-            <p className="mt-1 text-sm text-[var(--text-sub)]">
-              Create a LoB, then add products to it.
-            </p>
-          </div>
-
+        <section className="mt-6" aria-label="Product catalog">
           <PillTabs
             tabs={TABS}
             active={activeTab}
             onChange={setActiveTab}
-            className="mt-5"
+            className="mt-6"
           />
-
-          <div className="mt-5">
+          <div className="mt-6">
             {activeTab === 'products' ? <ProductsTab /> : <LobsTab />}
           </div>
         </section>

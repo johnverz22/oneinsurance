@@ -9,6 +9,10 @@ import { SearchInput } from '@/components/ui/search-input'
 import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
+import { ExportMenu } from '@/components/ui/export-menu'
+import { TableHeader } from '@/components/ui/table-header'
+import { exportToCSV } from '@/lib/export-to-csv'
+import { toast } from 'sonner'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
 import { cn, formatPersonName } from '@/lib/utils'
@@ -16,7 +20,6 @@ import { txProductType } from '@/lib/transactions'
 import {
   btnOutlineGreenCls,
   fieldCls,
-  sectionTitleCls,
 } from '@/lib/ui-classes'
 import type { Agent } from '@/types/admin/people'
 import type { ApiResponse, Paginated, Product } from '@/types/admin/catalog'
@@ -192,6 +195,30 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
     ''
   ).toUpperCase()
 
+  function handleExport() {
+    if (filtered.length === 0) {
+      toast.info('No cases to export')
+      return
+    }
+    exportToCSV(
+      filtered.map((tx) => ({
+        policy_number: tx.policy_number ?? '',
+        certificate_number: tx.certificate_number ?? '',
+        policy_holder:
+          formatPersonName(tx.policy_holder ?? tx.customer_name) || '',
+        product: txProductType(tx, productByCode) ?? '',
+        plan: tx.plan_name ?? '',
+        premium: tx.premium ?? tx.paid_amount ?? tx.amount ?? '',
+        currency: tx.currency ?? '',
+        status: tx.status ?? '',
+        coverage_start: tx.coverage_start ?? '',
+        coverage_end: tx.coverage_end ?? '',
+      })),
+      `agent-${agentCode || agentId}-cases-${new Date().toISOString().split('T')[0]}.csv`
+    )
+    toast.success(`Exported ${filtered.length} case(s)`)
+  }
+
   return (
     <>
       <PortalContentHeader
@@ -203,7 +230,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
         ]}
       />
       <div className="mx-auto w-full max-w-7xl">
-        <section className="mt-4 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
+        <section className="mt-4 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <Link
@@ -228,59 +255,85 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               View profile
             </Link>
           </div>
-          <div className="mt-4">
-            <h3 className={sectionTitleCls}>Policy transactions</h3>
-            <div className="mt-3 flex w-full flex-col gap-2 sm:flex-row sm:items-end">
-              <div className="flex-1">
-                <SearchInput
-                  value={search}
-                  onChange={setSearch}
-                  placeholder="Search policy, certificate, holder"
-                />
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="cases-date-from"
-                  className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
+        </section>
+
+        <section className="mt-6" aria-label="Policy transactions">
+          <TableHeader
+            title="Policy transactions"
+            count={pagination?.total ?? null}
+            noun="transaction"
+          />
+
+          <div className="mt-5">
+            <div className="portal-table-filters">
+              <form
+                role="search"
+                aria-label="Filter cases"
+                className="portal-table-filters__form"
+                onSubmit={(e) => e.preventDefault()}
+              >
+                <div className="portal-table-filters__field w-full">
+                  <SearchInput
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Search policy, certificate, holder"
+                  />
+                </div>
+                <div className="portal-table-filters__field w-full">
+                  <label
+                    htmlFor="cases-date-from"
+                    className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
+                  >
+                    From
+                  </label>
+                  <input
+                    id="cases-date-from"
+                    type="date"
+                    value={dateFrom}
+                    max={dateTo || undefined}
+                    onChange={(e) => {
+                      setDateFrom(e.target.value)
+                      setPage(1)
+                    }}
+                    className={cn(fieldCls, 'mt-0')}
+                  />
+                </div>
+                <div className="portal-table-filters__field w-full">
+                  <label
+                    htmlFor="cases-date-to"
+                    className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
+                  >
+                    To
+                  </label>
+                  <input
+                    id="cases-date-to"
+                    type="date"
+                    value={dateTo}
+                    min={dateFrom || undefined}
+                    onChange={(e) => {
+                      setDateTo(e.target.value)
+                      setPage(1)
+                    }}
+                    className={cn(fieldCls, 'mt-0')}
+                  />
+                </div>
+                <div
+                  className="portal-table-filters__actions"
+                  role="group"
+                  aria-label="Table actions"
                 >
-                  From
-                </label>
-                <input
-                  id="cases-date-from"
-                  type="date"
-                  value={dateFrom}
-                  max={dateTo || undefined}
-                  onChange={(e) => {
-                    setDateFrom(e.target.value)
-                    setPage(1)
-                  }}
-                  className={cn(fieldCls, 'mt-0')}
-                />
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="cases-date-to"
-                  className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
-                >
-                  To
-                </label>
-                <input
-                  id="cases-date-to"
-                  type="date"
-                  value={dateTo}
-                  min={dateFrom || undefined}
-                  onChange={(e) => {
-                    setDateTo(e.target.value)
-                    setPage(1)
-                  }}
-                  className={cn(fieldCls, 'mt-0')}
-                />
-              </div>
+                  <ExportMenu
+                    items={[
+                      { id: 'csv', label: 'CSV', onSelect: handleExport },
+                    ]}
+                  />
+                </div>
+              </form>
             </div>
           </div>
 
           <DataTable<Transaction>
-            className="mt-4"
+            className="mt-5"
             minWidth="min-w-[960px]"
             columns={[
               {
@@ -382,6 +435,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
 
           {pagination && (
             <PaginationBar
+              className="mt-5"
               currentPage={pagination.current_page}
               lastPage={pagination.last_page}
               total={pagination.total}

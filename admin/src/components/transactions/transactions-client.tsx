@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowUpRight } from 'lucide-react'
+import { toast } from 'sonner'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { SearchInput } from '@/components/ui/search-input'
 import { SelectField } from '@/components/ui/select-field'
@@ -10,14 +11,15 @@ import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
+import { ExportMenu } from '@/components/ui/export-menu'
+import { TableHeader } from '@/components/ui/table-header'
+import { exportToCSV } from '@/lib/export-to-csv'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
 import { cn, formatPersonName } from '@/lib/utils'
 import {
   btnPrimaryCls,
   fieldCls,
-  panelDescCls,
-  panelTitleCls,
 } from '@/lib/ui-classes'
 import {
   formatAmount,
@@ -161,6 +163,29 @@ export function TransactionsClient() {
     return true
   })
 
+  function handleExport() {
+    if (filtered.length === 0) {
+      toast.info('No transactions to export')
+      return
+    }
+    exportToCSV(
+      filtered.map((tx) => ({
+        policy_number: tx.policy_number ?? '',
+        certificate_number: tx.certificate_number ?? '',
+        policy_holder:
+          formatPersonName(tx.policy_holder ?? tx.customer_name) || '',
+        plan: tx.plan_name ?? tx.plan ?? '',
+        product: txProductType(tx, productByCode) ?? '',
+        premium: txPremium(tx) ?? '',
+        currency: tx.currency ?? '',
+        status: txStatus(tx),
+        date: (tx.transaction_date ?? tx.created_at ?? '').slice(0, 10),
+      })),
+      `transactions-${new Date().toISOString().split('T')[0]}.csv`
+    )
+    toast.success(`Exported ${filtered.length} transaction(s)`)
+  }
+
   return (
     <>
       <PortalContentHeader
@@ -168,72 +193,86 @@ export function TransactionsClient() {
         description="Review policy transactions across agents."
       />
       <div className="mx-auto w-full max-w-7xl">
-        <section className="mt-4 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className={panelTitleCls}>All transactions</h2>
-              <p className={panelDescCls}>
-                Search or narrow this list by transaction date.
-              </p>
-            </div>
-            <form
-              role="search"
-              aria-label="Filter transactions"
-              className="flex w-full flex-wrap items-end gap-3 lg:w-auto"
-              onSubmit={(e) => {
-                e.preventDefault()
-                applyFilter()
-              }}
-            >
-              <div className="min-w-48 flex-1 lg:w-56">
-                <label htmlFor="transaction-search" className={filterLabelCls}>
-                  Search
-                </label>
-                <SearchInput
-                  value={searchDraft}
-                  onChange={setSearchDraft}
-                  placeholder="Policy, holder, plan..."
-                />
-              </div>
-              <div className="min-w-36 flex-1 lg:w-40">
-                <label htmlFor="transaction-from" className={filterLabelCls}>
-                  From
-                </label>
-                <input
-                  id="transaction-from"
-                  type="date"
-                  value={fromDraft}
-                  max={toDraft || undefined}
-                  onChange={(e) => setFromDraft(e.target.value)}
-                  className={cn(fieldCls, 'mt-0')}
-                />
-              </div>
-              <div className="min-w-36 flex-1 lg:w-40">
-                <label htmlFor="transaction-to" className={filterLabelCls}>
-                  To
-                </label>
-                <input
-                  id="transaction-to"
-                  type="date"
-                  value={toDraft}
-                  min={fromDraft || undefined}
-                  onChange={(e) => setToDraft(e.target.value)}
-                  className={cn(fieldCls, 'mt-0')}
-                />
-              </div>
-              <button type="submit" className={btnPrimaryCls}>
-                Apply filter
-              </button>
-              {hasApplied && (
-                <button
-                  type="button"
-                  onClick={clearFilter}
-                  className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+        <section className="mt-6" aria-label="Transactions">
+          <TableHeader
+            title="All transactions"
+            titleClassName="text-xl"
+            count={pagination?.total ?? null}
+            noun="transaction"
+          />
+
+          <div className="mt-5">
+            <div className="portal-table-filters">
+              <form
+                role="search"
+                aria-label="Filter transactions"
+                className="portal-table-filters__form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  applyFilter()
+                }}
+              >
+                <div className="portal-table-filters__field w-full">
+                  <label htmlFor="transaction-search" className={filterLabelCls}>
+                    Search
+                  </label>
+                  <SearchInput
+                    value={searchDraft}
+                    onChange={setSearchDraft}
+                    placeholder="Policy, holder, plan..."
+                  />
+                </div>
+                <div className="portal-table-filters__field w-full">
+                  <label htmlFor="transaction-from" className={filterLabelCls}>
+                    From
+                  </label>
+                  <input
+                    id="transaction-from"
+                    type="date"
+                    value={fromDraft}
+                    max={toDraft || undefined}
+                    onChange={(e) => setFromDraft(e.target.value)}
+                    className={cn(fieldCls, 'mt-0')}
+                  />
+                </div>
+                <div className="portal-table-filters__field w-full">
+                  <label htmlFor="transaction-to" className={filterLabelCls}>
+                    To
+                  </label>
+                  <input
+                    id="transaction-to"
+                    type="date"
+                    value={toDraft}
+                    min={fromDraft || undefined}
+                    onChange={(e) => setToDraft(e.target.value)}
+                    className={cn(fieldCls, 'mt-0')}
+                  />
+                </div>
+                <div
+                  className="portal-table-filters__actions"
+                  role="group"
+                  aria-label="Table actions"
                 >
-                  Clear
-                </button>
-              )}
-            </form>
+                  <button type="submit" className={btnPrimaryCls}>
+                    Apply filter
+                  </button>
+                  {hasApplied && (
+                    <button
+                      type="button"
+                      onClick={clearFilter}
+                      className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <ExportMenu
+                    items={[
+                      { id: 'csv', label: 'CSV', onSelect: handleExport },
+                    ]}
+                  />
+                </div>
+              </form>
+            </div>
           </div>
           {dateError && (
             <p

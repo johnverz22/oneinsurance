@@ -509,6 +509,76 @@
     color: #991b1b;
   }
 
+  /* Portal table filters — shared pattern: fields grow from the left and the
+     actions group (add/export) pins to the right end of the row; fields and
+     actions wrap/stack on narrow screens. */
+  .portal-table-filters {
+    width: 100%;
+  }
+
+  .portal-table-filters__form {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .portal-table-filters__field {
+    flex: 0 1 21.5rem;
+    min-width: min(14rem, 100%);
+  }
+
+  .portal-table-filters__form > button,
+  .portal-table-filters__form > .portal-table-filters__actions {
+    flex-shrink: 0;
+    align-self: flex-end;
+  }
+
+  .portal-table-filters__form > .portal-table-filters__actions {
+    margin-left: auto;
+  }
+
+  .portal-table-filters__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  @media (max-width: 560px) {
+    .portal-table-filters__form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .portal-table-filters__field {
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+      flex: none;
+    }
+
+    .portal-table-filters__form > button {
+      justify-self: start;
+    }
+
+    .portal-table-filters__form > .portal-table-filters__actions {
+      grid-column: 2;
+      justify-self: end;
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .portal-table-filters__form {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .portal-table-filters__form > .portal-table-filters__actions {
+      grid-column: 1;
+    }
+  }
+
   /* ---- Auth Mockup Hero & Curved Layout ---- */
   @media (min-width: 1024px) {
     .auth-hero-backdrop::before {

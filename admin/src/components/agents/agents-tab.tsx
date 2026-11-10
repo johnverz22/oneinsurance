@@ -19,11 +19,8 @@ import { ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
+import { TableHeader } from '@/components/ui/table-header'
 import { exportToCSV } from '@/lib/export-to-csv'
-import {
-  panelDescCls,
-  panelTitleCls,
-} from '@/lib/ui-classes'
 import type { Agent, AgentsResponse } from '@/types/admin/people'
 
 const SIGNUP_URL = `${process.env.NEXT_PUBLIC_AFFILIATE_BASE_URL ?? 'https://stage-agent.oneinsurance.shop'}/signup`
@@ -170,34 +167,48 @@ export function AgentsTab() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h3 className={panelTitleCls}>Agent management</h3>
-          <p className={panelDescCls}>
-            Manage and monitor registered agents.
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap items-end gap-3 sm:w-auto">
-          <div className="min-w-0 flex-1 sm:w-64">
-            <SearchInput
-              value={search}
-              onChange={(v) => {
-                setSearch(v)
-                setPage(1)
-              }}
-              placeholder="Search agents"
-            />
-          </div>
-          <ExportMenu
-            items={[
-              { id: 'csv', label: 'CSV', onSelect: handleExport },
-            ]}
-          />
+      <TableHeader
+        title="Agent management"
+        titleClassName="text-xl"
+        count={pagination?.total ?? null}
+        noun="agent"
+      />
+
+      <div className="mt-5">
+        <div className="portal-table-filters">
+          <form
+            role="search"
+            aria-label="Search agents"
+            className="portal-table-filters__form"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <div className="portal-table-filters__field w-full">
+              <SearchInput
+                value={search}
+                onChange={(v) => {
+                  setSearch(v)
+                  setPage(1)
+                }}
+                placeholder="Search agents"
+              />
+            </div>
+            <div
+              className="portal-table-filters__actions"
+              role="group"
+              aria-label="Table actions"
+            >
+              <ExportMenu
+                items={[
+                  { id: 'csv', label: 'CSV', onSelect: handleExport },
+                ]}
+              />
+            </div>
+          </form>
         </div>
       </div>
 
       <DataTable<Agent>
-        className="mt-4"
+        className="mt-5"
         minWidth="min-w-[760px]"
         columns={[
           {
@@ -310,6 +321,7 @@ export function AgentsTab() {
 
       {pagination && (
         <PaginationBar
+          className="mt-5"
           currentPage={pagination.current_page}
           lastPage={pagination.last_page}
           total={pagination.total}
