@@ -51,6 +51,9 @@ export function ProductsTab() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const hasDateFilter = !!(dateFrom || dateTo)
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
@@ -65,10 +68,12 @@ export function ProductsTab() {
   }, [search])
 
   const { data, isLoading, isError } = useQuery<Paginated<Product>>({
-    queryKey: ['admin-products', page, searchDebounced],
+    queryKey: ['admin-products', page, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), per_page: '15' })
       if (searchDebounced) params.set('keyword', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/products?${params}`)
       if (!res.ok) throw new Error('Failed to load products')
       const json = await res.json()
@@ -103,6 +108,16 @@ export function ProductsTab() {
 
   const products = data?.data ?? []
   const hasActiveLobs = (activeLobs ?? []).length > 0
+
+  // Client-side fallback if the upstream ignores date_from/date_to
+  const filteredProducts = products.filter((p) => {
+    if (!hasDateFilter) return true
+    const day = (p.created_at ?? '').slice(0, 10)
+    if (!day) return false
+    if (dateFrom && day < dateFrom) return false
+    if (dateTo && day > dateTo) return false
+    return true
+  })
 
   function openForm(product: Product | null) {
     setEditing(product)
@@ -228,12 +243,12 @@ export function ProductsTab() {
   }
 
   function handleExport() {
-    if (products.length === 0) {
+    if (filteredProducts.length === 0) {
       toast.info('No products to export')
       return
     }
     exportToCSV(
-      products.map((p) => ({
+      filteredProducts.map((p) => ({
         name: p.name,
         carrier_product_code: p.carrier_product_code ?? '',
         provider: p.provider?.name ?? '',
@@ -242,7 +257,7 @@ export function ProductsTab() {
       })),
       `products-${new Date().toISOString().split('T')[0]}.csv`
     )
-    toast.success(`Exported ${products.length} product(s)`)
+    toast.success(`Exported ${filteredProducts.length} product(s)`)
   }
 
   return (
@@ -276,11 +291,56 @@ export function ProductsTab() {
                 placeholder="Search products"
               />
             </div>
+            <div className="portal-table-filters__field w-full">
+              <label htmlFor="product-date-from" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
+                From
+              </label>
+              <input
+                id="product-date-from"
+                type="date"
+                value={dateFrom}
+                max={dateTo || undefined}
+                onChange={(e) => {
+                  setDateFrom(e.target.value)
+                  setPage(1)
+                }}
+                className={cn(fieldCls, 'mt-0')}
+              />
+            </div>
+            <div className="portal-table-filters__field w-full">
+              <label htmlFor="product-date-to" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
+                To
+              </label>
+              <input
+                id="product-date-to"
+                type="date"
+                value={dateTo}
+                min={dateFrom || undefined}
+                onChange={(e) => {
+                  setDateTo(e.target.value)
+                  setPage(1)
+                }}
+                className={cn(fieldCls, 'mt-0')}
+              />
+            </div>
             <div
               className="portal-table-filters__actions"
               role="group"
               aria-label="Table actions"
             >
+              {hasDateFilter && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFrom('')
+                    setDateTo('')
+                    setPage(1)
+                  }}
+                  className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                >
+                  Clear
+                </button>
+              )}
               <ActionIcon
                 label="New product"
                 hint="New product"
@@ -368,13 +428,15 @@ export function ProductsTab() {
             ),
           },
         ]}
-        rows={products}
+        rows={filteredProducts}
         getRowKey={(product) => product.id}
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load products. Please try again."
         emptyMessage={
-          searchDebounced ? 'No products match your search.' : 'No records found.'
+          searchDebounced || hasDateFilter
+            ? 'No products match your filters.'
+            : 'No records found.'
         }
       />
 

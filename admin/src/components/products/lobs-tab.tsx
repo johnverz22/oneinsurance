@@ -46,6 +46,9 @@ export function LobsTab() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const hasDateFilter = !!(dateFrom || dateTo)
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<LineOfBusiness | null>(null)
@@ -60,7 +63,7 @@ export function LobsTab() {
   }, [search])
 
   const { data, isLoading, isError } = useQuery<Paginated<LineOfBusiness>>({
-    queryKey: ['admin-lobs', page, searchDebounced],
+    queryKey: ['admin-lobs', page, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -69,6 +72,8 @@ export function LobsTab() {
         sort_order: 'desc',
       })
       if (searchDebounced) params.set('name', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/lobs?${params}`)
       if (!res.ok) throw new Error('Failed to load lines of business')
       const json = await res.json()
@@ -78,6 +83,16 @@ export function LobsTab() {
   })
 
   const lobs = data?.data ?? []
+
+  // Client-side fallback if the upstream ignores date_from/date_to
+  const filteredLobs = lobs.filter((lob) => {
+    if (!hasDateFilter) return true
+    const day = (lob.created_at ?? '').slice(0, 10)
+    if (!day) return false
+    if (dateFrom && day < dateFrom) return false
+    if (dateTo && day > dateTo) return false
+    return true
+  })
 
   function openForm(lob: LineOfBusiness | null) {
     setEditing(lob)
@@ -146,12 +161,12 @@ export function LobsTab() {
   }
 
   function handleExport() {
-    if (lobs.length === 0) {
+    if (filteredLobs.length === 0) {
       toast.info('No lines of business to export')
       return
     }
     exportToCSV(
-      lobs.map((lob) => ({
+      filteredLobs.map((lob) => ({
         name: lob.name,
         slug: lob.slug ?? '',
         status: lob.status,
@@ -159,7 +174,7 @@ export function LobsTab() {
       })),
       `lines-of-business-${new Date().toISOString().split('T')[0]}.csv`
     )
-    toast.success(`Exported ${lobs.length} line(s) of business`)
+    toast.success(`Exported ${filteredLobs.length} line(s) of business`)
   }
 
   return (
@@ -189,11 +204,56 @@ export function LobsTab() {
                 placeholder="Search lines of business"
               />
             </div>
+            <div className="portal-table-filters__field w-full">
+              <label htmlFor="lob-date-from" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
+                From
+              </label>
+              <input
+                id="lob-date-from"
+                type="date"
+                value={dateFrom}
+                max={dateTo || undefined}
+                onChange={(e) => {
+                  setDateFrom(e.target.value)
+                  setPage(1)
+                }}
+                className={cn(fieldCls, 'mt-0')}
+              />
+            </div>
+            <div className="portal-table-filters__field w-full">
+              <label htmlFor="lob-date-to" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
+                To
+              </label>
+              <input
+                id="lob-date-to"
+                type="date"
+                value={dateTo}
+                min={dateFrom || undefined}
+                onChange={(e) => {
+                  setDateTo(e.target.value)
+                  setPage(1)
+                }}
+                className={cn(fieldCls, 'mt-0')}
+              />
+            </div>
             <div
               className="portal-table-filters__actions"
               role="group"
               aria-label="Table actions"
             >
+              {hasDateFilter && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFrom('')
+                    setDateTo('')
+                    setPage(1)
+                  }}
+                  className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                >
+                  Clear
+                </button>
+              )}
               <ActionIcon
                 label="New line of business"
                 hint="New line of business"
@@ -278,14 +338,14 @@ export function LobsTab() {
             ),
           },
         ]}
-        rows={lobs}
+        rows={filteredLobs}
         getRowKey={(lob) => lob.id}
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load lines of business. Please try again."
         emptyMessage={
-          searchDebounced
-            ? 'No lines of business match your search.'
+          searchDebounced || hasDateFilter
+            ? 'No lines of business match your filters.'
             : 'No records found.'
         }
       />
