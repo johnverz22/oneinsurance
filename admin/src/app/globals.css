@@ -371,56 +371,66 @@
     }
   }
 
-  /* Status badges */
-  .badge-success {
+  /* Status badges — transparent bg, 1px border at 20% status color,
+     fully rounded pill, 14px text, 16px outline icon sharing the status color */
+  .ui-status-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background-color: #dcfce7;
-    color: #166534;
+    padding: 2px 10px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background-color: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    white-space: nowrap;
   }
 
-  .dark .badge-success {
-    background-color: #14532d;
-    color: #86efac;
+  .ui-status-badge svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
   }
 
-  .badge-pending {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background-color: #fef9c3;
-    color: #854d0e;
+  .ui-status-badge--success {
+    color: #006838;
+    border-color: rgb(0 104 56 / 0.2);
   }
 
-  .dark .badge-pending {
-    background-color: #713f12;
-    color: #fde047;
+  .dark .ui-status-badge--success {
+    color: #d0e3c8;
+    border-color: rgb(208 227 200 / 0.2);
   }
 
-  .badge-rejected {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background-color: #fee2e2;
+  .ui-status-badge--info {
+    color: #006838;
+    border-color: rgb(0 104 56 / 0.2);
+  }
+
+  .dark .ui-status-badge--info {
+    color: #d0e3c8;
+    border-color: rgb(208 227 200 / 0.2);
+  }
+
+  .ui-status-badge--pending {
+    color: #b88e28;
+    border-color: rgb(184 142 40 / 0.2);
+  }
+
+  .dark .ui-status-badge--pending {
+    color: #e4c27f;
+    border-color: rgb(228 194 127 / 0.2);
+  }
+
+  .ui-status-badge--failure {
     color: #991b1b;
+    border-color: rgb(153 27 27 / 0.2);
   }
 
-  .dark .badge-rejected {
-    background-color: #7f1d1d;
+  .dark .ui-status-badge--failure {
     color: #fca5a5;
+    border-color: rgb(252 165 165 / 0.2);
   }
 
   /* ---- Auth Mockup Hero & Curved Layout ---- */

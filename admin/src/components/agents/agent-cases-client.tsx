@@ -376,7 +376,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
             emptyMessage={
               term || dateFrom || dateTo
                 ? 'No cases match your filters.'
-                : 'No cases found for this agent.'
+                : 'No records found.'
             }
           />
 

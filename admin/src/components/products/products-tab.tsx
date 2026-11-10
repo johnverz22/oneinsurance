@@ -344,7 +344,7 @@ export function ProductsTab() {
         isError={isError}
         errorMessage="Failed to load products. Please try again."
         emptyMessage={
-          searchDebounced ? 'No products match your search.' : 'No products yet.'
+          searchDebounced ? 'No products match your search.' : 'No records found.'
         }
       />
 

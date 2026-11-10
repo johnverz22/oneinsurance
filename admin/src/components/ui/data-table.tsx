@@ -73,7 +73,7 @@ export function DataTable<T>({
   isLoading,
   isError,
   errorMessage = 'Failed to load data. Please try again.',
-  emptyMessage = 'Nothing to show.',
+  emptyMessage = 'No records found.',
   onRowClick,
   minWidth,
   className,

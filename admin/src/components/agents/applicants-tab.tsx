@@ -355,7 +355,11 @@ export function ApplicantsTab() {
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load applicants. Please try again."
-        emptyMessage="No applicants match your search."
+        emptyMessage={
+          searchDebounced
+            ? 'No applicants match your search.'
+            : 'No records found.'
+        }
       />
 
       {data && (

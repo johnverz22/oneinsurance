@@ -252,7 +252,7 @@ export function LobsTab() {
         emptyMessage={
           searchDebounced
             ? 'No lines of business match your search.'
-            : 'No lines of business to show.'
+            : 'No records found.'
         }
       />
 

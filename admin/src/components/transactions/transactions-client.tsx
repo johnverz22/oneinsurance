@@ -345,7 +345,7 @@ export function TransactionsClient() {
             emptyMessage={
               hasApplied
                 ? 'No transactions match your filters.'
-                : 'No transactions found.'
+                : 'No records found.'
             }
           />
 

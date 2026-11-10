@@ -313,7 +313,9 @@ export function AgentsTab() {
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load agents. Please try again."
-        emptyMessage="No agents match your search."
+        emptyMessage={
+          searchDebounced ? 'No agents match your search.' : 'No records found.'
+        }
       />
 
       {pagination && (

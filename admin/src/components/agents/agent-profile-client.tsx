@@ -10,6 +10,7 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Clock,
   Copy,
   CreditCard,
   Eye,
@@ -150,14 +151,20 @@ function RequiredTag({ required }: { required: boolean }) {
 function DocStatusPill({ status }: { status?: string | null }) {
   if (status === 'approved')
     return (
-      <span className="badge-success">
-        <CheckCircle2 className="size-3" aria-hidden="true" /> Approved
+      <span className="ui-status-badge ui-status-badge--success">
+        <CheckCircle2 aria-hidden="true" /> Approved
       </span>
     )
   if (status === 'pending')
-    return <span className="badge-pending">Pending review</span>
+    return (
+      <span className="ui-status-badge ui-status-badge--pending">
+        Pending review
+      </span>
+    )
   if (status === 'rejected')
-    return <span className="badge-rejected">Rejected</span>
+    return (
+      <span className="ui-status-badge ui-status-badge--failure">Rejected</span>
+    )
   return null
 }
 
@@ -288,14 +295,10 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
   )
   const overallStatus =
     approvedRequired.length === requiredTags.length
-      ? { label: 'Verified', className: 'badge-success' }
+      ? { label: 'Verified', variant: 'success' as const }
       : uploadedRequired.length > 0
-        ? { label: 'In review', className: 'badge-pending' }
-        : {
-            label: 'Incomplete',
-            className:
-              'inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-semibold bg-[var(--subtle)] text-[var(--text-muted)]',
-          }
+        ? { label: 'In review', variant: 'pending' as const }
+        : { label: 'Incomplete', variant: 'pending' as const }
   const copyCode = async () => {
     if (!code) return
     try {
@@ -710,7 +713,14 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                       />
                     </div>
                   </div>
-                  <span className={overallStatus.className}>
+                  <span
+                    className={`ui-status-badge ui-status-badge--${overallStatus.variant}`}
+                  >
+                    {overallStatus.variant === 'success' ? (
+                      <CheckCircle2 aria-hidden="true" />
+                    ) : (
+                      <Clock aria-hidden="true" />
+                    )}
                     {overallStatus.label}
                   </span>
                 </div>
