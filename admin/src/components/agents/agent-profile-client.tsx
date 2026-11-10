@@ -24,6 +24,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { ActionIcon } from '@/components/ui/action-icon'
 import { Modal } from '@/components/ui/modal'
 import { StatusPill } from '@/components/ui/status-pill'
 import { CardSkeleton, Skeleton } from '@/components/ui/skeleton'
@@ -205,8 +206,6 @@ const labelCls = `mb-1 block text-xs font-medium ${mutedTextCls}`
 const valueCls = 'font-medium text-[var(--text-main)]'
 const iconBoxCls =
   'flex size-9 shrink-0 items-center justify-center rounded-md bg-[#eff6ef] text-[#006838] dark:bg-[#2b352d] dark:text-[#9fd4ae]'
-const actionBtnCls =
-  'flex size-9 items-center justify-center rounded-md border border-[#dfe7df] text-[var(--text-sub)] transition-colors hover:border-[#006838] hover:text-[#006838] dark:border-[#3d4140] dark:hover:text-[#9fd4ae]'
 const linkValueCls =
   'font-medium text-[#006838] underline-offset-2 hover:underline dark:text-[#9fd4ae]'
 
@@ -398,42 +397,37 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                     View cases
                   </Link>
                   {agent.email ? (
-                    <a
+                    <ActionIcon
                       href={`mailto:${agent.email}`}
-                      className={actionBtnCls}
-                      title={`Email ${agent.email}`}
-                      aria-label={`Email ${name}`}
+                      external
+                      label={`Email ${name}`}
+                      hint="Email"
                     >
-                      <Mail className="size-4" aria-hidden="true" />
-                    </a>
+                      <Mail aria-hidden="true" />
+                    </ActionIcon>
                   ) : null}
                   {telHref ? (
-                    <a
+                    <ActionIcon
                       href={telHref}
-                      className={actionBtnCls}
-                      title={`Call ${formatPhone(agent.phone)}`}
-                      aria-label={`Call ${name}`}
+                      external
+                      label={`Call ${name}`}
+                      hint="Call"
                     >
-                      <Phone className="size-4" aria-hidden="true" />
-                    </a>
+                      <Phone aria-hidden="true" />
+                    </ActionIcon>
                   ) : null}
                   {code ? (
-                    <button
-                      type="button"
+                    <ActionIcon
+                      label="Copy agent code"
+                      hint="Copy"
                       onClick={copyCode}
-                      className={actionBtnCls}
-                      title="Copy agent code"
-                      aria-label="Copy agent code"
                     >
                       {copied ? (
-                        <Check
-                          className="size-4 text-[#006838]"
-                          aria-hidden="true"
-                        />
+                        <Check aria-hidden="true" />
                       ) : (
-                        <Copy className="size-4" aria-hidden="true" />
+                        <Copy aria-hidden="true" />
                       )}
-                    </button>
+                    </ActionIcon>
                   ) : null}
                 </div>
               </div>
@@ -555,22 +549,17 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                           {code || 'N/A'}
                         </span>
                         {code ? (
-                          <button
-                            type="button"
+                          <ActionIcon
+                            label="Copy agent code"
+                            hint="Copy"
                             onClick={copyCode}
-                            className="flex size-6 items-center justify-center rounded-md text-[var(--text-sub)] transition-colors hover:bg-[#eff6ef] hover:text-[#006838] dark:hover:bg-[#2b352d] dark:hover:text-[#9fd4ae]"
-                            title="Copy agent code"
-                            aria-label="Copy agent code"
                           >
                             {copied ? (
-                              <Check
-                                className="size-3.5 text-[#006838]"
-                                aria-hidden="true"
-                              />
+                              <Check aria-hidden="true" />
                             ) : (
-                              <Copy className="size-3.5" aria-hidden="true" />
+                              <Copy aria-hidden="true" />
                             )}
-                          </button>
+                          </ActionIcon>
                         ) : null}
                       </dd>
                     </div>

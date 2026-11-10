@@ -21,12 +21,6 @@ export const btnOutlineGreenCls =
 export const btnDangerCls =
   'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-50'
 
-export const iconActionCls =
-  'inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-transparent bg-transparent text-[#006838] transition-colors hover:bg-[#f1f2f0] active:bg-[#d0e3c8] dark:text-[#d0e3c8] dark:hover:bg-[#303232] dark:active:bg-[#3d4140]'
-
-export const iconActionDangerCls =
-  'inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-transparent bg-transparent text-[#9bb09f] transition-colors hover:bg-[#fdeaea] hover:text-[#b91c1c] dark:hover:bg-[#462626]'
-
 export const tableWrapCls =
   'overflow-x-auto rounded-lg border border-[#dfe7df] dark:border-[#3d4140]'
 

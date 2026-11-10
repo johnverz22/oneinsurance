@@ -12,13 +12,12 @@ import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
+import { ActionIcon } from '@/components/ui/action-icon'
 import { cn, formatDate } from '@/lib/utils'
 import {
   btnPrimaryCls,
   btnSecondaryCls,
   fieldCls,
-  iconActionCls,
-  iconActionDangerCls,
   labelCls,
   panelDescCls,
   panelTitleCls,
@@ -224,22 +223,21 @@ export function LobsTab() {
             mobile: 'action',
             cell: (lob) => (
               <div className="flex items-center gap-1">
-                <button
-                  type="button"
+                <ActionIcon
+                  label={`Edit ${lob.name}`}
+                  hint="Edit"
                   onClick={() => openForm(lob)}
-                  title="Edit LoB"
-                  className={iconActionCls}
                 >
-                  <Pencil className="size-4" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
+                  <Pencil aria-hidden="true" />
+                </ActionIcon>
+                <ActionIcon
+                  label={`Delete ${lob.name}`}
+                  hint="Delete"
+                  failure
                   onClick={() => setDeleteTarget(lob)}
-                  title="Delete LoB"
-                  className={iconActionDangerCls}
                 >
-                  <Trash2 className="size-4" aria-hidden="true" />
-                </button>
+                  <Trash2 aria-hidden="true" />
+                </ActionIcon>
               </div>
             ),
           },

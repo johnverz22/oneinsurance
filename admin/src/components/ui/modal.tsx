@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ActionIcon } from '@/components/ui/action-icon'
 
 type ModalProps = {
   open: boolean
@@ -63,14 +64,9 @@ export function Modal({
               </p>
             )}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex size-8 shrink-0 items-center justify-center rounded-md text-[var(--text-sub)] transition-colors hover:bg-[#f1f2f0] hover:text-[#006838] dark:hover:bg-[#303232]"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </button>
+          <ActionIcon label="Close dialog" hint="Close" onClick={onClose} className="shrink-0">
+            <X aria-hidden="true" />
+          </ActionIcon>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
         {footer && (

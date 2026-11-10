@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowUpRight } from 'lucide-react'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
@@ -10,13 +9,13 @@ import { SelectField } from '@/components/ui/select-field'
 import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
+import { ActionIcon } from '@/components/ui/action-icon'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
 import { cn, formatPersonName } from '@/lib/utils'
 import {
   btnPrimaryCls,
   fieldCls,
-  iconActionCls,
   panelDescCls,
   panelTitleCls,
 } from '@/lib/ui-classes'
@@ -327,13 +326,13 @@ export function TransactionsClient() {
                 className: 'py-3 text-center',
                 mobile: 'action',
                 cell: (tx) => (
-                  <Link
+                  <ActionIcon
                     href={`/transactions/${tx.id}`}
-                    aria-label={`View transaction ${txPaymentRef(tx) ?? tx.id} details`}
-                    className={iconActionCls}
+                    label={`View transaction ${txPaymentRef(tx) ?? tx.id} details`}
+                    hint="View details"
                   >
-                    <ArrowUpRight className="size-5" aria-hidden="true" />
-                  </Link>
+                    <ArrowUpRight aria-hidden="true" />
+                  </ActionIcon>
                 ),
               },
             ]}

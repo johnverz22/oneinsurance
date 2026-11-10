@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Briefcase,
   Check,
-  Download,
   Send,
   Trash2,
   UserRound,
@@ -19,11 +17,10 @@ import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
+import { ActionIcon } from '@/components/ui/action-icon'
+import { ExportMenu } from '@/components/ui/export-menu'
 import { exportToCSV } from '@/lib/export-to-csv'
 import {
-  btnOutlineGreenCls,
-  iconActionCls,
-  iconActionDangerCls,
   panelDescCls,
   panelTitleCls,
 } from '@/lib/ui-classes'
@@ -191,14 +188,11 @@ export function AgentsTab() {
               placeholder="Search agents"
             />
           </div>
-          <button
-            type="button"
-            onClick={handleExport}
-            className={btnOutlineGreenCls}
-          >
-            <Download className="size-4" aria-hidden="true" />
-            Export
-          </button>
+          <ExportMenu
+            items={[
+              { id: 'csv', label: 'CSV', onSelect: handleExport },
+            ]}
+          />
         </div>
       </div>
 
@@ -259,49 +253,45 @@ export function AgentsTab() {
               const status = agent.status?.toLowerCase()
               return (
                 <div className="flex items-center gap-1">
-                  <Link
+                  <ActionIcon
                     href={`/agents/${agent.id}/cases`}
-                    title="View cases"
-                    aria-label={`View cases for ${agentDisplayName(agent)}`}
-                    className={iconActionCls}
+                    label={`View cases for ${agentDisplayName(agent)}`}
+                    hint="Cases"
                   >
-                    <Briefcase className="size-4" aria-hidden="true" />
-                  </Link>
-                  <Link
+                    <Briefcase aria-hidden="true" />
+                  </ActionIcon>
+                  <ActionIcon
                     href={`/agents/${agent.id}/profile`}
-                    title="View profile"
-                    aria-label={`View profile of ${agentDisplayName(agent)}`}
-                    className={iconActionCls}
+                    label={`View profile of ${agentDisplayName(agent)}`}
+                    hint="Profile"
                   >
-                    <UserRound className="size-4" aria-hidden="true" />
-                  </Link>
-                  <button
-                    type="button"
+                    <UserRound aria-hidden="true" />
+                  </ActionIcon>
+                  <ActionIcon
+                    label={`Delete ${agentDisplayName(agent)}`}
+                    hint="Delete"
+                    failure
                     onClick={() => setDeleteTarget(agent)}
-                    title="Delete agent"
-                    className={iconActionDangerCls}
                   >
-                    <Trash2 className="size-4" aria-hidden="true" />
-                  </button>
+                    <Trash2 aria-hidden="true" />
+                  </ActionIcon>
                   {status === 'inactive' && (
-                    <button
-                      type="button"
+                    <ActionIcon
+                      label={`Activate ${agentDisplayName(agent)}`}
+                      hint="Activate"
                       onClick={() => setActivateTarget(agent)}
-                      title="Activate agent"
-                      className={iconActionCls}
                     >
-                      <Check className="size-4" aria-hidden="true" />
-                    </button>
+                      <Check aria-hidden="true" />
+                    </ActionIcon>
                   )}
                   {(status === 'pending' || status === 'for interview') && (
-                    <button
-                      type="button"
+                    <ActionIcon
+                      label={`Resend signup link to ${agentDisplayName(agent)}`}
+                      hint="Resend link"
                       onClick={() => handleSendSignupLink(agent)}
-                      title="Resend signup link"
-                      className={iconActionCls}
                     >
-                      <Send className="size-4" aria-hidden="true" />
-                    </button>
+                      <Send aria-hidden="true" />
+                    </ActionIcon>
                   )}
                 </div>
               )

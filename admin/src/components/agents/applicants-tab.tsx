@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronLeft, Download, XCircle } from 'lucide-react'
+import { Check, ChevronLeft, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
@@ -11,14 +11,13 @@ import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
+import { ActionIcon } from '@/components/ui/action-icon'
+import { ExportMenu } from '@/components/ui/export-menu'
 import { exportToCSV } from '@/lib/export-to-csv'
 import { formatDate } from '@/lib/utils'
 import {
   btnDangerCls,
-  btnOutlineGreenCls,
   btnPrimaryCls,
-  iconActionCls,
-  iconActionDangerCls,
   panelDescCls,
   panelTitleCls,
 } from '@/lib/ui-classes'
@@ -253,14 +252,11 @@ export function ApplicantsTab() {
               placeholder="Search applicants"
             />
           </div>
-          <button
-            type="button"
-            onClick={handleExport}
-            className={btnOutlineGreenCls}
-          >
-            <Download className="size-4" aria-hidden="true" />
-            Export
-          </button>
+          <ExportMenu
+            items={[
+              { id: 'csv', label: 'CSV', onSelect: handleExport },
+            ]}
+          />
         </div>
       </div>
 
@@ -324,28 +320,27 @@ export function ApplicantsTab() {
                   className="flex items-center gap-1"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button
-                    type="button"
+                  <ActionIcon
+                    label={`Approve ${applicantName(applicant)}`}
+                    hint="Approve"
                     onClick={() => {
                       setSelected(applicant)
                       setDecision('approve')
                     }}
-                    title="Approve"
-                    className={iconActionCls}
                   >
-                    <Check className="size-4" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
+                    <Check aria-hidden="true" />
+                  </ActionIcon>
+                  <ActionIcon
+                    label={`Reject ${applicantName(applicant)}`}
+                    hint="Reject"
+                    failure
                     onClick={() => {
                       setSelected(applicant)
                       setDecision('reject')
                     }}
-                    title="Reject"
-                    className={iconActionDangerCls}
                   >
-                    <XCircle className="size-4" aria-hidden="true" />
-                  </button>
+                    <XCircle aria-hidden="true" />
+                  </ActionIcon>
                 </div>
               ) : null,
           },
