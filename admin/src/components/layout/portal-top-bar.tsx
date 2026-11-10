@@ -10,13 +10,14 @@ import { cn } from '@/lib/utils'
 import { ADMIN_NAV_ITEMS } from '@/components/layout/portal-sidebar'
 import { useTopBarSearchStore } from '@/store/top-bar-search-store'
 import { useAdminAuthStore } from '@/store/admin-auth-store'
+import { ActionIcon } from '@/components/ui/action-icon'
 
 /**
  * Shared portal top bar — visible at every breakpoint.
  * Below lg: hamburger menu popover + brand logo.
  * lg+: "Admin portal / {page}" context label.
- * Right side (all sizes): theme toggle + notifications + sign out, using the
- * shared white-square header-action treatment from the platform shell mockups.
+ * Right side (all sizes): theme toggle + notifications + sign out using the
+ * shared .ui-action-icon treatment from the platform shell mockups.
  */
 export function PortalTopBar() {
   const { theme, setTheme } = useTheme()
@@ -88,9 +89,6 @@ export function PortalTopBar() {
     router.push('/login')
   }
 
-  const headerActionIcon =
-    'relative size-5 text-[#183d2c] transition-colors group-hover/header-action:text-white max-sm:size-[18px]'
-
   return (
     <header
       className={cn(
@@ -102,15 +100,15 @@ export function PortalTopBar() {
       {/* ── Mobile controls: menu + brand (hidden on lg+) ─────────────── */}
       <div className="flex min-w-0 items-center gap-3 lg:hidden">
         <div className="relative" ref={menuRef}>
-          <button
-            type="button"
+          <ActionIcon
+            label="Open navigation"
+            hint="Open navigation"
+            ariaExpanded={menuOpen}
+            ariaHasPopup
             onClick={() => setMenuOpen((prev) => !prev)}
-            aria-label="Open navigation"
-            aria-expanded={menuOpen}
-            className="flex size-11 cursor-pointer items-center justify-center rounded-full text-[#294535] transition-colors hover:bg-[#006838] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
           >
-            <Menu className="size-5 max-sm:size-[18px]" aria-hidden="true" />
-          </button>
+            <Menu aria-hidden="true" />
+          </ActionIcon>
 
           {menuOpen && (
             <nav
@@ -186,34 +184,25 @@ export function PortalTopBar() {
 
       {/* ── Header actions: theme + notifications ─────────────────────── */}
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
-        <button
-          type="button"
+        <ActionIcon
+          label="Toggle color theme"
+          hint="Toggle theme"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label="Toggle color theme"
-          className="group/header-action relative flex size-11 cursor-pointer items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]"
         >
-          <span
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white transition-colors group-hover/header-action:bg-[#006838]"
-          />
-          <Moon className={cn(headerActionIcon, 'dark:hidden')} aria-hidden="true" />
-          <Sun className={cn(headerActionIcon, 'hidden dark:block')} aria-hidden="true" />
-        </button>
+          <Moon className="dark:hidden" aria-hidden="true" />
+          <Sun className="hidden dark:block" aria-hidden="true" />
+        </ActionIcon>
 
         <div className="relative" ref={notifRef}>
-          <button
-            type="button"
+          <ActionIcon
+            label="Notifications"
+            hint="Notifications"
+            ariaExpanded={notificationsOpen}
+            ariaHasPopup
             onClick={() => setNotificationsOpen((prev) => !prev)}
-            aria-label="Notifications"
-            aria-expanded={notificationsOpen}
-            className="group/header-action relative flex size-11 cursor-pointer items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]"
           >
-            <span
-              aria-hidden="true"
-              className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white transition-colors group-hover/header-action:bg-[#006838]"
-            />
-            <Mail className={headerActionIcon} aria-hidden="true" />
-          </button>
+            <Mail aria-hidden="true" />
+          </ActionIcon>
 
           {notificationsOpen && (
             <div className="absolute right-0 top-14 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-[#dfe7df] bg-white p-5 shadow-[0_20px_50px_rgba(24,61,44,0.12)] dark:border-[#48524a] dark:bg-[#282c29] dark:text-[var(--text-main)]">
@@ -233,18 +222,9 @@ export function PortalTopBar() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          aria-label="Sign out"
-          className="group/header-action relative flex size-11 cursor-pointer items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]"
-        >
-          <span
-            aria-hidden="true"
-            className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white transition-colors group-hover/header-action:bg-[#006838]"
-          />
-          <LogOut className={headerActionIcon} aria-hidden="true" />
-        </button>
+        <ActionIcon label="Log out" hint="Log out" onClick={handleLogout}>
+          <LogOut aria-hidden="true" />
+        </ActionIcon>
       </div>
     </header>
   )

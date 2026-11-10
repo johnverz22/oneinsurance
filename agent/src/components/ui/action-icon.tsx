@@ -27,6 +27,10 @@ type ActionIconProps = {
   external?: boolean
   onClick?: () => void
   disabled?: boolean
+  /** ARIA expanded state for actions that toggle a popover. */
+  ariaExpanded?: boolean
+  /** ARIA haspopup for actions that open a popover/menu. */
+  ariaHasPopup?: boolean | 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog'
   className?: string
   children: ReactNode
 }
@@ -44,6 +48,8 @@ export function ActionIcon({
   external = false,
   onClick,
   disabled = false,
+  ariaExpanded,
+  ariaHasPopup,
   className,
   children,
 }: ActionIconProps) {
@@ -153,6 +159,8 @@ export function ActionIcon({
     },
     'aria-label': label,
     'aria-describedby': hintVisible ? hintId : undefined,
+    'aria-expanded': ariaExpanded,
+    'aria-haspopup': ariaHasPopup,
     'data-action-hint': hint,
     className: cls,
     onMouseEnter: armHint,

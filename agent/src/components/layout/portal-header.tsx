@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { AGENT_NAV_ITEMS } from '@/components/layout/portal-sidebar'
 import { usePortalSearchStore } from '@/store/portal-search-store'
 import { useAgentAuthStore } from '@/store/agent-auth-store'
+import { ActionIcon } from '@/components/ui/action-icon'
 
 /**
  * Sticky top bar for the agent portal — 1:1 port of the platform-shell mockup.
@@ -99,16 +100,15 @@ export function PortalHeader() {
       {/* Mobile: hamburger menu + brand logo */}
       <div className="flex min-w-0 items-center gap-3 lg:hidden">
         <div className="relative" ref={menuRef}>
-          <button
-            type="button"
+          <ActionIcon
+            label="Open navigation"
+            hint="Open navigation"
+            ariaExpanded={menuOpen}
+            ariaHasPopup
             onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Open navigation"
-            aria-expanded={menuOpen}
-            aria-haspopup="true"
-            className="agent-dashboard__icon-button"
           >
-            <Menu className="size-[18px] sm:size-5" aria-hidden="true" />
-          </button>
+            <Menu aria-hidden="true" />
+          </ActionIcon>
           {menuOpen && (
             <nav
               aria-label="Mobile agent portal"
@@ -176,29 +176,25 @@ export function PortalHeader() {
 
       {/* Right controls: theme toggle + notifications */}
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
-        <button
-          type="button"
+        <ActionIcon
+          label="Toggle color theme"
+          hint="Toggle theme"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label="Toggle color theme"
-          title="Toggle color theme"
-          className="agent-dashboard__icon-button agent-dashboard__header-action"
         >
-          <Moon className="size-[18px] sm:size-5 dark:hidden" aria-hidden="true" />
-          <Sun className="hidden size-[18px] sm:size-5 dark:block" aria-hidden="true" />
-        </button>
+          <Moon className="dark:hidden" aria-hidden="true" />
+          <Sun className="hidden dark:block" aria-hidden="true" />
+        </ActionIcon>
 
         <div className="relative" ref={notifRef}>
-          <button
-            type="button"
+          <ActionIcon
+            label="Notifications"
+            hint="Notifications"
+            ariaExpanded={notificationsOpen}
+            ariaHasPopup
             onClick={() => setNotificationsOpen((v) => !v)}
-            aria-label="Notifications"
-            title="Notifications"
-            aria-expanded={notificationsOpen}
-            aria-haspopup="true"
-            className="agent-dashboard__icon-button agent-dashboard__header-action"
           >
-            <Mail className="size-[18px] sm:size-5" aria-hidden="true" />
-          </button>
+            <Mail aria-hidden="true" />
+          </ActionIcon>
           {notificationsOpen && (
             <div className="agent-dashboard__popover absolute right-0 top-14 w-[min(20rem,calc(100vw-2rem))] p-5">
               <strong className="text-base">Notifications</strong>
@@ -209,15 +205,9 @@ export function PortalHeader() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          aria-label="Sign out"
-          title="Sign out"
-          className="agent-dashboard__icon-button agent-dashboard__header-action"
-        >
-          <LogOut className="size-[18px] sm:size-5" aria-hidden="true" />
-        </button>
+        <ActionIcon label="Log out" hint="Log out" onClick={handleLogout}>
+          <LogOut aria-hidden="true" />
+        </ActionIcon>
       </div>
     </header>
   )

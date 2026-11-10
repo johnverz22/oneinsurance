@@ -714,68 +714,6 @@
     }
   }
 
-  /* ---- Round icon buttons (hamburger) & white-square header actions ---- */
-  .agent-dashboard__icon-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    color: #294535;
-    cursor: pointer;
-  }
-
-  .agent-dashboard__icon-button:hover {
-    color: #fff;
-    background: #006838;
-  }
-
-  .dark .agent-dashboard__icon-button {
-    color: #d0e3c8;
-  }
-
-  .dark .agent-dashboard__icon-button:hover {
-    color: #fff;
-    background: #006838;
-  }
-
-  .agent-dashboard__header-action {
-    position: relative;
-    border-radius: 8px;
-  }
-
-  .agent-dashboard__header-action::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  .agent-dashboard__header-action > svg {
-    position: relative;
-    color: #183d2c;
-  }
-
-  .agent-dashboard__header-action:hover,
-  .dark .agent-dashboard__header-action:hover {
-    background: transparent;
-  }
-
-  .agent-dashboard__header-action:hover::before {
-    background: #006838;
-  }
-
-  .agent-dashboard__header-action:hover > svg {
-    color: #fff;
-  }
-
-  .agent-dashboard__icon-button:focus-visible,
   .agent-dashboard__nav-item:focus-visible,
   .agent-dashboard__bottom-item:focus-visible {
     outline: 2px solid #006838;
@@ -890,8 +828,7 @@
       gap: 10px;
     }
     .agent-dashboard__nav-item > svg,
-    .agent-dashboard__bottom-item > svg,
-    .agent-dashboard__header .agent-dashboard__icon-button > svg {
+    .agent-dashboard__bottom-item > svg {
       width: 18px;
       height: 18px;
     }
@@ -900,14 +837,6 @@
   @media (max-width: 359px) {
     .agent-dashboard__header img {
       width: 100px;
-    }
-    .agent-dashboard__header .agent-dashboard__icon-button {
-      width: 36px;
-      height: 40px;
-    }
-    .agent-dashboard__header-action::before {
-      width: 36px;
-      height: 36px;
     }
   }
 
