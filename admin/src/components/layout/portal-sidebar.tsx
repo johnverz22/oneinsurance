@@ -13,6 +13,7 @@ import {
   TextSearch,
   ArrowUpRight,
   LogOut,
+  UserRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAdminUser, useAdminAuthStore, useHasHydrated } from '@/store/admin-auth-store'
@@ -26,6 +27,7 @@ export const ADMIN_NAV_ITEMS = [
   { href: '/payments', label: 'Payments', icon: Wallet },
   { href: '/transactions', label: 'Transactions', icon: TextSearch },
   { href: '/reports', label: 'Generate report', icon: ArrowUpRight },
+  { href: '/settings', label: 'User settings', icon: UserRound },
 ]
 
 /**
