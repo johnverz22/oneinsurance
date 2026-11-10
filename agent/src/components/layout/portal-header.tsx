@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
-import { Menu, Moon, Sun, Mail } from 'lucide-react'
+import { Menu, Moon, Sun, Mail, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AGENT_NAV_ITEMS } from '@/components/layout/portal-sidebar'
 import { usePortalSearchStore } from '@/store/portal-search-store'
+import { useAgentAuthStore } from '@/store/agent-auth-store'
 
 /**
  * Sticky top bar for the agent portal — 1:1 port of the platform-shell mockup.
@@ -17,13 +18,15 @@ import { usePortalSearchStore } from '@/store/portal-search-store'
  *                       shared portal search store — drives the dashboard
  *                       activity filter); "Agent portal / <page>" crumb on
  *                       every other page.
- * Right side (all):     theme toggle + notifications preview popover.
+ * Right side (all):     theme toggle + notifications preview popover + sign out.
  * A subtle shadow appears once the content canvas is scrolled.
  */
 export function PortalHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const { searchQuery, setSearchQuery } = usePortalSearchStore()
+  const logout = useAgentAuthStore((s) => s.logout)
 
   const [menuOpen, setMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -72,6 +75,14 @@ export function PortalHeader() {
   }, [pathname])
 
   const isActive = (href: string) => pathname.startsWith(href)
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/agent/auth/logout', { method: 'POST' })
+    } catch {}
+    logout()
+    router.push('/login')
+  }
 
   // Mockup: dashboard shows the Quick search field; every other page shows an
   // "Agent portal / <page>" crumb instead.
@@ -197,6 +208,16 @@ export function PortalHeader() {
             </div>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Sign out"
+          title="Sign out"
+          className="agent-dashboard__icon-button agent-dashboard__header-action"
+        >
+          <LogOut className="size-[18px] sm:size-5" aria-hidden="true" />
+        </button>
       </div>
     </header>
   )

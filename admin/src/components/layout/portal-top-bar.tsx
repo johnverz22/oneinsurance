@@ -2,20 +2,21 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
-import { Sun, Moon, Mail, Menu, CheckCircle2 } from 'lucide-react'
+import { Sun, Moon, Mail, Menu, CheckCircle2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ADMIN_NAV_ITEMS } from '@/components/layout/portal-sidebar'
 import { useTopBarSearchStore } from '@/store/top-bar-search-store'
+import { useAdminAuthStore } from '@/store/admin-auth-store'
 
 /**
  * Shared portal top bar — visible at every breakpoint.
  * Below lg: hamburger menu popover + brand logo.
  * lg+: "Admin portal / {page}" context label.
- * Right side (all sizes): theme toggle + notifications, using the shared
- * white-square header-action treatment from the platform shell mockups.
+ * Right side (all sizes): theme toggle + notifications + sign out, using the
+ * shared white-square header-action treatment from the platform shell mockups.
  */
 export function PortalTopBar() {
   const { theme, setTheme } = useTheme()
@@ -27,6 +28,9 @@ export function PortalTopBar() {
   const menuRef = useRef<HTMLDivElement>(null)
   const searchQuery = useTopBarSearchStore((s) => s.query)
   const setSearchQuery = useTopBarSearchStore((s) => s.setQuery)
+  const logout = useAdminAuthStore((s) => s.logout)
+  const getAuthHeader = useAdminAuthStore((s) => s.getAuthHeader)
+  const router = useRouter()
   const isDashboard = pathname === '/dashboard'
 
   const activeItem =
@@ -71,6 +75,18 @@ export function PortalTopBar() {
     onScroll()
     return () => scrollEl.removeEventListener('scroll', onScroll)
   }, [])
+
+  const handleLogout = async () => {
+    try {
+      const authHeader = getAuthHeader()
+      await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        headers: authHeader ? { Authorization: authHeader } : {},
+      })
+    } catch {}
+    logout()
+    router.push('/login')
+  }
 
   const headerActionIcon =
     'relative size-5 text-[#183d2c] transition-colors group-hover/header-action:text-white max-sm:size-[18px]'
@@ -216,6 +232,19 @@ export function PortalTopBar() {
             </div>
           )}
         </div>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Sign out"
+          className="group/header-action relative flex size-11 cursor-pointer items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]"
+        >
+          <span
+            aria-hidden="true"
+            className="absolute left-1/2 top-1/2 size-10 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white transition-colors group-hover/header-action:bg-[#006838]"
+          />
+          <LogOut className={headerActionIcon} aria-hidden="true" />
+        </button>
       </div>
     </header>
   )
