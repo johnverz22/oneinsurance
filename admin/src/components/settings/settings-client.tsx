@@ -83,31 +83,25 @@ function Field({
 
 function SettingsSkeleton() {
   return (
-    <div className="space-y-6" aria-busy="true" aria-live="polite">
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72" />
+    <section className="portal-page-card p-5 sm:p-6" aria-busy="true" aria-live="polite">
+      <Skeleton className="h-6 w-44" />
+      <Skeleton className="mt-2 h-4 w-64" />
+      <div className="mt-6 flex items-center gap-5 border-b border-[var(--border)] pb-6">
+        <Skeleton className="size-20 shrink-0 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-36" />
+          <Skeleton className="h-4 w-24" />
+        </div>
       </div>
-      <section className="portal-page-card p-5 sm:p-6">
-        <Skeleton className="h-6 w-44" />
-        <Skeleton className="mt-2 h-4 w-64" />
-        <div className="mt-6 flex items-center gap-5 border-b border-[var(--border)] pb-6">
-          <Skeleton className="size-20 shrink-0 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-36" />
-            <Skeleton className="h-4 w-24" />
+      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-5 w-40 max-w-full" />
           </div>
-        </div>
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-5 w-40 max-w-full" />
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -281,8 +275,7 @@ export function SettingsClient() {
     }
   }
 
-  if (!hasHydrated || !user) return <SettingsSkeleton />
-  if (!detailsLoaded) return <SettingsSkeleton />
+  const loading = !hasHydrated || !user || !detailsLoaded
 
   const hasPhoto = Boolean(profilePhotoSrc)
 
@@ -293,7 +286,10 @@ export function SettingsClient() {
         description="Manage your admin account details."
       />
 
-      {/* ── Profile information ── */}
+      {loading ? (
+        <SettingsSkeleton />
+      ) : (
+      /* ── Profile information ── */
       <section className="portal-page-card p-5 sm:p-6" aria-labelledby="profile-title">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -489,6 +485,7 @@ export function SettingsClient() {
           </form>
         )}
       </section>
+      )}
     </div>
   )
 }

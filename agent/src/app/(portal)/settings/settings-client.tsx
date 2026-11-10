@@ -374,11 +374,6 @@ function DocumentRow({
 function Skeleton() {
   return (
     <div className="space-y-6" aria-busy="true" aria-live="polite">
-      {/* Header skeleton */}
-      <div className="flex items-center gap-3">
-        <div className="skeleton size-10 rounded-full" />
-        <div className="skeleton h-8 w-48 rounded" />
-      </div>
       {/* Profile panel */}
       <section className="portal-page-card p-5 sm:p-6">
         <div className="skeleton h-6 w-48 rounded" />
@@ -1058,7 +1053,17 @@ export function SettingsClient() {
         ? { status: 'in review', label: 'In review' }
         : null
 
-  if (!user) return <Skeleton />
+  if (!user) {
+    return (
+      <div className="flex min-h-full flex-col space-y-6">
+        <PortalContentHeader
+          title="User settings"
+          description="Manage your contact details, verification documents and payout methods."
+        />
+        <Skeleton />
+      </div>
+    )
+  }
 
   return (
     <>
