@@ -65,7 +65,7 @@ export function TransactionCard({
           <span className="text-xs text-[var(--text-sub)]">
             Policy: <span className="font-medium">{policyNumber}</span>
           </span>
-          <span className="text-xs font-mono text-[var(--text-muted)] tabular-nums">{paymentRef}</span>
+          <span className="text-xs text-[var(--text-muted)] tabular-nums">{paymentRef}</span>
         </div>
 
         {/* Bottom row: date + premium + commission */}

@@ -281,7 +281,7 @@ export function ApplicantsTab() {
           {
             header: 'ID',
             cell: (applicant) => (
-              <span className="font-mono text-xs font-normal text-[var(--text-main)]">
+              <span className="text-xs font-normal text-[var(--text-main)]">
                 APP{String(applicant.id).padStart(3, '0')}
               </span>
             ),

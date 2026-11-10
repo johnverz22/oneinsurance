@@ -214,7 +214,7 @@ export function AgentsTab() {
           {
             header: 'Agent code',
             cell: (agent) => (
-              <span className="font-mono text-xs font-normal text-[var(--text-main)]">
+              <span className="text-xs font-normal text-[var(--text-main)]">
                 {(agent.settings?.code ?? agent.agent_code ?? 'N/A').toUpperCase()}
               </span>
             ),

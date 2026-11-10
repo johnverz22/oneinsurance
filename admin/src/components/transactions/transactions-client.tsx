@@ -291,7 +291,7 @@ export function TransactionsClient() {
                 header: 'Policy no.',
                 rowHeader: true,
                 cell: (tx) => (
-                  <span className="font-mono text-xs font-medium text-[var(--text-main)]">
+                  <span className="text-xs font-medium text-[var(--text-main)]">
                     {tx.policy_number ?? dash}
                   </span>
                 ),

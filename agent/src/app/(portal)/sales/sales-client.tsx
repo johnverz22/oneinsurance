@@ -154,7 +154,7 @@ function PaymentIdCell({ paymentRef, status }: { paymentRef: string; status: Pay
           {label}
         </span>
       </span>
-      <span className="font-mono text-xs tabular-nums font-medium whitespace-nowrap" title={paymentRef}>
+      <span className="text-xs tabular-nums font-medium whitespace-nowrap" title={paymentRef}>
         {paymentRef}
       </span>
     </span>

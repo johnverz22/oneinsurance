@@ -339,7 +339,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               {
                 header: 'Policy no.',
                 cell: (tx) => (
-                  <span className="font-mono text-xs font-normal text-[var(--text-main)]">
+                  <span className="text-xs font-normal text-[var(--text-main)]">
                     {tx.policy_number ?? dash}
                   </span>
                 ),
@@ -347,7 +347,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               {
                 header: 'Certificate no.',
                 cell: (tx) => (
-                  <span className="font-mono text-xs text-[var(--text-sub)]">
+                  <span className="text-xs text-[var(--text-sub)]">
                     {tx.certificate_number ?? dash}
                   </span>
                 ),

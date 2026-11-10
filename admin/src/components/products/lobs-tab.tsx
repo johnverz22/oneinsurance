@@ -226,7 +226,7 @@ export function LobsTab() {
           {
             header: 'Slug',
             cell: (lob) => (
-              <span className="font-mono text-xs text-[var(--text-sub)]">
+              <span className="text-xs text-[var(--text-sub)]">
                 {lob.slug || '—'}
               </span>
             ),
