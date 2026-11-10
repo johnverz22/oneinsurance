@@ -30,14 +30,14 @@
   --color-field-border-light: #c7d4c9;
   --color-field-border-dark: #565c58;
 
-  --color-text-main-light: #183d2c;
-  --color-text-main-dark: #f4f5f2;
+  --color-text-main-light: #0c0d0d;
+  --color-text-main-dark: #ffffff;
 
-  --color-text-sub-light: #333333;
+  --color-text-sub-light: #707070;
   --color-text-sub-dark: #c4c7c5;
 
-  --color-text-muted-light: #808080;
-  --color-text-muted-dark: #b2b7b4;
+  --color-text-muted-light: #a9a9a9;
+  --color-text-muted-dark: #767776;
 
   --color-error: #dc2626;
 
@@ -51,9 +51,9 @@
   --header: #ffffff;
   --border: #dfe7df;
   --field-border: #c7d4c9;
-  --text-main: #183d2c;
-  --text-sub: #333333;
-  --text-muted: #808080;
+  --text-main: #0c0d0d;
+  --text-sub: #707070;
+  --text-muted: #a9a9a9;
   --primary: #006838;
   --primary-hover: #00552e;
   --primary-pressed: #004525;
@@ -66,9 +66,9 @@
   --header: #171919;
   --border: #3d4140;
   --field-border: #565c58;
-  --text-main: #f4f5f2;
+  --text-main: #ffffff;
   --text-sub: #c4c7c5;
-  --text-muted: #b2b7b4;
+  --text-muted: #767776;
   --primary: #006838;
   --primary-hover: #00552e;
   --primary-pressed: #004525;
@@ -218,7 +218,7 @@ select.ui-form-field {
     --plan-background: #fcfdfb;
     --plan-subtle: #f1f2f0;
     --plan-border: #dfe7df;
-    --plan-muted: #808080;
+    --plan-muted: #a9a9a9;
     --plan-accent: #006838;
   }
   .dark {
@@ -226,8 +226,8 @@ select.ui-form-field {
     --plan-background: #1c1e1e;
     --plan-subtle: #303232;
     --plan-border: #3d4140;
-    --plan-muted: #c4c7c5;
-    --plan-accent: #f4f5f2;
+    --plan-muted: #767776;
+    --plan-accent: #ffffff;
   }
 
   .travel-progress__list {
