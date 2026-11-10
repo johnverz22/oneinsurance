@@ -1009,6 +1009,82 @@
     border-color: rgb(252 165 165 / 0.2);
   }
 
+  /* Action icon buttons — shared .ui-action-icon: 44px target, no background,
+     Insurance green icon, Pale Gold hover, green focus outline. The
+     --failure variant keeps Failure red at rest and on hover. */
+  .ui-action-icon {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .ui-action-icon:hover {
+    background: #f8efd8;
+    color: var(--primary);
+  }
+
+  .ui-action-icon:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .ui-action-icon > svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .ui-action-icon--failure,
+  .dark .ui-action-icon--failure {
+    color: #991b1b;
+  }
+
+  .ui-action-icon--failure:hover,
+  .dark .ui-action-icon--failure:hover {
+    background: #f8efd8;
+    color: #991b1b;
+  }
+
+  .ui-action-icon--failure:focus-visible {
+    outline-color: #991b1b;
+  }
+
+  .ui-action-icon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Action hint badge — white badge shown after a 1s hover/focus delay.
+     Rendered in a portal with position:fixed so table overflow never clips it. */
+  .portal-action-hint {
+    position: fixed;
+    z-index: 100;
+    max-width: 12rem;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.14);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.25;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .portal-action-hint--failure {
+    color: #991b1b;
+  }
+
   /* Status badges */
   .badge-success {
     display: inline-flex;

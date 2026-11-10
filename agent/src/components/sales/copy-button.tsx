@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ActionIcon } from '@/components/ui/action-icon'
 
 type CopyButtonProps = {
   value: string
@@ -19,8 +20,7 @@ type CopyButtonProps = {
 export function CopyButton({ value, label, className }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
-  const handleCopy = async (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.stopPropagation()
+  const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(value)
       setCopied(true)
@@ -31,27 +31,26 @@ export function CopyButton({ value, label, className }: CopyButtonProps) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      aria-label={label ?? `Copy ${value}`}
-      title={copied ? 'Copied!' : (label ?? `Copy ${value}`)}
-      className={cn(
-        // Base: 32px hit target, icon-button style
-        'inline-flex size-8 shrink-0 items-center justify-center rounded-md',
-        'text-[var(--text-muted)] transition-colors',
-        // Visible on focus, hidden until hover/focus on parent (parent adds group class)
-        'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
-        'hover:bg-[var(--subtle)] hover:text-[var(--primary)]',
-        'focus-visible:outline-2 focus-visible:outline-[var(--primary)] focus-visible:outline-offset-1',
-        className
-      )}
-    >
-      {copied ? (
-        <Check className="size-3.5 text-[#166534] dark:text-[#86efac]" aria-hidden="true" />
-      ) : (
-        <Copy className="size-3.5" aria-hidden="true" />
-      )}
-    </button>
+    // stopPropagation keeps clicks inside clickable parent rows/cards
+    <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
+      <ActionIcon
+        label={copied ? 'Copied' : (label ?? `Copy ${value}`)}
+        hint={copied ? 'Copied!' : (label ?? 'Copy')}
+        onClick={() => {
+          void handleCopy()
+        }}
+        className={cn(
+          // Visible on focus, hidden until hover/focus on parent (parent adds group class)
+          'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+          className
+        )}
+      >
+        {copied ? (
+          <Check className="text-[#166534] dark:text-[#86efac]" aria-hidden="true" />
+        ) : (
+          <Copy aria-hidden="true" />
+        )}
+      </ActionIcon>
+    </span>
   )
 }

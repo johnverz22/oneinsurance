@@ -26,6 +26,7 @@ import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { StatusBadge } from '@/components/ui/status-badge'
+import { ActionIcon } from '@/components/ui/action-icon'
 import type { AgentFile } from '@/types/agent/profile'
 
 // ============================================================
@@ -462,14 +463,9 @@ function Modal({
               <p className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</p>
             )}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="rounded-md p-1 text-[var(--text-muted)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838]"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <ActionIcon label="Close dialog" hint="Close" onClick={onClose}>
+            <X aria-hidden="true" />
+          </ActionIcon>
         </div>
         {children}
       </div>

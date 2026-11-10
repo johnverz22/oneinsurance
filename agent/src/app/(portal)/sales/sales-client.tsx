@@ -30,27 +30,25 @@ import { useQuery } from '@tanstack/react-query'
 import {
   Search,
   X,
-  ChevronDown,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
   ArrowUpRight,
   AlertCircle,
   RefreshCw,
-  FileText,
-  Download,
   Filter as FilterIcon,
   Clock,
   CheckCircle2,
   XCircle,
 } from 'lucide-react'
-import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { resolveStatus } from '@/components/sales/status-pill'
 import { PaginationBar } from '@/components/ui/pagination-bar'
+import { ActionIcon } from '@/components/ui/action-icon'
+import { ExportMenu } from '@/components/ui/export-menu'
 import { FilterChips } from '@/components/sales/filter-chips'
 import { TransactionCard } from '@/components/sales/transaction-card'
 import type { Transaction, AgentStatistics } from '@/types/agent/sales'
@@ -328,9 +326,7 @@ export function SalesClient() {
   const [sortDir, setSortDir] = useState<SortDir>('desc')
 
   // ── Export state ──
-  const [exportOpen, setExportOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
-  const exportMenuRef = useRef<HTMLDivElement>(null)
 
   // ── Toast state ──
   const [toasts, setToasts] = useState<Toast[]>([])
@@ -351,28 +347,6 @@ export function SalesClient() {
   const hasActiveFilters = Boolean(
     appliedSearch || appliedFrom || appliedTo || appliedStatus !== 'all'
   )
-
-  // ── Close export dropdown on outside click ──
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
-        setExportOpen(false)
-      }
-    }
-    if (exportOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [exportOpen])
-
-  // ── Close export on Escape ──
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setExportOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
 
   // ── No auto-apply: all filters (search, date, status) require pressing Apply ──
 
@@ -578,7 +552,6 @@ export function SalesClient() {
   }, [transactions])
 
   const handleExportCSV = useCallback(async () => {
-    setExportOpen(false)
     if (!transactions.length) {
       addToast('No transactions to export.', 'error')
       return
@@ -606,7 +579,6 @@ export function SalesClient() {
 
   // XLSX export: server-side or library needed; for now falls back to CSV with note
   const handleExportXLSX = useCallback(() => {
-    setExportOpen(false)
     addToast('XLSX export not yet available — downloading CSV instead.', 'error')
     handleExportCSV()
   }, [handleExportCSV, addToast])
@@ -865,56 +837,15 @@ export function SalesClient() {
               </div>
 
               {/* Export dropdown */}
-              <div className="relative shrink-0" ref={exportMenuRef}>
-                <button
-                  type="button"
-                  id="export-btn"
-                  aria-haspopup="true"
-                  aria-expanded={exportOpen}
-                  aria-controls="export-menu"
+              <div className="shrink-0">
+                <ExportMenu
+                  label="Export transactions"
                   disabled={exporting}
-                  onClick={() => setExportOpen((o) => !o)}
-                  className="btn-secondary inline-flex items-center gap-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {exporting ? (
-                    <RefreshCw className="size-4 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <Download className="size-4" aria-hidden="true" />
-                  )}
-                  Export
-                  <ChevronDown
-                    className={cn('size-3.5 transition-transform', exportOpen && 'rotate-180')}
-                    aria-hidden="true"
-                  />
-                </button>
-
-                {exportOpen && (
-                  <div
-                    id="export-menu"
-                    role="menu"
-                    aria-labelledby="export-btn"
-                    className="absolute right-0 top-full z-30 mt-1 w-40 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--card)] p-1 shadow-md"
-                  >
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleExportCSV}
-                      className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-medium text-[var(--text-sub)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-                    >
-                      <FileText className="size-4 shrink-0" aria-hidden="true" />
-                      Export CSV
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={handleExportXLSX}
-                      className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-medium text-[var(--text-sub)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-                    >
-                      <FileText className="size-4 shrink-0" aria-hidden="true" />
-                      Export XLSX
-                    </button>
-                  </div>
-                )}
+                  items={[
+                    { id: 'csv', label: 'CSV', onSelect: handleExportCSV },
+                    { id: 'xlsx', label: 'XLSX', onSelect: handleExportXLSX },
+                  ]}
+                />
               </div>
             </div>
 
@@ -1144,13 +1075,13 @@ export function SalesClient() {
 
                           {/* Action — ArrowUpRight icon link */}
                           <td className="px-3 py-2.5 align-middle">
-                            <Link
+                            <ActionIcon
                               href={href}
-                              aria-label={`View transaction ${paymentRef}`}
-                              className="inline-flex size-10 items-center justify-center rounded-md text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--primary)] dark:text-[#d0e3c8]"
+                              label={`View transaction ${paymentRef}`}
+                              hint="View details"
                             >
-                              <ArrowUpRight className="size-4" aria-hidden="true" />
-                            </Link>
+                              <ArrowUpRight aria-hidden="true" />
+                            </ActionIcon>
                           </td>
                         </tr>
                       )
