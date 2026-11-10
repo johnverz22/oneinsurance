@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 }
 
 export default function CommissionsPage() {
-  return (
-    <ComingSoon
-      title="Commissions"
-      description="Configure product commission rates."
-    />
-  )
+  return <ComingSoon title="Commissions" />
 }

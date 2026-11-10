@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 }
 
 export default function ReportsPage() {
-  return (
-    <ComingSoon
-      title="Generate report"
-      description="View performance and generate reports."
-    />
-  )
+  return <ComingSoon title="Generate report" />
 }

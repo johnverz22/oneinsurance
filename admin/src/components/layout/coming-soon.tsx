@@ -1,26 +1,15 @@
-import Link from 'next/link'
 import { Clock } from 'lucide-react'
 
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
-import { btnPrimaryCls } from '@/lib/ui-classes'
 
 /**
  * Placeholder for portal sections that are not implemented yet.
  * Rendered inside the shared portal shell so navigation stays consistent.
  */
-export function ComingSoon({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
+export function ComingSoon({ title }: { title: string }) {
   return (
     <>
-      <PortalContentHeader
-        title={title}
-        description={description}
-      />
+      <PortalContentHeader title={title} />
       <div className="mx-auto w-full max-w-7xl">
         <section className="mt-8 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
           <div className="flex min-h-64 flex-col items-center justify-center py-8 text-center sm:min-h-80">
@@ -34,17 +23,12 @@ export function ComingSoon({
               Coming soon
             </h2>
             <p className="mt-3 max-w-md text-sm leading-6 text-[var(--text-sub)] sm:text-base">
-              This admin page is awaiting final UI and workflow confirmation.
+              This admin page is awaiting final UI and workflow confirmation
+              from IFRC.
             </p>
-            <Link
-              href="/dashboard"
-              className={`${btnPrimaryCls} mt-7`}
-            >
-              Back to dashboard
-            </Link>
           </div>
         </section>
-        <p className="mt-5 text-sm leading-6 text-[var(--text-muted)]">
+        <p className="mt-5 text-sm leading-6 text-[var(--text-sub)]">
           Design placeholder only. No live admin workflow or data is connected
           here.
         </p>

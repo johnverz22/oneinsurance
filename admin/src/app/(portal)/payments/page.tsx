@@ -6,10 +6,5 @@ export const metadata: Metadata = {
 }
 
 export default function PaymentsPage() {
-  return (
-    <ComingSoon
-      title="Payments"
-      description="Payment operations and payout processing."
-    />
-  )
+  return <ComingSoon title="Payments" />
 }
