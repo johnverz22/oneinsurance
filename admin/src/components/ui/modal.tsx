@@ -58,7 +58,7 @@ export function Modal({
               {title}
             </h2>
             {description && (
-              <p className="mt-0.5 text-sm text-[#5b6e61] dark:text-[#b2b7b4]">
+              <p className="mt-0.5 text-sm text-[var(--text-sub)]">
                 {description}
               </p>
             )}
@@ -115,7 +115,7 @@ export function ConfirmModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="inline-flex min-h-11 items-center rounded-md border border-[#c7d4c9] bg-white px-4 py-2 text-sm font-semibold text-[#183d2c] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#565c58] dark:bg-transparent dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
+            className="inline-flex min-h-11 items-center rounded-md border border-[#c7d4c9] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#565c58] dark:bg-transparent dark:text-[var(--text-main)] dark:hover:bg-[#303232]"
           >
             Cancel
           </button>
@@ -135,7 +135,7 @@ export function ConfirmModal({
         </>
       }
     >
-      <div className="text-sm leading-6 text-[#5b6e61] dark:text-[#b2b7b4]">
+      <div className="text-sm leading-6 text-[var(--text-sub)]">
         {message}
       </div>
     </Modal>
@@ -189,7 +189,7 @@ export function ConfirmDialog({
         </h2>
 
         {/* Body */}
-        <p className="mt-3 text-base leading-6 text-[#5b6e61] dark:text-[#b2b7b4]">
+        <p className="mt-3 text-base leading-6 text-[var(--text-sub)]">
           {message}
         </p>
 
@@ -199,7 +199,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="inline-flex h-11 items-center rounded-xl border-2 border-[#183d2c] bg-white px-5 text-sm font-bold text-[#183d2c] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#d0e3c8] dark:bg-transparent dark:text-[#d0e3c8] dark:hover:bg-[#2b352d]"
+            className="inline-flex h-11 items-center rounded-xl border-2 border-[#183d2c] bg-white px-5 text-sm font-bold text-[var(--text-main)] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#d0e3c8] dark:bg-transparent dark:text-[#d0e3c8] dark:hover:bg-[#2b352d]"
           >
             Cancel
           </button>

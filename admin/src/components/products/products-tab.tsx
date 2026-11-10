@@ -279,7 +279,7 @@ export function ProductsTab() {
                 <span className="block font-semibold text-[var(--text-main)]">
                   {product.name}
                 </span>
-                <span className="mt-0.5 block max-w-xs truncate text-xs text-[#5b6e61] dark:text-[#b2b7b4]">
+                <span className="mt-0.5 block max-w-xs truncate text-xs text-[var(--text-sub)]">
                   {product.carrier_product_code
                     ? `${product.carrier_product_code} · ${product.description}`
                     : product.description}
@@ -290,7 +290,7 @@ export function ProductsTab() {
           {
             header: 'Provider',
             cell: (product) => (
-              <span className="text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)]">
                 {product.provider?.name ?? '—'}
               </span>
             ),
@@ -303,7 +303,7 @@ export function ProductsTab() {
                   {product.line_of_business.name}
                 </span>
               ) : (
-                <span className="text-xs text-[#9bb09f] italic">
+                <span className="text-xs text-[var(--text-muted)] italic">
                   No LoB assigned
                 </span>
               ),
@@ -481,7 +481,7 @@ export function ProductsTab() {
                   </option>
                 ))}
               </SelectField>
-              <p className="mt-1 text-xs text-[#6d7d70] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
                 Only active LoBs can be assigned.
               </p>
             </div>
@@ -498,7 +498,7 @@ export function ProductsTab() {
           </div>
 
           {!editing && (
-            <p className="rounded-md bg-[#f3f6f2] p-4 text-sm leading-5 text-[#5b6e61] dark:bg-[#303232] dark:text-[#c4c7c5]">
+            <p className="rounded-md bg-[#f3f6f2] p-4 text-sm leading-5 text-[var(--text-sub)] dark:bg-[#303232]">
               A default commission configuration will be created automatically.
               Adjust rates later in Commission setup.
             </p>

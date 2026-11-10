@@ -22,7 +22,7 @@ import type { Product } from '@/types/admin/catalog'
 
 const panelCls =
   'min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6'
-const dtCls = 'text-sm text-[#45564b] dark:text-[#b2b7b4]'
+const dtCls = 'text-sm text-[var(--text-sub)]'
 const ddCls = 'mt-1 font-medium text-[var(--text-main)]'
 
 function DlRow({
@@ -287,7 +287,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                 <h2 id="commission-title" className={panelTitleCls}>
                   Commission
                 </h2>
-                <p className="mt-5 text-sm text-[#45564b] dark:text-[#b2b7b4]">
+                <p className="mt-5 text-sm text-[var(--text-sub)]">
                   Net commission
                 </p>
                 <p className="mt-1 text-2xl font-semibold tabular-nums text-[var(--text-main)]">

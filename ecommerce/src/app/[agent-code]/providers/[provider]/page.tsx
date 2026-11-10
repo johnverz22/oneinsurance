@@ -42,7 +42,7 @@ export default async function ProviderDetailPage({ params }: PageProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-[#fcfdfb] font-sans text-base text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
+    <div className="min-h-screen bg-[#fcfdfb] font-sans text-base text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)]">
       <a
         href="#main"
         className="sr-only fixed top-3 left-3 z-50 rounded-md bg-[#006838] px-4 py-3 text-white focus:not-sr-only"
@@ -105,12 +105,12 @@ export default async function ProviderDetailPage({ params }: PageProps) {
             </p>
             <h2
               id="about-provider"
-              className="mt-3 text-2xl font-bold tracking-tight text-[#183d2c] dark:text-[#f4f5f2] sm:text-3xl"
+              className="mt-3 text-2xl font-bold tracking-tight text-[var(--text-main)] dark:text-[var(--text-main)] sm:text-3xl"
             >
               About {company.companyName}
             </h2>
             <p
-              className="mt-6 text-base leading-8 text-[#333333] dark:text-[#c4c7c5]"
+              className="mt-6 text-base leading-8 text-[var(--text-sub)] dark:text-[var(--text-sub)]"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(company.description),
               }}
@@ -125,7 +125,7 @@ export default async function ProviderDetailPage({ params }: PageProps) {
               </Link>
               <Link
                 href={basePath}
-                className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white"
+                className="inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:focus-visible:outline-white"
               >
                 View all providers
               </Link>

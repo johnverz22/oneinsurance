@@ -36,7 +36,7 @@ export function AuthLayout({
         Skip to sign in
       </a>
 
-      <div className="auth-hero-backdrop relative grid min-h-dvh bg-white font-sans text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:bg-[#f1f2f0] lg:dark:bg-[#282c29]">
+      <div className="auth-hero-backdrop relative grid min-h-dvh bg-white font-sans text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:bg-[#f1f2f0] lg:dark:bg-[#282c29]">
         {/* Left brand aside (Desktop) */}
         <aside className="relative z-10 hidden min-h-dvh flex-col px-6 py-6 text-white sm:px-10 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:min-h-0 lg:px-12 lg:py-10">
           <Link
@@ -108,7 +108,7 @@ export function AuthLayout({
               type="button"
               onClick={toggleTheme}
               aria-label="Toggle color theme"
-              className="inline-flex size-11 items-center justify-center rounded-md hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:hover:bg-white/10 text-[#183d2c] dark:text-[#f4f5f2]"
+              className="inline-flex size-11 items-center justify-center rounded-md hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:hover:bg-white/10 text-[var(--text-main)] dark:text-[var(--text-main)]"
             >
               <Moon className="size-5 dark:hidden" aria-hidden="true" />
               <Sun className="size-5 hidden dark:block" aria-hidden="true" />
@@ -118,13 +118,13 @@ export function AuthLayout({
           {/* Main Form container */}
           <main
             id="main"
-            className="relative mx-auto -mt-7 flex w-full flex-1 flex-col rounded-t-[28px] bg-white px-6 pb-10 pt-9 text-[#183d2c] dark:bg-[#282c29] dark:text-[#f4f5f2] sm:px-10 lg:mt-0 lg:max-w-[420px] lg:justify-center lg:rounded-none lg:bg-transparent lg:px-0 lg:py-16 lg:dark:bg-transparent"
+            className="relative mx-auto -mt-7 flex w-full flex-1 flex-col rounded-t-[28px] bg-white px-6 pb-10 pt-9 text-[var(--text-main)] dark:bg-[#282c29] dark:text-[var(--text-main)] sm:px-10 lg:mt-0 lg:max-w-[420px] lg:justify-center lg:rounded-none lg:bg-transparent lg:px-0 lg:py-16 lg:dark:bg-transparent"
           >
             {children}
           </main>
 
           {/* Footer */}
-          <footer className="bg-white px-6 pb-6 text-center text-xs leading-5 text-[#6d7d70] dark:bg-[#282c29] dark:text-[#aebbb0] lg:bg-transparent lg:px-0 lg:pb-0 lg:text-right lg:dark:bg-transparent">
+          <footer className="bg-white px-6 pb-6 text-center text-xs leading-5 text-[var(--text-muted)] dark:bg-[#282c29] lg:bg-transparent lg:px-0 lg:pb-0 lg:text-right lg:dark:bg-transparent">
             <p>&copy; {new Date().getFullYear()} One Insurance. All rights reserved.</p>
           </footer>
         </div>

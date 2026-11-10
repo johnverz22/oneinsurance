@@ -46,14 +46,14 @@ export function ModifySearchModal({ agentCode, open, onClose, onSubmitted }: Mod
           <div className="h-1 w-10 rounded-full bg-[#dfe7df] dark:bg-[#3d4140]" />
         </div>
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-[#dfe7df] bg-white px-4 py-3 dark:border-[#3d4140] dark:bg-[#262828] sm:hidden">
-          <h2 className="text-base font-semibold leading-tight tracking-tight text-[#183d2c] dark:text-[#f4f5f2]">
+          <h2 className="text-base font-semibold leading-tight tracking-tight text-[var(--text-main)] dark:text-[var(--text-main)]">
             Modify your search
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[#808080] hover:bg-[#f1f2f0] hover:text-[#183d2c] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2]"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[#f1f2f0] hover:text-[var(--text-main)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[var(--text-main)]"
           >
             <X className="size-5" aria-hidden />
           </button>
@@ -62,7 +62,7 @@ export function ModifySearchModal({ agentCode, open, onClose, onSubmitted }: Mod
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 z-10 hidden size-11 items-center justify-center rounded-md text-[#183d2c] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] sm:inline-flex"
+          className="absolute right-3 top-3 z-10 hidden size-11 items-center justify-center rounded-md text-[var(--text-main)] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] sm:inline-flex"
         >
           <X className="size-5" aria-hidden />
         </button>

@@ -107,8 +107,8 @@ export function ScrollableModal({
       className={cn(
         // ── Shared ────────────────────────────────────────────────────────────
         'w-full overflow-hidden border border-[#dfe7df] bg-white p-0',
-        'text-[#183d2c] shadow-2xl',
-        'dark:border-[#3d4140] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
+        'text-[var(--text-main)] shadow-2xl',
+        'dark:border-[#3d4140] dark:bg-[#1c1e1e] dark:text-[var(--text-main)]',
         'backdrop:bg-black/60 backdrop:backdrop-blur-xs',
 
         // ── Mobile default: bottom sheet ───────────────────────────────────────
@@ -147,7 +147,7 @@ export function ScrollableModal({
           type="button"
           onClick={onClose}
           aria-label={closeLabel}
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[#808080] hover:bg-[#f1f2f0] hover:text-[#183d2c] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2]"
+          className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[#f1f2f0] hover:text-[var(--text-main)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[var(--text-main)]"
         >
           <X className="size-5" aria-hidden />
         </button>

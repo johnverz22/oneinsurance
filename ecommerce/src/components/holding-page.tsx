@@ -21,7 +21,7 @@ export function HoldingPage({
 }: HoldingPageProps) {
   if (reason === 'backend') {
     return (
-      <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[#183d2c] dark:bg-[#171919] dark:text-[#f4f5f2]">
+      <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[var(--text-main)] dark:bg-[#171919] dark:text-[var(--text-main)]">
         <Header
           agentCode={agentCode}
           currentProductSlug={productSlug}
@@ -39,7 +39,7 @@ export function HoldingPage({
             </div>
 
             <h1 className="mb-2 text-2xl font-bold">System Unavailable</h1>
-            <p className="mb-6 leading-relaxed text-base text-[#505553] dark:text-[#b2b7b4]">
+            <p className="mb-6 leading-relaxed text-base text-[var(--text-sub)] dark:text-[var(--text-muted)]">
               Our insurance quotation services are temporarily undergoing maintenance. Please check back shortly.
             </p>
 
@@ -58,7 +58,7 @@ export function HoldingPage({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[#183d2c] dark:bg-[#171919] dark:text-[#f4f5f2]">
+    <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[var(--text-main)] dark:bg-[#171919] dark:text-[var(--text-main)]">
       <Header
         agentCode={agentCode}
         currentProductSlug={productSlug}
@@ -85,9 +85,9 @@ export function HoldingPage({
             <span className="block text-[#006838] dark:text-[#d0e3c8]">Coming Soon</span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#505553] sm:text-lg dark:text-[#b2b7b4]">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[var(--text-sub)] sm:text-lg dark:text-[var(--text-muted)]">
             We&apos;re actively building and certifying the{' '}
-            <strong className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+            <strong className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
               {productName}
             </strong>{' '}
             experience for One Insurance. Explore our live travel insurance plans in the meantime, or sign up as an agent.
@@ -99,10 +99,10 @@ export function HoldingPage({
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#006838]/10 text-[#006838] dark:bg-[#006838]/20 dark:text-[#d0e3c8]">
                 <Bell className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-semibold text-base text-[#183d2c] dark:text-[#f4f5f2]">
+              <h3 className="mt-4 font-semibold text-base text-[var(--text-main)] dark:text-[var(--text-main)]">
                 Get Notified
               </h3>
-              <p className="mt-1 text-center text-base leading-6 text-[#505553] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-center text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                 Be the first to access quotes and instant digital applications when launched.
               </p>
             </div>
@@ -111,10 +111,10 @@ export function HoldingPage({
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#006838]/10 text-[#006838] dark:bg-[#006838]/20 dark:text-[#d0e3c8]">
                 <ShieldCheck className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-semibold text-base text-[#183d2c] dark:text-[#f4f5f2]">
+              <h3 className="mt-4 font-semibold text-base text-[var(--text-main)] dark:text-[var(--text-main)]">
                 Tailored Protection
               </h3>
-              <p className="mt-1 text-center text-base leading-6 text-[#505553] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-center text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                 Backed by leading underwriters with comprehensive, reliable claim benefits.
               </p>
             </div>
@@ -123,10 +123,10 @@ export function HoldingPage({
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#006838]/10 text-[#006838] dark:bg-[#006838]/20 dark:text-[#d0e3c8]">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-semibold text-base text-[#183d2c] dark:text-[#f4f5f2]">
+              <h3 className="mt-4 font-semibold text-base text-[var(--text-main)] dark:text-[var(--text-main)]">
                 Instant Issuance
               </h3>
-              <p className="mt-1 text-center text-base leading-6 text-[#505553] dark:text-[#b2b7b4]">
+              <p className="mt-1 text-center text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                 Digital policy documents and automated certificates delivered in minutes.
               </p>
             </div>
@@ -144,7 +144,7 @@ export function HoldingPage({
 
             <Link
               href="/agent-application"
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-[#006838] px-6 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] sm:w-auto dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md border border-[#006838] px-6 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] sm:w-auto dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:focus-visible:outline-white"
             >
               <span>Become an Agent</span>
             </Link>

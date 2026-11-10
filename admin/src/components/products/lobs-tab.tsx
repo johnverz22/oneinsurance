@@ -191,7 +191,7 @@ export function LobsTab() {
           {
             header: 'Slug',
             cell: (lob) => (
-              <span className="font-mono text-xs text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="font-mono text-xs text-[var(--text-sub)]">
                 {lob.slug || '—'}
               </span>
             ),
@@ -200,7 +200,7 @@ export function LobsTab() {
             header: 'Description',
             className: 'max-w-xs',
             cell: (lob) => (
-              <p className="line-clamp-2 text-xs text-[#5b6e61] dark:text-[#b2b7b4]">
+              <p className="line-clamp-2 text-xs text-[var(--text-sub)]">
                 {lob.description || '—'}
               </p>
             ),
@@ -214,7 +214,7 @@ export function LobsTab() {
             header: 'Created',
             className: 'whitespace-nowrap',
             cell: (lob) => (
-              <span className="text-xs whitespace-nowrap text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-xs whitespace-nowrap text-[var(--text-sub)]">
                 {formatDate(lob.created_at)}
               </span>
             ),
@@ -346,7 +346,7 @@ export function LobsTab() {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </SelectField>
-            <p className="mt-1 text-base text-[#6d7d70] dark:text-[#b2b7b4]">
+            <p className="mt-1 text-base text-[var(--text-muted)]">
               Only active LoBs can be assigned to new products.
             </p>
           </div>

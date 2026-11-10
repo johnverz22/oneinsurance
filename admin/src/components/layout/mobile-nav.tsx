@@ -44,7 +44,7 @@ export function MobileNav() {
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]',
               active
                 ? 'bg-[#e8f3e9] dark:bg-[#006838] dark:text-[#d0e3c8]'
-                : 'text-[#526858] dark:text-[#808482]'
+                : 'text-[var(--text-sub)]'
             )}
           >
             <Icon className="size-5 max-sm:size-[18px]" aria-hidden="true" />

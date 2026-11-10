@@ -58,7 +58,7 @@ export function TripSummaryModal({
         aria-modal="true"
         aria-labelledby="trip-summary-title"
         tabIndex={-1}
-        className="relative mt-auto max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl rounded-b-none bg-white text-[#183d2c] shadow-2xl outline-none dark:bg-[#262828] dark:text-[#f4f5f2] sm:my-auto sm:max-h-[90dvh] sm:rounded-xl sm:border sm:border-[#dfe7df] sm:p-8 sm:dark:border-[#3d4140]"
+        className="relative mt-auto max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl rounded-b-none bg-white text-[var(--text-main)] shadow-2xl outline-none dark:bg-[#262828] dark:text-[var(--text-main)] sm:my-auto sm:max-h-[90dvh] sm:rounded-xl sm:border sm:border-[#dfe7df] sm:p-8 sm:dark:border-[#3d4140]"
       >
         <div className="flex justify-center pb-1 pt-3 sm:hidden" aria-hidden="true">
           <div className="h-1 w-10 rounded-full bg-[#dfe7df] dark:bg-[#3d4140]" />
@@ -77,7 +77,7 @@ export function TripSummaryModal({
             type="button"
             onClick={onClose}
             aria-label="Close trip summary"
-            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[#808080] hover:bg-[#f1f2f0] hover:text-[#183d2c] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2] sm:-mt-1 sm:-mr-2 sm:text-inherit"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[#f1f2f0] hover:text-[var(--text-main)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[#303232] dark:hover:text-[var(--text-main)] sm:-mt-1 sm:-mr-2 sm:text-inherit"
           >
             <X className="size-5" aria-hidden />
           </button>
@@ -107,7 +107,7 @@ export function TripSummaryModal({
                     )}
                   />
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-[#333333] dark:text-[#c4c7c5]">{stop.kind}</p>
+                    <p className="text-xs font-medium text-[var(--text-sub)] dark:text-[var(--text-sub)]">{stop.kind}</p>
                     <p className="text-base font-semibold break-words">{stop.name}</p>
                   </div>
                 </li>
@@ -122,7 +122,7 @@ export function TripSummaryModal({
         >
           <CalendarDays className="size-5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-[#333333] dark:text-[#c4c7c5]">Travel dates</p>
+            <p className="text-xs font-medium text-[var(--text-sub)] dark:text-[var(--text-sub)]">Travel dates</p>
             <p className="text-base font-semibold break-words">{dates}</p>
           </div>
           <span className="shrink-0 rounded-full bg-[#e2eddb] px-3 py-1 text-sm font-semibold text-[#006838] dark:bg-[#303232] dark:text-[#d0e3c8]">
@@ -133,7 +133,7 @@ export function TripSummaryModal({
         <dl className="mt-4 grid grid-cols-1 gap-4 text-base min-[420px]:grid-cols-3">
           {rows.map((row) => (
             <div key={row.label} className="min-w-0">
-              <dt className="text-xs font-medium text-[#333333] dark:text-[#c4c7c5]">{row.label}</dt>
+              <dt className="text-xs font-medium text-[var(--text-sub)] dark:text-[var(--text-sub)]">{row.label}</dt>
               <dd className="mt-1 font-medium break-words">{row.value}</dd>
             </div>
           ))}
@@ -150,7 +150,7 @@ export function TripSummaryModal({
         <button
           type="button"
           onClick={onClose}
-          className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
+          className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232]"
         >
           Back to my trip
         </button>

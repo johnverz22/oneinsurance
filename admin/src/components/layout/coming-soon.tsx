@@ -33,7 +33,7 @@ export function ComingSoon({
             <h2 className="mt-5 text-2xl font-semibold tracking-tight text-[var(--text-main)] sm:text-3xl">
               Coming soon
             </h2>
-            <p className="mt-3 max-w-md text-sm leading-6 text-[#5b6e61] dark:text-[#b2b7b4] sm:text-base">
+            <p className="mt-3 max-w-md text-sm leading-6 text-[var(--text-sub)] sm:text-base">
               This admin page is awaiting final UI and workflow confirmation.
             </p>
             <Link
@@ -44,7 +44,7 @@ export function ComingSoon({
             </Link>
           </div>
         </section>
-        <p className="mt-5 text-sm leading-6 text-[#6d7d70] dark:text-[#b2b7b4]">
+        <p className="mt-5 text-sm leading-6 text-[var(--text-muted)]">
           Design placeholder only. No live admin workflow or data is connected
           here.
         </p>

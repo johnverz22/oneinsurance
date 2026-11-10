@@ -34,10 +34,10 @@ export function ErrorPage({ code, agentCode = PRIMARY_AGENT_CODE }: ErrorPagePro
           <p className="text-[clamp(6rem,16vw,10rem)] leading-none font-semibold tracking-tight text-[#006838] dark:text-[#d0e3c8]">
             {copy.code}
           </p>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#183d2c] sm:text-4xl dark:text-[#f4f5f2]">
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[var(--text-main)] sm:text-4xl dark:text-[var(--text-main)]">
             {copy.heading}
           </h1>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-[#333333] dark:text-[#c4c7c5]">
+          <p className="mt-4 max-w-md text-base leading-relaxed text-[var(--text-sub)] dark:text-[var(--text-sub)]">
             {copy.description}
           </p>
           <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
@@ -50,7 +50,7 @@ export function ErrorPage({ code, agentCode = PRIMARY_AGENT_CODE }: ErrorPagePro
           </div>
           <p
             id="error-support"
-            className="mt-8 text-base leading-relaxed text-[#808080] dark:text-[#b2b7b4]"
+            className="mt-8 text-base leading-relaxed text-[var(--text-muted)] dark:text-[var(--text-muted)]"
           >
             Need a hand?{' '}
             <a

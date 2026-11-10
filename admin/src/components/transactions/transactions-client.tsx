@@ -31,7 +31,7 @@ import {
 import type { ApiResponse, Paginated, Product } from '@/types/admin/catalog'
 
 const dash = (
-  <span className="font-sans text-sm font-normal text-[#45564b] dark:text-[#b2b7b4]">
+  <span className="font-sans text-sm font-normal text-[var(--text-sub)]">
     —
   </span>
 )
@@ -261,7 +261,7 @@ export function TransactionsClient() {
               {
                 header: 'Certificate no.',
                 cell: (tx) => (
-                  <span className="text-[#45564b] dark:text-[#b2b7b4]">
+                  <span className="text-[var(--text-sub)]">
                     {tx.certificate_number ?? dash}
                   </span>
                 ),
@@ -311,7 +311,7 @@ export function TransactionsClient() {
               {
                 header: 'Currency',
                 cell: (tx) => (
-                  <span className="text-[#45564b] dark:text-[#b2b7b4]">
+                  <span className="text-[var(--text-sub)]">
                     {tx.currency || dash}
                   </span>
                 ),
@@ -350,7 +350,7 @@ export function TransactionsClient() {
           />
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm tabular-nums text-[#45564b] dark:text-[#b2b7b4]">
+            <p className="text-sm tabular-nums text-[var(--text-sub)]">
               {pagination && pagination.total > 0
                 ? `Showing ${pagination.from ?? 0}–${pagination.to ?? 0} of ${pagination.total} results`
                 : 'Showing 0 of 0 results'}

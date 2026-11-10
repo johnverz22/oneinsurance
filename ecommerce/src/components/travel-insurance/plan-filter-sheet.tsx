@@ -77,7 +77,7 @@ export function PlanFilterSheet(props: PlanFilterSheetProps) {
         className="travel-sheet-panel relative flex max-h-[88dvh] w-full flex-col rounded-t-2xl border border-[#dfe7df] bg-white outline-none dark:border-[#3d4140] dark:bg-[#262828]"
       >
         <div className="flex items-center justify-between border-b border-[#dfe7df] px-4 py-1 dark:border-[#3d4140]">
-          <h2 id="plan-filter-sheet-title" className="text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+          <h2 id="plan-filter-sheet-title" className="text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
             Filters
           </h2>
           <div className="flex items-center">
@@ -94,7 +94,7 @@ export function PlanFilterSheet(props: PlanFilterSheetProps) {
               type="button"
               onClick={onClose}
               aria-label="Close filters"
-              className="inline-flex size-11 items-center justify-center rounded-md text-[#183d2c] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
+              className="inline-flex size-11 items-center justify-center rounded-md text-[var(--text-main)] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232]"
             >
               <X className="size-5" aria-hidden />
             </button>

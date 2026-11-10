@@ -40,7 +40,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-dvh bg-[#fcfdfb] text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
+      <body className="min-h-dvh bg-[#fcfdfb] text-[var(--text-main)] antialiased dark:bg-[#1c1e1e]">
         <Providers>{children}</Providers>
       </body>
     </html>

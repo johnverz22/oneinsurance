@@ -93,7 +93,7 @@ export default async function TravelInsuranceTermsPage() {
   const agentCode = await getPersistedAgentCode()
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
+    <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)]">
       <Header agentCode={agentCode} currentProductName="Terms & Conditions" />
 
       <main className="flex-1">
@@ -101,22 +101,22 @@ export default async function TravelInsuranceTermsPage() {
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Travel Insurance Terms and Conditions
           </h1>
-          <p className="mt-4 text-base leading-6 text-[#333333] dark:text-[#c4c7c5]">
+          <p className="mt-4 text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
             By clicking the agreement checkbox, you acknowledge and agree to the following terms
             and conditions:
           </p>
 
-          <div className="mt-6 space-y-8 text-justify text-base leading-7 text-[#333333] dark:text-[#c4c7c5] sm:text-base">
+          <div className="mt-6 space-y-8 text-justify text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)] sm:text-base">
             {SECTIONS.map((s) => (
               <section key={s.title}>
-                <h2 className="text-lg font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                <h2 className="text-lg font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                   {s.title}
                 </h2>
                 <div className="mt-2 space-y-3">{s.body}</div>
               </section>
             ))}
 
-            <p className="border-t border-[#dfe7df] pt-6 text-base text-[#808080] dark:border-[#3d4140] dark:text-[#b2b7b4]">
+            <p className="border-t border-[#dfe7df] pt-6 text-base text-[var(--text-muted)] dark:border-[#3d4140] dark:text-[var(--text-muted)]">
               These Terms and Conditions shall be construed and governed in accordance with the
               laws of the Republic of the Philippines. We reserve the right to amend these terms at
               any time, and all revisions shall be communicated through our official channels.

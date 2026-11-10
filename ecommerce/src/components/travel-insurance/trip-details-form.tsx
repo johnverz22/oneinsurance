@@ -472,10 +472,10 @@ function TripDetailsFormInner({
       ) : (
         <>
           <div>
-            <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight text-[#183d2c] dark:text-[#f4f5f2]">
+            <h3 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight text-[var(--text-main)] dark:text-[var(--text-main)]">
               Your trip details
             </h3>
-            <p className="mt-1 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-1 text-base leading-normal text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               Compare plans and rates with a few trip details.
             </p>
           </div>
@@ -489,7 +489,7 @@ function TripDetailsFormInner({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               {/* Trip Type */}
               <fieldset>
-                <legend className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">
+                <legend className="text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">
                   Trip type
                 </legend>
                 <div
@@ -526,7 +526,7 @@ function TripDetailsFormInner({
                         'min-h-12 rounded-md px-2 py-2 text-sm font-semibold transition whitespace-nowrap text-center',
                         tripType === opt.value
                           ? 'bg-[#006838] text-white shadow-xs'
-                          : 'text-[#333333] hover:text-[#006838] dark:text-[#c4c7c5] dark:hover:text-white'
+                          : 'text-[var(--text-sub)] hover:text-[#006838] dark:text-[var(--text-sub)] dark:hover:text-white'
                       )}
                     >
                       {opt.label}
@@ -537,7 +537,7 @@ function TripDetailsFormInner({
 
               {/* Travelling as — same pill segmented style as Trip type */}
               <fieldset>
-                <legend className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">
+                <legend className="text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">
                   Travelling as
                 </legend>
                 <div
@@ -575,7 +575,7 @@ function TripDetailsFormInner({
                           'min-h-12 rounded-md px-2 py-2 text-sm font-semibold transition whitespace-nowrap text-center',
                           isSelected
                             ? 'bg-[#006838] text-white shadow-xs'
-                            : 'text-[#333333] hover:text-[#006838] dark:text-[#c4c7c5] dark:hover:text-white'
+                            : 'text-[var(--text-sub)] hover:text-[#006838] dark:text-[var(--text-sub)] dark:hover:text-white'
                         )}
                       >
                         {opt.label}
@@ -593,7 +593,7 @@ function TripDetailsFormInner({
                 <div className="flex min-h-6 items-center">
                   <label
                     htmlFor="trip-from"
-                    className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
+                    className="text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]"
                   >
                     Travelling from <span aria-hidden className="text-red-600">*</span>
                   </label>
@@ -628,7 +628,7 @@ function TripDetailsFormInner({
                   - LG:    legend left + inline radio buttons right
                 */}
                 <div className="flex min-h-6 flex-wrap items-center justify-between gap-2 text-sm">
-                  <legend className="font-medium text-[#183d2c] dark:text-[#f4f5f2]">
+                  <legend className="font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">
                     Destination <span aria-hidden className="text-red-600">*</span>
                   </legend>
 
@@ -667,7 +667,7 @@ function TripDetailsFormInner({
                           'min-h-7 rounded-md px-2.5 py-1 text-xs font-semibold capitalize transition',
                           destinationType === opt
                             ? 'bg-[#006838] text-white shadow-xs'
-                            : 'text-[#333333] hover:text-[#006838] dark:text-[#c4c7c5] dark:hover:text-white'
+                            : 'text-[var(--text-sub)] hover:text-[#006838] dark:text-[var(--text-sub)] dark:hover:text-white'
                         )}
                       >
                         {opt === 'international' ? 'International' : 'Domestic'}
@@ -727,7 +727,7 @@ function TripDetailsFormInner({
                               'font-medium capitalize',
                               isChecked
                                 ? 'text-[#006838] dark:text-[#d0e3c8]'
-                                : 'text-[#333333] dark:text-[#c4c7c5]'
+                                : 'text-[var(--text-sub)] dark:text-[var(--text-sub)]'
                             )}
                           >
                             {opt === 'international' ? 'International' : 'Domestic'}
@@ -766,7 +766,7 @@ function TripDetailsFormInner({
 
                 {destinationType === 'international' && (
                   <div className="mt-3">
-                    <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-[#183d2c] dark:text-[#f4f5f2]">
+                    <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-[var(--text-main)] dark:text-[var(--text-main)]">
                       <input
                         type="checkbox"
                         checked={returnsToPH}
@@ -780,7 +780,7 @@ function TripDetailsFormInner({
                     </label>
                     {!returnsToPH && (
                       <div className="mt-1">
-                        <span className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">
+                        <span className="block text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">
                           Return destination <span aria-hidden className="text-red-600">*</span>
                         </span>
                         <div className="mt-2">
@@ -813,7 +813,7 @@ function TripDetailsFormInner({
               <div className="min-w-0">
                 <label
                   htmlFor="trip-departure"
-                  className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
+                  className="block text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]"
                 >
                   {tripType === 'annual' ? 'First trip departure' : 'Departure date'}{' '}
                   <span aria-hidden className="text-red-600">*</span>
@@ -833,7 +833,7 @@ function TripDetailsFormInner({
                     if (nextDep && singleReturnDate && singleReturnDate < nextDep) setReturnDate('')
                   }}
                   className={cn(
-                    'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
+                    'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[var(--text-main)] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[var(--text-main)]',
                     fieldErrors.departureDate && 'border-red-600 outline-red-600'
                   )}
                 />
@@ -855,7 +855,7 @@ function TripDetailsFormInner({
               <div className="min-w-0">
                 <label
                   htmlFor="trip-return"
-                  className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
+                  className="block text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]"
                 >
                   Return date{' '}
                   <span aria-hidden className="text-red-600">*</span>
@@ -872,7 +872,7 @@ function TripDetailsFormInner({
                   aria-describedby={fieldErrors.returnDate ? 'trip-return-error' : tripType === 'annual' ? 'trip-return-hint' : undefined}
                   onChange={(e) => setReturnDate(e.target.value)}
                   className={cn(
-                    'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
+                    'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[var(--text-main)] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[var(--text-main)]',
                     'disabled:cursor-not-allowed disabled:bg-[var(--subtle)] disabled:text-[var(--text-muted)] disabled:opacity-60',
                     fieldErrors.returnDate && 'border-red-600 outline-red-600'
                   )}
@@ -897,7 +897,7 @@ function TripDetailsFormInner({
 
               {/* Row 3 Col 1: Travellers Popover */}
               <div className="relative min-w-0" ref={travellersRef}>
-                <span id="travellers-label" className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">
+                <span id="travellers-label" className="block text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">
                   Travellers
                 </span>
                 <button
@@ -908,10 +908,10 @@ function TripDetailsFormInner({
                   aria-controls="travellers-popover"
                   aria-haspopup="dialog"
                   aria-labelledby="travellers-label travellers-summary"
-                  className="ui-form-field mt-2 flex min-h-12 w-full items-center justify-between rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-left text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]"
+                  className="ui-form-field mt-2 flex min-h-12 w-full items-center justify-between rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-left text-base text-[var(--text-main)] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[var(--text-main)]"
                 >
                   <div className="flex items-center gap-3">
-                    <Users className="size-5 shrink-0 text-[#808080] dark:text-[#b2b7b4]" aria-hidden />
+                    <Users className="size-5 shrink-0 text-[var(--text-muted)] dark:text-[var(--text-muted)]" aria-hidden />
                     <span id="travellers-summary" className="font-medium text-sm sm:text-base">
                       {travellerSummary}
                     </span>
@@ -926,7 +926,7 @@ function TripDetailsFormInner({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={cn('size-5 shrink-0 text-[#808080] transition-transform', travellersOpen && 'rotate-180')}
+                    className={cn('size-5 shrink-0 text-[var(--text-muted)] transition-transform', travellersOpen && 'rotate-180')}
                     aria-hidden
                   >
                     <path d="M6 9l6 6l6 -6" />
@@ -940,7 +940,7 @@ function TripDetailsFormInner({
                     aria-labelledby="travellers-popover-title"
                     className="absolute right-0 left-0 z-20 mt-2 rounded-lg border border-[#c7d4c9] bg-white p-4 shadow-xl dark:border-[#565c58] dark:bg-[#262828]"
                   >
-                    <h4 id="travellers-popover-title" className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                    <h4 id="travellers-popover-title" className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                       Number of travellers
                     </h4>
 
@@ -1004,7 +1004,7 @@ function TripDetailsFormInner({
                       </div>
                     </div>
 
-                    <p className="mt-3 text-xs leading-snug text-[#333333] dark:text-[#c4c7c5]">
+                    <p className="mt-3 text-xs leading-snug text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                       Up to 10 travellers allowed per quotation.
                     </p>
 
@@ -1023,7 +1023,7 @@ function TripDetailsFormInner({
               <div className="min-w-0">
                 <label
                   htmlFor="trip-birth"
-                  className="block text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]"
+                  className="block text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]"
                 >
                   Lead traveller’s date of birth <span aria-hidden className="text-red-600">*</span>
                 </label>
@@ -1041,7 +1041,7 @@ function TripDetailsFormInner({
                   }
                   onChange={(e) => setBirthDate(e.target.value)}
                   className={cn(
-                    'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[#183d2c] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#f4f5f2]',
+                    'ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[var(--text-main)] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[var(--text-main)]',
                     fieldErrors.dateOfBirth && 'border-red-600 outline-red-600'
                   )}
                 />
@@ -1056,7 +1056,7 @@ function TripDetailsFormInner({
                       {formatDateDisplay(birthDate)}
                     </p>
                   ) : (
-                    <p id="trip-birth-hint" className="text-xs leading-snug text-[#808080] dark:text-[#b2b7b4]">
+                    <p id="trip-birth-hint" className="text-xs leading-snug text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                       Used for plan eligibility &amp; rates.
                     </p>
                   )}
@@ -1082,7 +1082,7 @@ function TripDetailsFormInner({
                   aria-describedby={fieldErrors.agreedToTerms ? 'trip-terms-error' : undefined}
                   className="mt-0.5 size-5 shrink-0 rounded border-[#c7d4c9] accent-[#006838] focus:ring-[#006838]"
                 />
-                <span className="text-[#183d2c] dark:text-[#f4f5f2]">
+                <span className="text-[var(--text-main)] dark:text-[var(--text-main)]">
                   I agree to the{' '}
                   <button
                     type="button"
@@ -1151,7 +1151,7 @@ function TripDetailsFormInner({
     >
       <div className="mx-auto grid max-w-7xl rounded-xl border border-[#dfe7df] bg-white shadow-xl dark:border-[#3d4140] dark:bg-[#262828] lg:grid-cols-[33%_67%]">
         {/* Mobile / Tablet Compact Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d0e3c8] px-5 py-4 text-[#183d2c] dark:bg-[#304538] dark:text-[#f4f5f2] lg:hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl bg-[#d0e3c8] px-5 py-4 text-[var(--text-main)] dark:bg-[#304538] dark:text-[var(--text-main)] lg:hidden">
           <div className="flex items-center gap-2.5">
             <Plane className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
             <h2 className="text-base font-bold sm:text-lg">Find travel plans for your trip</h2>
@@ -1172,7 +1172,7 @@ function TripDetailsFormInner({
         </div>
 
         {/* Desktop Left Summary & Stepper Panel (LG) */}
-        <aside className="relative isolate hidden flex-col justify-between overflow-clip rounded-l-xl bg-[#d0e3c8] p-6 lg:flex lg:p-8 text-[#183d2c] dark:bg-[#304538] dark:text-[#f4f5f2]">
+        <aside className="relative isolate hidden flex-col justify-between overflow-clip rounded-l-xl bg-[#d0e3c8] p-6 lg:flex lg:p-8 text-[var(--text-main)] dark:bg-[#304538] dark:text-[var(--text-main)]">
           {/*
             Watermark logomark — decorative shield, bottom-left, clipped by overflow-clip.
             Light: Soft-sage fill at 12% opacity over pale-green panel → AA contrast unaffected.
@@ -1204,7 +1204,7 @@ function TripDetailsFormInner({
             <h2 id="search-title" className="mt-4 text-2xl font-bold leading-tight tracking-tight">
               Find travel plans for your trip
             </h2>
-            <p className="mt-2 text-base leading-6 text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-2 text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               Real-time rate comparison and immediate coverage from accredited insurers.
             </p>
 
@@ -1213,8 +1213,8 @@ function TripDetailsFormInner({
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 size-4.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Destination</p>
-                  <p className="mt-0.5 truncate text-[#333333] dark:text-[#c4c7c5]">
+                  <p className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Destination</p>
+                  <p className="mt-0.5 truncate text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                     {destinationSummary} ({destinationType === 'international' ? 'International' : 'Domestic'})
                   </p>
                 </div>
@@ -1223,8 +1223,8 @@ function TripDetailsFormInner({
               <div className="flex items-start gap-3">
                 <Calendar className="mt-0.5 size-4.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Travel dates</p>
-                  <p className="mt-0.5 text-[#333333] dark:text-[#c4c7c5]">
+                  <p className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Travel dates</p>
+                  <p className="mt-0.5 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                     {departure && returnDate
                       ? `${formatDateDisplay(departure)} – ${formatDateDisplay(returnDate)}`
                       : 'Set departure and return'}
@@ -1235,8 +1235,8 @@ function TripDetailsFormInner({
               <div className="flex items-start gap-3">
                 <Users className="mt-0.5 size-4.5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Travellers</p>
-                  <p className="mt-0.5 text-[#333333] dark:text-[#c4c7c5]">
+                  <p className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Travellers</p>
+                  <p className="mt-0.5 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                     {travellerSummary} · {tripType === 'annual' ? 'Annual plan' : 'Single trip'}
                   </p>
                 </div>
@@ -1245,7 +1245,7 @@ function TripDetailsFormInner({
           </div>
 
           <div className="mt-8 border-t border-[#183d2c]/10 pt-5 dark:border-white/10">
-            <p className="text-xs text-[#333333] dark:text-[#c4c7c5]">Already saved a quote?</p>
+            <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Already saved a quote?</p>
             <button
               type="button"
               onClick={() => {

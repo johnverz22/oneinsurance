@@ -28,12 +28,12 @@ export function PaginationBar({
   for (let p = start; p <= Math.min(lastPage, start + 4); p++) pages.push(p)
 
   const btn =
-    'inline-flex min-h-11 items-center justify-center rounded-md border border-[#c7d4c9] bg-white px-3 text-sm text-[#183d2c] transition-colors hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#565c58] dark:bg-transparent dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
+    'inline-flex min-h-11 items-center justify-center rounded-md border border-[#c7d4c9] bg-white px-3 text-sm text-[var(--text-main)] transition-colors hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#565c58] dark:bg-transparent dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
 
   return (
     <div className={cn('mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row', className)}>
       {typeof total === 'number' && (
-        <p className="text-xs text-[#5b6e61] dark:text-[#b2b7b4]">
+        <p className="text-xs text-[var(--text-sub)]">
           Showing {from ?? 0}–{to ?? 0} of {total}
         </p>
       )}

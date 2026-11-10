@@ -353,10 +353,10 @@ export default function Step2ChoosePlanPage() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Find the cover for your journey.
           </h1>
-          <p className="mt-3 text-base leading-7 text-[#333333] dark:text-[#c4c7c5]">
+          <p className="mt-3 text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
             Compare the details that matter, then choose a plan for your trip.
           </p>
-          <p className="mt-1 text-sm text-[#808080] dark:text-[#b2b7b4]" role="status">
+          <p className="mt-1 text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]" role="status">
             {isLoading
               ? 'Fetching real-time plans from partner insurers…'
               : `${filteredPlans.length} ${filteredPlans.length === 1 ? 'plan matches' : 'plans match'} your trip.`}
@@ -414,7 +414,7 @@ export default function Step2ChoosePlanPage() {
                   aria-label="Sort plans"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as PlanSortKey)}
-                  className="min-h-11 w-full appearance-none truncate rounded-md border border-[#c7d4c9] bg-white pl-9 pr-9 text-sm font-semibold text-[#183d2c] focus-visible:outline-2 focus-visible:outline-[#006838] dark:border-[#565c58] dark:bg-[#262828] dark:text-[#f4f5f2]"
+                  className="min-h-11 w-full appearance-none truncate rounded-md border border-[#c7d4c9] bg-white pl-9 pr-9 text-sm font-semibold text-[var(--text-main)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:border-[#565c58] dark:bg-[#262828] dark:text-[var(--text-main)]"
                 >
                   {PLAN_SORT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -423,11 +423,11 @@ export default function Step2ChoosePlanPage() {
                   ))}
                 </select>
                 <ChevronDown
-                  className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[#808080] dark:text-[#b2b7b4]"
+                  className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)] dark:text-[var(--text-muted)]"
                   aria-hidden
                 />
               </label>
-              <span className="shrink-0 text-sm font-medium text-[#333333] dark:text-[#c4c7c5]" aria-hidden>
+              <span className="shrink-0 text-sm font-medium text-[var(--text-sub)] dark:text-[var(--text-sub)]" aria-hidden>
                 {isLoading ? '…' : `${filteredPlans.length} ${filteredPlans.length === 1 ? 'plan' : 'plans'}`}
               </span>
             </div>
@@ -451,7 +451,7 @@ export default function Step2ChoosePlanPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="ui-form-field pl-10"
                 />
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#808080]" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)]" />
               </div>
             </div>
 
@@ -497,11 +497,11 @@ export default function Step2ChoosePlanPage() {
             {/* Empty State */}
             {!isLoading && !hasError && !hasPlans && (
               <div className="rounded-lg border border-[#dfe7df] bg-white p-12 text-center dark:border-[#3d4140] dark:bg-[#262828]">
-                <AlertCircle className="mx-auto size-8 text-[#808080]" />
-                <h3 className="mt-3 text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                <AlertCircle className="mx-auto size-8 text-[var(--text-muted)]" />
+                <h3 className="mt-3 text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                   No matching plans found
                 </h3>
-                <p className="mt-1 text-xs text-[#808080] dark:text-[#b2b7b4]">
+                <p className="mt-1 text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                   Try adjusting your filters or modify your trip details.
                 </p>
                 <button
@@ -619,7 +619,7 @@ export default function Step2ChoosePlanPage() {
                             ))}
                           </div>
                           <KeyConditions />
-                          <p className="mt-4 text-xs leading-5 text-[#69756e] dark:text-[#b2b7b4]">
+                          <p className="mt-4 text-xs leading-5 text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                             Refer to the policy wording for full benefits, limits and exclusions.
                           </p>
                         </div>

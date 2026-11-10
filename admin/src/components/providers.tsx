@@ -48,9 +48,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           toastOptions={{
             classNames: {
               toast:
-                'rounded-md border border-[#c7d4c9] bg-white text-[#183d2c] shadow-lg dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-white',
-              title: 'font-semibold text-[#183d2c] dark:text-white',
-              description: 'text-[#5b6e61] dark:text-[#9aa79e]',
+                'rounded-md border border-[#c7d4c9] bg-white text-[var(--text-main)] shadow-lg dark:border-[#565c58] dark:bg-[#1c1e1e]',
+              title: 'font-semibold text-[var(--text-main)]',
+              description: 'text-[var(--text-sub)]',
               success: '[&_[data-icon]]:text-[#006838]',
               error: '[&_[data-icon]]:text-red-600',
               warning: '[&_[data-icon]]:text-[#805c0c]',
@@ -58,9 +58,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
               actionButton:
                 'rounded-md bg-[#006838] px-3 text-white hover:bg-[#00552e]',
               cancelButton:
-                'rounded-md border border-[#c7d4c9] bg-white px-3 text-[#183d2c] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-white dark:hover:bg-[#303232]',
+                'rounded-md border border-[#c7d4c9] bg-white px-3 text-[var(--text-main)] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:hover:bg-[#303232]',
               closeButton:
-                'rounded-md border-[#c7d4c9] bg-white text-[#5b6e61] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[#9aa79e] dark:hover:bg-[#303232]',
+                'rounded-md border-[#c7d4c9] bg-white text-[var(--text-sub)] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:hover:bg-[#303232]',
             },
           }}
         />

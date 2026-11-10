@@ -34,7 +34,7 @@ function MetricCard({ label, value, icon, loading }: MetricProps) {
   return (
     <article className="min-w-0 rounded-lg border border-[#dfe7df] bg-white p-4 dark:border-[#3d4140] dark:bg-[#171919] sm:p-5">
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-medium leading-5 text-[#5b6e61] dark:text-[#b2b7b4]">
+        <h3 className="text-sm font-medium leading-5 text-[var(--text-sub)]">
           {label}
         </h3>
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eff6ef] text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
@@ -73,7 +73,7 @@ function ActionCard({ href, title, subtitle, meta, icon }: ActionCardProps) {
       <strong className="mt-4 block text-base leading-5 text-[var(--text-main)]">
         {title}
       </strong>
-      <span className="mt-1 block text-sm leading-5 text-[#5b6e61] dark:text-[#b2b7b4]">
+      <span className="mt-1 block text-sm leading-5 text-[var(--text-sub)]">
         {subtitle}
       </span>
       {meta && (
@@ -107,11 +107,11 @@ function AreaRow({
       </span>
       <span>
         <strong className="block text-sm text-[var(--text-main)]">{title}</strong>
-        <small className="mt-1 block text-base leading-5 text-[#5b6e61] dark:text-[#b2b7b4]">
+        <small className="mt-1 block text-base leading-5 text-[var(--text-sub)]">
           {subtitle}
         </small>
       </span>
-      <ArrowUpRight className="ml-auto size-4 shrink-0 text-[#9bb09f] dark:text-[#555e57]" aria-hidden="true" />
+      <ArrowUpRight className="ml-auto size-4 shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
     </Link>
   )
 }
@@ -269,7 +269,7 @@ export function DashboardClient() {
         <h2 id="admin-more-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
           Other admin areas
         </h2>
-        <p className="mt-1 text-sm text-[#5b6e61] dark:text-[#b2b7b4]">
+        <p className="mt-1 text-sm text-[var(--text-sub)]">
           Additional workspace sections.
         </p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">

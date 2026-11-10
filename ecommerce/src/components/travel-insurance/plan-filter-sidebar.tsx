@@ -30,7 +30,7 @@ export function FilterOption({ active, label, onClick, square }: FilterOptionPro
         'flex min-h-8 max-sm:min-h-11 w-full items-center gap-2 rounded-md px-2 py-1 text-left text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-[#006838]',
         active
           ? 'bg-[#006838]/10 font-medium text-[#006838] dark:bg-[#d0e3c8]/10 dark:text-[#d0e3c8]'
-          : 'text-[#333333] hover:bg-[#f1f2f0] dark:text-[#c4c7c5] dark:hover:bg-[#303232]'
+          : 'text-[var(--text-sub)] hover:bg-[#f1f2f0] dark:text-[var(--text-sub)] dark:hover:bg-[#303232]'
       )}
     >
       <span
@@ -51,7 +51,7 @@ export function FilterOption({ active, label, onClick, square }: FilterOptionPro
 export function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[#183d2c] dark:text-[#f4f5f2]">
+      <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--text-main)] dark:text-[var(--text-main)]">
         {title}
       </h3>
       <div className="space-y-1">{children}</div>
@@ -83,7 +83,7 @@ export function PlanFilterSidebar(props: PlanFilterSidebarProps) {
       className="self-start rounded-xl border border-[#dfe7df] bg-white p-4 dark:border-[#3d4140] dark:bg-[#262828] lg:sticky lg:top-24"
     >
       <div className="mb-4 flex items-center justify-between border-b border-[#dfe7df] pb-3 dark:border-[#3d4140]">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#808080] dark:text-[#b2b7b4]">
+        <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] dark:text-[var(--text-muted)]">
           Filters{active > 0 && ` (${active})`}
         </span>
         <div className="flex items-center gap-1">
@@ -101,7 +101,7 @@ export function PlanFilterSidebar(props: PlanFilterSidebarProps) {
             onClick={props.onCollapse}
             aria-label="Collapse filters"
             title="Collapse filters"
-            className="inline-flex size-8 items-center justify-center rounded-md text-[#808080] hover:bg-[#f1f2f0] hover:text-[#183d2c] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2]"
+            className="inline-flex size-8 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[#f1f2f0] hover:text-[var(--text-main)] dark:hover:bg-[#303232] dark:hover:text-[var(--text-main)]"
           >
             <PanelLeftClose className="size-4" aria-hidden />
           </button>

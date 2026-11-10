@@ -121,8 +121,8 @@ export function ResetPasswordForm() {
           <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.25rem)] font-semibold leading-[1.08] tracking-[-.055em]">
             Set new password
           </h1>
-          <p className="mt-4 text-base leading-7 text-[#5b6e61] dark:text-[#c4c7c5]">
-            Create a strong, new password for {emailParam ? <strong className="text-[#183d2c] dark:text-[#f4f5f2]">{emailParam}</strong> : 'your agent account'}.
+          <p className="mt-4 text-base leading-7 text-[var(--text-sub)]">
+            Create a strong, new password for {emailParam ? <strong className="text-[var(--text-main)]">{emailParam}</strong> : 'your agent account'}.
           </p>
 
           {!resetSuccess ? (
@@ -147,7 +147,7 @@ export function ResetPasswordForm() {
                     aria-describedby={
                       resetForm.formState.errors.password ? 'new-password-error' : undefined
                     }
-                    className="ui-form-field min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 pr-16 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]"
+                    className="ui-form-field min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 pr-16 text-base placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
                     {...resetForm.register('password')}
                   />
                   <button
@@ -181,7 +181,7 @@ export function ResetPasswordForm() {
                     aria-describedby={
                       resetForm.formState.errors.confirmPassword ? 'confirm-password-error' : undefined
                     }
-                    className="ui-form-field min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 pr-16 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]"
+                    className="ui-form-field min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 pr-16 text-base placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
                     {...resetForm.register('confirmPassword')}
                   />
                   <button
@@ -216,10 +216,10 @@ export function ResetPasswordForm() {
               role="status"
               className="mt-9 rounded-md border border-[#c7d4c9] bg-white p-5 dark:border-[#565c58] dark:bg-[#303530]"
             >
-              <h2 className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+              <h2 className="font-semibold text-[var(--text-main)]">
                 Password updated successfully
               </h2>
-              <p className="mt-2 text-sm leading-6 text-[#5b6e61] dark:text-[#c4c7c5]">
+              <p className="mt-2 text-sm leading-6 text-[var(--text-sub)]">
                 Your password has been reset. Redirecting you to sign in…
               </p>
               <Link
@@ -253,7 +253,7 @@ export function ResetPasswordForm() {
         <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.25rem)] font-semibold leading-[1.08] tracking-[-.055em]">
           Reset password
         </h1>
-        <p className="mt-4 text-base leading-7 text-[#5b6e61] dark:text-[#c4c7c5]">
+        <p className="mt-4 text-base leading-7 text-[var(--text-sub)]">
           Enter your account email to request a password reset link.
         </p>
 
@@ -278,7 +278,7 @@ export function ResetPasswordForm() {
                 aria-describedby={
                   forgotForm.formState.errors.email ? 'reset-email-error' : undefined
                 }
-                className="ui-form-field mt-2 min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]"
+                className="ui-form-field mt-2 min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
                 {...forgotForm.register('email')}
               />
               {forgotForm.formState.errors.email && (
@@ -304,10 +304,10 @@ export function ResetPasswordForm() {
             role="status"
             className="mt-9 rounded-md border border-[#c7d4c9] bg-white p-5 dark:border-[#565c58] dark:bg-[#303530]"
           >
-            <h2 className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Reset link sent</h2>
-            <p className="mt-2 text-sm leading-6 text-[#5b6e61] dark:text-[#c4c7c5]">
+            <h2 className="font-semibold text-[var(--text-main)]">Reset link sent</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-sub)]">
               If an account exists for{' '}
-              <strong className="text-[#183d2c] dark:text-[#f4f5f2]">{submittedEmail}</strong>, you
+              <strong className="text-[var(--text-main)]">{submittedEmail}</strong>, you
               will receive a password reset link shortly.
             </p>
             <button

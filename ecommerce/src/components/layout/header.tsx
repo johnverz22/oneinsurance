@@ -535,10 +535,10 @@ export function Header({
                 isStuck
                   ? isActive
                     ? 'text-white underline underline-offset-8 decoration-2 decoration-white font-bold dark:text-[#d0e3c8] dark:decoration-[#d0e3c8]'
-                    : 'text-white/90 hover:bg-white/15 hover:text-white dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
+                    : 'text-white/90 hover:bg-white/15 hover:text-white dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
                   : isActive
                     ? 'text-[#006838] underline underline-offset-8 decoration-2 font-bold dark:text-[#d0e3c8]'
-                    : 'text-[#183d2c] hover:bg-[#f1f2f0] hover:text-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232]',
+                    : 'text-[var(--text-main)] hover:bg-[#f1f2f0] hover:text-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232]',
                 isStuck ? 'focus-visible:outline-white' : 'focus-visible:outline-[#006838] dark:focus-visible:outline-white'
               )
               return isAnchor ? (
@@ -577,8 +577,8 @@ export function Header({
                 className={cn(
                   'inline-grid min-h-11 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 sm:gap-2 rounded-md px-3 py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
                   isStuck
-                    ? 'text-white hover:bg-white/15 focus-visible:outline-white dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
-                    : 'text-[#183d2c] hover:bg-[#f1f2f0] focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white'
+                    ? 'text-white hover:bg-white/15 focus-visible:outline-white dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
+                    : 'text-[var(--text-main)] hover:bg-[#f1f2f0] focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:focus-visible:outline-white'
                 )}
               >
                 <span
@@ -614,7 +614,7 @@ export function Header({
               {productsOpen && (
                 <div
                   id="products-dropdown"
-                  className="travel-products-menu absolute top-full right-0 z-40 mt-3 hidden w-72 max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#dfe7df] bg-white py-2 text-[#183d2c] shadow-xl shadow-black/15 lg:block dark:border-[#3d4140] dark:bg-[#262828] dark:text-[#f4f5f2]"
+                  className="travel-products-menu absolute top-full right-0 z-40 mt-3 hidden w-72 max-w-[calc(100vw-2.5rem)] rounded-lg border border-[#dfe7df] bg-white py-2 text-[var(--text-main)] shadow-xl shadow-black/15 lg:block dark:border-[#3d4140] dark:bg-[#262828] dark:text-[var(--text-main)]"
                 >
                   <span
                     aria-hidden="true"
@@ -640,7 +640,7 @@ export function Header({
                           >
                             <span>{prod.name}</span>
                             {!isEnabled && (
-                              <span className="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">
+                              <span className="shrink-0 text-[10px] font-normal text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                                 Soon
                               </span>
                             )}
@@ -680,8 +680,8 @@ export function Header({
               className={cn(
                 'inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
                 isStuck
-                  ? 'text-white hover:bg-white/15 focus-visible:outline-white dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
-                  : 'text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white'
+                  ? 'text-white hover:bg-white/15 focus-visible:outline-white dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
+                  : 'text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:focus-visible:outline-white'
               )}
             >
               {resolvedTheme === 'dark' ? (
@@ -732,8 +732,8 @@ export function Header({
               className={cn(
                 'inline-flex size-11 items-center justify-center rounded-md lg:hidden focus-visible:outline-2',
                 isStuck
-                  ? 'text-white hover:bg-white/15 focus-visible:outline-white dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
-                  : 'text-[#006838] hover:bg-[#e2eddb]/60 hover:text-[#00552e] focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
+                  ? 'text-white hover:bg-white/15 focus-visible:outline-white dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
+                  : 'text-[#006838] hover:bg-[#e2eddb]/60 hover:text-[#00552e] focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
               )}
             >
               <span aria-hidden className="relative block size-5">
@@ -790,12 +790,12 @@ export function Header({
                       className={`flex min-h-11 items-center justify-between py-2 transition-colors ${
                         isCurrent
                           ? 'font-bold text-[#006838] dark:text-[#d0e3c8]'
-                          : 'text-[#183d2c] hover:text-[#006838] dark:text-[#f4f5f2]'
+                          : 'text-[var(--text-main)] hover:text-[#006838] dark:text-[var(--text-main)]'
                       }`}
                     >
                       <span>{prod.name}</span>
                       {!isEnabled && (
-                        <span className="shrink-0 text-[10px] font-normal text-[#808080] dark:text-[#b2b7b4]">
+                        <span className="shrink-0 text-[10px] font-normal text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                           Soon
                         </span>
                       )}
@@ -842,7 +842,7 @@ export function Header({
                   type="button"
                   onClick={() => setMobileProductsOpen((prev) => !prev)}
                   aria-expanded={mobileProductsOpen}
-                  className="inline-flex min-h-11 w-full items-center justify-between text-left font-semibold text-[#006838] dark:text-[#f4f5f2]"
+                  className="inline-flex min-h-11 w-full items-center justify-between text-left font-semibold text-[#006838] dark:text-[var(--text-main)]"
                 >
                   <span>{activeName}</span>
                   <svg
@@ -878,12 +878,12 @@ export function Header({
                           className={`flex items-center justify-between px-3 py-2 text-sm ${
                             isCurrent
                               ? 'rounded-md bg-[#f1f2f0] font-semibold text-[#006838] dark:bg-[#303232] dark:text-[#d0e3c8]'
-                              : 'text-[#333333] hover:bg-[#f1f2f0] dark:text-[#c4c7c5] dark:hover:bg-[#303232]'
+                              : 'text-[var(--text-sub)] hover:bg-[#f1f2f0] dark:text-[var(--text-sub)] dark:hover:bg-[#303232]'
                           }`}
                         >
                           <span>{p.name}</span>
                           {!isEnabled && (
-                            <span className="text-[10px] text-[#808080] dark:text-[#b2b7b4]">
+                            <span className="text-[10px] text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                               Soon
                             </span>
                           )}
@@ -898,7 +898,7 @@ export function Header({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {navItems.map((item) => {
                   const isAnchor = item.href.startsWith('#')
-                  const cls = "flex min-h-11 items-center px-2 py-2 text-[#183d2c] hover:text-[#006838] dark:text-[#f4f5f2] rounded-md hover:bg-[#f1f2f0] dark:hover:bg-[#303232]"
+                  const cls = "flex min-h-11 items-center px-2 py-2 text-[var(--text-main)] hover:text-[#006838] dark:text-[var(--text-main)] rounded-md hover:bg-[#f1f2f0] dark:hover:bg-[#303232]"
                   return isAnchor ? (
                     <a
                       key={item.href}
@@ -933,7 +933,7 @@ export function Header({
                       modal?.showModal()
                     }
                   }}
-                  className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
+                  className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232]"
                 >
                   Retrieve proposal
                 </button>
@@ -941,7 +941,7 @@ export function Header({
                 <Link
                   href={cta?.href ?? `${homePath}#trip-search`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
+                  className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232]"
                 >
                   {cta?.label ?? (isTravelLanding ? 'Explore Travel Insurance' : 'Get a travel quote')}
                 </Link>

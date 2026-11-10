@@ -134,7 +134,7 @@ export default async function AgentApplicationPage() {
                   <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#006838] dark:group-hover:text-white">
                     {title}
                   </h3>
-                  <p className="mt-2 text-base leading-6 text-[var(--text-sub)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[#333333] dark:group-hover:text-[#c4c7c5]">
+                  <p className="mt-2 text-base leading-6 text-[var(--text-sub)] transition-colors duration-[240ms] motion-reduce:transition-none group-hover:text-[var(--text-sub)] dark:group-hover:text-[var(--text-sub)]">
                     {desc}
                   </p>
                 </article>

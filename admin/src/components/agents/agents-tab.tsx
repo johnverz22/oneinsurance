@@ -226,7 +226,7 @@ export function AgentsTab() {
           {
             header: 'Type',
             cell: (agent) => (
-              <span className="text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)]">
                 {agent.designation ?? agent.role ?? 'Agent'}
               </span>
             ),
@@ -234,7 +234,7 @@ export function AgentsTab() {
           {
             header: 'Email',
             cell: (agent) => (
-              <span className="text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)]">
                 {agent.email || 'N/A'}
               </span>
             ),
@@ -242,7 +242,7 @@ export function AgentsTab() {
           {
             header: 'Phone',
             cell: (agent) => (
-              <span className="text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)]">
                 {agent.phone || 'N/A'}
               </span>
             ),

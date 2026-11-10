@@ -11,7 +11,7 @@ export default function OtpPage() {
     <Suspense
       fallback={
         <div className="flex min-h-[300px] items-center justify-center">
-          <p className="text-sm text-[#5b6e61] dark:text-[#c4c7c5]">Loading…</p>
+          <p className="text-sm text-[var(--text-sub)]">Loading…</p>
         </div>
       }
     >

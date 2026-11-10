@@ -98,22 +98,22 @@ export function TermsAndConditionsModal({ open, onClose }: TermsAndConditionsMod
       descriptionId="tc-modal-desc"
       closeLabel="Close Terms and Conditions"
     >
-      <p className="text-base leading-6 text-[#333333] dark:text-[#c4c7c5]">
+      <p className="text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
         By clicking the agreement checkbox, you acknowledge and agree to the following terms
         and conditions:
       </p>
 
-      <div className="mt-6 space-y-8 text-justify text-base leading-7 text-[#333333] dark:text-[#c4c7c5] sm:text-base">
+      <div className="mt-6 space-y-8 text-justify text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)] sm:text-base">
         {SECTIONS.map((s) => (
           <section key={s.title}>
-            <h3 className="text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2] sm:text-lg">
+            <h3 className="text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)] sm:text-lg">
               {s.title}
             </h3>
             <div className="mt-2 space-y-3">{s.body}</div>
           </section>
         ))}
 
-        <p className="border-t border-[#dfe7df] pt-6 text-sm text-[#808080] dark:border-[#3d4140] dark:text-[#b2b7b4]">
+        <p className="border-t border-[#dfe7df] pt-6 text-sm text-[var(--text-muted)] dark:border-[#3d4140] dark:text-[var(--text-muted)]">
           These Terms and Conditions shall be construed and governed in accordance with the
           laws of the Republic of the Philippines. We reserve the right to amend these terms
           at any time, and all revisions shall be communicated through our official channels.

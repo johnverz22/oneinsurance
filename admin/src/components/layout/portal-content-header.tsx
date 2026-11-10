@@ -70,7 +70,7 @@ export function PortalContentHeader({
         <div className="mt-2 mb-6 flex flex-col gap-1">
           {hasBreadcrumbs && (
             <nav aria-label="Breadcrumb" className="min-w-0">
-              <ol className="flex flex-wrap items-center gap-1 text-xs text-[#6d7d70] dark:text-[#808482] sm:gap-1.5 sm:text-sm">
+              <ol className="flex flex-wrap items-center gap-1 text-xs text-[var(--text-muted)] sm:gap-1.5 sm:text-sm">
                 {breadcrumbs.map((crumb, idx) => {
                   const isLast = idx === breadcrumbs.length - 1
 
@@ -78,7 +78,7 @@ export function PortalContentHeader({
                     <li key={idx} className="flex items-center gap-1 min-w-0 sm:gap-1.5">
                       {idx > 0 && (
                         <ChevronRight
-                          className="size-3 shrink-0 text-[#9bb09f] dark:text-[#555e57] sm:size-3.5"
+                          className="size-3 shrink-0 text-[var(--text-muted)] sm:size-3.5"
                           aria-hidden="true"
                         />
                       )}

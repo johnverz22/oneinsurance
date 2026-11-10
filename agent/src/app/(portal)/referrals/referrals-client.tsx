@@ -69,7 +69,7 @@ function ReferralCard({
         </span>
         <div>
           <h3 className="text-lg font-semibold text-[var(--text-main)]">{link.product_name}</h3>
-          <p className="text-base text-[#5b6e61] dark:text-[#808482]">Sample product link</p>
+          <p className="text-base text-[var(--text-sub)]">Sample product link</p>
         </div>
       </div>
 
@@ -85,14 +85,14 @@ function ReferralCard({
           aria-readonly="true"
           aria-label={`Referral URL for ${link.product_name}`}
           value={link.url}
-          className="min-h-11 min-w-0 w-full bg-transparent px-3 text-base text-[#183d2c] focus:outline-none dark:text-[#f4f5f2]"
+          className="min-h-11 min-w-0 w-full bg-transparent px-3 text-base text-[var(--text-main)] focus:outline-none dark:text-[var(--text-main)]"
         />
         <div className="grid grid-cols-3 gap-0.5 border-t border-[#dfe7df] p-1 dark:border-[#475049] sm:flex sm:border-t-0 sm:border-l">
           <button
             type="button"
             onClick={onCopy}
             aria-label={copied ? 'Copied!' : `Copy ${link.product_name} referral link`}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
           >
             {copied ? 'Copied' : 'Copy'}
           </button>
@@ -102,7 +102,7 @@ function ReferralCard({
             rel="noopener noreferrer"
             onClick={onOpen}
             aria-label={`Open ${link.product_name} link in a new tab`}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
           >
             Open
             <span className="sr-only">in a new tab</span>
@@ -111,7 +111,7 @@ function ReferralCard({
             type="button"
             onClick={onShare}
             aria-label={`Share ${link.product_name} link`}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
           >
             Share
           </button>
@@ -274,7 +274,7 @@ export function ReferralsClient() {
               <h2 id="links-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
                 Your product links
               </h2>
-              <p className="mt-1 text-base text-[#5b6e61] dark:text-[#808482]">
+              <p className="mt-1 text-base text-[var(--text-sub)]">
                 One link is shown for each assigned line of business.
               </p>
             </div>
@@ -293,7 +293,7 @@ export function ReferralsClient() {
                   placeholder="Search by product"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="ui-form-field min-h-11 w-full rounded-md bg-white pl-9 text-base dark:bg-[#303530] dark:placeholder:text-[#808482]"
+                  className="ui-form-field min-h-11 w-full rounded-md bg-white pl-9 text-base dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
                 />
               </div>
             </div>
@@ -306,7 +306,7 @@ export function ReferralsClient() {
                 <Skeleton />
               </div>
             ) : filtered.length === 0 ? (
-              <p className="rounded-lg border border-[#dfe7df] bg-[#fbfcfa] px-5 py-10 text-center text-base text-[#5b6e61] dark:border-[#475049] dark:bg-[#303530] dark:text-[#808482]">
+              <p className="rounded-lg border border-[#dfe7df] bg-[#fbfcfa] px-5 py-10 text-center text-base text-[var(--text-sub)] dark:border-[#475049] dark:bg-[#303530]">
                 {search
                   ? 'No products match your search.'
                   : 'No referral links assigned yet. Contact your administrator.'}
@@ -327,7 +327,7 @@ export function ReferralsClient() {
 
           {/* Showing X of Y count */}
           {!isLobsLoading && links.length > 0 && (
-            <p className="mt-6 border-t border-[#e0e9e0] pt-4 text-base text-[#6d7d70] dark:border-[#3d4140] dark:text-[#808482]">
+            <p className="mt-6 border-t border-[#e0e9e0] pt-4 text-base text-[var(--text-muted)] dark:border-[#3d4140]">
               Showing {filtered.length} of {links.length} product{links.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -341,17 +341,17 @@ export function ReferralsClient() {
           <h2 id="about-links-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
             Sharing your link
           </h2>
-          <p className="mt-3 text-base leading-6 text-[#5b6e61] dark:text-[#808482]">
+          <p className="mt-3 text-base leading-6 text-[var(--text-sub)]">
             Copy the link and send it to a customer, or open it to preview the product journey.
           </p>
-          <div className="mt-6 rounded-md bg-[#eef4ee] p-4 text-base leading-6 text-[#526858] dark:bg-[#363f38] dark:text-[#808482]">
+          <div className="mt-6 rounded-md bg-[#eef4ee] p-4 text-base leading-6 text-[var(--text-sub)] dark:bg-[#363f38]">
             <strong className="block text-[#006838] dark:text-[#d0e3c8]">About attribution</strong>
             These links contain your agent code (
             <span className="font-mono font-semibold text-[#006838] dark:text-[#d0e3c8]">{code}</span>).
             When a customer purchases a policy through your link, the sale is attributed to you and commission
             is calculated automatically.
           </div>
-          <p className="mt-5 text-base leading-6 text-[#6d7d70] dark:text-[#808482]">
+          <p className="mt-5 text-base leading-6 text-[var(--text-muted)]">
             Product assignments and actual referral URLs must come from the live portal.
           </p>
         </section>

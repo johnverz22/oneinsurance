@@ -27,7 +27,7 @@ export function ProductsClient() {
             <h2 className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
               Catalog management
             </h2>
-            <p className="mt-1 text-sm text-[#5b6e61] dark:text-[#b2b7b4]">
+            <p className="mt-1 text-sm text-[var(--text-sub)]">
               Create a LoB, then add products to it.
             </p>
           </div>

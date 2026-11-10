@@ -116,7 +116,7 @@ export function PortalTopBar() {
                       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]',
                       active
                         ? 'bg-[#eef4ee] font-semibold text-[#183d2c] dark:bg-[#006838] dark:text-[#d0e3c8]'
-                        : 'text-[#78867c] hover:bg-[#e4e9e2] hover:text-[#006838] dark:text-[#808482] dark:hover:bg-[#006838] dark:hover:text-[#d0e3c8]'
+                        : 'text-[var(--text-sub)] hover:bg-[#e4e9e2] hover:text-[#006838] dark:hover:bg-[#006838] dark:hover:text-[#d0e3c8]'
                     )}
                   >
                     {label}
@@ -159,11 +159,11 @@ export function PortalTopBar() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Quick search"
-            className="ui-form-field min-h-11 w-full rounded-md bg-white px-3 text-sm placeholder:text-[#808080] dark:bg-[#303530] dark:placeholder:text-[#808482]"
+            className="ui-form-field min-h-11 w-full rounded-md bg-white px-3 text-sm placeholder:text-[var(--text-muted)] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
           />
         </div>
       ) : (
-        <p className="hidden text-base font-medium text-[#5b6e61] lg:block dark:text-[#b2b7b4]">
+        <p className="hidden text-base font-medium text-[var(--text-sub)] lg:block">
           Admin portal <span className="mx-2 text-[#b5c5b8]">/</span> {activeItem?.label}
         </p>
       )}
@@ -200,7 +200,7 @@ export function PortalTopBar() {
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 top-14 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-[#dfe7df] bg-white p-5 shadow-[0_20px_50px_rgba(24,61,44,0.12)] dark:border-[#48524a] dark:bg-[#282c29] dark:text-[#f4f5f2]">
+            <div className="absolute right-0 top-14 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-[#dfe7df] bg-white p-5 shadow-[0_20px_50px_rgba(24,61,44,0.12)] dark:border-[#48524a] dark:bg-[#282c29] dark:text-[var(--text-main)]">
               <div className="flex items-center justify-between">
                 <strong className="text-base font-semibold text-[var(--text-main)]">Notifications</strong>
                 <span className="rounded-full bg-[#eff6ef] px-2 py-0.5 text-[11px] font-semibold text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
@@ -209,7 +209,7 @@ export function PortalTopBar() {
               </div>
               <div className="mt-4 flex items-start gap-3 rounded-md bg-[#fbfcfa] p-3 dark:bg-[#202422]">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#006838] dark:text-[#d0e3c8]" />
-                <p className="text-sm leading-5 text-[#5b6e61] dark:text-[#808482]">
+                <p className="text-sm leading-5 text-[var(--text-sub)]">
                   No new notifications. All policy and commission updates will appear here.
                 </p>
               </div>

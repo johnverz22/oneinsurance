@@ -292,7 +292,7 @@ function IssuanceContent({ agentCode }: { agentCode: string }) {
             >
               Finalizing your policy
             </h1>
-            <p id="issuance-description" className="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
+            <p id="issuance-description" className="mt-3 text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               Please keep this page open. We&rsquo;re getting your electronic Certificate of Coverage (eCOC) and
               acknowledgement receipt ready.
             </p>
@@ -301,7 +301,7 @@ function IssuanceContent({ agentCode }: { agentCode: string }) {
 
             <div className="travel-issuance-email">
               <Mail className="mt-0.5 size-5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
-              <p className="text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
+              <p className="text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                 Once your policy is issued, we&rsquo;ll send your eCOC and acknowledgement receipt to{' '}
                 {email ? (
                   <strong className="break-all font-semibold">{email}</strong>
@@ -406,9 +406,9 @@ function PaymentSidebar({
             />
           </div>
         )}
-        {insurerName && <p className="text-sm text-[#59645d] dark:text-[#8fa494]">{insurerName}</p>}
+        {insurerName && <p className="text-sm text-[var(--text-sub)] dark:text-[var(--text-sub)]">{insurerName}</p>}
         {planName && (
-          <p className="text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">{planName}</p>
+          <p className="text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">{planName}</p>
         )}
 
         <hr className="border-[#dfe7df] dark:border-[#3d4140]" />
@@ -437,13 +437,13 @@ function PaymentSidebar({
             <dd>PHP {fmt(basePremium)}</dd>
           </div>
           {addons.map((a) => (
-            <div key={a.code} className="flex justify-between gap-4 text-[#59645d] dark:text-[#8fa494]">
+            <div key={a.code} className="flex justify-between gap-4 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               <dt>{a.name}</dt>
               <dd className="shrink-0">Included</dd>
             </div>
           ))}
           {!addons.length && (
-            <div className="flex justify-between gap-4 text-[#59645d] dark:text-[#8fa494]">
+            <div className="flex justify-between gap-4 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               <dt>Add-ons</dt>
               <dd>None selected</dd>
             </div>
@@ -460,11 +460,11 @@ function PaymentSidebar({
           <>
             <hr className="border-[#dfe7df] dark:border-[#3d4140]" />
             <div>
-              <p className="text-sm text-[#59645d] dark:text-[#8fa494]">Total premium paid</p>
+              <p className="text-sm text-[var(--text-sub)] dark:text-[var(--text-sub)]">Total premium paid</p>
               <p className="mt-1 text-2xl font-bold text-[#006838] dark:text-[#d0e3c8]">
                 &#x20B1;{fmt(totalPremium)}
               </p>
-              <p className="mt-1 text-xs text-[#59645d] dark:text-[#8fa494]">
+              <p className="mt-1 text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                 For {travellers} {travellers === 1 ? 'traveller' : 'travellers'}
               </p>
             </div>
@@ -518,10 +518,10 @@ function TravelDetailsDisclosure({
         aria-controls="travel-details-panel"
         onClick={() => setDetailsOpen((o) => !o)}
       >
-        <span className="text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Your travel details</span>
+        <span className="text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Your travel details</span>
         <ChevronDown
           className={cn(
-            'size-5 shrink-0 text-[#59645d] transition-transform duration-200 dark:text-[#c4c7c5]',
+            'size-5 shrink-0 text-[var(--text-sub)] transition-transform duration-200 dark:text-[var(--text-sub)]',
             detailsOpen && 'rotate-180',
           )}
           aria-hidden="true"
@@ -534,13 +534,13 @@ function TravelDetailsDisclosure({
           <div className="rounded-md bg-[#f7f8f7] px-4 py-4 dark:bg-[#1e2120]">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs text-[#59645d] dark:text-[#8fa494]">From</p>
+                <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">From</p>
                 <p className="mt-0.5 text-base font-semibold">{origin}</p>
               </div>
               {/* Dashed flight arrow */}
               <div className="flex flex-1 items-center gap-1 px-2" aria-hidden="true">
                 <div className="h-px flex-1 border-t border-dashed border-[#c7d4c9] dark:border-[#3d4140]" />
-                <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-[#59645d]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" className="size-5 shrink-0 text-[var(--text-sub)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M2 22h20M6.36 17.4 4 17l-2-4 1.1-.35a2 2 0 0 1 1.4.07l.74.32 2.07 4.02" />
                   <path d="m10.96 4.66-.3 1.11a2 2 0 0 0 .45 1.87l5.37 5.85a2 2 0 0 0 1.59.64l2.47-.16-9.58-9.31Z" />
                   <path d="m13.96 3.19-8.09 8.09a2 2 0 0 0-.46 2.11l.62 1.67 9.37-11.04-.98-.84a2 2 0 0 0-1.46-.77Z" />
@@ -548,7 +548,7 @@ function TravelDetailsDisclosure({
                 <div className="h-px flex-1 border-t border-dashed border-[#c7d4c9] dark:border-[#3d4140]" />
               </div>
               <div className="min-w-0 text-right">
-                <p className="text-xs text-[#59645d] dark:text-[#8fa494]">To</p>
+                <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">To</p>
                 <p className="mt-0.5 text-base font-semibold">{destinations || '\u2014'}</p>
               </div>
             </div>
@@ -556,31 +556,31 @@ function TravelDetailsDisclosure({
 
           {/* Full route string */}
           {fullRoute && (
-            <p className="mt-3 text-sm text-[#59645d] dark:text-[#8fa494]">{fullRoute}</p>
+            <p className="mt-3 text-sm text-[var(--text-sub)] dark:text-[var(--text-sub)]">{fullRoute}</p>
           )}
 
           {/* Date / Duration / Travellers row */}
           <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex items-start gap-2">
-              <CalendarDays className="mt-0.5 size-4 shrink-0 text-[#59645d] dark:text-[#8fa494]" aria-hidden />
+              <CalendarDays className="mt-0.5 size-4 shrink-0 text-[var(--text-sub)] dark:text-[var(--text-sub)]" aria-hidden />
               <div>
-                <p className="text-xs text-[#59645d] dark:text-[#8fa494]">Travel dates</p>
+                <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Travel dates</p>
                 <p className="mt-0.5 text-sm font-medium">{tripRange}</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-[#59645d] dark:text-[#8fa494]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-[var(--text-sub)] dark:text-[var(--text-sub)]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
               </svg>
               <div>
-                <p className="text-xs text-[#59645d] dark:text-[#8fa494]">Duration</p>
+                <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Duration</p>
                 <p className="mt-0.5 text-sm font-medium">{days} {days === 1 ? 'day' : 'days'}</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <Users className="mt-0.5 size-4 shrink-0 text-[#59645d] dark:text-[#8fa494]" aria-hidden />
+              <Users className="mt-0.5 size-4 shrink-0 text-[var(--text-sub)] dark:text-[var(--text-sub)]" aria-hidden />
               <div>
-                <p className="text-xs text-[#59645d] dark:text-[#8fa494]">Travellers</p>
+                <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Travellers</p>
                 <p className="mt-0.5 text-sm font-medium">{travellers} {travellers === 1 ? 'traveller' : 'travellers'}</p>
               </div>
             </div>
@@ -671,7 +671,7 @@ function NeedsAttention({
             </span>
             <h1
               id="issuance-title"
-              className="text-2xl font-semibold tracking-tight text-[#183d2c] dark:text-[#f4f5f2] sm:text-3xl"
+              className="text-2xl font-semibold tracking-tight text-[var(--text-main)] dark:text-[var(--text-main)] sm:text-3xl"
             >
               Payment received, policy not issued yet
             </h1>
@@ -741,7 +741,7 @@ function NeedsAttention({
                 />
               )}
             </div>
-            <p className="mt-3 text-sm text-[#59645d] dark:text-[#8fa494]">
+            <p className="mt-3 text-sm text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               Quote these references when contacting us.
             </p>
           </div>
@@ -749,7 +749,7 @@ function NeedsAttention({
           {/* Need help */}
           <div className="rounded-md border border-[#dfe7df] px-4 py-4 dark:border-[#3d4140]">
             <h2 className="text-base font-semibold text-[#006838] dark:text-[#d0e3c8]">Need help?</h2>
-            <p className="mt-1 text-base leading-6 text-[#333] dark:text-[#c4c7c5]">
+            <p className="mt-1 text-base leading-6 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               Contact IFRC Insurance about this paid proposal. Keep your proposal and payment references handy.
             </p>
             <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
@@ -796,7 +796,7 @@ function ReferenceRow({
   return (
     <div className="flex items-center justify-between gap-4 rounded-md border border-[#dfe7df] px-4 py-3 dark:border-[#3d4140]">
       <div className="min-w-0">
-        <p className="text-xs text-[#59645d] dark:text-[#8fa494]">{label}</p>
+        <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">{label}</p>
         <p className="mt-0.5 break-all font-semibold">{value}</p>
       </div>
       <button
@@ -825,7 +825,7 @@ function ReferenceRow({
 function SidebarRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-[#59645d] dark:text-[#8fa494]">{label}</p>
+      <p className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">{label}</p>
       <p className="mt-0.5 text-sm font-semibold">{value}</p>
     </div>
   )
@@ -900,20 +900,20 @@ function Outcome({
         )}
         {o.title}
       </h1>
-      <p id="issuance-description" className="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
+      <p id="issuance-description" className="mt-3 text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
         {o.body}
       </p>
       {(proposalNo || txn) && stage !== 'noSession' && (
         <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
           {proposalNo && (
             <div>
-              <dt className="text-xs text-[#59645d] dark:text-[#c4c7c5]">Proposal number</dt>
+              <dt className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Proposal number</dt>
               <dd className="mt-1 break-all font-semibold">{proposalNo}</dd>
             </div>
           )}
           {txn && (
             <div>
-              <dt className="text-xs text-[#59645d] dark:text-[#c4c7c5]">Payment reference</dt>
+              <dt className="text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Payment reference</dt>
               <dd className="mt-1 break-all font-semibold">{txn}</dd>
             </div>
           )}

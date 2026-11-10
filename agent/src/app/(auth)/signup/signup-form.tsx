@@ -112,7 +112,7 @@ export default function SignupForm() {
   }
 
   const INPUT_BASE =
-    'min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]'
+    'min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]'
   const INPUT_ERROR = 'border-red-400 focus:border-red-500 focus:outline-red-500'
   const LABEL_BASE = 'block text-sm font-semibold'
   const ERROR_TEXT = 'mt-1.5 text-xs text-[#dc2626]'
@@ -129,7 +129,7 @@ export default function SignupForm() {
       <h1 className="mt-4 text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.08] tracking-[-.05em]">
         Create your account
       </h1>
-      <p className="mt-3 text-base leading-7 text-[#5b6e61] dark:text-[#c4c7c5]">
+      <p className="mt-3 text-base leading-7 text-[var(--text-sub)]">
         Complete your registration using the invitation link sent to your email.
       </p>
 
@@ -145,7 +145,7 @@ export default function SignupForm() {
 
       {/* Autofill loading indicator */}
       {isLoadingAutofill && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-[#5b6e61] dark:text-[#c4c7c5]">
+        <div className="mt-4 flex items-center gap-2 text-sm text-[var(--text-sub)]">
           <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           <span>Loading your invitation details…</span>
         </div>
@@ -337,7 +337,7 @@ export default function SignupForm() {
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-[#5b6e61] dark:text-[#c4c7c5]">
+      <p className="mt-6 text-sm text-[var(--text-sub)]">
         Already have an account?{' '}
         <Link
           href="/login"

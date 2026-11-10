@@ -54,7 +54,7 @@ export default function AgentLandingPage() {
   const agentCode = resolveAgentCode(params['agent-code'] as string)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#fcfdfb] font-sans text-base text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
+    <div className="flex min-h-dvh flex-col bg-[#fcfdfb] font-sans text-base text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)]">
       {/* Accessible Skip Link */}
       <a
         href="#main"
@@ -84,7 +84,7 @@ export default function AgentLandingPage() {
               Clear choices.{' '}
               <span className="text-[#006838] dark:text-[#d0e3c8]">Cover for what matters.</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#333333] sm:text-base dark:text-[#c4c7c5]">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[var(--text-sub)] sm:text-base dark:text-[var(--text-sub)]">
               Compare accredited insurance plans for travel, health, motor, cargo and more —
               get a quote online and receive your policy digitally in minutes.
             </p>
@@ -111,20 +111,20 @@ export default function AgentLandingPage() {
           aria-label="Insurance accreditations"
           className="border-y border-[#dfe7df] bg-white py-4 dark:border-[#3d4140] dark:bg-[#171919]"
         >
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 text-xs text-[#333333] sm:px-8 sm:text-sm lg:px-12 dark:text-[#c4c7c5]">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 text-xs text-[var(--text-sub)] sm:px-8 sm:text-sm lg:px-12 dark:text-[var(--text-sub)]">
             <div className="flex items-center gap-2 font-semibold text-[#006838] dark:text-[#d0e3c8]">
-              <span className="rounded-full bg-[#e2eddb] px-2.5 py-1 text-xs font-bold text-[#006838] dark:bg-[#304538] dark:text-[#f4f5f2]">
+              <span className="rounded-full bg-[#e2eddb] px-2.5 py-1 text-xs font-bold text-[#006838] dark:bg-[#304538] dark:text-[var(--text-main)]">
                 From ₱299
               </span>
               <span>Comprehensive protection per trip</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-[#808080] sm:gap-4 dark:text-[#b2b7b4]">
-              <span className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Underwritten by:</span>
-              <span className="font-medium text-[#333333] dark:text-[#c4c7c5]">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)] sm:gap-4 dark:text-[var(--text-muted)]">
+              <span className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Underwritten by:</span>
+              <span className="font-medium text-[var(--text-sub)] dark:text-[var(--text-sub)]">
                 Pacific Cross · Oona · Malayan
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-[#808080] dark:text-[#b2b7b4]">
+            <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
               <ShieldCheck className="size-4 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
               <span>Licensed by Insurance Commission · Lic. 2024/01-R</span>
             </div>
@@ -144,11 +144,11 @@ export default function AgentLandingPage() {
               </p>
               <h2
                 id="products-title"
-                className="mt-2 text-2xl leading-tight font-bold tracking-tight text-[#183d2c] sm:text-4xl dark:text-[#f4f5f2]"
+                className="mt-2 text-2xl leading-tight font-bold tracking-tight text-[var(--text-main)] sm:text-4xl dark:text-[var(--text-main)]"
               >
                 Cover for every journey, asset and business.
               </h2>
-              <p className="mt-2 text-base leading-relaxed text-[#333333] sm:mt-3 sm:text-base dark:text-[#c4c7c5]">
+              <p className="mt-2 text-base leading-relaxed text-[var(--text-sub)] sm:mt-3 sm:text-base dark:text-[var(--text-sub)]">
                 Pick a product to compare plans from verified underwriters and apply online.
               </p>
             </div>
@@ -170,15 +170,15 @@ export default function AgentLandingPage() {
                         <Icon className="size-5 sm:size-6" aria-hidden="true" />
                       </span>
                       {!isEnabled && (
-                        <span className="rounded-full bg-[#f1f2f0] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-[#808080] uppercase dark:bg-[#303232] dark:text-[#b2b7b4]">
+                        <span className="rounded-full bg-[#f1f2f0] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-[var(--text-muted)] uppercase dark:bg-[#303232] dark:text-[var(--text-muted)]">
                           Soon
                         </span>
                       )}
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-[#183d2c] sm:text-lg dark:text-[#f4f5f2]">
+                    <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] sm:text-lg dark:text-[var(--text-main)]">
                       {product.name}
                     </h3>
-                    <p className="mt-1 flex-1 text-base leading-relaxed text-[#505553] dark:text-[#b2b7b4]">
+                    <p className="mt-1 flex-1 text-base leading-relaxed text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                       {details?.blurb}
                     </p>
                     <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#006838] dark:text-[#d0e3c8]">
@@ -193,7 +193,7 @@ export default function AgentLandingPage() {
               })}
             </div>
 
-            <p className="mt-6 text-center text-sm text-[#505553] dark:text-[#b2b7b4]">
+            <p className="mt-6 text-center text-sm text-[var(--text-sub)] dark:text-[var(--text-muted)]">
               Curious who backs our plans?{' '}
               <Link
                 href={`/${agentCode}/providers`}
@@ -217,7 +217,7 @@ export default function AgentLandingPage() {
               </p>
               <h2
                 id="why-title"
-                className="mt-2 text-2xl leading-tight font-bold tracking-tight text-[#183d2c] sm:text-4xl dark:text-[#f4f5f2]"
+                className="mt-2 text-2xl leading-tight font-bold tracking-tight text-[var(--text-main)] sm:text-4xl dark:text-[var(--text-main)]"
               >
                 Protection without the paperwork.
               </h2>
@@ -228,10 +228,10 @@ export default function AgentLandingPage() {
                 <span className="inline-flex size-12 items-center justify-center rounded-full bg-[#006838]/10 text-[#006838] dark:bg-[#006838]/20 dark:text-[#d0e3c8]">
                   <ShieldCheck className="size-6" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                   Licensed &amp; accredited
                 </h3>
-                <p className="mt-1 text-base leading-relaxed text-[#505553] dark:text-[#b2b7b4]">
+                <p className="mt-1 text-base leading-relaxed text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                   Regulated by the Insurance Commission (Lic. 2024/01-R) and underwritten by
                   Pacific Cross, Oona and Malayan.
                 </p>
@@ -241,10 +241,10 @@ export default function AgentLandingPage() {
                 <span className="inline-flex size-12 items-center justify-center rounded-full bg-[#006838]/10 text-[#006838] dark:bg-[#006838]/20 dark:text-[#d0e3c8]">
                   <FileCheck className="size-6" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                   Instant digital issuance
                 </h3>
-                <p className="mt-1 text-base leading-relaxed text-[#505553] dark:text-[#b2b7b4]">
+                <p className="mt-1 text-base leading-relaxed text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                   Quote, pay and receive your e-policy and official receipt in minutes — no
                   branch visits, no paperwork.
                 </p>
@@ -254,10 +254,10 @@ export default function AgentLandingPage() {
                 <span className="inline-flex size-12 items-center justify-center rounded-full bg-[#006838]/10 text-[#006838] dark:bg-[#006838]/20 dark:text-[#d0e3c8]">
                   <Clock className="size-6" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-base font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                <h3 className="mt-4 text-base font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                   24/7 emergency assistance
                 </h3>
-                <p className="mt-1 text-base leading-relaxed text-[#505553] dark:text-[#b2b7b4]">
+                <p className="mt-1 text-base leading-relaxed text-[var(--text-sub)] dark:text-[var(--text-muted)]">
                   Round-the-clock claims and emergency hotlines printed on every Certificate
                   of Cover.
                 </p>

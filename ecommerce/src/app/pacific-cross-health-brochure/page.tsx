@@ -166,22 +166,22 @@ function PlanCard({ plan }: { plan: typeof plans[0] }) {
         {plan.options.length === 1 ? (
           <div className="flex items-center justify-between py-2">
             <div>
-              <p className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">{plan.options[0].label}</p>
-              <p className="text-xs text-[#808080] mt-0.5">Up to {plan.options[0].maxBenefit}</p>
+              <p className="text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">{plan.options[0].label}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5">Up to {plan.options[0].maxBenefit}</p>
             </div>
             <p className="text-xl font-bold text-[#006838]">₱{plan.options[0].premium}</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 text-[11px] text-[#808080] font-medium pb-2 border-b border-[#dfe7df] dark:border-[#3d4140] mb-1">
+            <div className="grid grid-cols-3 text-[11px] text-[var(--text-muted)] font-medium pb-2 border-b border-[#dfe7df] dark:border-[#3d4140] mb-1">
               <span>Option</span>
               <span>Max benefit</span>
               <span className="text-right">Premium</span>
             </div>
             {plan.options.map((opt) => (
               <div key={opt.label} className="grid grid-cols-3 items-center py-2 border-b border-gray-50 last:border-0">
-                <span className="text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">{opt.label}</span>
-                <span className="text-sm text-[#808080]">{opt.maxBenefit}</span>
+                <span className="text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">{opt.label}</span>
+                <span className="text-sm text-[var(--text-muted)]">{opt.maxBenefit}</span>
                 <span className="text-sm font-bold text-[#006838] text-right">₱{opt.premium}</span>
               </div>
             ))}
@@ -212,9 +212,9 @@ function FaqItem({ faq, index, open, onToggle }: {
         >
           {index + 1}
         </span>
-        <span className="flex-1 text-sm font-medium text-[#183d2c] dark:text-[#f4f5f2]">{faq.q}</span>
+        <span className="flex-1 text-sm font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">{faq.q}</span>
         <svg
-          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-[#006838]' : 'text-[#808080]'}`}
+          className={`w-4 h-4 flex-shrink-0 transition-transform ${open ? 'rotate-180 text-[#006838]' : 'text-[var(--text-muted)]'}`}
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -222,7 +222,7 @@ function FaqItem({ faq, index, open, onToggle }: {
       </button>
       {open && (
         <div className="px-4 pb-4 pl-[52px] border-t border-[#dfe7df] dark:border-[#3d4140] pt-3">
-          <p className="text-base text-[#808080] leading-relaxed">{faq.a}</p>
+          <p className="text-base text-[var(--text-muted)] leading-relaxed">{faq.a}</p>
         </div>
       )}
     </div>
@@ -237,11 +237,11 @@ export default function PacificCrossHealthBrochurePage() {
       {/* Sticky header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="mx-auto max-w-4xl px-4 py-3 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-[#808080] hover:text-[#183d2c] dark:text-[#f4f5f2] transition-colors">
+          <Link href="/" className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--text-main)] dark:text-[var(--text-main)] transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back
           </Link>
-          <span className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Select Prepaid Insurance Plans</span>
+          <span className="text-sm font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Select Prepaid Insurance Plans</span>
         </div>
       </div>
 
@@ -277,7 +277,7 @@ export default function PacificCrossHealthBrochurePage() {
         {/* ── Important Notes ── */}
         <section className="rounded-xl border-l-4 border-[#006838] bg-[#006838]/5 px-5 py-4 space-y-1.5">
           <h3 className="text-sm font-semibold text-[#006838]">Important notes</h3>
-          <ul className="text-xs text-[#183d2c] dark:text-[#f4f5f2] space-y-1 list-disc list-inside leading-relaxed">
+          <ul className="text-xs text-[var(--text-main)] dark:text-[var(--text-main)] space-y-1 list-disc list-inside leading-relaxed">
             <li><strong>Period of Insurance:</strong> Valid for 1 year from Effective Date — terminated once a claim is approved.</li>
             <li><strong>Waiting Period:</strong> Number of days from purchase before coverage begins.</li>
             <li>You may purchase all 5 plans, but only 1 option per plan per period.</li>
@@ -286,7 +286,7 @@ export default function PacificCrossHealthBrochurePage() {
 
         {/* ── Plans ── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-[#183d2c] dark:text-[#f4f5f2]">Available plans</h2>
+          <h2 className="text-xl font-bold text-[var(--text-main)] dark:text-[var(--text-main)]">Available plans</h2>
 
           {/* Top 2 plans full-width */}
           {plans.slice(0, 2).map((plan) => (
@@ -308,12 +308,12 @@ export default function PacificCrossHealthBrochurePage() {
         <section className="space-y-5">
           <div>
             <p className="text-[10px] font-semibold tracking-widest text-[#006838] uppercase mb-1">Coverage details</p>
-            <h2 className="text-xl font-bold text-[#183d2c] dark:text-[#f4f5f2]">Plan benefits &amp; limitations</h2>
+            <h2 className="text-xl font-bold text-[var(--text-main)] dark:text-[var(--text-main)]">Plan benefits &amp; limitations</h2>
           </div>
 
           {/* How it works timeline */}
           <div className="rounded-xl border border-[#dfe7df] dark:border-[#3d4140] bg-white p-5">
-            <p className="text-xs font-medium text-[#808080] mb-5 flex items-center gap-1.5">
+            <p className="text-xs font-medium text-[var(--text-muted)] mb-5 flex items-center gap-1.5">
               <span className="text-[#006838]">→</span> How your coverage works
             </p>
             <div className="flex items-start gap-0 overflow-x-auto pb-1">
@@ -328,8 +328,8 @@ export default function PacificCrossHealthBrochurePage() {
                     }`}>
                       {step.icon}
                     </div>
-                    <p className="text-[10px] font-medium text-[#183d2c] dark:text-[#f4f5f2] text-center leading-tight">{step.label}</p>
-                    {step.sub && <p className="text-[9px] text-[#808080] text-center mt-0.5">{step.sub}</p>}
+                    <p className="text-[10px] font-medium text-[var(--text-main)] dark:text-[var(--text-main)] text-center leading-tight">{step.label}</p>
+                    {step.sub && <p className="text-[9px] text-[var(--text-muted)] text-center mt-0.5">{step.sub}</p>}
                   </div>
                   {i < timelineSteps.length - 1 && (
                     <div className="w-8 sm:w-12 h-px bg-[#006838]/30 flex-shrink-0 mb-5" />
@@ -347,8 +347,8 @@ export default function PacificCrossHealthBrochurePage() {
                   {b.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">{b.title}</p>
-                  <p className="text-base text-[#808080] mt-1 leading-relaxed">{b.desc}</p>
+                  <p className="text-sm font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">{b.title}</p>
+                  <p className="text-base text-[var(--text-muted)] mt-1 leading-relaxed">{b.desc}</p>
                 </div>
               </div>
             ))}
@@ -376,7 +376,7 @@ export default function PacificCrossHealthBrochurePage() {
         <section className="space-y-4">
           <div>
             <p className="text-[10px] font-semibold tracking-widest text-[#006838] uppercase mb-1">Need to know</p>
-            <h2 className="text-xl font-bold text-[#183d2c] dark:text-[#f4f5f2]">Frequently asked questions</h2>
+            <h2 className="text-xl font-bold text-[var(--text-main)] dark:text-[var(--text-main)]">Frequently asked questions</h2>
           </div>
 
           <div className="space-y-2">
@@ -397,23 +397,23 @@ export default function PacificCrossHealthBrochurePage() {
               ✉️
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-[#183d2c] dark:text-[#f4f5f2]">Still have questions?</p>
-              <p className="text-xs text-[#808080] mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
+              <p className="text-sm font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">Still have questions?</p>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5">Request a specimen policy or reach Pacific Cross directly</p>
             </div>
             <div className="text-right sm:flex-shrink-0">
               <p className="text-sm font-semibold text-[#006838]">client_services@pacificcross.com.ph</p>
-              <p className="text-xs text-[#808080]">+63 2 8230-8511</p>
+              <p className="text-xs text-[var(--text-muted)]">+63 2 8230-8511</p>
             </div>
           </div>
         </section>
 
         {/* ── Contact / CTA ── */}
         <section className="rounded-xl border border-[#dfe7df] dark:border-[#3d4140] bg-white p-6 text-center space-y-3">
-          <p className="text-sm text-[#808080]">
+          <p className="text-sm text-[var(--text-muted)]">
             For the full list of exclusions, terms, and conditions, please ask for a specimen Policy via email
           </p>
           <p className="text-base font-semibold text-[#006838]">client_services@pacificcross.com.ph</p>
-          <p className="text-sm text-[#808080]">Pacific Cross Hotline: +63 2 8230-8511</p>
+          <p className="text-sm text-[var(--text-muted)]">Pacific Cross Hotline: +63 2 8230-8511</p>
           <a
             href="/files/pacific-cross-select-er-brochure.pdf"
             target="_blank"

@@ -67,7 +67,7 @@ export function IssuanceStepper({
               <span className="sr-only">{label[s.state]}</span>
             </h2>
             <p
-              className="mt-2 text-base leading-7 text-[#333] dark:text-[#c4c7c5]"
+              className="mt-2 text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)]"
               role={s.status ? 'status' : undefined}
             >
               {s.text}
@@ -119,10 +119,10 @@ export function IssuanceProgressTracker({ stage }: { stage: IssuanceStage }) {
             />
           </div>
           <div className="mt-2 px-1 text-center">
-            <p className={cn('text-xs font-semibold', step1Done ? 'text-[#006838] dark:text-[#d0e3c8]' : 'text-[#183d2c] dark:text-[#f4f5f2]')}>
+            <p className={cn('text-xs font-semibold', step1Done ? 'text-[#006838] dark:text-[#d0e3c8]' : 'text-[var(--text-main)] dark:text-[var(--text-main)]')}>
               {step1Done ? 'Payment confirmed' : 'Confirming payment'}
             </p>
-            <p className="mt-0.5 text-xs text-[#59645d] dark:text-[#8fa494]">
+            <p className="mt-0.5 text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               {step1Done ? 'Payment received.' : 'Checking with provider…'}
             </p>
           </div>
@@ -149,7 +149,7 @@ export function IssuanceProgressTracker({ stage }: { stage: IssuanceStage }) {
                   ? 'border-amber-500 bg-amber-50 text-amber-600 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-400'
                   : step2Active
                     ? 'border-[#006838] bg-white text-[#006838] dark:border-[#d0e3c8] dark:bg-[#1c1e1e] dark:text-[#d0e3c8]'
-                    : 'border-[#c7d4c9] bg-white text-[#59645d] dark:border-[#3d4140] dark:bg-[#1e2120] dark:text-[#8fa494]',
+                    : 'border-[#c7d4c9] bg-white text-[var(--text-sub)] dark:border-[#3d4140] dark:bg-[#1e2120] dark:text-[var(--text-sub)]',
               )}
             >
               {step2Error ? (
@@ -165,11 +165,11 @@ export function IssuanceProgressTracker({ stage }: { stage: IssuanceStage }) {
           <div className="mt-2 px-1 text-center">
             <p className={cn(
               'text-xs font-semibold',
-              step2Error || step2Active ? 'text-[#183d2c] dark:text-[#f4f5f2]' : 'text-[#59645d] dark:text-[#8fa494]',
+              step2Error || step2Active ? 'text-[var(--text-main)] dark:text-[var(--text-main)]' : 'text-[var(--text-sub)] dark:text-[var(--text-sub)]',
             )}>
               Policy recording
             </p>
-            <p className={cn('mt-0.5 text-xs', step2Error ? 'font-medium text-amber-600 dark:text-amber-400' : 'text-[#59645d] dark:text-[#8fa494]')}>
+            <p className={cn('mt-0.5 text-xs', step2Error ? 'font-medium text-amber-600 dark:text-amber-400' : 'text-[var(--text-sub)] dark:text-[var(--text-sub)]')}>
               {step2Error ? 'Needs attention' : step2Active ? 'Recording with insurer…' : 'Waiting for payment'}
             </p>
           </div>
@@ -179,14 +179,14 @@ export function IssuanceProgressTracker({ stage }: { stage: IssuanceStage }) {
         <li className="flex flex-1 flex-col items-center">
           <div className="relative flex w-full items-center">
             <div className="h-0.5 flex-1 bg-[#dfe7df] dark:bg-[#3d4140]" aria-hidden />
-            <span className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-[#c7d4c9] bg-white text-[#59645d] dark:border-[#3d4140] dark:bg-[#1e2120] dark:text-[#8fa494]">
+            <span className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-[#c7d4c9] bg-white text-[var(--text-sub)] dark:border-[#3d4140] dark:bg-[#1e2120] dark:text-[var(--text-sub)]">
               <FileCheck2 className="size-4" aria-hidden />
             </span>
             <div className="flex-1" aria-hidden />
           </div>
           <div className="mt-2 px-1 text-center">
-            <p className="text-xs font-semibold text-[#59645d] dark:text-[#8fa494]">Policy email</p>
-            <p className="mt-0.5 text-xs text-[#59645d] dark:text-[#8fa494]">Waiting for issuance</p>
+            <p className="text-xs font-semibold text-[var(--text-sub)] dark:text-[var(--text-sub)]">Policy email</p>
+            <p className="mt-0.5 text-xs text-[var(--text-sub)] dark:text-[var(--text-sub)]">Waiting for issuance</p>
           </div>
         </li>
       </ol>

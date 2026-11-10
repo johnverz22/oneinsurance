@@ -276,7 +276,7 @@ export function ApplyForm() {
           ref={confirmRef}
           tabIndex={-1}
           role="status"
-          className="flex items-start gap-3 rounded-md border border-[#559e45] bg-[#e2eddb] p-4 text-sm text-[#183d2c] outline-none focus-visible:outline-2 focus-visible:outline-[#006838] dark:bg-[#304538] dark:text-[#f4f5f2]"
+          className="flex items-start gap-3 rounded-md border border-[#559e45] bg-[#e2eddb] p-4 text-sm text-[var(--text-main)] outline-none focus-visible:outline-2 focus-visible:outline-[#006838] dark:bg-[#304538] dark:text-[var(--text-main)]"
         >
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden />
           <p>

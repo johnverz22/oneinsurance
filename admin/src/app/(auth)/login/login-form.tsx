@@ -69,7 +69,7 @@ export function LoginForm() {
         <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.25rem)] font-semibold leading-[1.08] tracking-[-.055em]">
           Sign in
         </h1>
-        <p className="mt-4 text-base leading-7 text-[#5b6e61] dark:text-[#c4c7c5]">
+        <p className="mt-4 text-base leading-7 text-[var(--text-sub)]">
           Use your assigned portal account to continue.
         </p>
 
@@ -100,7 +100,7 @@ export function LoginForm() {
               placeholder="name@company.com"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? 'portal-email-error' : undefined}
-              className="ui-form-field mt-2 min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]"
+              className="ui-form-field mt-2 min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2.5 text-base placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
               {...register('email')}
             />
             {errors.email && (
@@ -125,7 +125,7 @@ export function LoginForm() {
                 placeholder="Enter your password"
                 aria-invalid={!!errors.password}
                 aria-describedby={errors.password ? 'portal-password-error' : undefined}
-                className="ui-form-field min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white py-2.5 pl-3 pr-17 text-base placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]"
+                className="ui-form-field min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white py-2.5 pl-3 pr-17 text-base placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
                 {...register('password')}
               />
               <button

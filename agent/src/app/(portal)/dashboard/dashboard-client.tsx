@@ -60,7 +60,7 @@ function QuickActionCard({ href, title, subtitle, icon }: QuickActionProps) {
         <strong className="block text-base font-semibold leading-5 text-[var(--text-main)]">
           {title}
         </strong>
-        <small className="mt-1 block text-sm leading-5 text-[#6d7d70] dark:text-[#808482]">
+        <small className="mt-1 block text-sm leading-5 text-[var(--text-muted)]">
           {subtitle}
         </small>
       </div>
@@ -355,7 +355,7 @@ export function DashboardClient() {
               <p className="text-[clamp(1.8rem,5vw,2.7rem)] font-semibold leading-none tracking-[-.06em] text-[var(--text-main)]">
                 {statsLoading ? '…' : formatCurrency(totalSales)}
               </p>
-              <p className="mt-3 text-sm leading-5 text-[#5b6e61] dark:text-[#808482]">
+              <p className="mt-3 text-sm leading-5 text-[var(--text-sub)]">
                 Gross premium collected
               </p>
             </div>
@@ -375,7 +375,7 @@ export function DashboardClient() {
               <p className="text-[clamp(1.8rem,5vw,2.7rem)] font-semibold leading-none tracking-[-.06em] text-[var(--text-main)]">
                 {statsLoading ? '…' : formatCurrency(netCommission)}
               </p>
-              <p className="mt-3 text-sm leading-5 text-[#5b6e61] dark:text-[#808482]">
+              <p className="mt-3 text-sm leading-5 text-[var(--text-sub)]">
                 Your earned commissions
               </p>
             </div>
@@ -393,7 +393,7 @@ export function DashboardClient() {
               <p className="text-[clamp(1.8rem,5vw,2.7rem)] font-semibold leading-none tracking-[-.06em] text-[var(--text-main)]">
                 {statsLoading ? '…' : productsCount}
               </p>
-              <p className="mt-3 text-sm leading-5 text-[#5b6e61] dark:text-[#808482]">
+              <p className="mt-3 text-sm leading-5 text-[var(--text-sub)]">
                 In your catalogue
               </p>
             </div>
@@ -427,7 +427,7 @@ export function DashboardClient() {
                   'min-h-9 rounded-md px-3 text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-[#006838]',
                   period === '7d'
                     ? 'bg-white text-[#006838] shadow-sm dark:bg-[#1c1e1e] dark:text-[#d0e3c8]'
-                    : 'text-[#5b6e61] hover:text-[var(--text-main)] dark:text-[#808482]'
+                    : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
                 )}
               >
                 7 days
@@ -440,7 +440,7 @@ export function DashboardClient() {
                   'min-h-9 rounded-md px-3 text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-[#006838]',
                   period === '30d'
                     ? 'bg-white text-[#006838] shadow-sm dark:bg-[#1c1e1e] dark:text-[#d0e3c8]'
-                    : 'text-[#5b6e61] hover:text-[var(--text-main)] dark:text-[#808482]'
+                    : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
                 )}
               >
                 30 days
@@ -450,7 +450,7 @@ export function DashboardClient() {
 
           <div className="mt-7 flex items-end justify-between">
             <div>
-              <p className="text-sm text-[#5b6e61] dark:text-[#808482]">Written premium</p>
+              <p className="text-sm text-[var(--text-sub)]">Written premium</p>
               <p className="mt-1 text-3xl font-semibold tracking-[-.05em] text-[var(--text-main)]">
                 {trendLoading ? '…' : formatCurrency(periodPremium)}
               </p>
@@ -502,7 +502,7 @@ export function DashboardClient() {
           </div>
 
           {/* X-axis labels */}
-          <div className="mt-2 grid grid-cols-7 gap-2 text-center text-[11px] font-medium text-[#6d7d70] dark:text-[#808482] sm:gap-4">
+          <div className="mt-2 grid grid-cols-7 gap-2 text-center text-[11px] font-medium text-[var(--text-muted)] sm:gap-4">
             {chartBars.map((bar, idx) => (
               <span key={idx}>{bar.label}</span>
             ))}
@@ -579,7 +579,7 @@ export function DashboardClient() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search activity by product, ref, or status"
-              className="min-h-11 w-full rounded-md border border-[#dfe7df] bg-[#fbfcfa] pl-10 pr-3 text-sm text-[var(--text-main)] placeholder:text-[#808080] transition-colors focus:border-[#006838] focus:outline-none focus:ring-1 focus:ring-[#006838] dark:border-[#475049] dark:bg-[#303530] dark:text-white dark:placeholder:text-[#808482]"
+              className="min-h-11 w-full rounded-md border border-[#dfe7df] bg-[#fbfcfa] pl-10 pr-3 text-sm text-[var(--text-main)] placeholder:text-[var(--text-muted)] transition-colors focus:border-[#006838] focus:outline-none focus:ring-1 focus:ring-[#006838] dark:border-[#475049] dark:bg-[#303530] dark:text-[var(--text-main)] dark:placeholder:text-[var(--text-muted)]"
             />
           </div>
 
@@ -592,7 +592,7 @@ export function DashboardClient() {
                 ))}
               </div>
             ) : filteredActivity.length === 0 ? (
-              <p className="py-10 text-center text-sm text-[#6d7d70] dark:text-[#808482]">
+              <p className="py-10 text-center text-sm text-[var(--text-muted)]">
                 {searchQuery
                   ? 'No activity matches your search.'
                   : 'No recent portfolio activity.'}
@@ -627,7 +627,7 @@ export function DashboardClient() {
                           <strong className="block truncate text-sm font-semibold text-[var(--text-main)] group-hover:text-[#006838] dark:group-hover:text-[#d0e3c8]">
                             {title}
                           </strong>
-                          <small className="mt-0.5 block truncate text-xs text-[#6d7d70] dark:text-[#808482]">
+                          <small className="mt-0.5 block truncate text-xs text-[var(--text-muted)]">
                             {paymentRef} · {dateStr}
                           </small>
                         </span>

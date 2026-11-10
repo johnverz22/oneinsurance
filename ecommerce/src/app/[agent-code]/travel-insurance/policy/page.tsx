@@ -235,7 +235,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
           <h1 id="no-policy" className="text-2xl font-semibold text-[#006838] dark:text-[#d0e3c8]">
             We couldn’t find an issued policy
           </h1>
-          <p className="mt-3 text-base leading-7 text-[#333] dark:text-[#c4c7c5]">
+          <p className="mt-3 text-base leading-7 text-[var(--text-sub)] dark:text-[var(--text-sub)]">
             Your session may have ended, or your policy hasn’t been issued yet. If you’ve already paid, check your email
             for the eCOC, or retrieve your proposal with its number.
           </p>
@@ -636,7 +636,7 @@ function PolicyContent({ agentCode }: { agentCode: string }) {
                         )}
                       />
                       <div className="min-w-0">
-                        <p className="text-xs font-medium text-[#333333] dark:text-[#c4c7c5]">{stop.kind}</p>
+                        <p className="text-xs font-medium text-[var(--text-sub)] dark:text-[var(--text-sub)]">{stop.kind}</p>
                         <p className="text-base font-semibold break-words">{stop.name}</p>
                       </div>
                     </li>

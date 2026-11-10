@@ -623,7 +623,7 @@ function QuoteContent({ agentCode, onEditTrip }: { agentCode: string; onEditTrip
               <div className="hidden sm:flex flex-wrap items-center justify-between gap-4 pt-2">
                 <Link
                   href={`/${agentCode}/travel-insurance/plans`}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[var(--subtle)]"
+                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[var(--subtle)]"
                 >
                   <span className="lg:hidden">← Change plan</span>
                   <span className="max-lg:hidden">← Back to plans</span>

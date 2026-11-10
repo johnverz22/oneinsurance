@@ -148,11 +148,11 @@ export function PortalHeader() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Quick search"
-            className="ui-form-field min-h-11 w-full rounded-md bg-white px-3 text-sm placeholder:text-[#808080] dark:bg-[#303530] dark:placeholder:text-[#808482]"
+            className="ui-form-field min-h-11 w-full rounded-md bg-white px-3 text-sm placeholder:text-[var(--text-muted)] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
           />
         </div>
       ) : (
-        <p className="hidden text-base font-medium text-[#5b6e61] lg:block dark:text-[#b2b7b4]">
+        <p className="hidden text-base font-medium text-[var(--text-sub)] lg:block">
           Agent portal
           {activeItem && (
             <>
@@ -191,7 +191,7 @@ export function PortalHeader() {
           {notificationsOpen && (
             <div className="agent-dashboard__popover absolute right-0 top-14 w-[min(20rem,calc(100vw-2rem))] p-5">
               <strong className="text-base">Notifications</strong>
-              <p className="mt-2 text-base leading-6 text-[#5b6e61] dark:text-[#808482]">
+              <p className="mt-2 text-base leading-6 text-[var(--text-sub)]">
                 No new notifications.
               </p>
             </div>

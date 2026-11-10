@@ -39,8 +39,8 @@ export function PillTabs({ tabs, active, onChange, className }: PillTabsProps) {
             className={cn(
               'inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]',
               isActive
-                ? 'bg-[#f1f2f0] font-semibold text-[#183d2c] dark:bg-[#303232] dark:text-[#f4f5f2]'
-                : 'font-medium text-[#5b6e61] hover:bg-[#f1f2f0] hover:text-[#006838] dark:text-[#b2b7b4] dark:hover:bg-[#303232] dark:hover:text-[#f4f5f2]'
+                ? 'bg-[#f1f2f0] font-semibold text-[var(--text-main)] dark:bg-[#303232]'
+                : 'font-medium text-[var(--text-sub)] hover:bg-[#f1f2f0] hover:text-[#006838] dark:hover:bg-[#303232] dark:hover:text-[var(--text-main)]'
             )}
           >
             {Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />}

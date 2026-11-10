@@ -48,7 +48,7 @@ type Transaction = {
 }
 
 const dash = (
-  <span className="font-sans text-sm font-normal text-[#45564b] dark:text-[#b2b7b4]">
+  <span className="font-sans text-sm font-normal text-[var(--text-sub)]">
     —
   </span>
 )
@@ -241,7 +241,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               <div className="flex-1">
                 <label
                   htmlFor="cases-date-from"
-                  className="mb-1 block text-xs font-medium text-[#45564b] dark:text-[#b2b7b4]"
+                  className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
                 >
                   From
                 </label>
@@ -260,7 +260,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               <div className="flex-1">
                 <label
                   htmlFor="cases-date-to"
-                  className="mb-1 block text-xs font-medium text-[#45564b] dark:text-[#b2b7b4]"
+                  className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
                 >
                   To
                 </label>
@@ -294,7 +294,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               {
                 header: 'Certificate no.',
                 cell: (tx) => (
-                  <span className="font-mono text-xs text-[#45564b] dark:text-[#b2b7b4]">
+                  <span className="font-mono text-xs text-[var(--text-sub)]">
                     {tx.certificate_number ?? dash}
                   </span>
                 ),
@@ -312,7 +312,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               {
                 header: 'Product',
                 cell: (tx) => (
-                  <span className="text-[#45564b] dark:text-[#b2b7b4]">
+                  <span className="text-[var(--text-sub)]">
                     {txProductType(tx, productByCode) ?? dash}
                   </span>
                 ),
@@ -320,7 +320,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               {
                 header: 'Plan',
                 cell: (tx) => (
-                  <span className="text-[#45564b] dark:text-[#b2b7b4]">
+                  <span className="text-[var(--text-sub)]">
                     {tx.plan_name || dash}
                   </span>
                 ),
@@ -330,7 +330,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
                 cell: (tx) => {
                   const period = coveragePeriod(tx)
                   return period ? (
-                    <span className="text-[#45564b] dark:text-[#b2b7b4]">
+                    <span className="text-[var(--text-sub)]">
                       <span className="block text-xs font-medium text-[var(--text-main)]">
                         {period.label}
                       </span>
@@ -357,7 +357,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               {
                 header: 'Currency',
                 cell: (tx) => (
-                  <span className="text-[#45564b] dark:text-[#b2b7b4]">
+                  <span className="text-[var(--text-sub)]">
                     {tx.currency || dash}
                   </span>
                 ),

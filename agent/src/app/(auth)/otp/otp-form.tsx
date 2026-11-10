@@ -130,11 +130,11 @@ export function OtpForm() {
         <h1 className="mt-4 text-[clamp(2.2rem,4vw,3.25rem)] font-semibold leading-[1.08] tracking-[-.055em]">
           Verify your login
         </h1>
-        <p className="mt-4 text-base leading-7 text-[#5b6e61] dark:text-[#c4c7c5]">
+        <p className="mt-4 text-base leading-7 text-[var(--text-sub)]">
           {email ? (
             <>
               Enter the six-digit code sent to{' '}
-              <span className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">{email}</span> to continue.
+              <span className="font-semibold text-[var(--text-main)]">{email}</span> to continue.
             </>
           ) : (
             'Enter the six-digit code sent to your account email to continue.'
@@ -167,9 +167,9 @@ export function OtpForm() {
                   submitOtp(val)
                 }
               }}
-              className="ui-form-field mt-2 min-h-14 w-full rounded-md border border-[#c7d4c9] bg-white px-4 py-3 text-center text-2xl font-semibold tracking-[.45em] placeholder:text-[#808080] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[#b2b7b4]"
+              className="ui-form-field mt-2 min-h-14 w-full rounded-md border border-[#c7d4c9] bg-white px-4 py-3 text-center text-2xl font-semibold tracking-[.45em] placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
             />
-            <p id="login-otp-help" className="mt-2 text-sm leading-6 text-[#5b6e61] dark:text-[#c4c7c5]">
+            <p id="login-otp-help" className="mt-2 text-sm leading-6 text-[var(--text-sub)]">
               Enter the 6-digit verification code sent to your registered email.
             </p>
           </div>
@@ -204,7 +204,7 @@ export function OtpForm() {
         {notice && (
           <p
             role="status"
-            className="mt-5 rounded-md border border-[#c7d4c9] bg-white p-4 text-sm leading-6 text-[#183d2c] dark:border-[#565c58] dark:bg-[#303530] dark:text-[#f4f5f2]"
+            className="mt-5 rounded-md border border-[#c7d4c9] bg-white p-4 text-sm leading-6 text-[var(--text-main)] dark:border-[#565c58] dark:bg-[#303530]"
           >
             {notice}
           </p>

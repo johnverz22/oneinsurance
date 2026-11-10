@@ -43,7 +43,7 @@ type DataTableProps<T> = {
 const clickableCls =
   'cursor-pointer transition-colors hover:bg-[#f1f2f0] dark:hover:bg-[#303232]'
 const fieldLabelCls =
-  'shrink-0 text-xs font-medium text-[#5b6e61] dark:text-[#b2b7b4]'
+  'shrink-0 text-xs font-medium text-[var(--text-sub)]'
 
 function ListRowsSkeleton({ rows = 4 }: { rows?: number }) {
   return (
@@ -127,7 +127,7 @@ export function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-12 text-center text-[#5b6e61] dark:text-[#b2b7b4]"
+                  className="px-4 py-12 text-center text-[var(--text-sub)]"
                 >
                   {emptyMessage}
                 </td>
@@ -170,7 +170,7 @@ export function DataTable<T>({
             {errorMessage}
           </li>
         ) : state === 'empty' ? (
-          <li className="px-4 py-12 text-center text-[#5b6e61] dark:text-[#b2b7b4]">
+          <li className="px-4 py-12 text-center text-[var(--text-sub)]">
             {emptyMessage}
           </li>
         ) : (

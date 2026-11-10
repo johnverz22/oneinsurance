@@ -469,7 +469,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
               <button
                 type="button"
                 onClick={copyProposal}
-                className="no-print inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-transparent px-5 py-2.5 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] dark:text-[#f4f5f2]"
+                className="no-print inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-transparent px-5 py-2.5 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] dark:text-[var(--text-main)]"
               >
                 {copyStatus.startsWith('Proposal') ? (
                   <Check className="size-4" aria-hidden />

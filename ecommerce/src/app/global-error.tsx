@@ -14,7 +14,7 @@ export default function GlobalError({ error }: { error: unknown; retry: () => vo
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-dvh bg-[#fcfdfb] text-[#183d2c] antialiased dark:bg-[#1c1e1e] dark:text-[#f4f5f2]">
+      <body className="min-h-dvh bg-[#fcfdfb] text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)]">
         <title>One Insurance — 500 · Server error</title>
         <ThemeProvider
           attribute="class"

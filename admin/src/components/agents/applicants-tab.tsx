@@ -160,7 +160,7 @@ export function ApplicantsTab() {
               <h3 className="text-lg font-semibold text-[var(--text-main)]">
                 {applicantName(selected)}
               </h3>
-              <p className="text-sm text-[#5b6e61] dark:text-[#b2b7b4]">
+              <p className="text-sm text-[var(--text-sub)]">
                 APP{String(selected.id).padStart(3, '0')} ·{' '}
                 {selected.application_type || 'Agent application'}
               </p>
@@ -170,13 +170,13 @@ export function ApplicantsTab() {
 
           <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-xs text-[#5b6e61] dark:text-[#b2b7b4]">Email</dt>
+              <dt className="text-xs text-[var(--text-sub)]">Email</dt>
               <dd className="font-medium break-all text-[var(--text-main)]">
                 {selected.email}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-[#5b6e61] dark:text-[#b2b7b4]">
+              <dt className="text-xs text-[var(--text-sub)]">
                 Phone number
               </dt>
               <dd className="font-medium text-[var(--text-main)]">
@@ -184,7 +184,7 @@ export function ApplicantsTab() {
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-[#5b6e61] dark:text-[#b2b7b4]">
+              <dt className="text-xs text-[var(--text-sub)]">
                 Applied
               </dt>
               <dd className="font-medium text-[var(--text-main)]">
@@ -192,7 +192,7 @@ export function ApplicantsTab() {
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-[#5b6e61] dark:text-[#b2b7b4]">Notes</dt>
+              <dt className="text-xs text-[var(--text-sub)]">Notes</dt>
               <dd className="font-medium text-[var(--text-main)]">
                 {selected.notes || '—'}
               </dd>
@@ -289,7 +289,7 @@ export function ApplicantsTab() {
           {
             header: 'Type',
             cell: (applicant) => (
-              <span className="text-[#5b6e61] capitalize dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)] capitalize">
                 {applicant.application_type || 'N/A'}
               </span>
             ),
@@ -297,7 +297,7 @@ export function ApplicantsTab() {
           {
             header: 'Email',
             cell: (applicant) => (
-              <span className="text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)]">
                 {applicant.email}
               </span>
             ),
@@ -305,7 +305,7 @@ export function ApplicantsTab() {
           {
             header: 'Phone number',
             cell: (applicant) => (
-              <span className="text-[#5b6e61] dark:text-[#b2b7b4]">
+              <span className="text-[var(--text-sub)]">
                 {applicant.contact_number || 'N/A'}
               </span>
             ),

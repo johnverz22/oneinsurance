@@ -444,7 +444,7 @@ export default function OcrCalibrationClient() {
         <button
           type="button"
           onClick={addEntry}
-          className="flex w-full min-h-11 items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--primary)] text-sm font-semibold text-[var(--primary)] hover:bg-[color-mix(in_srgb,var(--primary)_6%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:border-[#707873] dark:text-[#f4f5f2]"
+          className="flex w-full min-h-11 items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--primary)] text-sm font-semibold text-[var(--primary)] hover:bg-[color-mix(in_srgb,var(--primary)_6%,transparent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] dark:border-[#707873] dark:text-[var(--text-main)]"
         >
           <Plus className="size-4" aria-hidden />
           Add another ID
@@ -492,7 +492,7 @@ export default function OcrCalibrationClient() {
                   type="button"
                   onClick={handleDownload}
                   disabled={anyScanning}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] disabled:opacity-50 dark:border-[#707873] dark:text-[#f4f5f2]"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--primary)] disabled:opacity-50 dark:border-[#707873] dark:text-[var(--text-main)]"
                 >
                   <Download className="size-4" aria-hidden />
                   Download

@@ -294,7 +294,7 @@ export function DestinationCombobox({
       <div className="sticky top-0 z-10 border-b border-[#dfe7df] bg-white p-3 dark:border-[#3d4140] dark:bg-[#262828]">
         <div className="relative">
           <Search
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#808080]"
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[var(--text-muted)]"
             aria-hidden
           />
           <input
@@ -319,13 +319,13 @@ export function DestinationCombobox({
 
       <div className="max-h-[50vh] overflow-y-auto p-1 sm:max-h-72">
         {flatOptions.length === 0 ? (
-          <p className="px-3 py-8 text-center text-sm text-[#808080] dark:text-[#b2b7b4]">
+          <p className="px-3 py-8 text-center text-sm text-[var(--text-muted)] dark:text-[var(--text-muted)]">
             No destinations found.
           </p>
         ) : (
           groupedOptions.map((group) => (
             <div key={group.area} role="group" aria-label={AREA_LABELS[group.area] || group.area}>
-              <div className="sticky top-0 bg-[#f1f2f0] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#808080] dark:bg-[#303232] dark:text-[#b2b7b4]">
+              <div className="sticky top-0 bg-[#f1f2f0] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)] dark:bg-[#303232] dark:text-[var(--text-muted)]">
                 {AREA_LABELS[group.area] || group.area}
               </div>
               <ul className="py-1">
@@ -345,8 +345,8 @@ export function DestinationCombobox({
                       className={cn(
                         'flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm transition-colors',
                         isActive || isSelected
-                          ? 'bg-[#e2eddb] text-[#183d2c] dark:bg-[#304538] dark:text-[#f4f5f2]'
-                          : 'text-[#183d2c] hover:bg-[#f1f2f0] dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
+                          ? 'bg-[#e2eddb] text-[var(--text-main)] dark:bg-[#304538] dark:text-[var(--text-main)]'
+                          : 'text-[var(--text-main)] hover:bg-[#f1f2f0] dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
                       )}
                     >
                       {opt.flag && <CountryFlag flag={opt.flag} className="size-5 shrink-0" />}
@@ -377,7 +377,7 @@ export function DestinationCombobox({
       </div>
       {multiple && (
         <div className="flex items-center justify-between gap-3 border-t border-[#dfe7df] bg-white p-3 dark:border-[#3d4140] dark:bg-[#262828]">
-          <span className="text-xs text-[#808080] dark:text-[#b2b7b4]">
+          <span className="text-xs text-[var(--text-muted)] dark:text-[var(--text-muted)]">
             {selectedValues.length} selected
           </span>
           <button
@@ -429,7 +429,7 @@ export function DestinationCombobox({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="size-5 shrink-0 text-[#808080]"
+                className="size-5 shrink-0 text-[var(--text-muted)]"
                 aria-hidden
               >
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -443,7 +443,7 @@ export function DestinationCombobox({
             <span
               className={cn(
                 'truncate',
-                showPlaceholder && 'text-[#808080] dark:text-[#b2b7b4]'
+                showPlaceholder && 'text-[var(--text-muted)] dark:text-[var(--text-muted)]'
               )}
             >
               {selectedOption?.label || placeholder}
@@ -467,7 +467,7 @@ export function DestinationCombobox({
                 }}
                 className="inline-flex size-6 items-center justify-center rounded-full hover:bg-[#f1f2f0] dark:hover:bg-[#303232]"
               >
-                <X className="size-4 text-[#808080]" aria-hidden />
+                <X className="size-4 text-[var(--text-muted)]" aria-hidden />
               </span>
             )}
             <svg
@@ -481,7 +481,7 @@ export function DestinationCombobox({
               strokeLinecap="round"
               strokeLinejoin="round"
               className={cn(
-                'size-5 shrink-0 text-[#808080] transition-transform',
+                'size-5 shrink-0 text-[var(--text-muted)] transition-transform',
                 open && 'rotate-180'
               )}
               aria-hidden
@@ -560,7 +560,7 @@ export function DestinationCombobox({
               <span
                 key={opt.value}
                 title={opt.label}
-                className="inline-flex max-w-[9rem] shrink-0 items-center gap-1 rounded-full border border-[#c7d4c9] bg-[#f1f2f0] py-0.5 pl-2 pr-0.5 text-xs font-medium text-[#183d2c] dark:border-[#565c58] dark:bg-[#303232] dark:text-[#f4f5f2]"
+                className="inline-flex max-w-[9rem] shrink-0 items-center gap-1 rounded-full border border-[#c7d4c9] bg-[#f1f2f0] py-0.5 pl-2 pr-0.5 text-xs font-medium text-[var(--text-main)] dark:border-[#565c58] dark:bg-[#303232] dark:text-[var(--text-main)]"
               >
                 {opt.flag && <CountryFlag flag={opt.flag} className="size-3.5 shrink-0" />}
                 <span className="truncate">{opt.label}</span>
@@ -572,7 +572,7 @@ export function DestinationCombobox({
                     removeChip(opt.value)
                   }}
                   aria-label={`Remove ${opt.label}`}
-                  className="relative -mr-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[#808080] hover:bg-[#dfe7df] hover:text-[#183d2c] dark:text-[#b2b7b4] dark:hover:bg-[#3d4140] dark:hover:text-[#f4f5f2] sm:size-4 [&]:after:absolute [&]:after:-inset-2 [&]:sm:after:content-none [&]:after:content-['']"
+                  className="relative -mr-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[var(--text-muted)] hover:bg-[#dfe7df] hover:text-[var(--text-main)] dark:text-[var(--text-muted)] dark:hover:bg-[#3d4140] dark:hover:text-[var(--text-main)] sm:size-4 [&]:after:absolute [&]:after:-inset-2 [&]:sm:after:content-none [&]:after:content-['']"
                 >
                   <X className="size-3" aria-hidden />
                 </button>
@@ -622,7 +622,7 @@ export function DestinationCombobox({
                 ? `${uid}-option-${activeIndex}`
                 : undefined
             }
-            className="min-w-[5rem] shrink-0 bg-transparent text-sm text-[#183d2c] placeholder-[#808080] outline-none dark:text-[#f4f5f2] dark:placeholder-[#b2b7b4]"
+            className="min-w-[5rem] shrink-0 bg-transparent text-sm text-[var(--text-main)] placeholder:text-[var(--text-muted)] outline-none dark:text-[var(--text-main)] dark:placeholder:text-[var(--text-muted)]"
             style={{ width: showPlaceholder ? '100%' : 'auto' }}
           />
         </div>
@@ -650,7 +650,7 @@ export function DestinationCombobox({
             strokeLinecap="round"
             strokeLinejoin="round"
             className={cn(
-              'size-5 shrink-0 text-[#808080] transition-transform',
+              'size-5 shrink-0 text-[var(--text-muted)] transition-transform',
               open && 'rotate-180'
             )}
             aria-hidden

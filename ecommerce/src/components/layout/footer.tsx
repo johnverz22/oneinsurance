@@ -16,7 +16,7 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
 
   return (
     <footer id="footer" className="border-t border-[#dfe7df] bg-white p-3 dark:border-[#3d4140] dark:bg-[#171919] sm:p-5">
-      <div className="mx-auto max-w-7xl px-6 pt-10 pb-6 sm:px-10 lg:px-12 lg:pt-12 text-[#183d2c] dark:text-[#f4f5f2]">
+      <div className="mx-auto max-w-7xl px-6 pt-10 pb-6 sm:px-10 lg:px-12 lg:pt-12 text-[var(--text-main)] dark:text-[var(--text-main)]">
         {/* Main 3-column / 2-column Grid */}
         <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-[1.1fr_1fr_1.1fr] xl:gap-16">
           {/* Column 1: Brand & Agent */}
@@ -41,14 +41,14 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
                 className="hidden h-auto w-44 dark:block"
               />
             </Link>
-            <p className="mt-5 max-w-xs text-xl font-semibold leading-snug text-[#183d2c] dark:text-[#f4f5f2]">
+            <p className="mt-5 max-w-xs text-xl font-semibold leading-snug text-[var(--text-main)] dark:text-[var(--text-main)]">
               Clear choices.
               <br />
               Cover for what matters.
             </p>
-            <p className="mt-3 text-base leading-normal text-[#333333] dark:text-[#c4c7c5]">
+            <p className="mt-3 text-base leading-normal text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               A brand of{' '}
-              <span className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+              <span className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                 IFRC Insurance
               </span>
               .
@@ -56,12 +56,12 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
             <div className="mt-6">
               <Link
                 href="/agent-application#application"
-                className="inline-flex min-h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-md border border-[#006838] px-5 py-2.5 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:focus-visible:outline-white transition"
+                className="inline-flex min-h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-md border border-[#006838] px-5 py-2.5 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:focus-visible:outline-white transition"
               >
                 <span>Become an agent</span>
                 <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
               </Link>
-              <p className="mt-2 text-xs font-medium text-[#808080] dark:text-[#b2b7b4]">
+              <p className="mt-2 text-xs font-medium text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                 Interested in selling insurance? Join our accredited advisor network.
               </p>
             </div>
@@ -72,7 +72,7 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#006838] dark:text-[#d0e3c8]">
               Explore insurance
             </h2>
-            <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-[#333333] dark:text-[#c4c7c5]">
+            <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               <li>
                 <Link
                   href={`/${agentCode}/travel-insurance`}
@@ -130,11 +130,11 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
             <h2 className="text-xs font-bold uppercase tracking-wider text-[#006838] dark:text-[#d0e3c8]">
               Get in touch
             </h2>
-            <address className="mt-4 space-y-3 text-sm not-italic text-[#333333] dark:text-[#c4c7c5]">
+            <address className="mt-4 space-y-3 text-sm not-italic text-[var(--text-sub)] dark:text-[var(--text-sub)]">
               <div className="flex items-start gap-3">
                 <MapPin className="size-5 mt-1 shrink-0 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
                 <p className="leading-snug break-words [overflow-wrap:anywhere]">
-                  <span className="font-semibold text-[#183d2c] dark:text-[#f4f5f2]">
+                  <span className="font-semibold text-[var(--text-main)] dark:text-[var(--text-main)]">
                     IFRC Insurance Head Office
                   </span>
                   <br />
@@ -163,7 +163,7 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
 
             <Link
               href={`/${agentCode}/providers`}
-              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-sm text-sm text-[#333333] hover:text-[#006838] hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#c4c7c5] dark:hover:text-white dark:focus-visible:outline-white"
+              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-sm text-sm text-[var(--text-sub)] hover:text-[#006838] hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[var(--text-sub)] dark:hover:text-white dark:focus-visible:outline-white"
             >
               <span>Our providers</span>
               <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
@@ -172,7 +172,7 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
         </div>
 
         {/* Bottom Legal Links & Copyright */}
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-[#dfe7df] pt-5 pb-[env(safe-area-inset-bottom)] text-xs text-[#808080] dark:border-[#3d4140] dark:text-[#b2b7b4] sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-[#dfe7df] pt-5 pb-[env(safe-area-inset-bottom)] text-xs text-[var(--text-muted)] dark:border-[#3d4140] dark:text-[var(--text-muted)] sm:flex-row">
           <p className="leading-snug text-center sm:text-left">© 2026 One Insurance · A brand of IFRC Insurance.</p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center">
             <Link

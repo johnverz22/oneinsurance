@@ -9,7 +9,7 @@ import { titleCase } from '@/utils/trip-summary'
 import { ScrollableModal } from '@/components/ui/scrollable-modal'
 
 const outlineBtn =
-  'inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[#f4f5f2] dark:hover:bg-[#303232]'
+  'inline-flex min-h-11 items-center justify-center rounded-md border border-[#006838] px-4 py-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] dark:border-[#707873] dark:text-[var(--text-main)] dark:hover:bg-[#303232]'
 
 export function DataSharingDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
@@ -67,7 +67,7 @@ interface ReviewDialogProps {
 
 const Row = ({ label, value, wide }: { label: string; value?: string | null; wide?: boolean }) => (
   <div className={`min-w-0 ${wide ? 'sm:col-span-2' : ''}`}>
-    <dt className="text-[#808080] dark:text-[#c4c7c5]">{label}</dt>
+    <dt className="text-[var(--text-muted)] dark:text-[var(--text-sub)]">{label}</dt>
     <dd className="mt-1 break-words font-medium">{value || 'Not provided'}</dd>
   </div>
 )
@@ -105,10 +105,10 @@ function ApprovalForm({
         />
         <span>I have reviewed the details above and approve this application for submission.</span>
       </label>
-      <p className="mt-3 text-xs leading-5 text-[#808080] dark:text-[#c4c7c5]">
+      <p className="mt-3 text-xs leading-5 text-[var(--text-muted)] dark:text-[var(--text-sub)]">
         Generated proposals cannot be edited. Changes after submission require cancellation and a new quote.
       </p>
-      <p role="status" className="mt-3 text-sm text-[#808080] dark:text-[#c4c7c5]">
+      <p role="status" className="mt-3 text-sm text-[var(--text-muted)] dark:text-[var(--text-sub)]">
         {submitting
           ? slow
             ? 'This is taking longer than usual. Please keep this page open — we will stop and let you retry after 60 seconds.'
@@ -175,7 +175,7 @@ export function ReviewDialog({
       titleId="application-review-title"
       closeLabel="Close application review"
     >
-      <p className="text-base leading-6 text-[#808080] dark:text-[#c4c7c5]">
+      <p className="text-base leading-6 text-[var(--text-muted)] dark:text-[var(--text-sub)]">
         Check the travel, identity and plan details below before approving and submitting your application.
       </p>
 
@@ -257,10 +257,10 @@ export function ReviewDialog({
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-[#808080] dark:text-[#c4c7c5]">No add-ons added</p>
+              <p className="mt-3 text-sm text-[var(--text-muted)] dark:text-[var(--text-sub)]">No add-ons added</p>
             )}
             {addons.length > 0 && (
-              <p className="mt-3 text-xs text-[#808080] dark:text-[#c4c7c5]">
+              <p className="mt-3 text-xs text-[var(--text-muted)] dark:text-[var(--text-sub)]">
                 Add-ons are priced when your quote is generated.
               </p>
             )}

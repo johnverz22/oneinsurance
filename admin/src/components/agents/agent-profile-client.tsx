@@ -193,13 +193,13 @@ type AgentStatistics = {
 
 const cardCls =
   'rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6'
-const mutedTextCls = 'text-[#45564b] dark:text-[#b2b7b4]'
+const mutedTextCls = 'text-[var(--text-sub)]'
 const labelCls = `mb-1 block text-xs font-medium ${mutedTextCls}`
 const valueCls = 'font-medium text-[var(--text-main)]'
 const iconBoxCls =
   'flex size-9 shrink-0 items-center justify-center rounded-md bg-[#eff6ef] text-[#006838] dark:bg-[#2b352d] dark:text-[#9fd4ae]'
 const actionBtnCls =
-  'flex size-9 items-center justify-center rounded-md border border-[#dfe7df] text-[#45564b] transition-colors hover:border-[#006838] hover:text-[#006838] dark:border-[#3d4140] dark:text-[#b2b7b4] dark:hover:text-[#9fd4ae]'
+  'flex size-9 items-center justify-center rounded-md border border-[#dfe7df] text-[var(--text-sub)] transition-colors hover:border-[#006838] hover:text-[#006838] dark:border-[#3d4140] dark:hover:text-[#9fd4ae]'
 const linkValueCls =
   'font-medium text-[#006838] underline-offset-2 hover:underline dark:text-[#9fd4ae]'
 
@@ -555,7 +555,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                           <button
                             type="button"
                             onClick={copyCode}
-                            className="flex size-6 items-center justify-center rounded-md text-[#45564b] transition-colors hover:bg-[#eff6ef] hover:text-[#006838] dark:text-[#b2b7b4] dark:hover:bg-[#2b352d] dark:hover:text-[#9fd4ae]"
+                            className="flex size-6 items-center justify-center rounded-md text-[var(--text-sub)] transition-colors hover:bg-[#eff6ef] hover:text-[#006838] dark:hover:bg-[#2b352d] dark:hover:text-[#9fd4ae]"
                             title="Copy agent code"
                             aria-label="Copy agent code"
                           >
@@ -585,7 +585,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                     </span>
                   </h3>
                   {bankDetails.length === 0 && eWallets.length === 0 ? (
-                    <p className="mt-4 text-sm text-[#45564b] dark:text-[#b2b7b4]">
+                    <p className="mt-4 text-sm text-[var(--text-sub)]">
                       No payment accounts on record.
                     </p>
                   ) : (
@@ -691,7 +691,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                     Verification documents
                   </span>
                 </h3>
-                <p className="mt-1 text-sm text-[#45564b] dark:text-[#b2b7b4]">
+                <p className="mt-1 text-sm text-[var(--text-sub)]">
                   Documents uploaded by the agent for account verification.
                 </p>
 
@@ -903,7 +903,7 @@ function FileViewerModal({
         {error && (
           <div className="flex h-48 flex-col items-center justify-center gap-2 text-center">
             <p className="text-sm text-[#b91c1c]">{error}</p>
-            <p className="text-xs text-[#45564b] dark:text-[#b2b7b4]">
+            <p className="text-xs text-[var(--text-sub)]">
               Check your connection and try again.
             </p>
           </div>
@@ -925,7 +925,7 @@ function FileViewerModal({
         )}
         {blobUrl && !isImage && !isPdf && (
           <div className="flex h-48 flex-col items-center justify-center gap-3 text-center">
-            <p className="text-sm text-[#45564b] dark:text-[#b2b7b4]">
+            <p className="text-sm text-[var(--text-sub)]">
               This file type cannot be previewed in the browser.
             </p>
             <a
