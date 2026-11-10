@@ -9,7 +9,8 @@
  *      accessible export dropdown (aria-haspopup), result count + removable filter chips
  *   3. Table: removed always-N/A Certificate No (merged into Policy cell), status column
  *      with pill, Payment ID in monospace+copy button, title-cased product, right-aligned
- *      numbers, date two-line with nowrap, sortable Created/Premium/Commission, sticky header,
+ *      numbers, date two-line with nowrap, sortable Created/Premium, sticky header,
+ *      net commission shown under Premium as "NC {amount}" with a legend below the table,
  *      accessible semantics, empty/error states
  *   4. Pagination: "Page X of Y" nowrap, first/last buttons, 40px targets, aria-disabled
  *   5. States: skeleton rows, empty state with clear-filters, error with retry, export toast
@@ -1019,7 +1020,7 @@ export function SalesClient() {
 
             {/* ── Desktop table (≥ lg) ── */}
             <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[800px] border-collapse text-left text-sm">
                 <caption className="sr-only">
                   Transaction history — {totalItems} record{totalItems !== 1 ? 's' : ''}
                 </caption>
@@ -1037,7 +1038,7 @@ export function SalesClient() {
                     <th scope="col" className="px-3 py-3 font-semibold">
                       Product
                     </th>
-                    {/* Premium — sortable */}
+                    {/* Premium — sortable; net commission renders as "NC {amount}" underneath */}
                     <SortHeader
                       field="premium"
                       sortField={sortField}
@@ -1046,16 +1047,6 @@ export function SalesClient() {
                       className="whitespace-nowrap text-right"
                     >
                       Premium
-                    </SortHeader>
-                    {/* Net commission — sortable */}
-                    <SortHeader
-                      field="commission"
-                      sortField={sortField}
-                      sortDir={sortDir}
-                      onSort={handleSort}
-                      className="whitespace-nowrap text-right"
-                    >
-                      Net comm.
                     </SortHeader>
                     {/* Created — sortable, default sort */}
                     <SortHeader
@@ -1133,23 +1124,18 @@ export function SalesClient() {
                             )}
                           </td>
 
-                          {/* Premium — right-aligned, tabular nums */}
-                          <td className="px-3 py-2.5 align-middle text-right whitespace-nowrap tabular-nums text-sm font-medium text-[var(--text-main)]">
-                            {formatCurrency(premium)}
-                          </td>
-
-                          {/* Net commission — pending or settled value */}
+                          {/* Premium — right-aligned, tabular nums; net commission as "NC {amount}" sub-line */}
                           <td className="px-3 py-2.5 align-middle text-right whitespace-nowrap tabular-nums">
+                            <span className="block text-sm font-medium text-[var(--text-main)]">
+                              {formatCurrency(premium)}
+                            </span>
                             {commPending ? (
-                              <span
-                                className="text-xs font-medium text-[#8a6200] dark:text-[#f0ca72]"
-                                title="Commission settled once transaction is completed"
-                              >
-                                Pending
+                              <span className="block text-xs font-medium text-[#8a6200] dark:text-[#f0ca72]">
+                                NC Pending
                               </span>
                             ) : (
-                              <span className="text-sm font-medium text-[var(--text-main)]">
-                                {formatCurrency(comm)}
+                              <span className="block text-xs text-[var(--text-sub)]">
+                                NC {formatCurrency(comm)}
                               </span>
                             )}
                           </td>
@@ -1180,6 +1166,13 @@ export function SalesClient() {
               </table>
             </div>
           </>
+        )}
+
+        {/* ── Net commission legend (below the table, per official mockup) ── */}
+        {!txError && (
+          <p className="px-5 pb-1 pt-3 text-sm text-[var(--text-muted)] sm:px-6">
+            Net Commission (NC)
+          </p>
         )}
 
         {/* ── 4. Pagination ── */}
