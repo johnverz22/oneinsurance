@@ -20,6 +20,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
 import type { Agent, AgentsResponse } from '@/types/admin/people'
 
@@ -47,6 +48,10 @@ export function AgentsTab() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const dateFrom = dateRange?.from ?? ''
+  const dateTo = dateRange?.to ?? ''
+  const hasDateFilter = !!dateRange
 
   const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null)
   const [activateTarget, setActivateTarget] = useState<Agent | null>(null)
@@ -58,7 +63,7 @@ export function AgentsTab() {
   }, [search])
 
   const { data, isLoading, isError } = useQuery<AgentsResponse>({
-    queryKey: ['admin-agents', page, searchDebounced],
+    queryKey: ['admin-agents', page, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -67,6 +72,8 @@ export function AgentsTab() {
         sort_order: 'desc',
       })
       if (searchDebounced) params.set('search', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/agents?${params}`)
       if (!res.ok) throw new Error('Failed to load agents')
       return (await res.json()) as AgentsResponse
@@ -76,6 +83,16 @@ export function AgentsTab() {
 
   const agents = data?.data?.data ?? []
   const pagination = data?.data
+
+  // Client-side fallback if the upstream ignores date_from/date_to
+  const filteredAgents = agents.filter((agent) => {
+    if (!hasDateFilter) return true
+    const day = (agent.created_at ?? '').slice(0, 10)
+    if (!day) return false
+    if (dateFrom && day < dateFrom) return false
+    if (dateTo && day > dateTo) return false
+    return true
+  })
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['admin-agents'] })
@@ -147,12 +164,12 @@ export function AgentsTab() {
   }
 
   function handleExport() {
-    if (agents.length === 0) {
+    if (filteredAgents.length === 0) {
       toast.info('No agents to export')
       return
     }
     exportToCSV(
-      agents.map((a) => ({
+      filteredAgents.map((a) => ({
         agent_code: a.settings?.code ?? a.agent_code ?? '',
         name: agentDisplayName(a),
         type: a.role ?? a.designation ?? '',
@@ -162,7 +179,7 @@ export function AgentsTab() {
       })),
       `agents-${new Date().toISOString().split('T')[0]}.csv`
     )
-    toast.success(`Exported ${agents.length} agent(s)`)
+    toast.success(`Exported ${filteredAgents.length} agent(s)`)
   }
 
   return (
@@ -182,7 +199,17 @@ export function AgentsTab() {
             className="portal-table-filters__form"
             onSubmit={(e) => e.preventDefault()}
           >
-            <div className="portal-table-filters__field w-full">
+            <div className="portal-table-filters__date w-full">
+              <DateRangeField
+                id="agents-range"
+                value={dateRange}
+                onApply={(range) => {
+                  setDateRange(range)
+                  setPage(1)
+                }}
+              />
+            </div>
+            <div className="portal-table-filters__search w-full">
               <SearchInput
                 value={search}
                 onChange={(v) => {
@@ -192,6 +219,19 @@ export function AgentsTab() {
                 placeholder="Search agents"
               />
             </div>
+            {(search || dateRange) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setDateRange(null)
+                  setPage(1)
+                }}
+                className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+              >
+                Clear
+              </button>
+            )}
             <div
               className="portal-table-filters__actions"
               role="group"
@@ -213,8 +253,9 @@ export function AgentsTab() {
         columns={[
           {
             header: 'Agent code',
+            rowHeader: true,
             cell: (agent) => (
-              <span className="text-xs font-normal text-[var(--text-main)]">
+              <span className="text-sm font-normal text-[var(--text-main)]">
                 {(agent.settings?.code ?? agent.agent_code ?? 'N/A').toUpperCase()}
               </span>
             ),
@@ -228,14 +269,7 @@ export function AgentsTab() {
               </span>
             ),
           },
-          {
-            header: 'Type',
-            cell: (agent) => (
-              <span className="text-[var(--text-sub)]">
-                {agent.designation ?? agent.role ?? 'Agent'}
-              </span>
-            ),
-          },
+
           {
             header: 'Email',
             cell: (agent) => (
@@ -309,13 +343,15 @@ export function AgentsTab() {
             },
           },
         ]}
-        rows={agents}
+        rows={filteredAgents}
         getRowKey={(agent) => agent.id}
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load agents. Please try again."
         emptyMessage={
-          searchDebounced ? 'No agents match your search.' : 'No records found.'
+          searchDebounced || hasDateFilter
+            ? 'No agents match your search.'
+            : 'No records found.'
         }
       />
 

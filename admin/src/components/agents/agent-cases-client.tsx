@@ -11,16 +11,14 @@ import { StatusPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
 import { toast } from 'sonner'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
-import { cn, formatPersonName } from '@/lib/utils'
+import { formatPersonName } from '@/lib/utils'
 import { txProductType } from '@/lib/transactions'
-import {
-  btnOutlineGreenCls,
-  fieldCls,
-} from '@/lib/ui-classes'
+import { btnOutlineGreenCls } from '@/lib/ui-classes'
 import type { Agent } from '@/types/admin/people'
 import type { ApiResponse, Paginated, Product } from '@/types/admin/catalog'
 
@@ -109,8 +107,9 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
 
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const dateFrom = dateRange?.from ?? ''
+  const dateTo = dateRange?.to ?? ''
 
   const { data: agent } = useQuery<Agent>({
     queryKey: ['admin-agent-detail', agentId],
@@ -272,49 +271,24 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
                 className="portal-table-filters__form"
                 onSubmit={(e) => e.preventDefault()}
               >
-                <div className="portal-table-filters__field w-full">
+                <div className="portal-table-filters__date w-full">
+                  <DateRangeField
+                    id="cases-range"
+                    value={dateRange}
+                    onApply={(range) => {
+                      setDateRange(range)
+                      setPage(1)
+                    }}
+                  />
+                </div>
+                <div className="portal-table-filters__search w-full">
                   <SearchInput
                     value={search}
-                    onChange={setSearch}
+                    onChange={(v) => {
+                      setSearch(v)
+                      setPage(1)
+                    }}
                     placeholder="Search policy, certificate, holder"
-                  />
-                </div>
-                <div className="portal-table-filters__field w-full">
-                  <label
-                    htmlFor="cases-date-from"
-                    className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
-                  >
-                    From
-                  </label>
-                  <input
-                    id="cases-date-from"
-                    type="date"
-                    value={dateFrom}
-                    max={dateTo || undefined}
-                    onChange={(e) => {
-                      setDateFrom(e.target.value)
-                      setPage(1)
-                    }}
-                    className={cn(fieldCls, 'mt-0')}
-                  />
-                </div>
-                <div className="portal-table-filters__field w-full">
-                  <label
-                    htmlFor="cases-date-to"
-                    className="mb-1 block text-xs font-medium text-[var(--text-sub)]"
-                  >
-                    To
-                  </label>
-                  <input
-                    id="cases-date-to"
-                    type="date"
-                    value={dateTo}
-                    min={dateFrom || undefined}
-                    onChange={(e) => {
-                      setDateTo(e.target.value)
-                      setPage(1)
-                    }}
-                    className={cn(fieldCls, 'mt-0')}
                   />
                 </div>
                 <div

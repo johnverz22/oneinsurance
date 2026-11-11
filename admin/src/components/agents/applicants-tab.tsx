@@ -14,6 +14,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
 import { formatDate } from '@/lib/utils'
 import {
@@ -39,6 +40,10 @@ export function ApplicantsTab() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const dateFrom = dateRange?.from ?? ''
+  const dateTo = dateRange?.to ?? ''
+  const hasDateFilter = !!dateRange
 
   const [selected, setSelected] = useState<Applicant | null>(null)
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null)
@@ -50,10 +55,12 @@ export function ApplicantsTab() {
   }, [search])
 
   const { data, isLoading, isError } = useQuery<PaginatedType<Applicant>>({
-    queryKey: ['admin-applicants', page, searchDebounced],
+    queryKey: ['admin-applicants', page, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({ page: String(page), per_page: '15' })
       if (searchDebounced) params.set('search', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/applicants?${params}`)
       if (!res.ok) throw new Error('Failed to load applicants')
       const json = await res.json()
@@ -63,6 +70,16 @@ export function ApplicantsTab() {
   })
 
   const applicants = data?.data ?? []
+
+  // Client-side fallback if the upstream ignores date_from/date_to
+  const filteredApplicants = applicants.filter((applicant) => {
+    if (!hasDateFilter) return true
+    const day = (applicant.created_at ?? '').slice(0, 10)
+    if (!day) return false
+    if (dateFrom && day < dateFrom) return false
+    if (dateTo && day > dateTo) return false
+    return true
+  })
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['admin-applicants'] })
@@ -119,12 +136,12 @@ export function ApplicantsTab() {
   }
 
   function handleExport() {
-    if (applicants.length === 0) {
+    if (filteredApplicants.length === 0) {
       toast.info('No applicants to export')
       return
     }
     exportToCSV(
-      applicants.map((a) => ({
+      filteredApplicants.map((a) => ({
         id: `APP${String(a.id).padStart(3, '0')}`,
         name: applicantName(a),
         type: a.application_type,
@@ -135,7 +152,7 @@ export function ApplicantsTab() {
       })),
       `applicants-${new Date().toISOString().split('T')[0]}.csv`
     )
-    toast.success(`Exported ${applicants.length} applicant(s)`)
+    toast.success(`Exported ${filteredApplicants.length} applicant(s)`)
   }
 
   // ── Detail view ──────────────────────────────────────────────────────────
@@ -248,7 +265,17 @@ export function ApplicantsTab() {
             className="portal-table-filters__form"
             onSubmit={(e) => e.preventDefault()}
           >
-            <div className="portal-table-filters__field w-full">
+            <div className="portal-table-filters__date w-full">
+              <DateRangeField
+                id="applicants-range"
+                value={dateRange}
+                onApply={(range) => {
+                  setDateRange(range)
+                  setPage(1)
+                }}
+              />
+            </div>
+            <div className="portal-table-filters__search w-full">
               <SearchInput
                 value={search}
                 onChange={(v) => {
@@ -258,6 +285,19 @@ export function ApplicantsTab() {
                 placeholder="Search applicants"
               />
             </div>
+            {(search || dateRange) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setDateRange(null)
+                  setPage(1)
+                }}
+                className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+              >
+                Clear
+              </button>
+            )}
             <div
               className="portal-table-filters__actions"
               role="group"
@@ -280,8 +320,9 @@ export function ApplicantsTab() {
         columns={[
           {
             header: 'ID',
+            rowHeader: true,
             cell: (applicant) => (
-              <span className="text-xs font-normal text-[var(--text-main)]">
+              <span className="text-sm font-normal text-[var(--text-main)]">
                 APP{String(applicant.id).padStart(3, '0')}
               </span>
             ),
@@ -312,7 +353,7 @@ export function ApplicantsTab() {
             ),
           },
           {
-            header: 'Phone number',
+            header: 'Phone',
             cell: (applicant) => (
               <span className="text-[var(--text-sub)]">
                 {applicant.contact_number || 'N/A'}
@@ -358,13 +399,13 @@ export function ApplicantsTab() {
               ) : null,
           },
         ]}
-        rows={applicants}
+        rows={filteredApplicants}
         getRowKey={(applicant) => applicant.id}
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load applicants. Please try again."
         emptyMessage={
-          searchDebounced
+          searchDebounced || hasDateFilter
             ? 'No applicants match your search.'
             : 'No records found.'
         }

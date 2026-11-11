@@ -15,6 +15,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
 import { cn, formatDate } from '@/lib/utils'
 import {
@@ -36,7 +37,13 @@ const emptyForm: LobPayload = {
   status: 'active',
 }
 
-export function LobsTab() {
+export function LobsTab({
+  createNonce,
+  onCreateNonceConsumed,
+}: {
+  createNonce: number
+  onCreateNonceConsumed?: () => void
+}) {
   const authFetch = useAuthFetch()
   const hasHydrated = useHasHydrated()
   const isAuthenticated = useIsAuthenticated()
@@ -46,9 +53,10 @@ export function LobsTab() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const hasDateFilter = !!(dateFrom || dateTo)
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const dateFrom = dateRange?.from ?? ''
+  const dateTo = dateRange?.to ?? ''
+  const hasDateFilter = !!dateRange
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<LineOfBusiness | null>(null)
@@ -61,6 +69,14 @@ export function LobsTab() {
     const t = setTimeout(() => setSearchDebounced(search.trim()), 300)
     return () => clearTimeout(t)
   }, [search])
+
+  useEffect(() => {
+    if (createNonce <= 0) return
+    setEditing(null)
+    setForm(emptyForm)
+    setFormOpen(true)
+    onCreateNonceConsumed?.()
+  }, [createNonce, onCreateNonceConsumed])
 
   const { data, isLoading, isError } = useQuery<Paginated<LineOfBusiness>>({
     queryKey: ['admin-lobs', page, searchDebounced, dateFrom, dateTo],
@@ -194,7 +210,17 @@ export function LobsTab() {
             className="portal-table-filters__form"
             onSubmit={(e) => e.preventDefault()}
           >
-            <div className="portal-table-filters__field w-full">
+            <div className="portal-table-filters__date w-full">
+              <DateRangeField
+                id="lob-range"
+                value={dateRange}
+                onApply={(range) => {
+                  setDateRange(range)
+                  setPage(1)
+                }}
+              />
+            </div>
+            <div className="portal-table-filters__search w-full">
               <SearchInput
                 value={search}
                 onChange={(v) => {
@@ -204,49 +230,17 @@ export function LobsTab() {
                 placeholder="Search lines of business"
               />
             </div>
-            <div className="portal-table-filters__field w-full">
-              <label htmlFor="lob-date-from" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
-                From
-              </label>
-              <input
-                id="lob-date-from"
-                type="date"
-                value={dateFrom}
-                max={dateTo || undefined}
-                onChange={(e) => {
-                  setDateFrom(e.target.value)
-                  setPage(1)
-                }}
-                className={cn(fieldCls, 'mt-0')}
-              />
-            </div>
-            <div className="portal-table-filters__field w-full">
-              <label htmlFor="lob-date-to" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
-                To
-              </label>
-              <input
-                id="lob-date-to"
-                type="date"
-                value={dateTo}
-                min={dateFrom || undefined}
-                onChange={(e) => {
-                  setDateTo(e.target.value)
-                  setPage(1)
-                }}
-                className={cn(fieldCls, 'mt-0')}
-              />
-            </div>
             <div
               className="portal-table-filters__actions"
               role="group"
               aria-label="Table actions"
             >
-              {hasDateFilter && (
+              {(search || dateRange) && (
                 <button
                   type="button"
                   onClick={() => {
-                    setDateFrom('')
-                    setDateTo('')
+                    setSearch('')
+                    setDateRange(null)
                     setPage(1)
                   }}
                   className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
@@ -275,7 +269,8 @@ export function LobsTab() {
         className="mt-5"
         columns={[
           {
-            header: 'Name',
+            header: 'Line of business',
+            rowHeader: true,
             mobile: 'primary',
             cell: (lob) => (
               <span className="font-semibold text-[var(--text-main)]">
@@ -286,18 +281,14 @@ export function LobsTab() {
           {
             header: 'Slug',
             cell: (lob) => (
-              <span className="text-xs text-[var(--text-sub)]">
-                {lob.slug || '—'}
+              <span className="block">
+                <span className="block text-xs text-[var(--text-main)]">
+                  {lob.slug || '—'}
+                </span>
+                <span className="mt-1 block text-xs text-[var(--text-sub)]">
+                  {lob.description || 'No description'}
+                </span>
               </span>
-            ),
-          },
-          {
-            header: 'Description',
-            className: 'max-w-xs',
-            cell: (lob) => (
-              <p className="line-clamp-2 text-xs text-[var(--text-sub)]">
-                {lob.description || '—'}
-              </p>
             ),
           },
           {
@@ -306,19 +297,12 @@ export function LobsTab() {
             cell: (lob) => <StatusPill status={lob.status} />,
           },
           {
-            header: 'Created',
-            className: 'whitespace-nowrap',
-            cell: (lob) => (
-              <span className="text-xs whitespace-nowrap text-[var(--text-sub)]">
-                {formatDate(lob.created_at)}
-              </span>
-            ),
-          },
-          {
-            header: 'Actions',
+            header: 'Action',
+            headerClassName: 'text-center',
+            className: 'py-3 text-center',
             mobile: 'action',
             cell: (lob) => (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center justify-center gap-1">
                 <ActionIcon
                   label={`Edit ${lob.name}`}
                   hint="Edit"
@@ -343,11 +327,7 @@ export function LobsTab() {
         isLoading={isLoading}
         isError={isError}
         errorMessage="Failed to load lines of business. Please try again."
-        emptyMessage={
-          searchDebounced || hasDateFilter
-            ? 'No lines of business match your filters.'
-            : 'No records found.'
-        }
+        emptyMessage="No lines of business to show."
       />
 
       {data && (

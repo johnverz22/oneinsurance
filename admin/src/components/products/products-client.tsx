@@ -14,6 +14,12 @@ const TABS = [
 
 export function ProductsClient() {
   const [activeTab, setActiveTab] = useState('products')
+  const [lobCreateNonce, setLobCreateNonce] = useState(0)
+
+  function openLobCreator() {
+    setActiveTab('lobs')
+    setLobCreateNonce((n) => n + 1)
+  }
 
   return (
     <>
@@ -30,7 +36,14 @@ export function ProductsClient() {
             className="mt-6"
           />
           <div className="mt-6">
-            {activeTab === 'products' ? <ProductsTab /> : <LobsTab />}
+            {activeTab === 'products' ? (
+              <ProductsTab onCreateLob={openLobCreator} />
+            ) : (
+              <LobsTab
+                createNonce={lobCreateNonce}
+                onCreateNonceConsumed={() => setLobCreateNonce(0)}
+              />
+            )}
           </div>
         </section>
       </div>

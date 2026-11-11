@@ -524,7 +524,9 @@
     width: 100%;
   }
 
-  .portal-table-filters__field {
+  .portal-table-filters__field,
+  .portal-table-filters__date,
+  .portal-table-filters__search {
     flex: 0 1 21.5rem;
     min-width: min(14rem, 100%);
   }
@@ -551,7 +553,9 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .portal-table-filters__field {
+    .portal-table-filters__field,
+    .portal-table-filters__date,
+    .portal-table-filters__search {
       width: 100%;
       min-width: 0;
       max-width: none;
@@ -607,4 +611,146 @@
     background-size: cover;
     background-position: 50% 50%, 50% 50%, 50% 24%;
   }
+}
+
+/* ============================================================
+   react-day-picker v9 — Date range calendar styles
+   Matches the portal brand (#006838) and design token vars.
+   ============================================================ */
+
+.rdp-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-sub);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.rdp-nav-btn:hover {
+  background-color: var(--subtle);
+  color: var(--text-main);
+}
+
+.rdp-nav-btn:focus-visible {
+  outline: 2px solid #006838;
+  outline-offset: 2px;
+}
+
+.rdp-day-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 0.8125rem;
+  color: var(--text-main);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  margin: 1px auto;
+}
+
+.rdp-day-btn:hover:not(:disabled) {
+  background-color: var(--subtle);
+}
+
+.rdp-day-btn:focus-visible {
+  outline: 2px solid #006838;
+  outline-offset: 2px;
+}
+
+.rdp-day_today .rdp-day-btn {
+  font-weight: 700;
+  color: #006838;
+}
+
+.rdp-day_outside .rdp-day-btn {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.rdp-day_disabled .rdp-day-btn {
+  color: var(--text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rdp-day_range_start .rdp-day-btn,
+.rdp-day_range_end .rdp-day-btn {
+  background-color: #006838;
+  color: #ffffff;
+  border-radius: 50%;
+}
+
+.rdp-day_range_start .rdp-day-btn:hover,
+.rdp-day_range_end .rdp-day-btn:hover {
+  background-color: #00552e;
+  color: #ffffff;
+}
+
+.rdp-day_range_middle {
+  background-color: #e2eddb;
+  border-radius: 0;
+}
+
+.dark .rdp-day_range_middle {
+  background-color: rgba(0, 104, 56, 0.2);
+}
+
+.rdp-day_range_middle .rdp-day-btn {
+  border-radius: 0;
+  color: #006838;
+}
+
+.dark .rdp-day_range_middle .rdp-day-btn {
+  color: #d0e3c8;
+}
+
+.rdp-day_range_start {
+  border-radius: 50% 0 0 50%;
+  background-color: #e2eddb;
+}
+
+.dark .rdp-day_range_start {
+  background-color: rgba(0, 104, 56, 0.2);
+}
+
+.rdp-day_range_end {
+  border-radius: 0 50% 50% 0;
+  background-color: #e2eddb;
+}
+
+.dark .rdp-day_range_end {
+  background-color: rgba(0, 104, 56, 0.2);
+}
+
+.rdp-day_range_start.rdp-day_range_end {
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+@keyframes rdp-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rdp-fade-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.97); }
+}
+
+.rdp-popover[data-state='open'] {
+  animation: rdp-fade-in 0.14s ease;
+}
+
+.rdp-popover[data-state='closed'] {
+  animation: rdp-fade-out 0.1s ease;
 }

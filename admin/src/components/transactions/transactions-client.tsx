@@ -13,14 +13,11 @@ import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
-import { cn, formatPersonName } from '@/lib/utils'
-import {
-  btnPrimaryCls,
-  fieldCls,
-} from '@/lib/ui-classes'
+import { formatPersonName } from '@/lib/utils'
 import {
   formatAmount,
   txPaymentRef,
@@ -37,8 +34,27 @@ const dash = (
   </span>
 )
 
-const filterLabelCls =
-  'mb-2 block text-sm font-medium text-[var(--text-main)]'
+function formatCreatedAt(raw?: string | null) {
+  if (!raw) return null
+  const hasTime = /[T ]\d{1,2}:\d{2}/.test(raw)
+  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T')
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) return null
+  return {
+    day: date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    time: hasTime
+      ? date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      : null,
+  }
+}
 
 function searchBlob(tx: Transaction, productType: string | null): string {
   return [
@@ -73,38 +89,16 @@ export function TransactionsClient() {
 
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
-
-  // Draft inputs — committed by "Apply filter"
-  const [searchDraft, setSearchDraft] = useState('')
-  const [fromDraft, setFromDraft] = useState('')
-  const [toDraft, setToDraft] = useState('')
   const [search, setSearch] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const [dateError, setDateError] = useState(false)
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const dateFrom = dateRange?.from ?? ''
+  const dateTo = dateRange?.to ?? ''
 
-  const hasApplied = !!(search || dateFrom || dateTo)
-
-  const applyFilter = () => {
-    if (fromDraft && toDraft && fromDraft > toDraft) {
-      setDateError(true)
-      return
-    }
-    setDateError(false)
-    setSearch(searchDraft)
-    setDateFrom(fromDraft)
-    setDateTo(toDraft)
-    setPage(1)
-  }
+  const hasApplied = !!(search || dateRange)
 
   const clearFilter = () => {
-    setSearchDraft('')
-    setFromDraft('')
-    setToDraft('')
     setSearch('')
-    setDateFrom('')
-    setDateTo('')
-    setDateError(false)
+    setDateRange(null)
     setPage(1)
   }
 
@@ -207,64 +201,42 @@ export function TransactionsClient() {
                 role="search"
                 aria-label="Filter transactions"
                 className="portal-table-filters__form"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  applyFilter()
-                }}
+                onSubmit={(e) => e.preventDefault()}
               >
-                <div className="portal-table-filters__field w-full">
-                  <label htmlFor="transaction-search" className={filterLabelCls}>
-                    Search
-                  </label>
+                <div className="portal-table-filters__date w-full">
+                  <DateRangeField
+                    id="transaction-range"
+                    value={dateRange}
+                    onApply={(range) => {
+                      setDateRange(range)
+                      setPage(1)
+                    }}
+                  />
+                </div>
+                <div className="portal-table-filters__search w-full">
                   <SearchInput
-                    value={searchDraft}
-                    onChange={setSearchDraft}
+                    value={search}
+                    onChange={(v) => {
+                      setSearch(v)
+                      setPage(1)
+                    }}
                     placeholder="Policy, holder, plan..."
                   />
                 </div>
-                <div className="portal-table-filters__field w-full">
-                  <label htmlFor="transaction-from" className={filterLabelCls}>
-                    From
-                  </label>
-                  <input
-                    id="transaction-from"
-                    type="date"
-                    value={fromDraft}
-                    max={toDraft || undefined}
-                    onChange={(e) => setFromDraft(e.target.value)}
-                    className={cn(fieldCls, 'mt-0')}
-                  />
-                </div>
-                <div className="portal-table-filters__field w-full">
-                  <label htmlFor="transaction-to" className={filterLabelCls}>
-                    To
-                  </label>
-                  <input
-                    id="transaction-to"
-                    type="date"
-                    value={toDraft}
-                    min={fromDraft || undefined}
-                    onChange={(e) => setToDraft(e.target.value)}
-                    className={cn(fieldCls, 'mt-0')}
-                  />
-                </div>
+                {hasApplied && (
+                  <button
+                    type="button"
+                    onClick={clearFilter}
+                    className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                  >
+                    Clear
+                  </button>
+                )}
                 <div
                   className="portal-table-filters__actions"
                   role="group"
                   aria-label="Table actions"
                 >
-                  <button type="submit" className={btnPrimaryCls}>
-                    Apply filter
-                  </button>
-                  {hasApplied && (
-                    <button
-                      type="button"
-                      onClick={clearFilter}
-                      className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
-                    >
-                      Clear
-                    </button>
-                  )}
                   <ExportMenu
                     items={[
                       { id: 'csv', label: 'CSV', onSelect: handleExport },
@@ -274,14 +246,6 @@ export function TransactionsClient() {
               </form>
             </div>
           </div>
-          {dateError && (
-            <p
-              role="alert"
-              className="mt-3 text-sm font-medium text-[#b42318] dark:text-[#eba3a3]"
-            >
-              The From date must be on or before the To date.
-            </p>
-          )}
 
           <DataTable<Transaction>
             className="mt-5"
@@ -358,6 +322,28 @@ export function TransactionsClient() {
                 header: 'Status',
                 mobile: 'badge',
                 cell: (tx) => <StatusPill status={txStatus(tx)} />,
+              },
+              {
+                header: 'Created at',
+                className: 'whitespace-nowrap',
+                cell: (tx) => {
+                  const created = formatCreatedAt(
+                    tx.transaction_date ?? tx.created_at
+                  )
+                  if (!created) return dash
+                  return (
+                    <span className="block">
+                      <span className="block text-[var(--text-sub)]">
+                        {created.day}
+                      </span>
+                      {created.time && (
+                        <span className="mt-0.5 block text-xs text-[var(--text-sub)]">
+                          {created.time}
+                        </span>
+                      )}
+                    </span>
+                  )
+                },
               },
               {
                 header: 'Action',

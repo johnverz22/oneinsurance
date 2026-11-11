@@ -3,17 +3,11 @@
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import {
-  FileCheck2,
+  FileCheck,
   CreditCard,
   Users,
-  Wallet,
   TextSearch,
   ArrowUpRight,
-  BarChart3,
-  Coins,
-  Banknote,
-  UserCheck,
-  PhilippinePeso,
 } from 'lucide-react'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
@@ -32,7 +26,7 @@ type MetricProps = {
 
 function MetricCard({ label, value, icon, loading }: MetricProps) {
   return (
-    <article className="min-w-0 rounded-lg border border-[#dfe7df] bg-white p-4 dark:border-[#3d4140] dark:bg-[#171919] sm:p-5">
+    <article className="min-h-[174px] min-w-0 rounded-lg border border-[#dfe7df] bg-white p-4 dark:border-[#3d4140] dark:bg-[#171919] sm:p-5">
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-medium leading-5 text-[var(--text-sub)]">
           {label}
@@ -44,7 +38,7 @@ function MetricCard({ label, value, icon, loading }: MetricProps) {
       {loading ? (
         <div className="skeleton mt-3 h-8 w-24 rounded-md" />
       ) : (
-        <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-main)] sm:text-3xl">
+        <p className="mt-6 text-2xl font-semibold tracking-tight text-[var(--text-main)] sm:text-3xl">
           {value}
         </p>
       )}
@@ -122,7 +116,7 @@ const QUICK_ACTIONS = [
     href: '/products',
     title: 'Product assignment',
     subtitle: 'Lines of business, products and agent assignments',
-    icon: FileCheck2,
+    icon: FileCheck,
     keywords:
       'product assignment lines of business, products and agent assignments',
   },
@@ -144,7 +138,7 @@ const QUICK_ACTIONS = [
     href: '/reports',
     title: 'Analytics dashboard',
     subtitle: 'View performance and generate reports',
-    icon: BarChart3,
+    icon: TextSearch,
     keywords: 'analytics dashboard view performance and generate reports',
   },
 ]
@@ -154,7 +148,7 @@ const OTHER_AREAS = [
     href: '/payments',
     title: 'Payments',
     subtitle: 'Payment operations and payout processing',
-    icon: Wallet,
+    icon: CreditCard,
     keywords: 'payments payment operations and payout processing',
   },
   {
@@ -204,49 +198,61 @@ export function DashboardClient() {
         description="Manage products, commissions, agents and platform activity from one place."
       />
       <div className="mx-auto w-full max-w-7xl">
-        {/* Overview metrics */}
-      <section aria-labelledby="admin-overview-title" className="mt-4">
+      {/* Overview metrics */}
+      <section aria-labelledby="admin-overview-title" className="mt-8">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
           <h2 id="admin-overview-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
             Overview
           </h2>
+          <p className="text-sm text-[var(--text-sub)]">
+            Live values from the admin API.
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <MetricCard
             label="Total sales"
             value={formatCurrency(stats?.total_sales ?? 0)}
-            icon={<PhilippinePeso className="size-5" aria-hidden="true" />}
+            icon={<CreditCard className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Gross commissions"
             value={formatCurrency(stats?.gross_commissions ?? 0)}
-            icon={<Coins className="size-5" aria-hidden="true" />}
+            icon={<ArrowUpRight className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Net commissions"
             value={formatCurrency(stats?.net_commissions ?? 0)}
-            icon={<Banknote className="size-5" aria-hidden="true" />}
+            icon={<CreditCard className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Active agents"
             value={String(activeAgents ?? 0)}
-            icon={<UserCheck className="size-5" aria-hidden="true" />}
+            icon={<Users className="size-5" aria-hidden="true" />}
             loading={agentsLoading}
           />
         </div>
       </section>
 
       {/* Quick actions */}
-      <section aria-labelledby="admin-actions-title" className="mt-8">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-          <h2 id="admin-actions-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
-            Quick actions
-          </h2>
+      <section
+        aria-labelledby="admin-actions-title"
+        className="mt-5 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="admin-actions-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
+              Quick actions
+            </h2>
+            <p className="mt-1 text-sm text-[var(--text-sub)]">
+              The four main admin workflows.
+            </p>
+          </div>
+          <span className="text-xs text-[var(--text-sub)]">Live data</span>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
           {QUICK_ACTIONS.filter((a) => matches(a.keywords)).map(
             ({ href, title, subtitle, icon: Icon }) => (
               <ActionCard
@@ -270,7 +276,7 @@ export function DashboardClient() {
           Other admin areas
         </h2>
         <p className="mt-1 text-sm text-[var(--text-sub)]">
-          Additional workspace sections.
+          Additional admin workspace sections.
         </p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {OTHER_AREAS.filter((a) => matches(a.keywords)).map(

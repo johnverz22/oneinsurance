@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { FileCheck2, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
@@ -15,6 +15,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
 import { cn } from '@/lib/utils'
 import {
@@ -41,7 +42,7 @@ const emptyForm = {
   status: 'active',
 }
 
-export function ProductsTab() {
+export function ProductsTab({ onCreateLob }: { onCreateLob: () => void }) {
   const authFetch = useAuthFetch()
   const hasHydrated = useHasHydrated()
   const isAuthenticated = useIsAuthenticated()
@@ -51,9 +52,10 @@ export function ProductsTab() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
-  const hasDateFilter = !!(dateFrom || dateTo)
+  const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const dateFrom = dateRange?.from ?? ''
+  const dateTo = dateRange?.to ?? ''
+  const hasDateFilter = !!dateRange
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
@@ -93,7 +95,7 @@ export function ProductsTab() {
     enabled,
   })
 
-  const { data: activeLobs } = useQuery<LineOfBusiness[]>({
+  const { data: activeLobs, isLoading: lobsLoading } = useQuery<LineOfBusiness[]>({
     queryKey: ['admin-lobs', 'active-options'],
     queryFn: async () => {
       const res = await authFetch(
@@ -108,6 +110,8 @@ export function ProductsTab() {
 
   const products = data?.data ?? []
   const hasActiveLobs = (activeLobs ?? []).length > 0
+  const noActiveLobs = !lobsLoading && activeLobs !== undefined && activeLobs.length === 0
+  const noProducts = !isLoading && !isError && (data?.total ?? products.length) === 0
 
   // Client-side fallback if the upstream ignores date_from/date_to
   const filteredProducts = products.filter((p) => {
@@ -260,6 +264,30 @@ export function ProductsTab() {
     toast.success(`Exported ${filteredProducts.length} product(s)`)
   }
 
+  if (noActiveLobs && noProducts) {
+    return (
+      <div className="py-12 text-center sm:py-16">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#e6f2e8] text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
+          <FileCheck2 className="size-7" aria-hidden="true" />
+        </span>
+        <h3 className="mt-5 text-xl font-semibold text-[var(--text-main)]">
+          Create a line of business first
+        </h3>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-sub)]">
+          Every product must belong to an active LoB. Add one to unlock product
+          creation.
+        </p>
+        <button
+          type="button"
+          onClick={onCreateLob}
+          className={btnPrimaryCls}
+        >
+          Create line of business
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div>
       <TableHeader
@@ -267,11 +295,6 @@ export function ProductsTab() {
         count={data?.total ?? null}
         noun="product"
       />
-      {!hasActiveLobs && !isLoading && (
-        <p className="mt-2 text-sm font-medium text-[#92580a] dark:text-[#e4c27f]">
-          Add an active line of business before creating products.
-        </p>
-      )}
 
       <div className="mt-5">
         <div className="portal-table-filters">
@@ -281,7 +304,17 @@ export function ProductsTab() {
             className="portal-table-filters__form"
             onSubmit={(e) => e.preventDefault()}
           >
-            <div className="portal-table-filters__field w-full">
+            <div className="portal-table-filters__date w-full">
+              <DateRangeField
+                id="product-range"
+                value={dateRange}
+                onApply={(range) => {
+                  setDateRange(range)
+                  setPage(1)
+                }}
+              />
+            </div>
+            <div className="portal-table-filters__search w-full">
               <SearchInput
                 value={search}
                 onChange={(v) => {
@@ -291,49 +324,17 @@ export function ProductsTab() {
                 placeholder="Search products"
               />
             </div>
-            <div className="portal-table-filters__field w-full">
-              <label htmlFor="product-date-from" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
-                From
-              </label>
-              <input
-                id="product-date-from"
-                type="date"
-                value={dateFrom}
-                max={dateTo || undefined}
-                onChange={(e) => {
-                  setDateFrom(e.target.value)
-                  setPage(1)
-                }}
-                className={cn(fieldCls, 'mt-0')}
-              />
-            </div>
-            <div className="portal-table-filters__field w-full">
-              <label htmlFor="product-date-to" className="mb-2 block text-sm font-medium text-[var(--text-main)]">
-                To
-              </label>
-              <input
-                id="product-date-to"
-                type="date"
-                value={dateTo}
-                min={dateFrom || undefined}
-                onChange={(e) => {
-                  setDateTo(e.target.value)
-                  setPage(1)
-                }}
-                className={cn(fieldCls, 'mt-0')}
-              />
-            </div>
             <div
               className="portal-table-filters__actions"
               role="group"
               aria-label="Table actions"
             >
-              {hasDateFilter && (
+              {(search || dateRange) && (
                 <button
                   type="button"
                   onClick={() => {
-                    setDateFrom('')
-                    setDateTo('')
+                    setSearch('')
+                    setDateRange(null)
                     setPage(1)
                   }}
                   className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
@@ -371,9 +372,7 @@ export function ProductsTab() {
                   {product.name}
                 </span>
                 <span className="mt-0.5 block max-w-xs truncate text-xs text-[var(--text-sub)]">
-                  {product.carrier_product_code
-                    ? `${product.carrier_product_code} · ${product.description}`
-                    : product.description}
+                  {product.carrier_product_code ?? '—'}
                 </span>
               </>
             ),
@@ -388,16 +387,11 @@ export function ProductsTab() {
           },
           {
             header: 'Line of business',
-            cell: (product) =>
-              product.line_of_business ? (
-                <span className="inline-flex items-center rounded-full bg-[#eaf4e9] px-2.5 py-1 text-xs font-semibold text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
-                  {product.line_of_business.name}
-                </span>
-              ) : (
-                <span className="text-xs text-[var(--text-muted)] italic">
-                  No LoB assigned
-                </span>
-              ),
+            cell: (product) => (
+              <span className="text-[var(--text-sub)]">
+                {product.line_of_business?.name ?? '—'}
+              </span>
+            ),
           },
           {
             header: 'Status',
@@ -405,7 +399,7 @@ export function ProductsTab() {
             cell: (product) => <StatusPill status={product.status} />,
           },
           {
-            header: 'Actions',
+            header: 'Action',
             mobile: 'action',
             cell: (product) => (
               <div className="flex items-center gap-1">
@@ -434,9 +428,9 @@ export function ProductsTab() {
         isError={isError}
         errorMessage="Failed to load products. Please try again."
         emptyMessage={
-          searchDebounced || hasDateFilter
-            ? 'No products match your filters.'
-            : 'No records found.'
+          searchDebounced || hasDateFilter || (data?.total ?? 0) > 0
+            ? 'No products match your search.'
+            : 'No products yet. Add the first one.'
         }
       />
 

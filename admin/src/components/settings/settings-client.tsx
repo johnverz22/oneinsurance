@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Camera, Loader2 } from 'lucide-react'
+import { Camera, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getInitials } from '@/lib/utils'
 import {
@@ -81,6 +81,58 @@ function Field({
   )
 }
 
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  show,
+  onToggleShow,
+  autoComplete,
+  minLength,
+}: {
+  id: string
+  label: string
+  value: string
+  onChange: (v: string) => void
+  show: boolean
+  onToggleShow: () => void
+  autoComplete: string
+  minLength?: number
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-2 block text-sm font-medium text-[var(--text-sub)]">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={show ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          minLength={minLength}
+          required
+          className="ui-form-field w-full pr-11"
+        />
+        <button
+          type="button"
+          onClick={onToggleShow}
+          aria-label={show ? 'Hide password' : 'Show password'}
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-[#59645d] hover:text-[#006838] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[var(--text-muted)] dark:hover:text-[#d0e3c8]"
+        >
+          {show ? (
+            <EyeOff className="size-4" aria-hidden="true" />
+          ) : (
+            <Eye className="size-4" aria-hidden="true" />
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function SettingsSkeleton() {
   return (
     <section className="portal-page-card p-5 sm:p-6" aria-busy="true" aria-live="polite">
@@ -119,6 +171,14 @@ export function SettingsClient() {
   const [editing, setEditing] = useState(false)
   const [photoPending, setPhotoPending] = useState(false)
   const photoInputRef = useRef<HTMLInputElement>(null)
+
+  const [pwCurrent, setPwCurrent] = useState('')
+  const [pwNew, setPwNew] = useState('')
+  const [pwConfirm, setPwConfirm] = useState('')
+  const [pwShow, setPwShow] = useState({ current: false, new: false, confirm: false })
+  const [pwError, setPwError] = useState('')
+  const [pwNotice, setPwNotice] = useState('')
+  const [pwSaving, setPwSaving] = useState(false)
 
   const profilePhotoSrc = useAuthenticatedImage(
     details?.profile_photo_url ||
@@ -272,6 +332,50 @@ export function SettingsClient() {
       toast.error('Failed to remove photo')
     } finally {
       setPhotoPending(false)
+    }
+  }
+
+  async function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPwError('')
+    setPwNotice('')
+    if (pwNew.length < 12) {
+      setPwError('New password must be at least 12 characters.')
+      return
+    }
+    if (pwNew !== pwConfirm) {
+      setPwError('New passwords do not match.')
+      return
+    }
+    if (pwNew === pwCurrent) {
+      setPwError('Choose a new password that differs from the current password.')
+      return
+    }
+    setPwSaving(true)
+    try {
+      const res = await authFetch('/api/admin/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: pwCurrent,
+          password: pwNew,
+          password_confirmation: pwConfirm,
+        }),
+      })
+      const json = await res.json().catch(() => null)
+      if (!res.ok || json?.success === false) {
+        throw new Error(json?.message || 'Failed to update password')
+      }
+      toast.success('Password updated')
+      setPwNotice('Password updated.')
+      setPwCurrent('')
+      setPwNew('')
+      setPwConfirm('')
+      setPwShow({ current: false, new: false, confirm: false })
+    } catch (error) {
+      setPwError(error instanceof Error ? error.message : 'Failed to update password')
+    } finally {
+      setPwSaving(false)
     }
   }
 
@@ -486,6 +590,68 @@ export function SettingsClient() {
         )}
       </section>
       )}
+
+      {/* ── Update password ── */}
+      <section
+        className="portal-page-card mt-5 p-5 sm:p-6"
+        aria-labelledby="password-title"
+      >
+        <h2
+          id="password-title"
+          className="text-xl font-semibold tracking-tight text-[var(--text-main)]"
+        >
+          Update password
+        </h2>
+        <p className="mt-1 text-sm text-[var(--text-sub)]">
+          Use a unique password with at least 12 characters.
+        </p>
+        <form onSubmit={handlePasswordSubmit} className="mt-6 space-y-5">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <PasswordField
+              id="admin-current-password"
+              label="Current password"
+              value={pwCurrent}
+              onChange={setPwCurrent}
+              show={pwShow.current}
+              onToggleShow={() => setPwShow((s) => ({ ...s, current: !s.current }))}
+              autoComplete="current-password"
+            />
+            <PasswordField
+              id="admin-new-password"
+              label="New password"
+              value={pwNew}
+              onChange={setPwNew}
+              show={pwShow.new}
+              onToggleShow={() => setPwShow((s) => ({ ...s, new: !s.new }))}
+              autoComplete="new-password"
+              minLength={12}
+            />
+            <PasswordField
+              id="admin-confirm-password"
+              label="Confirm new password"
+              value={pwConfirm}
+              onChange={setPwConfirm}
+              show={pwShow.confirm}
+              onToggleShow={() => setPwShow((s) => ({ ...s, confirm: !s.confirm }))}
+              autoComplete="new-password"
+              minLength={12}
+            />
+          </div>
+          {pwError && (
+            <p role="alert" className="text-sm text-[#dc2626] dark:text-red-300">
+              {pwError}
+            </p>
+          )}
+          {pwNotice && (
+            <p role="status" className="text-sm text-[#006838] dark:text-[#d0e3c8]">
+              {pwNotice}
+            </p>
+          )}
+          <button type="submit" disabled={pwSaving} className="btn-primary">
+            {pwSaving ? 'Updating…' : 'Update password'}
+          </button>
+        </form>
+      </section>
     </div>
   )
 }
