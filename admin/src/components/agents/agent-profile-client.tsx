@@ -178,17 +178,26 @@ function documentTagLabel(tag?: string | null): string {
 }
 
 /**
- * Rewrites a stored profile photo URL for use in this portal.
+ * Rewrites the backend profile_photo.url to the admin proxy route.
  *
- * Agents upload photos via the agent portal, which persists a proxy path of
- * the form `/api/agent/files/{id}/serve` on the profile. That route only
- * exists on the agent app — here we swap it for the admin equivalent.
- * Non-proxy URLs (e.g. an external avatar) are returned unchanged.
+ * The backend returns "/api/v1/agents/{agentId}/profile-photo" (with an
+ * optional ?v= cache-busting query). We swap it for our local proxy path
+ * "/api/admin/agents/{agentId}/profile-photo" so the admin token is sent.
+ * Already-local URLs are returned unchanged.
  */
-function toAdminFileServeUrl(url?: string | null): string | null {
+function toAdminProfilePhotoUrl(
+  url: string | null | undefined,
+  agentId: number | string | undefined
+): string | null {
   if (!url) return null
-  const match = url.match(/\/api\/agent\/files\/([^/]+)\/serve/)
-  if (match) return `/api/admin/files/${match[1]}/serve`
+  if (url.startsWith('/api/admin/')) return url
+
+  // Backend URL: /api/v1/agents/{agentId}/profile-photo?v=42
+  if (url.includes('/agents/') && url.includes('/profile-photo')) {
+    const qs = url.includes('?') ? url.slice(url.indexOf('?')) : ''
+    if (agentId) return `/api/admin/agents/${agentId}/profile-photo${qs}`
+  }
+
   return url
 }
 
@@ -269,12 +278,13 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
   const eWallets = agent?.ewallets ?? []
   const telHref = agent?.phone ? `tel:${agent.phone.replace(/[^\d+]/g, '')}` : null
 
-  // Profile photos live on Google Drive behind an authenticated proxy. The
-  // stored URL points at the agent app's serve route — rewrite it to ours.
-  // Fall back to the profile_photo-tagged file in the documents list.
+  // Profile photo — the backend returns profile_photo as a structured object
+  // { id, mime_type, updated_at, url } or null. Rewrite the url to our admin
+  // proxy route so the admin token is sent. Fall back to the profile_photo-
+  // tagged file in the documents list if the structured field is absent.
   const photoDoc = documents?.find((d) => d.tag === 'profile_photo')
   const photoServeUrl =
-    toAdminFileServeUrl(agent?.profile_photo_url ?? agent?.avatar) ??
+    toAdminProfilePhotoUrl(agent?.profile_photo?.url, agent?.id) ??
     (photoDoc ? `/api/admin/files/${photoDoc.id}/serve` : null)
   const photoUrl = useAuthenticatedImage(photoServeUrl)
 

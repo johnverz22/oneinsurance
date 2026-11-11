@@ -1,5 +1,14 @@
 import type { ApiResponse, Paginated } from './catalog'
 
+/** Profile photo object returned by the API (agent profile) */
+export type ProfilePhoto = {
+  id: number
+  mime_type: string
+  updated_at: string
+  /** Proxy URL with cache-busting query string, e.g. /api/admin/agents/{id}/profile-photo?v=42 */
+  url: string
+}
+
 export type Agent = {
   id: number
   name?: string
@@ -15,7 +24,8 @@ export type Agent = {
   address?: string | null
   agent_code?: string | null
   avatar?: string | null
-  profile_photo_url?: string | null
+  /** Structured profile photo, or null when the agent has no photo */
+  profile_photo: ProfilePhoto | null
   created_at: string
   updated_at: string
   settings?: {
