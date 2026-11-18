@@ -59,9 +59,9 @@ function ActionCard({ href, title, subtitle, meta, icon }: ActionCardProps) {
   return (
     <Link
       href={href}
-      className="group flex min-h-44 w-full flex-col items-start rounded-md border border-[#dfe7df] bg-transparent p-4 text-left transition-colors hover:border-[#b88e28] hover:border-t-2 focus-visible:border-[#b88e28] focus-visible:border-t-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#475049] dark:hover:border-[#b88e28] dark:focus-visible:border-[#b88e28]"
+      className="agent-dashboard__action flex min-h-44 w-full flex-col items-start rounded-md border border-[#dfe7df] bg-transparent p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#475049]"
     >
-      <span className="flex size-11 items-center justify-center rounded-md bg-[#e6f2e8] text-[#006838] transition-colors group-hover:bg-[#f8efd8] group-hover:text-[#805c0c] group-focus-visible:bg-[#f8efd8] group-focus-visible:text-[#805c0c] dark:bg-[#3d5242] dark:text-[#d0e3c8] dark:group-hover:bg-[#b88e28] dark:group-hover:text-[#183d2c] dark:group-focus-visible:bg-[#b88e28] dark:group-focus-visible:text-[#183d2c]">
+      <span className="flex size-11 items-center justify-center rounded-md bg-[#e6f2e8] text-[#006838] dark:bg-[#3d5242] dark:text-[#d0e3c8]">
         {icon}
       </span>
       <strong className="mt-4 block text-base leading-5 text-[var(--text-main)]">
@@ -94,7 +94,7 @@ function AreaRow({
   return (
     <Link
       href={href}
-      className="flex min-h-22 w-full items-center gap-4 rounded-md border border-[#dfe7df] bg-[#fbfcfa] p-4 text-left transition-colors hover:border-[#9fbea6] focus-visible:outline-2 focus-visible:outline-[#006838] dark:border-[#475049] dark:bg-[#222725]"
+      className="agent-dashboard__action flex min-h-22 w-full items-center gap-4 rounded-md border border-[#dfe7df] bg-[#fbfcfa] p-4 text-left focus-visible:outline-2 focus-visible:outline-[#006838] dark:border-[#475049] dark:bg-[#222725]"
     >
       <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#e6f2e8] text-[#006838] dark:bg-[#3d5242] dark:text-[#d0e3c8]">
         {icon}
@@ -204,9 +204,6 @@ export function DashboardClient() {
           <h2 id="admin-overview-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
             Overview
           </h2>
-          <p className="text-sm text-[var(--text-sub)]">
-            Live values from the admin API.
-          </p>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <MetricCard

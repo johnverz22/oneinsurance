@@ -2,33 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { BASE_URL, buildApiHeaders, getAuthToken, unauthorized } from '@/lib/api-helpers'
 
 /**
- * Profile photo upload / delete.
+ * Profile photo proxy.
  *
- * Previously this route wrote the photo to the Next.js local filesystem
- * (public/uploads/profiles/) which broke in staging because the container
- * filesystem is ephemeral.
+ * Forwards to the backend's dedicated profile-photo endpoints:
+ *   POST   /api/v1/agents/profile-photo   — upload or replace
+ *   GET    /api/v1/agents/profile-photo   — the image binary
+ *   DELETE /api/v1/agents/profile-photo   — remove
  *
- * Now the photo is uploaded directly to the backend via POST /agents/files/upload
- * with tag "profile_photo".  The backend stores it on Google Drive and returns
- * the file record.  The photo URL stored on the user profile is a proxy URL
- * pointing to our own /api/agent/files/[id]/serve endpoint so it renders
- * reliably without exposing a Google Drive auth cookie requirement.
+ * The front end never gets a Google Drive link; it always reads the image
+ * through this proxy so the bearer token is sent server-side.
  */
 
-const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+const MAX_BYTES = 2 * 1024 * 1024 // 2 MB
 
-/**
- * POST /api/agent/profile/photo
- *
- * Body (multipart/form-data):
- *   photo  File  — the new profile photo
- *
- * Response:
- *   { success: true, data: { profile_photo_url: string } }
- *
- * The returned profile_photo_url is a relative Next.js proxy path of the form
- * /api/agent/files/<id>/serve  so it works in any environment.
- */
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
+// ─── POST: upload / replace ────────────────────────────────────────────────
+
 export async function POST(req: NextRequest) {
   const headers = buildApiHeaders(req)
   const token = getAuthToken(req)
@@ -40,44 +30,37 @@ export async function POST(req: NextRequest) {
 
     if (!photo || typeof photo === 'string')
       return NextResponse.json(
-        { success: false, message: 'No photo provided' },
-        { status: 400, headers }
+        { success: false, message: 'No photo provided', errors: { photo: 'No photo provided' } },
+        { status: 422, headers }
       )
 
-    const isImage =
-      photo.type.startsWith('image/') ||
-      /\.(jpe?g|png|webp|gif|avif)$/i.test(photo.name)
-
-    if (!isImage)
+    // Validate MIME type — only JPG, PNG, WebP
+    if (!ALLOWED_TYPES.includes(photo.type.toLowerCase()))
       return NextResponse.json(
-        { success: false, message: 'Invalid file type. Please upload an image.' },
-        { status: 400, headers }
+        {
+          success: false,
+          message: 'Invalid file type',
+          errors: { photo: 'The photo must be a JPG, PNG, or WebP image' },
+        },
+        { status: 422, headers }
       )
 
+    // Validate size — 2 MB max
     if (photo.size > MAX_BYTES)
       return NextResponse.json(
-        { success: false, message: 'File too large. Maximum size is 5 MB.' },
-        { status: 400, headers }
+        {
+          success: false,
+          message: 'File too large',
+          errors: { photo: 'The photo size must not exceed 2MB' },
+        },
+        { status: 422, headers }
       )
 
-    // Generate an opaque filename: "profile_photo__<8-char random hex>.<ext>"
-    // The original client filename is discarded — the tag prefix is all that matters.
-    const ext = photo.type === 'image/png' ? 'png'
-      : photo.type === 'image/webp' ? 'webp'
-      : photo.type === 'image/gif' ? 'gif'
-      : photo.type === 'image/avif' ? 'avif'
-      : 'jpg'
-    const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(4)))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-    const fileName = `profile_photo__${randomHex}.${ext}`
-
+    // Forward to the backend's dedicated profile-photo endpoint
     const outbound = new FormData()
-    outbound.append('file', photo)
-    outbound.append('file_name', fileName)
-    outbound.append('tag', 'profile_photo')
+    outbound.append('photo', photo)
 
-    const upstreamRes = await fetch(`${BASE_URL}/agents/files/upload`, {
+    const upstreamRes = await fetch(`${BASE_URL}/agents/profile-photo`, {
       method: 'POST',
       headers: { Authorization: token, Accept: 'application/json' },
       body: outbound,
@@ -85,108 +68,119 @@ export async function POST(req: NextRequest) {
 
     const data = await upstreamRes.json().catch(() => null)
 
-    if (!upstreamRes.ok)
+    if (!upstreamRes.ok) {
+      // Pass through 422 errors with errors.photo, 403, and 502 as-is
       return NextResponse.json(
         data || { success: false, message: 'Photo upload failed' },
         { status: upstreamRes.status, headers }
       )
+    }
 
-    const raw = data?.data ?? data
-    const fileId = raw?.id
-
-    if (!fileId)
-      return NextResponse.json(
-        { success: false, message: 'Upload succeeded but file ID was missing in response' },
-        { status: 500, headers }
-      )
-
-    // Build a proxy URL that goes through our serve route — works in all envs
-    const proxyUrl = `/api/agent/files/${fileId}/serve`
-
-    // Persist the proxy URL on the backend agent profile so it is returned
-    // on subsequent profile fetches.
-    await updateProfilePhotoUrl(token, proxyUrl)
+    // The backend returns 201 with { success, message, data: { id, mime_type, updated_at, url } }
+    // Rewrite the url to point to our local proxy
+    const photoData = data?.data
+    if (photoData?.url) {
+      const qs = photoData.url.includes('?') ? photoData.url.slice(photoData.url.indexOf('?')) : `?v=${photoData.id}`
+      photoData.url = `/api/agent/profile/photo${qs}`
+    }
 
     return NextResponse.json(
-      {
-        success: true,
-        message: 'Profile photo updated successfully',
-        data: { profile_photo_url: proxyUrl },
-      },
-      { status: 200, headers }
+      { success: true, message: data?.message ?? 'Profile photo saved successfully', data: photoData },
+      { status: 201, headers }
     )
   } catch (error: any) {
     console.error('[profile/photo] POST error:', error)
     return NextResponse.json(
-      { success: false, message: error?.message || 'Failed to upload photo' },
+      { success: false, message: 'Could not save your photo, please try again' },
+      { status: 502, headers }
+    )
+  }
+}
+
+// ─── GET: stream the image binary ──────────────────────────────────────────
+
+export async function GET(req: NextRequest) {
+  const headers = buildApiHeaders(req)
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
+
+  try {
+    const upstreamRes = await fetch(`${BASE_URL}/agents/profile-photo`, {
+      headers: { Authorization: token, Accept: '*/*' },
+      redirect: 'follow',
+    })
+
+    if (!upstreamRes.ok) {
+      // 404 = no photo set; 403 = not an agent
+      return NextResponse.json(
+        { success: false, message: 'No profile photo found' },
+        { status: upstreamRes.status, headers }
+      )
+    }
+
+    const contentType =
+      upstreamRes.headers.get('Content-Type') || 'application/octet-stream'
+    const etag = upstreamRes.headers.get('ETag') || ''
+
+    // Check If-None-Match for 304
+    const ifNoneMatch = req.headers.get('If-None-Match')
+    if (ifNoneMatch && etag && ifNoneMatch === etag) {
+      return new NextResponse(null, {
+        status: 304,
+        headers: { ETag: etag },
+      })
+    }
+
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': contentType,
+      'Cache-Control': 'private, max-age=3600',
+    }
+    if (etag) responseHeaders['ETag'] = etag
+
+    return new NextResponse(upstreamRes.body, {
+      status: 200,
+      headers: responseHeaders,
+    })
+  } catch (error: any) {
+    console.error('[profile/photo] GET error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Failed to load photo' },
       { status: 500, headers }
     )
   }
 }
 
-/**
- * DELETE /api/agent/profile/photo
- *
- * Clears the profile_photo_url on the backend profile record.
- * Does not delete the underlying Drive file (leave that to the user if needed).
- */
+// ─── DELETE: remove the photo ──────────────────────────────────────────────
+
 export async function DELETE(req: NextRequest) {
   const headers = buildApiHeaders(req)
   const token = getAuthToken(req)
   if (!token) return unauthorized(req)
 
   try {
-    await updateProfilePhotoUrl(token, null)
+    const upstreamRes = await fetch(`${BASE_URL}/agents/profile-photo`, {
+      method: 'DELETE',
+      headers: { Authorization: token, Accept: 'application/json' },
+    })
 
+    if (!upstreamRes.ok) {
+      const data = await upstreamRes.json().catch(() => null)
+      return NextResponse.json(
+        data || { success: false, message: 'Failed to remove photo' },
+        { status: upstreamRes.status, headers }
+      )
+    }
+
+    const data = await upstreamRes.json().catch(() => null)
     return NextResponse.json(
-      { success: true, message: 'Profile photo removed' },
+      data || { success: true, message: 'Profile photo removed' },
       { status: 200, headers }
     )
   } catch (error: any) {
     console.error('[profile/photo] DELETE error:', error)
     return NextResponse.json(
-      { success: false, message: error?.message || 'Failed to remove photo' },
+      { success: false, message: 'Failed to remove photo' },
       { status: 500, headers }
     )
-  }
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-/**
- * Attempt to persist the profile_photo_url field on the agent profile.
- * Tries /agents/profile first, falls back to /profile silently.
- */
-async function updateProfilePhotoUrl(
-  token: string,
-  url: string | null
-): Promise<void> {
-  const payload = JSON.stringify({ profile_photo_url: url })
-  const reqHeaders = {
-    Authorization: token,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/agents/profile`, {
-      method: 'PUT',
-      headers: reqHeaders,
-      body: payload,
-    })
-    if (res.ok) return
-  } catch {
-    // fall through to secondary endpoint
-  }
-
-  try {
-    await fetch(`${BASE_URL}/profile`, {
-      method: 'PUT',
-      headers: reqHeaders,
-      body: payload,
-    })
-  } catch (err) {
-    // Non-fatal — the file has been uploaded; the profile link is best-effort
-    console.warn('[profile/photo] Could not persist profile_photo_url:', err)
   }
 }

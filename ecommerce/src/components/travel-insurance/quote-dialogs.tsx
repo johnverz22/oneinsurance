@@ -67,8 +67,8 @@ interface ReviewDialogProps {
 
 const Row = ({ label, value, wide }: { label: string; value?: string | null; wide?: boolean }) => (
   <div className={`min-w-0 ${wide ? 'sm:col-span-2' : ''}`}>
-    <dt className="text-[var(--text-muted)] dark:text-[var(--text-sub)]">{label}</dt>
-    <dd className="mt-1 break-words font-medium">{value || 'Not provided'}</dd>
+    <dt className="text-sm text-[var(--text-muted)] dark:text-[var(--text-sub)]">{label}</dt>
+    <dd className="mt-1 break-words text-base font-medium text-[var(--text-main)] dark:text-[var(--text-main)]">{value || 'Not provided'}</dd>
   </div>
 )
 
@@ -251,13 +251,13 @@ export function ReviewDialog({
           <div className="mt-5">
             <h4 className="font-semibold">Selected add-ons</h4>
             {addons.length ? (
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-base text-[var(--text-main)] dark:text-[var(--text-main)]">
                 {addons.map((a) => (
-                  <li key={a}>{a}</li>
+                  <li key={a} className="font-medium">{a}</li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-3 text-sm text-[var(--text-muted)] dark:text-[var(--text-sub)]">No add-ons added</p>
+              <p className="mt-3 text-base text-[var(--text-muted)] dark:text-[var(--text-sub)]">No add-ons added</p>
             )}
             {addons.length > 0 && (
               <p className="mt-3 text-xs text-[var(--text-muted)] dark:text-[var(--text-sub)]">

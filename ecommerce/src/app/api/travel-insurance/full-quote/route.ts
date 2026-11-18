@@ -1,3 +1,4 @@
+import { setResumeToken } from '@/lib/resume-token-server'
 import { handleServerSideAxiosError } from '@/utils/server-side-axios-error-handler'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
@@ -101,20 +102,31 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // The full-quote success payload carries the proposal's resume token.
+    // Keep it server-side in an httpOnly cookie (scoped to that proposal) and
+    // strip it from the body so it never reaches JavaScript or storage.
+    const body = response.data
+    const proposalNo: string | undefined = body?.data?.proposal_number
+    const resumeToken: string | undefined = body?.data?.resume_token
+    const resumeTokenExpiresAt: string | undefined = body?.data?.resume_token_expires_at
+
+    if (body?.data && typeof body.data === 'object') {
+      delete body.data.resume_token
+      delete body.data.resume_token_expires_at
+    }
+
     // Forward the real status — 201 on success, errors handled in catch.
-    return NextResponse.json(response.data, { status: response.status })
+    const res = NextResponse.json(body, { status: response.status })
+
+    if (proposalNo && resumeToken) {
+      setResumeToken(res, proposalNo, resumeToken, resumeTokenExpiresAt)
+    }
+
+    return res
   } catch (error: unknown) {
     console.error('Error fetching travel insurance full quote:', error)
 
     if (axios.isAxiosError(error)) {
-      console.error(
-        'Backend Error Response:',
-        JSON.stringify({
-          status: error.response?.status,
-          data: error.response?.data,
-          message: error.message,
-        })
-      )
       return handleServerSideAxiosError(error)
     }
 

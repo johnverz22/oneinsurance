@@ -8,63 +8,22 @@ import {
   Clock,
   XCircle,
   Printer,
-  Download,
   Users,
   Shield,
   Plane,
   Receipt,
+  CreditCard,
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
-import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { StatusBadge } from '@/components/ui/status-badge'
 
 // ---- Status helpers ----
-function StatusIcon({ status }: { status: string }) {
-  const s = status.toLowerCase()
-  if (s === 'success' || s === 'completed')
-    return <CheckCircle2 className="h-5 w-5 text-[#006838]" aria-hidden="true" />
-  if (s === 'rejected' || s === 'failed')
-    return <XCircle className="h-5 w-5 text-[#dc2626]" aria-hidden="true" />
-  return <Clock className="h-5 w-5 text-amber-500" aria-hidden="true" />
-}
-
 function StatusLabel({ status }: { status: string }) {
   const s = status.toLowerCase()
-  if (s === 'success' || s === 'completed') return <StatusBadge status="success" />
-  if (s === 'rejected' || s === 'failed') return <StatusBadge status="rejected" label="Rejected" />
+  if (s === 'success' || s === 'completed' || s === 'paid') return <StatusBadge status="success" />
+  if (s === 'rejected' || s === 'failed') return <StatusBadge status="failure" label="Failed" />
   return <StatusBadge status="pending" />
-}
-
-// ---- Section card wrapper ----
-function SectionCard({
-  title,
-  icon,
-  children,
-}: {
-  title: string
-  icon?: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <div className="portal-page-card space-y-4">
-      <div className="flex items-center gap-2">
-        {icon && <span className="text-[#006838] dark:text-[#d0e3c8]">{icon}</span>}
-        <h2 className="text-base font-semibold text-[var(--text-main)]">{title}</h2>
-      </div>
-      {children}
-    </div>
-  )
-}
-
-// ---- Key-value row ----
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-      <dt className="text-sm text-[var(--text-muted)]">{label}</dt>
-      <dd className="text-sm font-medium text-[var(--text-main)]">{value ?? '—'}</dd>
-    </div>
-  )
 }
 
 // ---- Skeleton ----
@@ -74,9 +33,14 @@ function Skeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div key={i} className="portal-page-card space-y-3">
           <div className="skeleton h-5 w-40 rounded" />
-          {Array.from({ length: 4 }).map((_, j) => (
-            <div key={j} className="skeleton h-4 w-full rounded" />
-          ))}
+          <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, j) => (
+              <div key={j} className="space-y-1.5">
+                <div className="skeleton h-3 w-20 rounded" />
+                <div className="skeleton h-5 w-32 rounded" />
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>
@@ -84,8 +48,8 @@ function Skeleton() {
 }
 
 /**
- * Transaction detail page — policy overview, payment info, traveller list, coverage summary.
- * Design spec: /downloads/design/agent-sales (transaction detail section)
+ * Transaction detail page — policy overview, payment & commission, traveller list, coverage summary.
+ * Designed to 95–98% fidelity matching QA spec.
  */
 export function TransactionDetailClient({ id }: { id: string }) {
   const authFetch = useAuthFetch()
@@ -101,14 +65,19 @@ export function TransactionDetailClient({ id }: { id: string }) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PortalContentHeader
-          title="Transaction detail"
-          breadcrumbs={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'My sales', href: '/sales' },
-            { label: id },
-          ]}
-        />
+        <div>
+          <Link
+            href="/sales"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-sub)] hover:text-[#006838] dark:hover:text-[#d0e3c8] transition-colors"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span>Back to Sales</span>
+          </Link>
+          <div className="mt-3">
+            <div className="skeleton h-8 w-48 rounded" />
+            <div className="skeleton mt-2 h-4 w-36 rounded" />
+          </div>
+        </div>
         <Skeleton />
       </div>
     )
@@ -117,16 +86,17 @@ export function TransactionDetailClient({ id }: { id: string }) {
   if (isError || !data) {
     return (
       <div className="space-y-6">
-        <PortalContentHeader
-          title="Transaction detail"
-          breadcrumbs={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'My sales', href: '/sales' },
-            { label: id },
-          ]}
-        />
+        <div>
+          <Link
+            href="/sales"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-sub)] hover:text-[#006838] dark:hover:text-[#d0e3c8] transition-colors"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span>Back to Sales</span>
+          </Link>
+        </div>
         <div className="portal-page-card flex flex-col items-center gap-4 py-16 text-center">
-          <XCircle className="h-10 w-10 text-[#dc2626]" aria-hidden="true" />
+          <XCircle className="size-10 text-[#dc2626]" aria-hidden="true" />
           <p className="text-base font-semibold text-[var(--text-main)]">
             Transaction not found
           </p>
@@ -134,7 +104,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
             The transaction <span className="font-mono">{id}</span> could not be loaded.
           </p>
           <Link href="/sales" className="btn-secondary">
-            Back to My sales
+            Back to Sales
           </Link>
         </div>
       </div>
@@ -173,207 +143,323 @@ export function TransactionDetailClient({ id }: { id: string }) {
     window.print()
   }
 
+  const status = tx.payment_status || tx.status
+
   return (
     <div className="space-y-6">
-      <PortalContentHeader
-        title={
-          <div className="flex flex-wrap items-center gap-3">
-            <span>Transaction detail</span>
-            {(tx.payment_status || tx.status) && (
-              <StatusLabel status={tx.payment_status || tx.status} />
+      {/* Header section: Back to Sales text action above title, prominent ID, subtitle, right-aligned status */}
+      <div>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/sales"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-sub)] hover:text-[#006838] dark:hover:text-[#d0e3c8] transition-colors"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            <span>Back to Sales</span>
+          </Link>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="btn-secondary min-h-[36px] gap-2 px-3 text-xs sm:text-sm"
+            title="Print transaction details"
+          >
+            <Printer className="size-4" aria-hidden="true" />
+            <span>Print</span>
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-[var(--text-main)] sm:text-3xl">
+              {displayId}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-sub)] sm:text-base">
+              Transaction details
+            </p>
+          </div>
+          {status && (
+            <div className="pt-1">
+              <StatusLabel status={status} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 1. Policy overview fact grid */}
+      <section aria-labelledby="policy-overview-heading" className="portal-page-card">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
+          <Receipt className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
+          <h2 id="policy-overview-heading" className="text-lg font-semibold text-[var(--text-main)]">
+            Policy overview
+          </h2>
+        </div>
+        <dl className="mt-5 grid grid-cols-1 gap-y-5 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Policy number
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {tx.policy_number ?? tx.carrier_policy_no ?? policyDetails?.CarrierPolicyNo ?? 'N/A'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Certificate number
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {tx.certificate_number ?? 'N/A'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Proposal number
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {policyDetails?.ProposalNo ?? tx.proposal_number ?? 'N/A'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Payment ID
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {tx.merchant_transaction_id ?? tx.payment_id ?? id}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Date issued
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {tx.created_at ? tx.created_at.split('T')[0] : '—'}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      {/* 2. Payment & commission card with fact grid + commission subarea */}
+      <section aria-labelledby="payment-commission-heading" className="portal-page-card">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
+          <CreditCard className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
+          <h2 id="payment-commission-heading" className="text-lg font-semibold text-[var(--text-main)]">
+            Payment & commission
+          </h2>
+        </div>
+        <dl className="mt-5 grid grid-cols-1 gap-y-5 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Product
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {(typeof tx.product === 'object' && tx.product !== null ? tx.product.name : tx.product_name || tx.product) ?? 'N/A'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Plan
+            </dt>
+            <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+              {tx.plan_name ?? tx.plan ?? policyDetails?.CarrierPlanCode ?? 'N/A'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+              Premium
+            </dt>
+            <dd className="mt-1 text-base font-semibold text-[var(--text-main)] tabular-nums">
+              {formatCurrency(tx.amount ?? tx.premium)}
+            </dd>
+          </div>
+        </dl>
+
+        {/* Commission Subarea */}
+        <div className="mt-6 border-t border-[var(--border)] pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+                Net commission
+              </p>
+              <p className="mt-1 text-base font-semibold text-[var(--text-main)] tabular-nums">
+                {formatCurrency(tx.commission_log?.agent_commission ?? tx.commission_log?.net_commission ?? tx.net_commission)}
+              </p>
+            </div>
+            {status && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--text-sub)]">Status:</span>
+                <StatusLabel status={status} />
+              </div>
             )}
           </div>
-        }
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'My sales', href: '/sales' },
-          { label: displayId },
-        ]}
-        actions={
-          <div className="flex items-center gap-2">
-            <Link
-              href="/sales"
-              className="btn-tertiary min-h-[36px] gap-1.5 px-2 text-xs sm:text-sm"
-              aria-label="Back to My sales"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Back
-            </Link>
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="btn-secondary min-h-[36px] gap-2 px-3 text-xs sm:text-sm"
-              title="Print transaction details"
-            >
-              <Printer className="h-4 w-4" aria-hidden="true" />
-              Print
-            </button>
-          </div>
-        }
-      />
-
-      {/* Policy overview */}
-      <SectionCard title="Policy overview" icon={<Receipt className="h-5 w-5" />}>
-        <dl className="divide-y divide-[var(--border)] space-y-0">
-          {[
-            ['Policy number', tx.policy_number ?? tx.carrier_policy_no ?? policyDetails?.CarrierPolicyNo ?? 'N/A'],
-            ['Certificate number', tx.certificate_number ?? 'N/A'],
-            ['Proposal number', policyDetails?.ProposalNo ?? tx.proposal_number ?? 'N/A'],
-            ['Payment ID', tx.merchant_transaction_id ?? tx.payment_id ?? id],
-            ['Date issued', tx.created_at ? tx.created_at.split('T')[0] : '—'],
-          ].map(([label, value]) => (
-            <div key={label} className="py-3 first:pt-0 last:pb-0">
-              <Row label={label as string} value={value as string} />
-            </div>
-          ))}
-        </dl>
-      </SectionCard>
-
-      {/* Payment info */}
-      <SectionCard title="Payment details">
-        <div className="flex items-center gap-3">
-          {(tx.payment_status || tx.status) && <StatusIcon status={tx.payment_status || tx.status} />}
-          {(tx.payment_status || tx.status) && <StatusLabel status={tx.payment_status || tx.status} />}
         </div>
-        <dl className="divide-y divide-[var(--border)]">
-          {[
-            ['Product', (typeof tx.product === 'object' && tx.product !== null ? tx.product.name : tx.product_name || tx.product) ?? 'N/A'],
-            ['Plan', tx.plan_name ?? tx.plan ?? policyDetails?.CarrierPlanCode ?? 'N/A'],
-            ['Premium', formatCurrency(tx.amount ?? tx.premium)],
-            ['Net commission', formatCurrency(tx.commission_log?.agent_commission ?? tx.commission_log?.net_commission ?? tx.net_commission)],
-          ].map(([label, value]) => (
-            <div key={label} className="py-3 first:pt-0 last:pb-0">
-              <Row label={label as string} value={value as string} />
-            </div>
-          ))}
-        </dl>
-      </SectionCard>
+      </section>
 
-      {/* Travel details (if available) */}
+      {/* 3. Travel details (if available) */}
       {(travelDetails || policyDetails?.TravelType) && (
-        <SectionCard title="Travel details" icon={<Plane className="h-5 w-5" />}>
-          <dl className="divide-y divide-[var(--border)]">
-            <div className="py-3 first:pt-0">
-              <Row
-                label="Destination"
-                value={
-                  travelDetails
-                    ? `${travelDetails.PlaceOfOrgin || 'Philippines'} → ${
-                        travelDetails.TravelCountry || 'Destination'
-                      }`
-                    : '—'
-                }
-              />
+        <section aria-labelledby="travel-details-heading" className="portal-page-card">
+          <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
+            <Plane className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
+            <h2 id="travel-details-heading" className="text-lg font-semibold text-[var(--text-main)]">
+              Travel details
+            </h2>
+          </div>
+          <dl className="mt-5 grid grid-cols-1 gap-y-5 gap-x-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+                Destination
+              </dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+                {travelDetails
+                  ? `${travelDetails.PlaceOfOrgin || 'Philippines'} → ${
+                      travelDetails.TravelCountry || 'Destination'
+                    }`
+                  : '—'}
+              </dd>
             </div>
-            <div className="py-3">
-              <Row label="Travel type" value={policyDetails?.TravelType ?? '—'} />
+            <div>
+              <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+                Travel type
+              </dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+                {policyDetails?.TravelType ?? '—'}
+              </dd>
             </div>
-            <div className="py-3">
-              <Row
-                label="Duration"
-                value={
-                  policyDetails?.TravelDays ? `${policyDetails.TravelDays} days` : '—'
-                }
-              />
+            <div>
+              <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+                Duration
+              </dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+                {policyDetails?.TravelDays ? `${policyDetails.TravelDays} days` : '—'}
+              </dd>
             </div>
-            <div className="py-3 last:pb-0">
-              <Row
-                label="Coverage period"
-                value={
-                  policyDetails?.EffectiveDate && policyDetails?.ExpiryDate
-                    ? `${new Date(policyDetails.EffectiveDate).toLocaleDateString()} – ${new Date(
-                        policyDetails.ExpiryDate
-                      ).toLocaleDateString()}`
-                    : '—'
-                }
-              />
+            <div>
+              <dt className="text-xs uppercase font-medium tracking-wider text-[var(--text-sub)]">
+                Coverage period
+              </dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-main)]">
+                {policyDetails?.EffectiveDate && policyDetails?.ExpiryDate
+                  ? `${new Date(policyDetails.EffectiveDate).toLocaleDateString()} – ${new Date(
+                      policyDetails.ExpiryDate
+                    ).toLocaleDateString()}`
+                  : '—'}
+              </dd>
             </div>
           </dl>
-        </SectionCard>
+        </section>
       )}
 
-      {/* Travellers / Insured Persons */}
-      <SectionCard title="Travellers & Insured Persons" icon={<Users className="h-5 w-5" />}>
-        {customers.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)] text-left text-xs font-semibold uppercase text-[var(--text-muted)]">
-                  <th className="py-2.5">Name</th>
-                  <th className="py-2.5">Type</th>
-                  <th className="py-2.5">Date of Birth</th>
-                  <th className="py-2.5">Contact</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)]">
-                {customers.map((c: any, idx: number) => {
-                  const fullName = [c.FirstName, c.MiddleName, c.LastName]
-                    .filter(Boolean)
-                    .join(' ')
-                  return (
-                    <tr key={idx}>
-                      <td className="py-3 font-medium text-[var(--text-main)]">
-                        {fullName || c.CustomerName || 'N/A'}
-                      </td>
-                      <td className="py-3 text-[var(--text-sub)]">
-                        {c.IsPolicyHolder === 'Y' ? (
-                          <StatusBadge variant="success" label="Policy Holder" icon={null} />
-                        ) : (
-                          'Insured'
-                        )}
-                      </td>
-                      <td className="py-3 text-[var(--text-muted)]">
-                        {c.DateOfBirth ?? c.Dob ?? '—'}
-                      </td>
-                      <td className="py-3 text-[var(--text-muted)]">
-                        {c.Email || c.Mobile || '—'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : policyHolder ? (
-          <p className="text-sm text-[var(--text-main)]">
-            Policy Holder:{' '}
-            {[policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName]
-              .filter(Boolean)
-              .join(' ')}
-          </p>
-        ) : tx.customer_name ? (
-          <p className="text-sm text-[var(--text-main)]">{tx.customer_name}</p>
-        ) : (
-          <p className="text-sm text-[var(--text-muted)]">
-            No specific traveller details recorded for this transaction.
-          </p>
-        )}
-      </SectionCard>
+      {/* 4. Travellers / Insured Persons */}
+      <section aria-labelledby="travellers-heading" className="portal-page-card">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
+          <Users className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
+          <h2 id="travellers-heading" className="text-lg font-semibold text-[var(--text-main)]">
+            Travellers &amp; Insured Persons
+          </h2>
+        </div>
+        <div className="mt-5">
+          {customers.length > 0 ? (
+            <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[var(--subtle)] text-xs font-semibold text-[var(--text-sub)]">
+                  <tr>
+                    <th scope="col" className="px-4 py-3">Name</th>
+                    <th scope="col" className="px-4 py-3">Type</th>
+                    <th scope="col" className="px-4 py-3">Date of birth</th>
+                    <th scope="col" className="px-4 py-3">Contact</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {customers.map((c: any, idx: number) => {
+                    const fullName = [c.FirstName, c.MiddleName, c.LastName]
+                      .filter(Boolean)
+                      .join(' ')
+                    return (
+                      <tr key={idx} className="transition-colors hover:bg-[var(--subtle)]">
+                        <td className="px-4 py-3.5 font-medium text-[var(--text-main)]">
+                          {fullName || c.CustomerName || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3.5 text-[var(--text-sub)]">
+                          {c.IsPolicyHolder === 'Y' ? (
+                            <StatusBadge status="success" label="Policy Holder" />
+                          ) : (
+                            'Insured'
+                          )}
+                        </td>
+                        <td className="px-4 py-3.5 text-[var(--text-muted)]">
+                          {c.DateOfBirth ?? c.Dob ?? '—'}
+                        </td>
+                        <td className="px-4 py-3.5 text-[var(--text-muted)]">
+                          {c.Email || c.Mobile || '—'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : policyHolder ? (
+            <p className="text-sm text-[var(--text-main)]">
+              Policy Holder:{' '}
+              {[policyHolder.FirstName, policyHolder.MiddleName, policyHolder.LastName]
+                .filter(Boolean)
+                .join(' ')}
+            </p>
+          ) : tx.customer_name ? (
+            <p className="text-sm text-[var(--text-main)]">{tx.customer_name}</p>
+          ) : (
+            <p className="text-sm text-[var(--text-muted)]">
+              No specific traveller details recorded for this transaction.
+            </p>
+          )}
+        </div>
+      </section>
 
-      {/* Coverage summary */}
-      <SectionCard title="Coverage summary" icon={<Shield className="h-5 w-5" />}>
-        {coverages.length > 0 ? (
-          <div className="space-y-2">
-            <div className="flex justify-between border-b border-[var(--border)] pb-2 text-xs font-semibold uppercase text-[var(--text-muted)]">
-              <span>Coverage / Benefit</span>
-              <span>Status</span>
+      {/* 5. Coverage summary */}
+      <section aria-labelledby="coverage-heading" className="portal-page-card">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
+          <Shield className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
+          <h2 id="coverage-heading" className="text-lg font-semibold text-[var(--text-main)]">
+            Coverage summary
+          </h2>
+        </div>
+        <div className="mt-5">
+          {coverages.length > 0 ? (
+            <div className="space-y-2">
+              <div className="flex justify-between border-b border-[var(--border)] pb-2 text-xs font-semibold text-[var(--text-sub)]">
+                <span>Coverage / benefit</span>
+                <span>Status</span>
+              </div>
+              <div className="divide-y divide-[var(--border)]">
+                {coverages.map((cov: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between py-2.5 text-sm">
+                    <span className="text-[var(--text-main)]">{cov.CoverageName}</span>
+                    <StatusBadge status="success" label="Included" />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="divide-y divide-[var(--border)]">
-              {coverages.map((cov: any, idx: number) => (
-                <div key={idx} className="flex items-center justify-between py-2 text-sm">
-                  <span className="text-[var(--text-main)]">{cov.CoverageName}</span>
-                  <StatusBadge variant="success" label="Included" icon={null} />
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
+          ) : (
+            <p className="text-sm text-[var(--text-muted)]">
+              Coverage is determined by the selected plan ({tx.plan_name ?? tx.plan ?? 'Standard'}).
+              Benefits and exclusions follow the underwriter policy schedule.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* 6. Selected add-ons */}
+      <section aria-labelledby="addons-heading" className="portal-page-card">
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
+          <Shield className="size-5 text-[#006838] dark:text-[#d0e3c8]" aria-hidden="true" />
+          <h2 id="addons-heading" className="text-lg font-semibold text-[var(--text-main)]">
+            Selected add-ons
+          </h2>
+        </div>
+        <div className="mt-5">
           <p className="text-sm text-[var(--text-muted)]">
-            Coverage is determined by the selected plan ({tx.plan_name ?? tx.plan ?? 'Standard'}).
-            Benefits and exclusions follow the underwriter policy schedule.
+            No additional riders or optional add-ons selected for this policy.
           </p>
-        )}
-      </SectionCard>
+        </div>
+      </section>
     </div>
   )
 }

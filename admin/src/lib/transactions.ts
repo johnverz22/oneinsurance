@@ -17,6 +17,7 @@ export type Transaction = {
   plan_name?: string | null
   plan?: string | null
   product_name?: string | null
+  line_of_business?: string | null
   carrier_product_code?: string | null
   insurer_name?: string | null
   premium?: string | number | null
@@ -56,46 +57,14 @@ export function txStatus(tx: Transaction): string {
   return 'Pending'
 }
 
-export function txProduct(tx: Transaction): string | null {
+export function txProductName(tx: Transaction): string | null {
   return (
-    tx.product?.name ?? tx.product_name ?? tx.carrier_product_code ?? null
+    tx.product_name ?? tx.product?.name ?? tx.carrier_product_code ?? null
   )
 }
 
-type CatalogProduct = {
-  name?: string | null
-  carrier_product_code?: string | null
-  line_of_business?: { name?: string | null } | null
-}
-
-/*
- * Known payload gaps in the transactions endpoints (observed on stage):
- * - `currency` is not returned at all; it exists only on the checkout payment
- *   request. We do not assume a value, so the column shows — until the API
- *   exposes it.
- * - `product`, `product_name`, and `policy_details` are typically null; the
- *   only product identifier is `carrier_product_code` (e.g. MIC-TRAVEL-MASTER).
- *   The line-of-business name (e.g. "Travel Insurance") is therefore resolved
- *   through the admin product catalog. Carrier codes with no catalog product,
- *   or products with no line_of_business, stay unresolved and fall back to
- *   the product name / raw code — i.e. the "Travel Insurance" type is missing
- *   whenever the catalog mapping is incomplete.
- */
-export function txProductType(
-  tx: Transaction,
-  byCode?: Map<string, CatalogProduct>
-): string | null {
-  const match = tx.carrier_product_code
-    ? byCode?.get(tx.carrier_product_code)
-    : undefined
-  return (
-    match?.line_of_business?.name ??
-    match?.name ??
-    tx.product?.name ??
-    tx.product_name ??
-    tx.carrier_product_code ??
-    null
-  )
+export function txLineOfBusiness(tx: Transaction): string | null {
+  return tx.line_of_business ?? null
 }
 
 export function txPremium(tx: Transaction): number | null {

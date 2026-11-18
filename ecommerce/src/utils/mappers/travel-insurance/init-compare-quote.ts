@@ -25,7 +25,7 @@ export interface InitCompareQuoteRequest {
  * Domestic city codes (MANILA, CEBU CITY, etc.) all map to "PH" because
  * the API only accepts country-level ISO codes.
  */
-const COUNTRY_TO_ISO2: Record<string, string> = {
+export const COUNTRY_TO_ISO2: Record<string, string> = {
   // Origin
   PHILIPPINES: 'PH',
 

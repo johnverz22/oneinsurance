@@ -63,6 +63,66 @@ type ProxyOptions = {
   search?: boolean
   /** Override the request body sent upstream (defaults to the incoming JSON body). */
   data?: unknown
+  /** Override the HTTP method sent upstream (defaults to the incoming request method). */
+  method?: string
+}
+
+/**
+ * Proxy a file download (CSV export) to the backend and relay the streamed
+ * body, filename and content type. JSON errors are relayed as JSON so the
+ * client can show the upstream message.
+ */
+export async function proxyFileDownload(
+  req: NextRequest,
+  upstreamPath: string
+): Promise<Response> {
+  const token = getAuthToken(req)
+  if (!token) return unauthorized(req)
+
+  const url = `${BASE_URL}${upstreamPath}${req.nextUrl.search}`
+
+  try {
+    const upstream = await fetch(url, {
+      headers: {
+        Authorization: token,
+        Accept: 'text/csv, application/json',
+      },
+      cache: 'no-store',
+    })
+
+    if (!upstream.ok) {
+      const raw = await upstream.text()
+      let body: unknown = { success: false, message: 'Export failed' }
+      try {
+        body = JSON.parse(raw)
+      } catch {
+        if (raw) body = { success: false, message: raw }
+      }
+      return NextResponse.json(body, {
+        status: upstream.status,
+        headers: buildApiHeaders(req),
+      })
+    }
+
+    const headers = new Headers(buildApiHeaders(req))
+    headers.set(
+      'Content-Type',
+      upstream.headers.get('Content-Type') ?? 'text/csv; charset=UTF-8'
+    )
+    headers.set('Cache-Control', 'no-store')
+    const disposition = upstream.headers.get('Content-Disposition')
+    if (disposition) headers.set('Content-Disposition', disposition)
+
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers,
+    })
+  } catch {
+    return NextResponse.json(
+      { success: false, message: 'Export failed' },
+      { status: 500, headers: buildApiHeaders(req) }
+    )
+  }
 }
 
 /**
@@ -74,9 +134,9 @@ type ProxyOptions = {
 export async function proxyApiRequest(
   req: NextRequest,
   upstreamPath: string,
-  { auth = true, search = true, data }: ProxyOptions = {}
+  { auth = true, search = true, data, method: methodOverride }: ProxyOptions = {}
 ): Promise<NextResponse> {
-  const method = req.method.toUpperCase()
+  const method = (methodOverride ?? req.method).toUpperCase()
   const token = getAuthToken(req)
 
   if (auth && !token) return unauthorized(req)

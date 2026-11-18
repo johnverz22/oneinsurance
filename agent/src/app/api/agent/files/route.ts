@@ -7,16 +7,15 @@ import { BASE_URL, buildApiHeaders, unauthorized } from '@/lib/api-helpers'
  * List the authenticated agent's files from Google Drive.
  *
  * Query params (all optional):
- *   tag       — filter by FileTag (e.g. "profile_photo", "valid_id")
- *   folder_id — filter by backend folder ID
+ *   tag       — filter by tag (e.g. "valid_id")
  *   limit     — default 50
  *   page      — default 1
  *
  * Response:
- *   { success: true, data: AgentFile[] }
+ *   { success: true, data: AgentFile[], pagination: {...} }
  *
- * When tag is supplied the request is routed to
- * GET /agents/files/tag/{tag} instead of /agents/files/list.
+ * The backend now returns { data: { files: [...], pagination: {...} } }.
+ * We normalise each file into the AgentFile shape and pass pagination through.
  */
 export async function GET(req: NextRequest) {
   const headers = buildApiHeaders(req)
@@ -25,7 +24,6 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const tag = searchParams.get('tag') ?? ''
-  const folderId = searchParams.get('folder_id') ?? ''
   const limit = searchParams.get('limit') ?? '50'
   const page = searchParams.get('page') ?? '1'
 
@@ -38,7 +36,7 @@ export async function GET(req: NextRequest) {
       upstreamUrl = `${BASE_URL}/agents/files/tag/${encodeURIComponent(tag)}?${params}`
     } else {
       // Full list endpoint
-      const params = new URLSearchParams({ folder_id: folderId, limit, page })
+      const params = new URLSearchParams({ limit, page })
       upstreamUrl = `${BASE_URL}/agents/files/list?${params}`
     }
 
@@ -54,26 +52,17 @@ export async function GET(req: NextRequest) {
 
     const json = await upstreamRes.json().catch(() => ({}))
 
-    // Log the raw shape in non-production to help diagnose response structure issues
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[files] GET upstream response shape:', JSON.stringify({
-        keys: Object.keys(json),
-        dataType: typeof json?.data,
-        dataIsArray: Array.isArray(json?.data),
-        dataKeys: json?.data && typeof json.data === 'object' ? Object.keys(json.data) : null,
-        filesIsArray: Array.isArray(json?.data?.files),
-        sampleLength: (json?.data?.files ?? json?.data ?? []).length,
-      }))
-    }
-
-    // Support multiple response shapes the backend might return:
-    //   { data: { files: [...] } }
-    //   { data: [...] }
-    //   { files: [...] }
-    //   [...]
+    // The backend now returns { data: { files: [...], pagination: {...} } }
+    // Keep backward-compat fallbacks for older response shapes.
     let rawFiles: any[] = []
+    let pagination: any = null
+
     if (Array.isArray(json?.data?.files)) {
       rawFiles = json.data.files
+      pagination = json.data.pagination ?? null
+    } else if (Array.isArray(json?.data?.data)) {
+      rawFiles = json.data.data
+      pagination = json.data.pagination ?? null
     } else if (Array.isArray(json?.data)) {
       rawFiles = json.data
     } else if (Array.isArray(json?.files)) {
@@ -86,7 +75,10 @@ export async function GET(req: NextRequest) {
       ? rawFiles.map(normaliseFile)
       : []
 
-    return NextResponse.json({ success: true, data: files }, { status: 200, headers })
+    const response: any = { success: true, data: files }
+    if (pagination) response.pagination = pagination
+
+    return NextResponse.json(response, { status: 200, headers })
   } catch (error: any) {
     console.error('[files] GET error:', error)
     return NextResponse.json(
@@ -98,38 +90,51 @@ export async function GET(req: NextRequest) {
 
 /** Map a raw backend file record to the AgentFile shape.
  *
- * The backend ignores the `tag` field on upload and always stores "document".
- * To work around this, we generate an opaque filename at upload time:
- *   "<tag>__<random_hex>.<ext>"  e.g. "valid_id__a3f9c1e7.webp"
+ * The backend now persists `tag` correctly. We use it directly when it is
+ * a known tag. If the tag is missing or generic ("document"), fall back to
+ * parsing the `tag__hex.ext` filename prefix — this handles legacy files
+ * until the backfill is confirmed on all environments.
  *
- * This function extracts the tag from that prefix. The random suffix is not
- * surfaced — file_name is set to an empty string since the UI shows a static
- * "Uploaded" label instead of the filename.
+ * `original_name` is kept for display. For legacy files it may contain a
+ * `tag__hex` name; the UI checks for `__` and shows a static label instead.
  */
 function normaliseFile(f: any) {
-  const rawName: string = f.file_name || f.original_name || ''
+  const knownTags = [
+    'valid_id',
+    'insurance_qual_1',
+    'insurance_qual_2',
+    'insurance_qual_3',
+    'agent_license',
+    'profile_photo',
+  ]
 
-  // Extract tag from "tag__randomhex.ext" prefix, fall back to whatever backend stored
-  const SEPARATOR = '__'
   let tag: string = f.tag || 'document'
 
-  const sepIdx = rawName.indexOf(SEPARATOR)
-  if (sepIdx > 0) {
-    const prefix = rawName.slice(0, sepIdx)
-    // Only treat it as a tag prefix if it looks like a known slug (no spaces, no dots)
-    if (/^[a-z0-9_]+$/.test(prefix)) {
-      tag = prefix
-      // Intentionally do not surface the random suffix — the UI shows "Uploaded" instead
+  // Fallback: parse tag from legacy "tag__hex.ext" filename
+  if (!knownTags.includes(tag)) {
+    const rawName: string = f.file_name || f.original_name || ''
+    const sepIdx = rawName.indexOf('__')
+    if (sepIdx > 0) {
+      const prefix = rawName.slice(0, sepIdx)
+      if (/^[a-z0-9_]+$/.test(prefix)) tag = prefix
     }
   }
 
   return {
     id: f.id,
-    file_name: '',
+    file_name: f.file_name || '',
+    original_name: f.original_name || '',
     tag,
     mime_type: f.mime_type || '',
+    size: f.size,
     status: f.status || 'pending',
+    review_status: f.review_status ?? f.status,
+    review_note: f.review_note ?? null,
+    reviewed_at: f.reviewed_at ?? null,
+    file_id: f.file_id,
     web_view_link: f.web_view_link || f.web_content_link || '',
+    is_public: f.is_public,
     created_at: f.created_at || new Date().toISOString(),
+    updated_at: f.updated_at,
   }
 }

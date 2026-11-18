@@ -1,3 +1,8 @@
+import {
+  clearResumeToken,
+  getResumeToken,
+  withClientIp,
+} from '@/lib/resume-token-server'
 import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -20,9 +25,15 @@ export const revalidate = 0
  *
  * If the backend is completely unreachable we synthesise an `unavailable`
  * response (503) so the FE always gets the same structure and can offer retry.
+ *
+ * Resume token: the token is read from an httpOnly cookie scoped to this
+ * proposal and forwarded as `X-Resume-Token`.  With the backend switch on, a
+ * 404 means either "unknown proposal" or "missing/wrong/expired token" — the
+ * FE treats both as "needs email verification".  We clear the cookie on a 404
+ * so a stale token doesn't linger.
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ proposalNumber: string }> }
 ) {
   const { proposalNumber } = await params
@@ -44,12 +55,21 @@ export async function GET(
 
   const url = `${process.env.BASE_URL}/travel/full-quote/${encodeURIComponent(proposalNumber)}`
 
+  // The token only unlocks this one proposal; the BFF owns it so the browser
+  // never sees it.  When absent the resume call goes out unauthenticated and
+  // the backend answers 404 (unknown or needs verification — same answer).
+  const resumeToken = await getResumeToken(proposalNumber)
+
   try {
     const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${process.env.BACKEND_TOKEN}`,
-        Accept: 'application/json',
-      },
+      headers: withClientIp(
+        {
+          Authorization: `Bearer ${process.env.BACKEND_TOKEN}`,
+          Accept: 'application/json',
+          ...(resumeToken ? { 'X-Resume-Token': resumeToken } : {}),
+        },
+        req
+      ),
       // Do not throw on 4xx/5xx — we forward the status ourselves
       validateStatus: () => true,
       timeout: 15_000,
@@ -67,7 +87,16 @@ export async function GET(
 
     // Pass backend status codes through directly — the FE interprets them.
     // We normalise only when the backend is completely silent.
-    return NextResponse.json(body, { status })
+    const res = NextResponse.json(body, { status })
+
+    // A 404 after sending a token means the token is missing/wrong/expired
+    // (the backend deliberately can't tell us which).  Drop the stale cookie
+    // so the next attempt starts from the email-code verification screen.
+    if (status === 404 && resumeToken) {
+      clearResumeToken(res, proposalNumber)
+    }
+
+    return res
   } catch (err: any) {
     // Network-level error (ECONNREFUSED, ETIMEDOUT, ENOTFOUND, etc.)
     // Treat as unavailable so the FE can offer retry, not a hard error.

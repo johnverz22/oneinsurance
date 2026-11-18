@@ -43,14 +43,13 @@ export function useIssueQuoteRequest() {
           (typeof data?.message === 'string' && data.message) ||
           (typeof data?.error === 'string' && data.error) ||
           undefined
-        console.warn('[issue-quote] HTTP error', { status, message: backendMessage ?? err?.message, data })
+        console.warn('[issue-quote] HTTP error', { status, message: backendMessage ?? err?.message })
         throw new IssueQuoteError(resolveIssueQuoteMessage(status, backendMessage), status)
       }
 
       const parsed = IssueQuoteResponseSchema.safeParse(responseData)
       if (!parsed.success) {
         const raw = responseData as any
-        console.error('[issue-quote] parse error:', parsed.error, 'raw:', responseData)
         throw new Error(raw?.message || raw?.error || 'Unexpected response from issue quote')
       }
 
@@ -63,10 +62,8 @@ export function useIssueQuoteRequest() {
 
       if (!result.data?.policy_no) {
         // Issued but no policy_no yet — insurer may still be processing
-        console.warn('[issue-quote] success but no policy_no:', result)
       }
 
-      console.log('[issue-quote] issued OK — policy_no:', result.data?.policy_no, 'proposal:', result.data?.proposal_number)
       return result
     },
     retry: false,

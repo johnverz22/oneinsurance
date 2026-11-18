@@ -1,3 +1,5 @@
+import type { ProfilePhoto } from './auth'
+
 /** Agent profile (extended from user) */
 export type AgentProfile = {
   id: number
@@ -8,7 +10,7 @@ export type AgentProfile = {
   role: string
   status: string
   agent_code: string | null
-  profile_photo_url: string | null
+  profile_photo: ProfilePhoto | null
   created_at: string
   updated_at: string
 }
@@ -31,14 +33,30 @@ export type FileTag =
 /** A file stored on Google Drive via the One Insurance backend */
 export type AgentFile = {
   id: number | string
+  /** Storage name, e.g. "valid_id.jpeg" — not a user-facing label */
   file_name: string
+  /** The user's original filename, e.g. "IMG_2041.JPG". May contain a legacy `tag__hex` name. */
+  original_name?: string
   /** Typed tag — identifies the file's purpose */
   tag: FileTag | string
   mime_type?: string
+  /** File size in bytes */
+  size?: number
   status: 'pending' | 'approved' | 'rejected'
-  /** Google Drive view URL — do NOT use directly in <img>; use the /serve proxy instead */
+  /** Review status from the document review feature (prefer over `status` when present) */
+  review_status?: 'pending' | 'approved' | 'rejected'
+  /** Admin's rejection reason, otherwise null */
+  review_note?: string | null
+  /** When the review decision was made, or null */
+  reviewed_at?: string | null
+  /** Google Drive file ID */
+  file_id?: string
+  /** Google Drive view URL — do NOT use directly in ; use the /serve proxy instead */
   web_view_link: string
+  /** Whether the file is publicly accessible */
+  is_public?: boolean
   created_at: string
+  updated_at?: string
 }
 
 /**

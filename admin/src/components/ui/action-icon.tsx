@@ -20,6 +20,8 @@ type ActionIconProps = {
   label: string
   /** Short action verb shown in the delayed hint badge (e.g. "View details"). */
   hint?: string
+  /** How long to hover/focus before the hint appears. Defaults to 1000ms. */
+  hintDelayMs?: number
   /** Destructive variant — Failure red icon and hint text. */
   failure?: boolean
   href?: string
@@ -38,11 +40,13 @@ type ActionIconProps = {
 /**
  * Shared portal action icon — the `.ui-action-icon` component: 44px target,
  * transparent background, Insurance green icon, Pale Gold hover, and an
- * optional action hint badge that appears after a 1s hover/focus delay.
+ * optional action hint badge that appears after a short, configurable
+ * hover/focus delay (1s by default; pass `hintDelayMs={0}` for instant).
  */
 export function ActionIcon({
   label,
   hint,
+  hintDelayMs = HINT_DELAY_MS,
   failure = false,
   href,
   external = false,
@@ -76,9 +80,9 @@ export function ActionIcon({
     clearTimer()
     timerRef.current = window.setTimeout(
       () => setHintVisible(true),
-      HINT_DELAY_MS
+      hintDelayMs
     )
-  }, [hint, clearTimer])
+  }, [hint, hintDelayMs, clearTimer])
 
   useEffect(() => clearTimer, [clearTimer])
 
@@ -174,6 +178,7 @@ export function ActionIcon({
     return (
       <a href={href} {...shared}>
         {children}
+        {hintEl}
       </a>
     )
   }
@@ -182,6 +187,7 @@ export function ActionIcon({
     return (
       <Link href={href} {...shared}>
         {children}
+        {hintEl}
       </Link>
     )
   }
@@ -189,6 +195,7 @@ export function ActionIcon({
   return (
     <button type="button" disabled={disabled} {...shared}>
       {children}
+      {hintEl}
     </button>
   )
 }

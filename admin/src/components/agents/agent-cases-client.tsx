@@ -1,58 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { UserRound } from 'lucide-react'
-import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { toast } from 'sonner'
+import { ActionIcon } from '@/components/ui/action-icon'
 import { SearchInput } from '@/components/ui/search-input'
+import { SelectField } from '@/components/ui/select-field'
 import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
+import { Modal } from '@/components/ui/modal'
+import { Skeleton } from '@/components/ui/skeleton'
 import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
-import { exportToCSV } from '@/lib/export-to-csv'
-import { toast } from 'sonner'
+import { downloadExport } from '@/lib/download-export'
+import { extractApiError } from '@/lib/api-error'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
 import { formatPersonName } from '@/lib/utils'
-import { txProductType } from '@/lib/transactions'
+import {
+  formatAmount,
+  formatTxDate,
+  txPaymentRef,
+  txPremium,
+  txProductName,
+  type Transaction,
+} from '@/lib/transactions'
 import { btnOutlineGreenCls } from '@/lib/ui-classes'
 import type { Agent } from '@/types/admin/people'
-import type { ApiResponse, Paginated, Product } from '@/types/admin/catalog'
-
-type Transaction = {
-  id: number
-  policy_number?: string | null
-  proposal_number?: string | null
-  certificate_number?: string | null
-  merchant_transaction_id?: string | null
-  policy_holder?: string | null
-  customer_name?: string | null
-  plan_name?: string | null
-  product_name?: string | null
-  carrier_product_code?: string | null
-  insurer_name?: string | null
-  premium?: string | number | null
-  amount?: string | number | null
-  paid_amount?: string | number | null
-  currency?: string | null
-  status?: string | null
-  transaction_status?: string | null
-  transaction_date?: string | null
-  coverage_start?: string | null
-  coverage_end?: string | null
-  created_at?: string | null
-  policy_details?: string | Record<string, unknown> | null
-  product?: { name?: string | null } | null
-}
+import type { ApiResponse, Paginated } from '@/types/admin/catalog'
 
 const dash = (
   <span className="font-sans text-sm font-normal text-[var(--text-sub)]">
     —
   </span>
 )
+
+const detailPanelCls =
+  'min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6'
 
 function agentDisplayName(agent?: Agent | null): string {
   if (!agent) return 'Agent'
@@ -66,37 +54,55 @@ function agentDisplayName(agent?: Agent | null): string {
   )
 }
 
-function coveragePeriod(tx: Transaction): { label: string; days: number } | null {
-  let effective: unknown = tx.coverage_start
-  let expiry: unknown = tx.coverage_end
-  if ((!effective || !expiry) && tx.policy_details) {
-    try {
-      const details =
-        typeof tx.policy_details === 'string'
-          ? JSON.parse(tx.policy_details)
-          : tx.policy_details
-      effective = effective || details?.EffectiveDate
-      expiry = expiry || details?.ExpiryDate
-    } catch {
-      /* fall through to null check */
-    }
+function agentType(agent?: Agent | null): string {
+  if (!agent) return 'Agent'
+  if (agent.designation) return formatPersonName(agent.designation)
+  if (typeof agent.role === 'string' && agent.role.trim()) {
+    return formatPersonName(agent.role)
   }
-  if (!effective || !expiry) return null
-  try {
-    const start = new Date(effective as string)
-    const end = new Date(expiry as string)
-    const days =
-      Math.ceil(Math.abs(end.getTime() - start.getTime()) / 86400000) + 1
-    const fmt = (d: Date) =>
-      d.toLocaleDateString('en-US', {
-        month: 'numeric',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    return { label: `${fmt(start)} - ${fmt(end)}`, days }
-  } catch {
-    return null
+  return 'Agent'
+}
+
+function formatCreatedAt(raw?: string | null) {
+  if (!raw) return null
+  const hasTime = /[T ]\d{1,2}:\d{2}/.test(raw)
+  const normalized = raw.includes('T') ? raw : raw.replace(' ', 'T')
+  const date = new Date(normalized)
+  if (Number.isNaN(date.getTime())) return null
+  return {
+    day: date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    time: hasTime
+      ? date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      : null,
   }
+}
+
+function netCommissionOf(tx: Transaction): number | null {
+  const raw = tx.net_commission ?? tx.commission_log?.net_commission
+  if (raw === null || raw === undefined || raw === '') return null
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : null
+}
+
+function paymentIdOf(tx: Transaction): string | null {
+  return (
+    tx.payment_id ??
+    tx.merchant_transaction_id ??
+    tx.proposal_number ??
+    txPaymentRef(tx)
+  )
+}
+
+function caseStatus(tx: Transaction): string {
+  return tx.status ?? tx.transaction_status ?? 'pending'
 }
 
 export function AgentCasesClient({ agentId }: { agentId: number }) {
@@ -106,10 +112,18 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
   const enabled = hasHydrated && isAuthenticated && !!agentId
 
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(10)
   const [search, setSearch] = useState('')
+  const [searchDebounced, setSearchDebounced] = useState('')
   const [dateRange, setDateRange] = useState<DateRange | null>(null)
+  const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null)
   const dateFrom = dateRange?.from ?? ''
   const dateTo = dateRange?.to ?? ''
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchDebounced(search.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const { data: agent } = useQuery<Agent>({
     queryKey: ['admin-agent-detail', agentId],
@@ -122,70 +136,42 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
     enabled,
   })
 
-  const { data, isLoading, isError } = useQuery<
+  const [isExporting, setIsExporting] = useState(false)
+
+  const { data, isLoading, isError, error } = useQuery<
     ApiResponse<Paginated<Transaction>>
   >({
-    queryKey: ['admin-agent-transactions', agentId, page, dateFrom, dateTo],
+    queryKey: [
+      'admin-agent-transactions',
+      agentId,
+      page,
+      perPage,
+      searchDebounced,
+      dateFrom,
+      dateTo,
+    ],
     queryFn: async () => {
-      const params = new URLSearchParams({ page: String(page) })
+      const params = new URLSearchParams({
+        page: String(page),
+        per_page: String(perPage),
+      })
+      if (searchDebounced) params.set('search', searchDebounced)
       if (dateFrom) params.set('date_from', dateFrom)
       if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(
         `/api/admin/agents/${agentId}/transactions?${params}`
       )
-      if (!res.ok) throw new Error('Failed to load cases')
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(extractApiError(json, 'Failed to load cases'))
+      }
       return res.json()
     },
     enabled,
   })
 
-  const { data: catalog } = useQuery<Product[]>({
-    queryKey: ['admin-products', 'transaction-lookup'],
-    queryFn: async () => {
-      const res = await authFetch('/api/admin/products?page=1&per_page=100')
-      if (!res.ok) throw new Error('Failed to load products')
-      const json = await res.json()
-      return ((json?.data?.data ?? json?.data ?? []) as Product[]).filter(
-        (p) => !p.deleted_at
-      )
-    },
-    enabled,
-  })
-
-  const productByCode = new Map(
-    (catalog ?? [])
-      .filter((p) => p.carrier_product_code)
-      .map((p) => [p.carrier_product_code as string, p])
-  )
-
   const transactions = data?.data?.data ?? []
   const pagination = data?.data
-
-  const term = search.trim().toLowerCase()
-  const filtered = transactions.filter((tx) => {
-    if (
-      term &&
-      ![
-        tx.policy_number,
-        tx.certificate_number,
-        tx.policy_holder,
-        tx.customer_name,
-        tx.plan_name,
-        txProductType(tx, productByCode),
-      ].some((f) => f?.toLowerCase().includes(term))
-    ) {
-      return false
-    }
-    // Client-side fallback if the upstream ignores date_from/date_to
-    if (dateFrom || dateTo) {
-      const raw = tx.transaction_date ?? tx.created_at
-      if (!raw) return false
-      const day = raw.slice(0, 10)
-      if (dateFrom && day < dateFrom) return false
-      if (dateTo && day > dateTo) return false
-    }
-    return true
-  })
 
   const agentName = agent ? agentDisplayName(agent) : `Agent #${agentId}`
   const agentCode = (
@@ -193,233 +179,529 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
     agent?.agent_code ??
     ''
   ).toUpperCase()
+  const hasFilters = !!(searchDebounced || dateFrom || dateTo)
 
-  function handleExport() {
-    if (filtered.length === 0) {
-      toast.info('No cases to export')
-      return
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const params = new URLSearchParams()
+      if (searchDebounced) params.set('search', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
+      const query = params.toString()
+      const result = await downloadExport(
+        authFetch,
+        `/api/admin/agents/${agentId}/transactions/export${query ? `?${query}` : ''}`,
+        `transactions-agent-${agentId}-${new Date().toISOString().split('T')[0]}.csv`
+      )
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('Export started')
+    } finally {
+      setIsExporting(false)
     }
-    exportToCSV(
-      filtered.map((tx) => ({
-        policy_number: tx.policy_number ?? '',
-        certificate_number: tx.certificate_number ?? '',
-        policy_holder:
-          formatPersonName(tx.policy_holder ?? tx.customer_name) || '',
-        product: txProductType(tx, productByCode) ?? '',
-        plan: tx.plan_name ?? '',
-        premium: tx.premium ?? tx.paid_amount ?? tx.amount ?? '',
-        currency: tx.currency ?? '',
-        status: tx.status ?? '',
-        coverage_start: tx.coverage_start ?? '',
-        coverage_end: tx.coverage_end ?? '',
-      })),
-      `agent-${agentCode || agentId}-cases-${new Date().toISOString().split('T')[0]}.csv`
-    )
-    toast.success(`Exported ${filtered.length} case(s)`)
   }
 
   return (
-    <>
-      <PortalContentHeader
-        title="Agent cases"
-        breadcrumbs={[
-          { label: 'Agents', href: '/agents' },
-          { label: agentName, href: `/agents/${agentId}/profile` },
-          { label: 'Cases' },
-        ]}
-      />
-      <div className="mx-auto w-full max-w-7xl">
-        <section className="mt-4 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <Link
-                href={`/agents/${agentId}/profile`}
-                className="text-xl font-semibold text-[var(--text-main)] underline-offset-2 hover:text-[#006838] hover:underline dark:hover:text-[#9fd4ae]"
-              >
-                {agentName}
-              </Link>
-              {agentCode ? (
-                <p className="mt-1">
-                  <code className="rounded-md bg-[#eff6ef] px-2 py-1 font-mono text-sm font-medium text-[#006838] dark:bg-[#2b352d] dark:text-[#9fd4ae]">
-                    {agentCode}
-                  </code>
-                </p>
-              ) : null}
-            </div>
-            <Link
-              href={`/agents/${agentId}/profile`}
-              className={btnOutlineGreenCls}
-            >
-              <UserRound className="size-4" aria-hidden="true" />
-              View profile
-            </Link>
-          </div>
-        </section>
-
-        <section className="mt-6" aria-label="Policy transactions">
-          <TableHeader
-            title="Policy transactions"
-            count={pagination?.total ?? null}
-            noun="transaction"
-          />
-
-          <div className="mt-5">
-            <div className="portal-table-filters">
-              <form
-                role="search"
-                aria-label="Filter cases"
-                className="portal-table-filters__form"
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <div className="portal-table-filters__date w-full">
-                  <DateRangeField
-                    id="cases-range"
-                    value={dateRange}
-                    onApply={(range) => {
-                      setDateRange(range)
-                      setPage(1)
-                    }}
-                  />
-                </div>
-                <div className="portal-table-filters__search w-full">
-                  <SearchInput
-                    value={search}
-                    onChange={(v) => {
-                      setSearch(v)
-                      setPage(1)
-                    }}
-                    placeholder="Search policy, certificate, holder"
-                  />
-                </div>
-                <div
-                  className="portal-table-filters__actions"
-                  role="group"
-                  aria-label="Table actions"
-                >
-                  <ExportMenu
-                    items={[
-                      { id: 'csv', label: 'CSV', onSelect: handleExport },
-                    ]}
-                  />
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <DataTable<Transaction>
-            className="mt-5"
-            minWidth="min-w-[960px]"
-            columns={[
-              {
-                header: 'Policy no.',
-                cell: (tx) => (
-                  <span className="text-xs font-normal text-[var(--text-main)]">
-                    {tx.policy_number ?? dash}
-                  </span>
-                ),
-              },
-              {
-                header: 'Certificate no.',
-                cell: (tx) => (
-                  <span className="text-xs text-[var(--text-sub)]">
-                    {tx.certificate_number ?? dash}
-                  </span>
-                ),
-              },
-              {
-                header: 'Policy holder',
-                mobile: 'primary',
-                cell: (tx) => (
-                  <span className="font-semibold text-[var(--text-main)]">
-                    {formatPersonName(tx.policy_holder ?? tx.customer_name) ||
-                      dash}
-                  </span>
-                ),
-              },
-              {
-                header: 'Product',
-                cell: (tx) => (
-                  <span className="text-[var(--text-sub)]">
-                    {txProductType(tx, productByCode) ?? dash}
-                  </span>
-                ),
-              },
-              {
-                header: 'Plan',
-                cell: (tx) => (
-                  <span className="text-[var(--text-sub)]">
-                    {tx.plan_name || dash}
-                  </span>
-                ),
-              },
-              {
-                header: 'Coverage period',
-                cell: (tx) => {
-                  const period = coveragePeriod(tx)
-                  return period ? (
-                    <span className="text-[var(--text-sub)]">
-                      <span className="block text-xs font-medium text-[var(--text-main)]">
-                        {period.label}
-                      </span>
-                      <span className="text-xs">
-                        {period.days} day{period.days !== 1 ? 's' : ''}
-                      </span>
-                    </span>
-                  ) : (
-                    dash
-                  )
-                },
-              },
-              {
-                header: 'Premium',
-                cell: (tx) =>
-                  tx.premium ?? tx.paid_amount ?? tx.amount ? (
-                    Number(
-                      tx.premium ?? tx.paid_amount ?? tx.amount
-                    ).toLocaleString('en-PH', { minimumFractionDigits: 2 })
-                  ) : (
-                    dash
-                  ),
-              },
-              {
-                header: 'Currency',
-                cell: (tx) => (
-                  <span className="text-[var(--text-sub)]">
-                    {tx.currency || dash}
-                  </span>
-                ),
-              },
-              {
-                header: 'Status',
-                mobile: 'badge',
-                cell: (tx) => <StatusPill status={tx.status ?? 'pending'} />,
-              },
-            ]}
-            rows={filtered}
-            getRowKey={(tx) => tx.id}
-            isLoading={isLoading}
-            isError={isError}
-            errorMessage="Failed to load cases. Please try again."
-            emptyMessage={
-              term || dateFrom || dateTo
-                ? 'No cases match your filters.'
-                : 'No records found.'
-            }
-          />
-
-          {pagination && (
-            <PaginationBar
-              className="mt-5"
-              currentPage={pagination.current_page}
-              lastPage={pagination.last_page}
-              total={pagination.total}
-              from={pagination.from ?? undefined}
-              to={pagination.to ?? undefined}
-              onPageChange={setPage}
-            />
-          )}
-        </section>
+    <div className="mx-auto w-full max-w-7xl">
+      <div>
+        <Link
+          href="/agents?tab=agents"
+          className="group mb-2 flex w-fit min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-[#006838] no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span className="underline-offset-2 group-hover:underline group-focus-visible:underline">
+            Back to agents
+          </span>
+        </Link>
+        <div className="min-w-0">
+          <h1 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-[var(--text-main)] sm:text-3xl">
+            {agentName}
+          </h1>
+          <p className="mt-2 text-sm leading-6 text-[var(--text-sub)] sm:text-base">
+            Review case and transaction history for this partner.
+          </p>
+        </div>
+        <p className="mt-1 text-sm text-[var(--text-sub)]">
+          {agentType(agent)} · {agentCode || '—'}
+        </p>
+        <Link
+          href={`/agents/${agentId}/profile`}
+          className="inline-block rounded-md py-1 text-sm font-semibold text-[#006838] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
+        >
+          View profile
+        </Link>
       </div>
-    </>
+
+      <section className="mt-8" aria-label="Cases">
+        <TableHeader
+          title="Cases"
+          titleClassName="text-xl"
+          count={pagination?.total ?? null}
+          noun="case"
+        />
+
+        <div className="mt-5">
+          <div className="portal-table-filters">
+            <form
+              role="search"
+              aria-label="Filter cases"
+              className="portal-table-filters__form"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div className="portal-table-filters__date w-full">
+                <DateRangeField
+                  id="cases-range"
+                  value={dateRange}
+                  onApply={(range) => {
+                    setDateRange(range)
+                    setPage(1)
+                  }}
+                />
+              </div>
+              <div className="portal-table-filters__search w-full">
+                <SearchInput
+                  value={search}
+                  onChange={(value) => {
+                    setSearch(value)
+                    setPage(1)
+                  }}
+                  placeholder="Search..."
+                />
+              </div>
+              {hasFilters && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('')
+                    setSearchDebounced('')
+                    setDateRange(null)
+                    setPage(1)
+                  }}
+                  className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                >
+                  Clear
+                </button>
+              )}
+              <div
+                className="portal-table-filters__actions"
+                role="group"
+                aria-label="Table actions"
+              >
+                <ExportMenu
+                  disabled={isExporting}
+                  items={[
+                    {
+                      id: 'pdf',
+                      label: 'PDF',
+                      onSelect: () => window.print(),
+                    },
+                    { id: 'csv', label: 'CSV', onSelect: handleExport },
+                  ]}
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <DataTable<Transaction>
+          className="mt-5"
+          minWidth="min-w-[970px]"
+          columns={[
+            {
+              header: 'Policy no.',
+              rowHeader: true,
+              cell: (tx) => (
+                <span className="font-medium text-[var(--text-main)]">
+                  {tx.policy_number ?? dash}
+                </span>
+              ),
+            },
+            {
+              header: 'Certificate no.',
+              cell: (tx) => (
+                <span className="text-[var(--text-sub)]">
+                  {tx.certificate_number ?? dash}
+                </span>
+              ),
+            },
+            {
+              header: 'Payment ID',
+              cell: (tx) => {
+                const paymentId = paymentIdOf(tx)
+                return (
+                  <span className="font-medium text-[var(--text-sub)]">
+                    {paymentId ?? dash}
+                  </span>
+                )
+              },
+            },
+            {
+              header: 'Plan',
+              mobile: 'primary',
+              cell: (tx) => {
+                const plan = tx.plan_name ?? tx.plan
+                const product = txProductName(tx)
+                if (!plan && !product) return dash
+                return (
+                  <>
+                    {plan && (
+                      <span className="block font-medium text-[var(--text-main)]">
+                        {plan}
+                      </span>
+                    )}
+                    {product && (
+                      <span className="block text-xs text-[var(--text-sub)]">
+                        {product}
+                      </span>
+                    )}
+                  </>
+                )
+              },
+            },
+            {
+              header: 'Premium',
+              className: 'whitespace-nowrap tabular-nums',
+              cell: (tx) => {
+                const premium = txPremium(tx)
+                return premium !== null ? formatAmount(premium) : dash
+              },
+            },
+            {
+              header: 'Net commission',
+              className: 'whitespace-nowrap tabular-nums',
+              cell: (tx) => {
+                const commission = netCommissionOf(tx)
+                return commission !== null ? formatAmount(commission) : dash
+              },
+            },
+            {
+              header: 'Status',
+              mobile: 'badge',
+              cell: (tx) => <StatusPill status={caseStatus(tx)} />,
+            },
+            {
+              header: 'Created at',
+              className: 'whitespace-nowrap',
+              cell: (tx) => {
+                const created = formatCreatedAt(tx.created_at)
+                if (!created) return dash
+                return (
+                  <span className="block">
+                    <span className="block text-[var(--text-sub)]">
+                      {created.day}
+                    </span>
+                    {created.time && (
+                      <span className="mt-0.5 block text-xs text-[var(--text-sub)]">
+                        {created.time}
+                      </span>
+                    )}
+                  </span>
+                )
+              },
+            },
+            {
+              header: 'Action',
+              headerClassName: 'text-center',
+              className: 'py-3 text-center',
+              mobile: 'action',
+              cell: (tx) => (
+                <ActionIcon
+                  label={`View case ${tx.policy_number ?? tx.id}`}
+                  hint="View case"
+                  onClick={() => setSelectedCaseId(tx.id)}
+                >
+                  <ArrowUpRight aria-hidden="true" />
+                </ActionIcon>
+              ),
+            },
+          ]}
+          rows={transactions}
+          getRowKey={(tx) => tx.id}
+          isLoading={isLoading}
+          isError={isError}
+          errorMessage={
+            error instanceof Error
+              ? error.message
+              : 'Failed to load cases. Please try again.'
+          }
+          emptyMessage={
+            hasFilters ? 'No cases match your filters.' : 'No cases found.'
+          }
+        />
+
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm tabular-nums text-[var(--text-sub)]">
+            {pagination && pagination.total > 0
+              ? `Showing ${pagination.from ?? 0}–${pagination.to ?? 0} of ${pagination.total} results`
+              : 'Showing 0 of 0 results'}
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <label
+              htmlFor="cases-rows"
+              className="text-sm text-[var(--text-main)]"
+            >
+              Rows
+            </label>
+            <SelectField
+              id="cases-rows"
+              value={perPage}
+              onChange={(e) => {
+                setPerPage(Number(e.target.value))
+                setPage(1)
+              }}
+              className="mt-0 w-auto"
+            >
+              {[10, 25].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </SelectField>
+            {pagination && (
+              <PaginationBar
+                className="mt-0"
+                currentPage={pagination.current_page}
+                lastPage={pagination.last_page}
+                onPageChange={setPage}
+              />
+            )}
+          </div>
+        </div>
+      </section>
+
+      <CaseDetailDialog
+        transactionId={selectedCaseId}
+        onClose={() => setSelectedCaseId(null)}
+      />
+    </div>
+  )
+}
+
+function DetailItem({
+  label,
+  value,
+  mono,
+}: {
+  label: string
+  value?: ReactNode
+  mono?: boolean
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="block text-sm text-[var(--text-sub)]">{label}</dt>
+      <dd
+        className={
+          mono
+            ? 'mt-1 break-all font-mono text-xs font-medium text-[var(--text-main)]'
+            : 'mt-1 break-words text-sm font-medium text-[var(--text-main)]'
+        }
+      >
+        {value ?? '—'}
+      </dd>
+    </div>
+  )
+}
+
+function CaseDetailDialog({
+  transactionId,
+  onClose,
+}: {
+  transactionId: number | null
+  onClose: () => void
+}) {
+  const authFetch = useAuthFetch()
+  const hasHydrated = useHasHydrated()
+  const isAuthenticated = useIsAuthenticated()
+  const enabled =
+    hasHydrated && isAuthenticated && transactionId !== null && !!transactionId
+
+  const { data: tx, isLoading, isError } = useQuery<Transaction>({
+    queryKey: ['admin-transaction', transactionId],
+    queryFn: async () => {
+      const res = await authFetch(`/api/admin/transactions/${transactionId}`)
+      if (!res.ok) throw new Error('Failed to load case details')
+      const json = await res.json()
+      return (json?.data ?? json) as Transaction
+    },
+    enabled,
+  })
+
+  const premium = tx ? txPremium(tx) : null
+  const netCommission = tx ? netCommissionOf(tx) : null
+  const holder = formatPersonName(tx?.policy_holder ?? tx?.customer_name)
+  const plan = tx?.plan_name ?? tx?.plan
+  const agentCode = (tx?.agent?.code ?? tx?.agent_code_used ?? '').toUpperCase()
+  const title = tx ? (
+    <span className="flex flex-wrap items-center gap-3">
+      {tx.policy_number ?? `Case #${transactionId}`}
+      <StatusPill status={caseStatus(tx)} />
+    </span>
+  ) : transactionId ? (
+    `Case #${transactionId}`
+  ) : (
+    'Case details'
+  )
+
+  return (
+    <Modal
+      open={transactionId !== null}
+      onClose={onClose}
+      title={title}
+      description="Transaction details"
+      className="sm:max-w-3xl lg:max-w-6xl"
+      footer={
+        transactionId !== null ? (
+          <Link
+            href={`/transactions/${transactionId}`}
+            className={btnOutlineGreenCls}
+          >
+            Open full transaction
+          </Link>
+        ) : undefined
+      }
+    >
+      {isLoading ? (
+        <div className="space-y-5" aria-busy="true" aria-label="Loading case">
+          <section className={detailPanelCls}>
+            <Skeleton className="h-5 w-40" />
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-32 max-w-full" />
+                </div>
+              ))}
+            </div>
+          </section>
+          <div className="grid gap-5 xl:grid-cols-2">
+            <section className={detailPanelCls}>
+              <Skeleton className="h-5 w-32" />
+              <div className="mt-5 space-y-3">
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
+              </div>
+            </section>
+            <section className={detailPanelCls}>
+              <Skeleton className="h-5 w-32" />
+              <div className="mt-5 space-y-3">
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
+                <Skeleton className="h-11 w-full" />
+              </div>
+            </section>
+          </div>
+        </div>
+      ) : isError || !tx ? (
+        <p className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+          Unable to load case details.
+        </p>
+      ) : (
+        <div className="space-y-5">
+          <section className={detailPanelCls}>
+            <h3 className="text-lg font-semibold text-[var(--text-main)]">
+              Policy overview
+            </h3>
+            <dl className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              <DetailItem label="Policy number" value={tx.policy_number} mono />
+              <DetailItem
+                label="Certificate number"
+                value={tx.certificate_number}
+                mono
+              />
+              <DetailItem label="Payment ID" value={paymentIdOf(tx)} mono />
+              <DetailItem label="Plan" value={plan} />
+              <DetailItem label="Product" value={txProductName(tx)} />
+              <DetailItem label="Line of business" value={tx.line_of_business} />
+              <DetailItem
+                label="Coverage start"
+                value={formatTxDate(tx.coverage_start)}
+              />
+              <DetailItem
+                label="Coverage end"
+                value={formatTxDate(tx.coverage_end)}
+              />
+            </dl>
+          </section>
+
+          <div className="grid gap-5 xl:grid-cols-2">
+            <section className={detailPanelCls}>
+              <h3 className="text-lg font-semibold text-[var(--text-main)]">
+                Policy holder
+              </h3>
+              <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+                <DetailItem label="Name" value={holder || null} />
+                <DetailItem
+                  label="Email"
+                  value={
+                    tx.client_email ? (
+                      <a
+                        href={`mailto:${tx.client_email}`}
+                        className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                      >
+                        {tx.client_email}
+                      </a>
+                    ) : null
+                  }
+                />
+                <DetailItem
+                  label="Phone"
+                  value={
+                    tx.client_phone ? (
+                      <a
+                        href={`tel:${tx.client_phone.replace(/\s+/g, '')}`}
+                        className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                      >
+                        {tx.client_phone}
+                      </a>
+                    ) : null
+                  }
+                />
+              </dl>
+            </section>
+
+            <section className={detailPanelCls}>
+              <h3 className="text-lg font-semibold text-[var(--text-main)]">
+                Payment &amp; commission
+              </h3>
+              <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+                <DetailItem
+                  label="Premium"
+                  value={
+                    premium !== null
+                      ? `${tx.currency ? `${tx.currency} ` : ''}${formatAmount(premium)}`
+                      : null
+                  }
+                />
+                <DetailItem
+                  label="Net commission"
+                  value={
+                    netCommission !== null
+                      ? `${tx.currency ? `${tx.currency} ` : ''}${formatAmount(netCommission)}`
+                      : null
+                  }
+                />
+                <DetailItem
+                  label="Method"
+                  value={tx.payment_brand ?? tx.payment_method}
+                />
+                <DetailItem
+                  label="Transaction date"
+                  value={formatTxDate(tx.transaction_date ?? tx.created_at)}
+                />
+                <DetailItem
+                  label="Agent"
+                  value={formatPersonName(tx.agent?.name) || null}
+                />
+                <DetailItem label="Agent code" value={agentCode || null} mono />
+              </dl>
+            </section>
+          </div>
+        </div>
+      )}
+    </Modal>
   )
 }

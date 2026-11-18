@@ -83,13 +83,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(responseData, { status: 200, headers })
   } catch (error: any) {
-    console.error('Error loading travel insurance quote:', error)
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    })
-    
     if (axios.isAxiosError(error)) {
       const errorResponse = error.response?.data
       return NextResponse.json(

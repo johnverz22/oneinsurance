@@ -79,8 +79,6 @@ export async function POST(req: NextRequest) {
     Authorization: `Bearer ${process.env.BACKEND_TOKEN}`,
   }
 
-  console.log('[issue-quote] → IGW payload:', JSON.stringify(requestBody))
-
   const RETRY_DELAYS = [2000, 4000, 6000, 8000, 10000, 12000, 15000, 15000, 15000, 15000] // ms — 10 retries, ~100s total
   // `single_attempt` is for read-only recovery probes (e.g. detecting an
   // already-issued policy by proposal number) — never wait through retries.
@@ -99,7 +97,6 @@ export async function POST(req: NextRequest) {
       const response = await axios.post(url, requestBody, { headers, timeout: ATTEMPT_TIMEOUT_MS })
 
       if (response.data?.success !== false) {
-        console.log(`[issue-quote] ← IGW 200 on attempt ${attempt}`)
         return NextResponse.json(response.data, { status: 200 })
       }
 
@@ -108,18 +105,15 @@ export async function POST(req: NextRequest) {
       failStatus = 200
       failData = response.data
       failMessage = response.data?.message || 'Issuance is still in progress'
-      console.warn(`[issue-quote] ← IGW 200 success:false attempt ${attempt}/${MAX_ATTEMPTS} — ${failMessage}`)
     } catch (error: any) {
       if (!axios.isAxiosError(error)) {
-        console.error('[issue-quote] unexpected error:', error)
-        return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
+          return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
       }
 
       failStatus = error.response?.status ?? 0 // 0 = network failure / timeout — no response at all
       failData = error.response?.data
       failMessage = failData?.message || error.message || 'Issue quote failed'
 
-      console.error(`[issue-quote] ← IGW ${failStatus || 'ERR'} attempt ${attempt}/${MAX_ATTEMPTS} — ${failMessage}`)
 
       // 400: payment not yet recorded by IGW — wait and retry
       // 5xx / no response: transient insurer or network failure — safe to retry
@@ -128,12 +122,7 @@ export async function POST(req: NextRequest) {
       if (!retryable) {
         console.error(
           '[issue-quote][SUPPORT-ALERT] issuance failed after payment —',
-          JSON.stringify({
-            proposal_number: body.proposal_number,
-            payment_reference: body.payment.reference,
-            status: failStatus,
-            message: failMessage,
-          })
+          JSON.stringify({ proposal_number: body.proposal_number, status: failStatus, message: failMessage })
         )
         return NextResponse.json(
           failData && typeof failData === 'object' && Object.keys(failData).length > 0
@@ -146,7 +135,6 @@ export async function POST(req: NextRequest) {
 
     if (attempt < MAX_ATTEMPTS && Date.now() - startedAt + RETRY_DELAYS[attempt - 1] < TOTAL_BUDGET_MS) {
       const delay = RETRY_DELAYS[attempt - 1]
-      console.log(`[issue-quote] retrying in ${delay / 1000}s…`)
       await sleep(delay)
       continue
     }
@@ -154,12 +142,7 @@ export async function POST(req: NextRequest) {
     // Retries exhausted — forward the last IGW answer to the client.
     console.error(
       '[issue-quote][SUPPORT-ALERT] issuance failed after payment —',
-      JSON.stringify({
-        proposal_number: body.proposal_number,
-        payment_reference: body.payment.reference,
-        status: failStatus,
-        message: failMessage,
-      })
+      JSON.stringify({ proposal_number: body.proposal_number, status: failStatus, message: failMessage })
     )
     return NextResponse.json(
       failData && typeof failData === 'object' && Object.keys(failData).length > 0

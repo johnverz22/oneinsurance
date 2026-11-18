@@ -7,6 +7,7 @@ import { InsuranceBenefit } from '@/types/plan'
 import { getCityNameByCityCode, getProvinceNameByProvCode } from '@/utils/address-util'
 import { getCanonicalConfigForBenefit, resolveLimitDisplay, sanitizeLabel } from '@/utils/travel-benefits-helpers'
 import { buildProposalUrl, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
+import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
 import { countryLabel } from '@/utils/trip-summary'
 import { formatPHPAmount } from '@/utils/currency'
 import { getPrincipal } from '@/utils/traveller-form'
@@ -45,6 +46,9 @@ export const CARD_BORDER: Rgb = [223, 231, 223]
 export const DIVIDER: Rgb = [223, 231, 223]
 export const HEAD_RULE: Rgb = [199, 212, 201]
 export const WHITE: Rgb = [255, 255, 255]
+// Summary band: pale green fill + green border (print-friendly, low ink)
+export const BAND_BG: Rgb = [226, 237, 219]   // #e2eddb  Pale Green token
+export const BAND_BORDER: Rgb = [170, 200, 160] // slightly deeper than card border
 export const WARN_BG: Rgb = [255, 244, 229]
 export const WARN_BORDER: Rgb = [180, 83, 9]
 export const WARN_TEXT: Rgb = [124, 45, 18]
@@ -222,8 +226,11 @@ function buildBenefitGroups(main: InsuranceBenefit[], addons: InsuranceBenefit[]
     }
     const generic = categoryRaw && name.toLowerCase() === categoryRaw.toLowerCase()
     if (generic) {
+      // When the benefit name matches the coverage category, prefer the
+      // sub-coverage name if it provides more detail.  If the sub-coverage
+      // is identical (or absent) the benefit is a top-level category with
+      // no sub-benefits — the category label itself is the correct name.
       if (sub && sub.toLowerCase() !== name.toLowerCase()) name = sub
-      else logError(`Benefit "${name}" has no sub-benefit name; rendering category label only`, b)
     }
     let key = `${label}|${name}`.toLowerCase()
     if (seen.has(key) && sub && sub.toLowerCase() !== name.toLowerCase()) {
@@ -532,8 +539,8 @@ function renderQuote(
   hy += lh(FS.body)
   doc.text(`Unpaid. Quote valid until: ${fmtDateTimePHT(validUntil)}`, rx, base(hy, FS.body), { align: 'right' })
   hy += lh(FS.body)
-  if (agentCode) {
-    doc.text(`Agent code: ${agentCode}`, rx, base(hy, FS.body), { align: 'right' })
+  if (agentCode && agentCode !== PRIMARY_AGENT_CODE) {
+    doc.text(`Agent: ${agentCode}`, rx, base(hy, FS.body), { align: 'right' })
     hy += lh(FS.body)
   }
 
@@ -560,84 +567,188 @@ function renderQuote(
   {
     const bp = 5
     const bandInner = W - 2 * bp
-    const rightW = 68
-    const logoBoxW = providerLogo ? 30 : 0
-    const logoGap = providerLogo ? 4 : 0
-    const leftW = bandInner - rightW - 6 - logoBoxW - logoGap
-    const planTitle = clean(planName || 'Travel Insurance Plan')
-    const planLines = wrap(planTitle, leftW, 14, 'bold').slice(0, 2)
-    const planCode = d?.CarrierPlanCode || d?.PlanCode
-    const sub = [
-      providerName ? `Provider: ${normalizeCase(providerName)}` : '',
-      planCode ? `Plan code: ${planCode}` : '',
-      `Coverage: ${coverageArea}`,
-      travelDetails.isAnnualMultiTrip ? 'Annual multi-trip' : 'Single trip',
-    ]
-      .filter(Boolean)
-      .join('  \u00b7  ')
-    const subLines = sub ? wrap(sub, leftW, FS.min) : []
-    const leftH = lh(FS.label) + planLines.length * lh(14) + subLines.length * lh(FS.min) + 1
-    const rightH = lh(FS.label) + lh(FS.total) + lh(FS.min) + 1
-    const topH = Math.max(leftH, rightH)
+    const bx = MARGIN + bp
+    const rxb = MARGIN + W - bp
 
+    // ── Derived plan data ──────────────────────────────────────────────────
+    const planTitle = clean(planName || 'Travel Insurance Plan')
+    const planCode  = d?.CarrierPlanCode || d?.PlanCode
+    const tripType  = travelDetails.isAnnualMultiTrip ? 'Annual multi-trip' : 'Single trip'
+    // Sub-info: "Worldwide · Single trip · TRVL-WORLD-01" — plain text, body-sm, regular, secondary
+    const subParts  = [coverageArea, tripType, planCode].filter(Boolean) as string[]
+    const subLine   = subParts.join(' \u00b7 ')   // middle dot with single space each side
+
+    // ── Logo box ──────────────────────────────────────────────────────────
+    const logoBoxW = providerLogo ? 30 : 0
+    const logoGap  = providerLogo ? 4 : 0
+
+    // ── Zone widths ───────────────────────────────────────────────────────
+    const rightW = 68
+    const leftW  = bandInner - rightW - 6 - logoBoxW - logoGap
+    const x0     = bx + logoBoxW + logoGap
+
+    const planLines = wrap(planTitle, leftW, 14, 'bold').slice(0, 2)
+    const subLines  = subLine ? wrap(subLine, leftW, FS.min) : []
+
+    // ── Height accounting ─────────────────────────────────────────────────
+    const leftH  = lh(FS.label) + planLines.length * lh(14) + (subLines.length ? 1.5 + subLines.length * lh(FS.min) : 0)
+    // Right: label + (PHP gap + amount) + caption
+    // "PHP" sits on same baseline as amount; total height is label + amount line + caption
+    const rightH = lh(FS.label) + lh(FS.total) + 1 + lh(FS.min)
+    const topH   = Math.max(leftH, rightH, providerLogo ? logoBoxW * 0.5 : 0)
+
+    // ── 3-column facts ─────────────────────────────────────────────────────
+    // FIX 3: equal-width columns, secondary slot always reserved
     const cw = bandInner / 3
-    const facts: { label: string; lines: string[] }[] = [
-      { label: 'Route', lines: wrap(`${origin} to ${destinations}`, cw - 3, FS.body, 'bold').slice(0, 2) },
-      { label: 'Travel dates', lines: [`${fmtDate(departure)} \u2013 ${fmtDate(returning)}`, `${days} ${days === 1 ? 'day' : 'days'} (inclusive)`] },
-      { label: 'Traveler', lines: [...wrap(primaryTraveler, cw - 6, FS.body, 'bold').slice(0, 1), counts] },
+    // FIX 1: route arrow — Helvetica (WinAnsi) does not carry U+2192; draw it as a PDF vector
+    // We store the two parts separately and draw the arrow glyph between them
+    const routePart1 = origin
+    const routePart2 = destinations
+    // Wrap the full route string using a plain ASCII proxy to get break-point, then replace
+    const routeFull  = `${routePart1} -> ${routePart2}`
+    const routeWrapped = wrap(routeFull, cw - 3, FS.body, 'bold').slice(0, 2)
+    // Restore the arrow display text (we will draw the arrow as vector, so keep placeholder)
+
+    const facts: { label: string; primary: string[]; secondary: string }[] = [
+      {
+        label: 'Route',
+        primary: routeWrapped.map((l) => l.replace('->', '\u2192')),  // restore Unicode for display
+        secondary: '',  // slot reserved for column alignment
+      },
+      {
+        label: 'Travel dates',
+        primary: [`${fmtDate(departure)} \u2013 ${fmtDate(returning)}`],
+        secondary: `${days} ${days === 1 ? 'day' : 'days'} (inclusive)`,
+      },
+      {
+        label: 'Traveler',
+        primary: wrap(primaryTraveler, cw - 3, FS.body, 'bold').slice(0, 2),
+        secondary: counts,
+      },
     ]
-    const factsH = lh(FS.label) + Math.max(...facts.map((f) => f.lines.length)) * lh(FS.body) + 1
+    const maxPrimaryLines = Math.max(...facts.map((f) => f.primary.length))
+    const factsH = lh(FS.label) + maxPrimaryLines * lh(FS.body) + lh(FS.body) + 1
+
     const h = bp + topH + 3.5 + factsH + bp
 
-    fill(INK_GREEN)
-    doc.roundedRect(MARGIN, y, W, h, 2.5, 2.5, 'F')
+    // ── Draw band background ──────────────────────────────────────────────
+    fill(BAND_BG)
+    stroke(BAND_BORDER, 0.4)
+    doc.roundedRect(MARGIN, y, W, h, 2.5, 2.5, 'FD')
 
-    const bx = MARGIN + bp
-    const x0 = bx + logoBoxW + logoGap
     const y0 = y + bp
+
+    // ── Logo box ──────────────────────────────────────────────────────────
     if (providerLogo) {
       const boxH = Math.min(topH, 14)
       fill(WHITE)
-      doc.roundedRect(bx, y0, logoBoxW, boxH, 1.5, 1.5, 'F')
-      const maxW = logoBoxW - 4
-      const maxH = boxH - 3
-      const lw = Math.min(maxW, maxH * providerLogo.aspect)
+      stroke(BAND_BORDER, 0.3)
+      doc.roundedRect(bx, y0, logoBoxW, boxH, 1.5, 1.5, 'FD')
+      const maxLW = logoBoxW - 4
+      const maxLH = boxH - 3
+      const lw  = Math.min(maxLW, maxLH * providerLogo.aspect)
       const lhh = lw / providerLogo.aspect
       doc.addImage(providerLogo.data, 'PNG', bx + (logoBoxW - lw) / 2, y0 + (boxH - lhh) / 2, lw, lhh, 'provider', 'FAST')
     }
-    font(FS.label, 'bold', WHITE)
+
+    // ── Plan label + plan name ────────────────────────────────────────────
+    font(FS.label, 'bold', MUTED)
     doc.text('PLAN', x0, base(y0, FS.label))
-    font(14, 'bold', WHITE)
-    doc.text(planLines, x0, base(y0 + lh(FS.label), 14))
+    font(14, 'bold', INK)
+    // Draw plan name lines individually (avoids jsPDF array mode letter-spacing)
+    planLines.forEach((line, li) => {
+      doc.text(line, x0, base(y0 + lh(FS.label) + li * lh(14), 14))
+    })
+
+    // ── Sub-info (plain text, FS.min, regular, MUTED) ─────────────────────
     if (subLines.length) {
-      font(FS.min, 'normal', WHITE)
-      doc.text(subLines, x0, base(y0 + lh(FS.label) + planLines.length * lh(14) + 0.8, FS.min))
+      font(FS.min, 'normal', MUTED)
+      subLines.forEach((line, li) => {
+        doc.text(line, x0, base(y0 + lh(FS.label) + planLines.length * lh(14) + 1.5 + li * lh(FS.min), FS.min))
+      })
     }
 
-    const rxb = MARGIN + W - bp
-    font(FS.label, 'bold', WHITE)
+    // ── Total premium (right zone) ────────────────────────────────────────
+    // FIX 2: PHP + amount share one baseline; gap = PAD/3 (≈1.4 mm)
+    font(FS.label, 'bold', MUTED)
     doc.text('TOTAL PREMIUM', rxb, base(y0, FS.label), { align: 'right' })
+
     const premium = d?.DuePremium || d?.GrossPremium || 0
     if (!premium) logError('Missing GrossPremium/DuePremium in full-quote response')
-    font(FS.total, 'bold', WHITE)
-    doc.text(money(premium), rxb, base(y0 + lh(FS.label), FS.total), { align: 'right' })
-    font(FS.min, 'normal', WHITE)
-    doc.text('Includes taxes and fees', rxb, base(y0 + lh(FS.label) + lh(FS.total) + 0.4, FS.min), { align: 'right' })
 
+    const amountFull = money(premium)                     // "PHP 1,234.56"
+    const amountNum  = amountFull.replace(/^PHP\s*/, '')  // "1,234.56"
+    const amountY    = y0 + lh(FS.label)
+    // Single shared baseline for both "PHP" label and the large number
+    const amountBaseline = base(amountY, FS.total)
+
+    // Measure both pieces at their respective sizes before drawing
+    font(FS.total, 'bold', INK_GREEN)
+    const amtNumW = doc.getTextWidth(amountNum)
+    font(FS.body, 'bold', MUTED)
+    const phpW = doc.getTextWidth('PHP')
+    const phpGap = PAD / 3  // spacing-xs token equivalent: ~1.4 mm
+
+    // Draw: amount right-edge at rxb; "PHP" immediately left with phpGap
+    font(FS.total, 'bold', INK_GREEN)
+    doc.text(amountNum, rxb, amountBaseline, { align: 'right' })
+    font(FS.body, 'bold', MUTED)
+    doc.text('PHP', rxb - amtNumW - phpGap - phpW, amountBaseline)
+
+    font(FS.min, 'normal', MUTED)
+    doc.text('Includes taxes and fees', rxb, base(amountY + lh(FS.total) + 0.6, FS.min), { align: 'right' })
+
+    // ── Divider ───────────────────────────────────────────────────────────
     const ly = y0 + topH + 1.75
-    stroke(WHITE, 0.26)
-    doc.line(x0, ly, MARGIN + W - bp, ly)
+    stroke(BAND_BORDER, 0.4)
+    doc.line(bx, ly, rxb, ly)
+
+    // ── 3-column facts ────────────────────────────────────────────────────
+    // FIX 1 + FIX 3: draw each line individually (no array mode), equal columns, secondary slot reserved
     facts.forEach((f, i) => {
-      const fx = x0 + cw * i
-      font(FS.label, 'bold', WHITE)
+      const fx = bx + cw * i
+
+      // Label: overline, bold, uppercase, tracked — these styles belong to LABEL ONLY
+      font(FS.label, 'bold', MUTED)
       doc.text(f.label.toUpperCase(), fx, base(ly + 1.75, FS.label))
-      font(FS.body, 'bold', WHITE)
-      doc.text(f.lines[0], fx, base(ly + 1.75 + lh(FS.label), FS.body))
-      if (f.lines.length > 1) {
-        font(FS.body, 'normal', WHITE)
-        doc.text(f.lines.slice(1), fx, base(ly + 1.75 + lh(FS.label) + lh(FS.body), FS.body))
-      }
+
+      // Primary value: body, bold, high-contrast — normal letter-spacing (draw as plain strings)
+      font(FS.body, 'bold', INK)
+      f.primary.forEach((line, li) => {
+        // FIX 1: for Route, replace ASCII proxy '->'' with a vector arrow drawn inline
+        if (f.label === 'Route' && line.includes('\u2192')) {
+          // Split on the arrow and draw each part + a vector arrow between them
+          const parts = line.split('\u2192')
+          const part1 = parts[0].trimEnd()
+          const part2 = (parts[1] || '').trimStart()
+          const baseY = base(ly + 1.75 + lh(FS.label) + li * lh(FS.body), FS.body)
+          const p1w   = doc.getTextWidth(part1)
+          // Arrow geometry: a short horizontal line + a small arrowhead, vertically centered on text cap-height
+          const arrowGap  = 1.2       // gap between text and arrow shaft
+          const arrowLen  = 3.0       // shaft length
+          const arrowHead = 0.9       // arrowhead half-height
+          const arrowCapH = FS.body * MM * 0.55  // approx cap-height center above baseline
+          const ax  = fx + p1w + arrowGap
+          const ay  = baseY - arrowCapH
+          stroke(INK, 0.4)
+          doc.line(ax, ay, ax + arrowLen, ay)
+          // arrowhead (two lines forming a >)
+          doc.line(ax + arrowLen, ay, ax + arrowLen - arrowHead, ay - arrowHead)
+          doc.line(ax + arrowLen, ay, ax + arrowLen - arrowHead, ay + arrowHead)
+          // draw part1 and part2 as plain text
+          doc.text(part1, fx, baseY)
+          if (part2) doc.text(part2, ax + arrowLen + arrowGap, baseY)
+        } else {
+          doc.text(line, fx, base(ly + 1.75 + lh(FS.label) + li * lh(FS.body), FS.body))
+        }
+      })
+
+      // Secondary line: regular, MUTED — slot always reserved (empty string still occupies height)
+      const secY = ly + 1.75 + lh(FS.label) + maxPrimaryLines * lh(FS.body)
+      font(FS.body, 'normal', MUTED)
+      if (f.secondary) doc.text(f.secondary, fx, base(secY, FS.body))
     })
+
     y += h + GAP
   }
 
@@ -910,7 +1021,7 @@ function renderQuote(
     font(FS.min, 'normal', MUTED)
     doc.text(lines, MARGIN, base(top + 1.5, FS.min))
     const fy = top + 1.5 + lines.length * lh(FS.min) + 0.8
-    const left = [`${SUPPORT_EMAIL}`, SUPPORT_PHONE, SUPPORT_WEB, agentCode ? `Ref: ${agentCode}` : ''].filter(Boolean).join('  |  ')
+    const left = [`${SUPPORT_EMAIL}`, SUPPORT_PHONE, SUPPORT_WEB, agentCode && agentCode !== PRIMARY_AGENT_CODE ? `Agent: ${agentCode}` : ''].filter(Boolean).join('  |  ')
     doc.text(left, MARGIN, base(fy, FS.min))
     doc.text(`Page ${i} of ${total}`, MARGIN + W, base(fy, FS.min), { align: 'right' })
   }

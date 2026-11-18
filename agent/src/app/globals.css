@@ -24,9 +24,9 @@
   --color-portal-canvas-light: #f7f7f7;
   --color-portal-canvas-dark: #171919;
 
-  /* Card surfaces */
+  /* Card surfaces — matches QA spec: same as inset canvas in dark mode (flat, no elevation) */
   --color-card-light: #ffffff;
-  --color-card-dark: #262828;
+  --color-card-dark: #171919;
 
   /* Subtle/secondary surfaces */
   --color-subtle-light: #f1f2f0;
@@ -46,9 +46,9 @@
 
   /* Text */
   --color-text-main-light: #0c0d0d;
-  --color-text-main-dark: #ffffff;
-  --color-text-sub-light: #707070;
-  --color-text-sub-dark: #c4c7c5;
+  --color-text-main-dark: #f4f5f2;
+  --color-text-sub-light: #5b6e61;
+  --color-text-sub-dark: #b2b7b4;
   --color-text-muted-light: #a9a9a9;
   --color-text-muted-dark: #767776;
 
@@ -70,7 +70,7 @@
   --border: #dfe7df;
   --field-border: #c7d4c9;
   --text-main: #0c0d0d;
-  --text-sub: #707070;
+  --text-sub: #5b6e61;
   --text-muted: #a9a9a9;
   --primary: #006838;
   --primary-hover: #00552e;
@@ -78,15 +78,15 @@
 }
 
 .dark {
-  --canvas: #1c1e1e;
+  --canvas: #282c29;
   --portal-canvas: #171919;
-  --card: #262828;
+  --card: #171919;
   --subtle: #303232;
   --header: #171919;
   --border: #3d4140;
   --field-border: #565c58;
-  --text-main: #ffffff;
-  --text-sub: #c4c7c5;
+  --text-main: #f4f5f2;
+  --text-sub: #b2b7b4;
   --text-muted: #767776;
   --primary: #006838;
   --primary-hover: #00552e;
@@ -343,12 +343,12 @@
     height: 100dvh;
     min-height: 0;
     overflow: hidden;
-    background: #f7f7f7;
+    background: #e9ece9;
     transition: grid-template-columns 0.24s cubic-bezier(0.2, 0, 0, 1);
   }
 
   .dark .agent-dashboard__shell {
-    background: #282c29;
+    background: #141716;
   }
 
   @media (min-width: 1024px) {
@@ -708,6 +708,45 @@
     box-shadow: 0 3px 9px rgba(0, 0, 0, 0.14);
   }
 
+  /* Top-bar icon-only action buttons: 44×44px target, 6px radius,
+     pale-gold (#f8efd8) hover surface, Insurance-green icon on hover.
+     Both light and dark themes use the same pale-gold hover per spec. */
+  .agent-dashboard__header-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-sub);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .agent-dashboard__header-action:hover {
+    background-color: #f8efd8;
+    color: #006838;
+  }
+
+  .dark .agent-dashboard__header-action:hover {
+    background-color: #f8efd8;
+    color: #006838;
+  }
+
+  .agent-dashboard__header-action:focus-visible {
+    outline: 2px solid #006838;
+    outline-offset: 2px;
+  }
+
+  .agent-dashboard__header-action > svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
   @media (min-width: 1024px) {
     .agent-dashboard__header {
       padding-left: 44px;
@@ -810,7 +849,8 @@
   }
 
   .agent-dashboard__bottom-item[aria-current='page'] {
-    background: #e8f3e9;
+    background: #d0e3c8;
+    color: #006838;
   }
 
   .dark .agent-dashboard__bottom-item {
@@ -818,7 +858,7 @@
   }
 
   .dark .agent-dashboard__bottom-item[aria-current='page'] {
-    color: #d0e3c8;
+    color: #ffffff;
     background: #006838;
   }
 
@@ -855,9 +895,23 @@
 
   /* Skeleton pulse — stops for prefers-reduced-motion */
   .skeleton {
-    background-color: var(--subtle);
+    background-color: #e6ece6;
     border-radius: 4px;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  .dark .skeleton,
+  :is(.dark) .skeleton {
+    background-color: #3d4140;
+  }
+
+  /* Canonical skeleton token utilities matching Blade mockups */
+  .bg-leaf-20 {
+    background-color: #e6ece6;
+  }
+  .dark .dark\:bg-ink-31,
+  :is(.dark) .dark\:bg-ink-31 {
+    background-color: #3d4140;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1066,6 +1120,242 @@
     color: #fca5a5;
   }
 
+  /* ---- Shared portal classes (platform-shell mockup parity) ---- */
+
+  /* Metric values — same responsive scale as portal page titles:
+     24px below 640px, 30px from 640px upward */
+  .portal-metric-value {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .portal-metric-value {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+    }
+  }
+
+  /* Dashboard metric cards — neutral surface in both themes (spec: no gradient on any card) */
+  .agent-dashboard__metric {
+    box-shadow: none;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 8px;
+  }
+
+  /* Phone metric card layout: icon top-right → value near bottom → label below value → helper hidden */
+  @media (max-width: 639px) {
+    .agent-dashboard__metric {
+      display: grid;
+      grid-template-areas:
+        ". icon"
+        "value value"
+        "label label";
+      grid-template-columns: 1fr auto;
+      grid-template-rows: minmax(36px, 1fr) auto auto;
+      padding: 12px;
+      min-height: 120px;
+    }
+
+    .agent-dashboard__metric-icon {
+      grid-area: icon;
+      justify-self: end;
+      width: 36px;
+      height: 36px;
+    }
+
+    .agent-dashboard__metric-value {
+      grid-area: value;
+      align-self: end;
+    }
+
+    .agent-dashboard__metric-label {
+      grid-area: label;
+      margin-top: 8px;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+
+    .agent-dashboard__metric-description {
+      display: none;
+    }
+  }
+
+  /* Desktop metric card: label top-left / icon top-right / value / helper */
+  @media (min-width: 640px) {
+    .agent-dashboard__metric {
+      display: grid;
+      grid-template-areas:
+        "label icon"
+        "value value"
+        "desc desc";
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto 1fr auto;
+      padding: 20px;
+      min-height: 174px;
+    }
+
+    .agent-dashboard__metric-label {
+      grid-area: label;
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.25rem;
+    }
+
+    .agent-dashboard__metric-icon {
+      grid-area: icon;
+      justify-self: end;
+      width: 40px;
+      height: 40px;
+    }
+
+    .agent-dashboard__metric-value {
+      grid-area: value;
+      align-self: end;
+      margin-top: 1.25rem;
+    }
+
+    .agent-dashboard__metric-description {
+      grid-area: desc;
+      margin-top: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.25rem;
+      opacity: 0.75;
+    }
+  }
+
+  /* Dashboard/portal content panel — bordered card surface */
+  .agent-dashboard__panel {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 8px;
+  }
+
+  /* Clickable portal cards — hover/focus: transparent bg, 1px Insurance
+     green border on all edges, 2% rise; icon wrapper turns Pale Gold */
+  .agent-dashboard__action {
+    transition:
+      background-color 0.22s,
+      border-color 0.22s,
+      transform 0.22s;
+  }
+
+  .agent-dashboard__action:hover {
+    border: 1px solid var(--primary) !important;
+    background: transparent !important;
+    transform: translateY(-2%);
+  }
+
+  .dark .agent-dashboard__action:hover {
+    border-color: var(--primary) !important;
+    background: transparent !important;
+  }
+
+  .agent-dashboard__action:focus-visible {
+    border: 1px solid var(--primary);
+  }
+
+  .agent-dashboard__action:hover > span:first-child,
+  .agent-dashboard__action:focus-visible > span:first-child {
+    background: #f8efd8 !important;
+    color: var(--primary) !important;
+  }
+
+  .dark .agent-dashboard__action:hover > span:first-child,
+  .dark .agent-dashboard__action:focus-visible > span:first-child {
+    background: #f8efd8 !important;
+    color: var(--primary) !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .agent-dashboard__action {
+      transition: none;
+    }
+    .agent-dashboard__action:hover {
+      transform: none;
+    }
+  }
+
+  /* Data-table pages: heading/filters sit on the canvas; the table gets its
+     own bordered surface without an enclosing page card */
+  .portal-table-filters {
+    width: 100%;
+  }
+
+  .portal-table-filters__form {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .portal-table-filters__search,
+  .portal-table-filters__date {
+    flex: 0 21.5rem;
+    min-width: min(14rem, 100%);
+  }
+
+  .portal-table-filters__form > button,
+  .portal-table-filters__form > details,
+  .portal-table-filters__form > .portal-table-filters__actions {
+    flex-shrink: 0;
+    align-self: flex-end;
+  }
+
+  .portal-table-filters__form > details,
+  .portal-table-filters__form > .portal-table-filters__actions {
+    margin-left: auto;
+  }
+
+  .portal-table-filters__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  @media (max-width: 560px) {
+    .portal-table-filters__form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .portal-table-filters__search,
+    .portal-table-filters__date {
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+    }
+    .portal-table-filters__form > .portal-table-filters__actions {
+      grid-column: 2;
+      justify-self: end;
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .portal-table-filters__form {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .portal-table-filters__form > .portal-table-filters__actions {
+      grid-column: 1;
+    }
+  }
+
+  .portal-data-table thead {
+    background-color: var(--subtle);
+  }
+
+  .dark .portal-data-table thead {
+    background-color: #303232;
+  }
+
+  .portal-data-table th[scope='col'] {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
   /* ---- Auth Mockup Hero & Curved Layout ---- */
   @media (min-width: 1024px) {
     .auth-hero-backdrop::before {
@@ -1088,4 +1378,157 @@
     background-size: cover;
     background-position: center;
   }
+}
+
+
+/* ============================================================
+   react-day-picker v9 — Date range calendar styles
+   Matches the portal brand (#006838) and design token vars.
+   ============================================================ */
+
+/* Nav buttons (prev/next month) */
+.rdp-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-sub);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.rdp-nav-btn:hover {
+  background-color: var(--subtle);
+  color: var(--text-main);
+}
+
+.rdp-nav-btn:focus-visible {
+  outline: 2px solid #006838;
+  outline-offset: 2px;
+}
+
+/* Day button — base */
+.rdp-day-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 0.8125rem;
+  color: var(--text-main);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  margin: 1px auto;
+}
+
+.rdp-day-btn:hover:not(:disabled) {
+  background-color: var(--subtle);
+}
+
+.rdp-day-btn:focus-visible {
+  outline: 2px solid #006838;
+  outline-offset: 2px;
+}
+
+/* Today */
+.rdp-day_today .rdp-day-btn {
+  font-weight: 700;
+  color: #006838;
+}
+
+/* Outside days (adjacent month) */
+.rdp-day_outside .rdp-day-btn {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* Disabled days */
+.rdp-day_disabled .rdp-day-btn {
+  color: var(--text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Range start and end */
+.rdp-day_range_start .rdp-day-btn,
+.rdp-day_range_end .rdp-day-btn {
+  background-color: #006838;
+  color: #ffffff;
+  border-radius: 50%;
+}
+
+.rdp-day_range_start .rdp-day-btn:hover,
+.rdp-day_range_end .rdp-day-btn:hover {
+  background-color: #00552e;
+  color: #ffffff;
+}
+
+/* Range middle days — stretched highlight */
+.rdp-day_range_middle {
+  background-color: #e2eddb;
+  border-radius: 0;
+}
+
+.dark .rdp-day_range_middle {
+  background-color: rgba(0, 104, 56, 0.2);
+}
+
+.rdp-day_range_middle .rdp-day-btn {
+  border-radius: 0;
+  color: #006838;
+}
+
+.dark .rdp-day_range_middle .rdp-day-btn {
+  color: #d0e3c8;
+}
+
+/* Round the caps of the range highlight */
+.rdp-day_range_start {
+  border-radius: 50% 0 0 50%;
+  background-color: #e2eddb;
+}
+
+.dark .rdp-day_range_start {
+  background-color: rgba(0, 104, 56, 0.2);
+}
+
+.rdp-day_range_end {
+  border-radius: 0 50% 50% 0;
+  background-color: #e2eddb;
+}
+
+.dark .rdp-day_range_end {
+  background-color: rgba(0, 104, 56, 0.2);
+}
+
+/* When start and end are the same day */
+.rdp-day_range_start.rdp-day_range_end {
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+/* Popover animation keyframes (Tailwind data-state variants) */
+@keyframes rdp-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rdp-fade-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.97); }
+}
+
+.rdp-popover[data-state='open'] {
+  animation: rdp-fade-in 0.14s ease;
+}
+
+.rdp-popover[data-state='closed'] {
+  animation: rdp-fade-out 0.1s ease;
 }

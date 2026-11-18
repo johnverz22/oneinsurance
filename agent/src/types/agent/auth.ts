@@ -1,3 +1,12 @@
+/** Profile photo object returned by the API */
+export type ProfilePhoto = {
+  id: number
+  mime_type: string
+  updated_at: string
+  /** Proxy URL with cache-busting query string, e.g. /api/agent/profile/photo?v=42 */
+  url: string
+}
+
 /** Agent user shape returned by the API */
 export type AgentUser = {
   id: number
@@ -7,7 +16,8 @@ export type AgentUser = {
   designation: string
   phone: string
   status: string
-  profile_photo_url?: string | null
+  /** Structured profile photo, or null when the agent has no photo */
+  profile_photo: ProfilePhoto | null
   agent_code?: string | null
   created_at: string
   updated_at: string

@@ -614,6 +614,51 @@
 }
 
 /* ============================================================
+   Clickable portal cards (.agent-dashboard__action)
+   Ported 1:1 from the platform-shell mockup — kept UNLAYERED so these
+   rules beat Tailwind utilities (border/bg colors on the same elements).
+   Hover/focus: transparent bg, 1px Insurance green border on all edges,
+   2% rise over 220ms; the first span (icon wrapper) turns Pale Gold.
+   ============================================================ */
+
+.agent-dashboard__action {
+  transition:
+    background-color 0.22s,
+    border-color 0.22s,
+    transform 0.22s;
+}
+
+.agent-dashboard__action:hover {
+  border: 1px solid var(--primary);
+  background: transparent;
+  transform: translateY(-2%);
+}
+
+.agent-dashboard__action:focus-visible {
+  border: 1px solid var(--primary);
+}
+
+.agent-dashboard__action:hover > span:first-child,
+.agent-dashboard__action:focus-visible > span:first-child {
+  background: #f8efd8;
+  color: var(--primary);
+}
+
+.dark .agent-dashboard__action:hover > span:first-child,
+.dark .agent-dashboard__action:focus-visible > span:first-child {
+  color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-dashboard__action {
+    transition: none;
+  }
+  .agent-dashboard__action:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
    react-day-picker v9 — Date range calendar styles
    Matches the portal brand (#006838) and design token vars.
    ============================================================ */

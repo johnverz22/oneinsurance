@@ -16,8 +16,6 @@ export async function GET(req: NextRequest) {
 
     const url = `${process.env.BASE_URL}/quote/compare/${cacheKey}`
 
-    console.log('Travel Insurance Load Quote by Cache URL:', url)
-
     const response = await axios.get(url, {
       headers: {
         'Content-Type': 'application/json',

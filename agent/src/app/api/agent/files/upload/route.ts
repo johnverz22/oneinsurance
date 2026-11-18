@@ -1,30 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BASE_URL, buildApiHeaders, unauthorized } from '@/lib/api-helpers'
 
-const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
+const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
 const ACCEPTED_MIME = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',
-  'image/gif',
-  'image/avif',
   'application/pdf',
 ])
+
+// Reserved tags the backend rejects for agent uploads
+const RESERVED_TAGS = new Set(['profile_photo', 'front_id', 'back_id'])
 
 /**
  * POST /api/agent/files/upload
  *
- * Unified file upload proxy for all agent file types (profile photo,
- * verification documents, etc.).  Accepts the same multipart fields as the
- * backend and forwards them directly — no local disk write.
+ * Upload a document for a specific tag. The backend stores the file on
+ * Google Drive with the name {tag}.{ext} and keeps the user's original
+ * filename in `original_name`.
  *
  * Body (multipart/form-data):
- *   file      File     — the binary payload
- *   file_name string   — desired filename (falls back to file.name)
- *   tag       string   — FileTag constant (e.g. "profile_photo", "valid_id")
- *   folder_id string?  — optional backend folder ID
+ *   file  File    — the binary payload (PDF, JPG, PNG, WebP; max 5 MB)
+ *   tag   string  — document slot (e.g. "valid_id", "insurance_qual_1")
  *
- * Response (on success):
+ * The backend ignores `file_name` and `folder_id` for agents, so we don't
+ * send them.
+ *
+ * Response (on success, 201):
  *   { success: true, data: AgentFile }
  */
 export async function POST(req: NextRequest) {
@@ -38,39 +40,52 @@ export async function POST(req: NextRequest) {
 
     if (!file || typeof file === 'string')
       return NextResponse.json(
-        { success: false, message: 'No file provided' },
-        { status: 400, headers }
+        { success: false, message: 'No file provided', errors: { file: 'No file provided' } },
+        { status: 422, headers }
       )
 
+    // Validate MIME type — PDF, JPG, PNG, WebP only
+    const fileType = file.type.toLowerCase()
+    if (!ACCEPTED_MIME.has(fileType))
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid file type',
+          errors: { file: 'The file must be a PDF, JPG, PNG or WebP.' },
+        },
+        { status: 422, headers }
+      )
+
+    // Validate size — 5 MB max
     if (file.size > MAX_BYTES)
       return NextResponse.json(
-        { success: false, message: 'File too large. Maximum size is 10 MB.' },
-        { status: 400, headers }
+        {
+          success: false,
+          message: 'File too large',
+          errors: { file: 'The file size must not exceed 5MB.' },
+        },
+        { status: 422, headers }
       )
 
-    if (!ACCEPTED_MIME.has(file.type) && !isImageExtension(file.name))
+    const tag = (formData.get('tag') as string | null) || ''
+
+    if (!tag)
       return NextResponse.json(
-        { success: false, message: 'Invalid file type. Accepted: JPG, PNG, WEBP, GIF, AVIF, PDF.' },
-        { status: 400, headers }
+        { success: false, message: 'Missing tag', errors: { tag: 'A tag is required.' } },
+        { status: 422, headers }
       )
 
-    const tag = (formData.get('tag') as string | null) || 'document'
-    const folderId = (formData.get('folder_id') as string | null) || ''
+    if (RESERVED_TAGS.has(tag))
+      return NextResponse.json(
+        { success: false, message: 'Reserved tag', errors: { tag: `The tag "${tag}" is reserved and cannot be uploaded here.` } },
+        { status: 422, headers }
+      )
 
-    // Generate a fully opaque filename: "<tag>__<8-char random hex>.<ext>"
-    // The original client filename is intentionally discarded — the tag prefix
-    // is the only meaningful part and it is recovered by the list normaliser.
-    const ext = extFromMime(file.type) || extFromName(file.name) || 'bin'
-    const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(4)))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-    const fileName = `${tag}__${randomHex}.${ext}`
-
+    // Forward to the backend — send only file and tag.
+    // The backend ignores file_name and folder_id for agents.
     const outbound = new FormData()
     outbound.append('file', file)
-    outbound.append('file_name', fileName)
     outbound.append('tag', tag)
-    if (folderId) outbound.append('folder_id', folderId)
 
     const upstreamRes = await fetch(`${BASE_URL}/agents/files/upload`, {
       method: 'POST',
@@ -80,19 +95,9 @@ export async function POST(req: NextRequest) {
 
     const data = await upstreamRes.json().catch(() => null)
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[files/upload] upstream response:', JSON.stringify({
-        status: upstreamRes.status,
-        tag,
-        dataKeys: data ? Object.keys(data) : null,
-        rawId: data?.data?.id ?? data?.id,
-        rawTag: data?.data?.tag ?? data?.tag,
-      }))
-    }
-
     if (!upstreamRes.ok)
       return NextResponse.json(
-        data || { success: false, message: 'Upload failed upstream' },
+        data || { success: false, message: 'Upload failed' },
         { status: upstreamRes.status, headers }
       )
 
@@ -102,46 +107,29 @@ export async function POST(req: NextRequest) {
     const agentFile = raw
       ? {
           id: raw.id,
-          file_name: raw.file_name || raw.original_name || fileName,
+          file_name: raw.file_name || '',
+          original_name: raw.original_name || '',
           tag: raw.tag || tag,
           mime_type: raw.mime_type || file.type,
+          size: raw.size,
           status: raw.status || 'pending',
+          file_id: raw.file_id,
           web_view_link: raw.web_view_link || raw.web_content_link || '',
+          is_public: raw.is_public,
           created_at: raw.created_at || new Date().toISOString(),
+          updated_at: raw.updated_at,
         }
       : null
 
     return NextResponse.json(
       { success: true, message: 'File uploaded successfully', data: agentFile },
-      { status: 200, headers }
+      { status: upstreamRes.status, headers }
     )
   } catch (error: any) {
     console.error('[files/upload] Error:', error)
     return NextResponse.json(
-      { success: false, message: error?.message || 'Server error' },
+      { success: false, message: 'Could not save the document, please try again.' },
       { status: 500, headers }
     )
   }
-}
-
-function isImageExtension(name: string): boolean {
-  return /\.(jpe?g|png|webp|gif|avif)$/i.test(name)
-}
-
-/** Derive a file extension from a MIME type */
-function extFromMime(mime: string): string {
-  const map: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'image/gif': 'gif',
-    'image/avif': 'avif',
-    'application/pdf': 'pdf',
-  }
-  return map[mime] ?? ''
-}
-
-/** Derive a file extension from a filename */
-function extFromName(name: string): string {
-  return name.includes('.') ? name.split('.').pop()!.toLowerCase() : ''
 }

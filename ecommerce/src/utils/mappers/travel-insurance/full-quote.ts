@@ -43,6 +43,14 @@ export interface IgwFullQuoteTraveller {
    * and premium.amount includes them. Applied to every traveller.
    */
   selected_addons: string[]
+  has_beneficiary: boolean
+  beneficiary: {
+    first_name: string | null
+    middle_name: string | null
+    last_name: string | null
+    date_of_birth: string | null // YYYY-MM-DD
+    relationship: string | null
+  } | null
 }
 
 export interface IgwFullQuoteRequest {
@@ -71,11 +79,43 @@ export interface IgwFullQuoteResponse {
     travellers: Array<{
       is_principal_applicant: boolean
       first_name: string
+      middle_name?: string | null
       last_name: string
+      suffix?: string | null
       date_of_birth: string
       selected_addons?: string[]
+      // The resume flow returns these only when a valid X-Resume-Token was
+      // sent; otherwise they stay undefined/null (short form).
+      gender?: string | null
+      id_type?: string | null
+      /** Masked by the backend — display as-is, never resubmit it. */
+      id_number?: string | null
+      email?: string | null
+      mobile?: string | null
+      address?: {
+        line1?: string | null
+        line2?: string | null
+        city?: string | null
+        province?: string | null
+        postal_code?: string | null
+        country?: string | null
+        province_code?: string | null
+        city_code?: string | null
+      } | null
+      certificate_number?: string | null
+      has_beneficiary?: boolean | null
+      beneficiary?: {
+        first_name?: string | null
+        middle_name?: string | null
+        last_name?: string | null
+        date_of_birth?: string | null
+        relationship?: string | null
+      } | null
     }>
     expires_at: string
+    /** Present on the full-quote success response; kept server-side only. */
+    resume_token?: string
+    resume_token_expires_at?: string | null
   }
   errors?: Record<string, string[]>
 }
@@ -148,6 +188,18 @@ export function mapToIgwFullQuoteRequest(
       // Add-on group codes picked on the plan-details step — the gateway
       // applies these per traveller and reprices the quote.
       selected_addons: state.coverageOption.selectedAddonBenefits ?? [],
+      has_beneficiary: t.hasBeneficiary,
+      beneficiary: t.hasBeneficiary && t.beneficiary
+        ? {
+            first_name: t.beneficiary.firstName || null,
+            middle_name: t.beneficiary.middleName || null,
+            last_name: t.beneficiary.lastName || null,
+            date_of_birth: t.beneficiary.dateOfBirth
+              ? formatLocalDate(toDate(t.beneficiary.dateOfBirth))
+              : null,
+            relationship: t.beneficiary.relationship || null,
+          }
+        : null,
     })
   )
 
@@ -170,6 +222,13 @@ export function mapToIgwFullQuoteRequest(
  * Downstream UI (review page, payment, PDF) still expects the old InsureMo
  * TravelPolicyData shape, so this synthesizes one by merging the response
  * with data we already hold in the store.
+ *
+ * @param overrides.proposalDate - Use the backend's `created_at` timestamp
+ *   (ISO string) instead of `now` so that resumption flows display the
+ *   original creation date and the expiry countdown is correct.
+ * @param overrides.expiresAt - Use the backend's `expires_at` timestamp
+ *   instead of the IGW response field when the caller has a more authoritative
+ *   value (e.g. from the resumption check payload).
  */
 export function igwFullQuoteToPolicyData(
   data: NonNullable<IgwFullQuoteResponse['data']>,
@@ -178,6 +237,10 @@ export function igwFullQuoteToPolicyData(
     coverageOption: CoverageOptionFormData
     travelersInfo: TravelersInfoFormData
     kycProfile?: KycProfile
+  },
+  overrides?: {
+    proposalDate?: string
+    expiresAt?: string
   }
 ): TravelPolicyData {
   const { travelDetails, travelersInfo, coverageOption } = ctx
@@ -185,6 +248,11 @@ export function igwFullQuoteToPolicyData(
 
   const premium = Number.parseFloat(data.premium.amount) || 0
   const now = new Date().toISOString()
+  // Use the backend's creation timestamp when resuming so the displayed
+  // proposal date and expiry countdown reflect when the quote was actually
+  // created, not when the user resumed it.
+  const proposalDate = overrides?.proposalDate || now
+  const resolvedExpiresAt = overrides?.expiresAt ?? data.expires_at
   const departureDate = formatLocalDate(toDate(travelDetails.departureDate))
   const returnDate = formatLocalDate(toDate(travelDetails.returnDate!))
   const mainDob = travelDetails.dateOfBirth
@@ -304,8 +372,8 @@ export function igwFullQuoteToPolicyData(
     DuePremium: premium,
     EffectiveDate: departureDate,
     ExpiryDate: returnDate,
-    ExpiresAt: data.expires_at,
-    FirstDataEntryDate: now,
+    ExpiresAt: resolvedExpiresAt,
+    FirstDataEntryDate: proposalDate,
     GrossPremium: premium,
     IsAgent: 'N',
     IsPremiumCalcSuccess: 'Y',
@@ -347,10 +415,10 @@ export function igwFullQuoteToPolicyData(
     ProductName: data.product.name,
     ProductId: 0,
     ProductVersion: '1.0',
-    ProposalDate: now,
+    ProposalDate: proposalDate,
     ProposalNo: data.proposal_number,
     ProposalStatus: data.status,
-    QuotationDate: now,
+    QuotationDate: proposalDate,
     SchemaVersion: 0,
     SumInsured: plan.SumInsured ? Number.parseFloat(plan.SumInsured) : 0,
     TechProductCode: 'TRAVEL',

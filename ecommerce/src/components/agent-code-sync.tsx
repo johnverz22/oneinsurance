@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 
-import { AGENT_CODE_COOKIE, resolveAgentCode } from '@/lib/agent-code'
+import { AGENT_CODE_COOKIE, isValidAgentCode, resolveAgentCode } from '@/lib/agent-code'
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
@@ -13,6 +13,7 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365
  */
 export function AgentCodeSync({ agentCode }: { agentCode: string }) {
   useEffect(() => {
+    if (!isValidAgentCode(agentCode)) return
     const code = resolveAgentCode(agentCode)
     const secure = window.location.protocol === 'https:' ? '; Secure' : ''
     document.cookie = `${AGENT_CODE_COOKIE}=${encodeURIComponent(code)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${secure}`

@@ -1,5 +1,14 @@
 import { z } from 'zod'
 
+/** Profile photo object returned by the API (admin user's own photo) */
+export type ProfilePhoto = {
+  id: number
+  mime_type: string
+  updated_at: string
+  /** Proxy URL with cache-busting query string, e.g. /api/admin/profile/photo?v=42 */
+  url: string
+}
+
 /** Admin user shape returned by the API */
 export type AdminUser = {
   id: number
@@ -8,6 +17,9 @@ export type AdminUser = {
   role: string
   designation: string
   status: string
+  /** Structured profile photo, or null when the admin has no photo */
+  profile_photo?: ProfilePhoto | null
+  /** @deprecated — use profile_photo.url instead */
   profile_photo_url?: string | null
   created_at: string
   updated_at: string

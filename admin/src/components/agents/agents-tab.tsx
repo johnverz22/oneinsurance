@@ -22,6 +22,8 @@ import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
 import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import { exportToCSV } from '@/lib/export-to-csv'
+import { downloadExport } from '@/lib/download-export'
+import { extractApiError } from '@/lib/api-error'
 import type { Agent, AgentsResponse } from '@/types/admin/people'
 
 const SIGNUP_URL = `${process.env.NEXT_PUBLIC_AFFILIATE_BASE_URL ?? 'https://stage-agent.oneinsurance.shop'}/signup`
@@ -56,14 +58,22 @@ export function AgentsTab() {
   const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null)
   const [activateTarget, setActivateTarget] = useState<Agent | null>(null)
   const [busy, setBusy] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
+
+  const isSearching = !!searchDebounced
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounced(search.trim()), 300)
     return () => clearTimeout(t)
   }, [search])
 
-  const { data, isLoading, isError } = useQuery<AgentsResponse>({
-    queryKey: ['admin-agents', page, searchDebounced, dateFrom, dateTo],
+  const {
+    data: listData,
+    isLoading: listLoading,
+    isError: listError,
+    error: listErrorObj,
+  } = useQuery<AgentsResponse>({
+    queryKey: ['admin-agents', 'list', page, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -71,28 +81,47 @@ export function AgentsTab() {
         sort_by: 'created_at',
         sort_order: 'desc',
       })
-      if (searchDebounced) params.set('search', searchDebounced)
       if (dateFrom) params.set('date_from', dateFrom)
       if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/agents?${params}`)
-      if (!res.ok) throw new Error('Failed to load agents')
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(extractApiError(json, 'Failed to load agents'))
+      }
       return (await res.json()) as AgentsResponse
     },
-    enabled,
+    enabled: enabled && !isSearching,
   })
+
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    isError: searchError,
+    error: searchErrorObj,
+  } = useQuery<AgentsResponse>({
+    queryKey: ['admin-agents', 'search', searchDebounced],
+    queryFn: async () => {
+      const res = await authFetch('/api/admin/agents/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword: searchDebounced }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(extractApiError(json, 'Failed to search agents'))
+      }
+      return (await res.json()) as AgentsResponse
+    },
+    enabled: enabled && isSearching,
+  })
+
+  const data = isSearching ? searchData : listData
+  const isLoading = isSearching ? searchLoading : listLoading
+  const isError = isSearching ? searchError : listError
+  const error = isSearching ? searchErrorObj : listErrorObj
 
   const agents = data?.data?.data ?? []
-  const pagination = data?.data
-
-  // Client-side fallback if the upstream ignores date_from/date_to
-  const filteredAgents = agents.filter((agent) => {
-    if (!hasDateFilter) return true
-    const day = (agent.created_at ?? '').slice(0, 10)
-    if (!day) return false
-    if (dateFrom && day < dateFrom) return false
-    if (dateTo && day > dateTo) return false
-    return true
-  })
+  const pagination = isSearching ? undefined : data?.data
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['admin-agents'] })
@@ -163,23 +192,48 @@ export function AgentsTab() {
     }
   }
 
-  function handleExport() {
-    if (filteredAgents.length === 0) {
-      toast.info('No agents to export')
+  async function handleExport() {
+    if (isSearching) {
+      if (agents.length === 0) {
+        toast.info('No agents to export')
+        return
+      }
+      exportToCSV(
+        agents.map((a) => ({
+          agent_code: a.settings?.code ?? a.agent_code ?? '',
+          name: agentDisplayName(a),
+          type: a.role ?? a.designation ?? '',
+          email: a.email,
+          phone: a.phone ?? '',
+          status: a.status,
+        })),
+        `agents-${new Date().toISOString().split('T')[0]}.csv`
+      )
+      toast.success(`Exported ${agents.length} agent(s)`)
       return
     }
-    exportToCSV(
-      filteredAgents.map((a) => ({
-        agent_code: a.settings?.code ?? a.agent_code ?? '',
-        name: agentDisplayName(a),
-        type: a.role ?? a.designation ?? '',
-        email: a.email,
-        phone: a.phone ?? '',
-        status: a.status,
-      })),
-      `agents-${new Date().toISOString().split('T')[0]}.csv`
-    )
-    toast.success(`Exported ${filteredAgents.length} agent(s)`)
+
+    setIsExporting(true)
+    try {
+      const params = new URLSearchParams({
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      })
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
+      const result = await downloadExport(
+        authFetch,
+        `/api/admin/agents/export?${params}`,
+        `agents-${new Date().toISOString().split('T')[0]}.csv`
+      )
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('Export started')
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
@@ -187,7 +241,7 @@ export function AgentsTab() {
       <TableHeader
         title="Agent management"
         titleClassName="text-xl"
-        count={pagination?.total ?? null}
+        count={data?.data?.total ?? pagination?.total ?? null}
         noun="agent"
       />
 
@@ -203,6 +257,7 @@ export function AgentsTab() {
               <DateRangeField
                 id="agents-range"
                 value={dateRange}
+                disabled={isSearching}
                 onApply={(range) => {
                   setDateRange(range)
                   setPage(1)
@@ -238,6 +293,7 @@ export function AgentsTab() {
               aria-label="Table actions"
             >
               <ExportMenu
+                disabled={isExporting}
                 items={[
                   { id: 'csv', label: 'CSV', onSelect: handleExport },
                 ]}
@@ -245,6 +301,11 @@ export function AgentsTab() {
             </div>
           </form>
         </div>
+        {isSearching && (
+          <p className="mt-2 text-xs text-[var(--text-sub)]">
+            Date range does not apply while searching.
+          </p>
+        )}
       </div>
 
       <DataTable<Agent>
@@ -343,11 +404,15 @@ export function AgentsTab() {
             },
           },
         ]}
-        rows={filteredAgents}
+        rows={agents}
         getRowKey={(agent) => agent.id}
         isLoading={isLoading}
         isError={isError}
-        errorMessage="Failed to load agents. Please try again."
+        errorMessage={
+          error instanceof Error
+            ? error.message
+            : 'Failed to load agents. Please try again.'
+        }
         emptyMessage={
           searchDebounced || hasDateFilter
             ? 'No agents match your search.'

@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Camera, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getInitials } from '@/lib/utils'
+import type { AdminUser } from '@/types/admin/auth'
 import {
   useAdminUser,
   useAdminAuthStore,
@@ -21,16 +22,26 @@ import { Skeleton } from '@/components/ui/skeleton'
 // Schema
 // ============================================================
 const profileSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
-  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
-  phone: z.string(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
+  email: z.string().email('Enter a valid email address').optional(),
+  phone: z.string().optional(),
+  designation: z.string().optional(),
 })
 type ProfileForm = z.infer<typeof profileSchema>
 
 // ============================================================
 // Types
 // ============================================================
+/** Profile photo object returned by the API (admin user's own photo) */
+type ProfilePhoto = {
+  id: number
+  mime_type: string
+  updated_at: string
+  /** Proxy URL with cache-busting query string, e.g. /api/admin/profile/photo?v=42 */
+  url: string
+}
+
 /** Full admin profile as returned by GET /api/admin/users/[id]. */
 type AdminProfileDetails = {
   id: number
@@ -43,8 +54,7 @@ type AdminProfileDetails = {
   role?: string | null
   designation?: string | null
   status?: string | null
-  profile_photo_url?: string | null
-  avatar?: string | null
+  profile_photo?: ProfilePhoto | null
 }
 
 // ============================================================
@@ -166,10 +176,13 @@ export function SettingsClient() {
   const updateUser = useAdminAuthStore((s) => s.updateUser)
   const authFetch = useAuthFetch()
 
+  const isSuperadmin = user?.role === 'superadmin'
+
   const [details, setDetails] = useState<AdminProfileDetails | null>(null)
   const [detailsLoaded, setDetailsLoaded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [photoPending, setPhotoPending] = useState(false)
+  const [photoError, setPhotoError] = useState('')
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   const [pwCurrent, setPwCurrent] = useState('')
@@ -180,12 +193,19 @@ export function SettingsClient() {
   const [pwNotice, setPwNotice] = useState('')
   const [pwSaving, setPwSaving] = useState(false)
 
+  // Use profile_photo.url from details or the auth store — never the deprecated profile_photo_url.
   const profilePhotoSrc = useAuthenticatedImage(
-    details?.profile_photo_url ||
-      details?.avatar ||
-      user?.profile_photo_url ||
-      null
+    details?.profile_photo?.url ?? user?.profile_photo?.url ?? null
   )
+
+  /** Values the form was last reset to — used to send only changed fields. */
+  const originalRef = useRef<ProfileForm>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    designation: '',
+  })
 
   const {
     register,
@@ -194,8 +214,23 @@ export function SettingsClient() {
     formState: { errors, isSubmitting },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { first_name: '', last_name: '', email: '', phone: '' },
+    defaultValues: { first_name: '', last_name: '', email: '', phone: '', designation: '' },
   })
+
+  /** Reset the form to the current profile values (read from details or the stored user). */
+  const resetFormToCurrent = useCallback(() => {
+    if (!details) return
+    const { first, last } = splitName(details.first_name || details.name)
+    const defaults = {
+      first_name: details.first_name ?? first,
+      last_name: details.last_name ?? last,
+      email: details.email ?? user?.email ?? '',
+      phone: details.phone ?? details.telephone ?? '',
+      designation: details.designation ?? '',
+    }
+    reset(defaults)
+    originalRef.current = defaults
+  }, [details, user?.email, reset])
 
   // Fetch the full profile record — the auth store only keeps a subset.
   useEffect(() => {
@@ -219,15 +254,8 @@ export function SettingsClient() {
 
   // Derive form defaults once the profile record arrives.
   useEffect(() => {
-    if (!details) return
-    const { first, last } = splitName(details.first_name || details.name)
-    reset({
-      first_name: details.first_name ?? first,
-      last_name: details.last_name ?? last,
-      email: details.email ?? user?.email ?? '',
-      phone: details.phone ?? details.telephone ?? '',
-    })
-  }, [details, user?.email, reset])
+    resetFormToCurrent()
+  }, [details, user?.email, resetFormToCurrent])
 
   const displayName =
     [details?.first_name, details?.last_name].filter(Boolean).join(' ') ||
@@ -242,94 +270,123 @@ export function SettingsClient() {
       return
     }
     try {
+      // Send only fields that changed — the backend leaves everything else as-is.
+      const body: Record<string, string | number> = { id: user.id }
+      if (values.first_name !== undefined && values.first_name !== originalRef.current.first_name) {
+        body.first_name = values.first_name
+      }
+      if (values.last_name !== undefined && values.last_name !== originalRef.current.last_name) {
+        body.last_name = values.last_name
+      }
+      if (values.email !== undefined && values.email !== originalRef.current.email) {
+        body.email = values.email
+      }
+      if (values.phone !== undefined && values.phone !== originalRef.current.phone) {
+        body.phone = values.phone
+      }
+      if (values.designation !== undefined && values.designation !== originalRef.current.designation) {
+        body.designation = values.designation
+      }
+
       const res = await authFetch('/api/admin/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: user.id,
-          first_name: values.first_name,
-          last_name: values.last_name,
-          email: values.email,
-          phone: values.phone || null,
-        }),
+        body: JSON.stringify(body),
       })
       const json = await res.json().catch(() => null)
       if (!res.ok || json?.success === false) {
-        throw new Error(json?.message || 'Failed to update profile')
+        if (res.status === 401) throw new Error('Session expired — please sign in again.')
+        if (res.status === 400) throw new Error(json?.message || 'Failed to update profile')
+        if (res.status === 403) throw new Error('Superadmin accounts cannot be updated here.')
+        if (res.status === 500) throw new Error('Server error — please try again later.')
+        throw new Error(json?.message || `Failed to update profile (${res.status})`)
       }
-      updateUser({
-        name: `${values.first_name} ${values.last_name}`.trim(),
-        email: values.email,
-      })
-      setDetails((prev) =>
-        prev
-          ? {
-              ...prev,
-              first_name: values.first_name,
-              last_name: values.last_name,
-              name: `${values.first_name} ${values.last_name}`.trim(),
-              email: values.email,
-              phone: values.phone || null,
-            }
-          : prev
-      )
+
+      // Refresh the displayed profile from the response data instead of refetching.
+      const updated = (json?.data ?? json) as AdminProfileDetails | undefined
+      if (updated) {
+        const userUpdates: Partial<AdminUser> = {}
+        if (updated.name != null) userUpdates.name = updated.name
+        if (updated.email != null) userUpdates.email = updated.email
+        if (updated.designation != null) userUpdates.designation = updated.designation
+        updateUser(userUpdates)
+        // Split the response name into first/last since the backend returns
+        // a combined `name` and no separate first_name/last_name fields.
+        const nameParts = splitName(updated.name)
+        setDetails((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...updated,
+                first_name: nameParts.first || prev.first_name,
+                last_name: nameParts.last || prev.last_name,
+              }
+            : prev
+        )
+        originalRef.current = {
+          first_name: values.first_name ?? originalRef.current.first_name,
+          last_name: values.last_name ?? originalRef.current.last_name,
+          email: values.email ?? originalRef.current.email,
+          phone: values.phone ?? originalRef.current.phone,
+          designation: values.designation ?? originalRef.current.designation,
+        }
+      }
+
       setEditing(false)
-      toast.success('Profile updated successfully')
+      toast.success('Profile saved')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update profile')
     }
   }
 
   async function uploadPhoto(file: File) {
-    if (!user?.id) return
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Photo must be 5 MB or smaller')
+    setPhotoError('')
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
+      file.size > 2 * 1024 * 1024
+    ) {
+      setPhotoError('Choose a JPG, PNG or WebP image no larger than 2 MB.')
       return
     }
     setPhotoPending(true)
     try {
       const formData = new FormData()
-      formData.append('profile_photo', file)
-      const res = await authFetch(`/api/admin/users/${user.id}/photo`, {
+      formData.append('photo', file)
+      const res = await authFetch('/api/admin/profile/photo', {
         method: 'POST',
         body: formData,
       })
       const json = await res.json().catch(() => null)
       if (!res.ok || json?.success === false) {
-        throw new Error(json?.message || 'Failed to upload photo')
+        if (res.status === 502) throw new Error('Could not save your photo, please try again.')
+        throw new Error(json?.errors?.photo || json?.message || 'Failed to upload photo')
       }
-      const photoUrl =
-        json?.data?.profile_photo_url ??
-        json?.data?.avatar ??
-        json?.profile_photo_url ??
-        null
-      updateUser({ profile_photo_url: photoUrl })
-      setDetails((prev) =>
-        prev ? { ...prev, profile_photo_url: photoUrl } : prev
-      )
+      const photoData: ProfilePhoto | null = json?.data ?? null
+      // Update both local state and the auth store so the header avatar also updates.
+      setDetails((prev) => prev ? { ...prev, profile_photo: photoData } : prev)
+      updateUser({ profile_photo: photoData ?? undefined })
       toast.success('Profile photo updated')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to upload photo')
+      setPhotoError(error instanceof Error ? error.message : 'Failed to upload photo')
     } finally {
       setPhotoPending(false)
     }
   }
 
   async function removePhoto() {
-    if (!user?.id) return
+    setPhotoError('')
     setPhotoPending(true)
     try {
-      const res = await authFetch(`/api/admin/users/${user.id}/photo`, {
-        method: 'DELETE',
-      })
-      if (!res.ok) throw new Error('Failed to remove photo')
-      updateUser({ profile_photo_url: null })
-      setDetails((prev) =>
-        prev ? { ...prev, profile_photo_url: null, avatar: null } : prev
-      )
+      const res = await authFetch('/api/admin/profile/photo', { method: 'DELETE' })
+      const json = await res.json().catch(() => null)
+      if (!res.ok || json?.success === false) {
+        throw new Error(json?.message || 'Failed to remove photo')
+      }
+      setDetails((prev) => prev ? { ...prev, profile_photo: null } : prev)
+      updateUser({ profile_photo: null })
       toast.success('Profile photo removed')
-    } catch {
-      toast.error('Failed to remove photo')
+    } catch (error) {
+      setPhotoError(error instanceof Error ? error.message : 'Failed to remove photo')
     } finally {
       setPhotoPending(false)
     }
@@ -381,8 +438,6 @@ export function SettingsClient() {
 
   const loading = !hasHydrated || !user || !detailsLoaded
 
-  const hasPhoto = Boolean(profilePhotoSrc)
-
   return (
     <div className="flex min-h-full flex-col space-y-6">
       <PortalContentHeader
@@ -404,16 +459,23 @@ export function SettingsClient() {
               Profile information
             </h2>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              The details associated with your portal account.
+              {isSuperadmin
+                ? 'Profile details are read-only for superadmin accounts.'
+                : 'The details associated with your portal account.'}
             </p>
           </div>
-          {!editing && (
+          {/* Superadmins cannot edit via PUT /admin/users/{id} — hide the edit button. */}
+          {!editing && !isSuperadmin && (
             <button
               type="button"
-              onClick={() => setEditing(true)}
-              className="btn-primary text-sm"
+              onClick={() => {
+                resetFormToCurrent()
+                setEditing(true)
+              }}
+              aria-label="Edit profile"
+              className="ui-action-icon shrink-0"
             >
-              Edit profile
+              <Pencil aria-hidden="true" />
             </button>
           )}
         </div>
@@ -430,8 +492,8 @@ export function SettingsClient() {
                   className="size-20 rounded-full border border-[var(--field-border)] object-cover object-top"
                 />
               ) : (
-                <div className="flex size-20 items-center justify-center rounded-full border border-[var(--field-border)] bg-[#006838] text-xl font-bold text-white">
-                  {getInitials(displayName)}
+                <div className="flex size-20 items-center justify-center rounded-full border border-[var(--field-border)] bg-[#eef4ec] text-xl font-bold text-[#006838] dark:bg-[#243329] dark:text-[#d0e3c8]">
+                  {getInitials(displayName) || 'AD'}
                 </div>
               )}
             </div>
@@ -444,35 +506,40 @@ export function SettingsClient() {
               <p className="mt-1 text-sm font-medium text-[#006838] dark:text-[#d0e3c8]">
                 {displayRole}
               </p>
-              <div className="mt-1.5 flex items-center gap-3">
+              {/* Photo controls — available to both admin and superadmin. */}
+              <div className="mt-1 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
                   disabled={photoPending}
-                  className="inline-flex min-h-9 items-center gap-1.5 text-xs font-semibold text-[var(--text-sub)] hover:text-[#006838] focus-visible:outline-2 focus-visible:outline-[#006838] disabled:opacity-60 dark:hover:text-[#d0e3c8]"
+                  className="text-left text-[0.75rem] font-semibold leading-4 text-[#006838] underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#006838] disabled:opacity-60 dark:text-[#d0e3c8]"
                 >
-                  {photoPending ? (
-                    <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <Camera className="size-3.5" aria-hidden="true" />
-                  )}
-                  Change photo
+                  {photoPending ? 'Uploading…' : 'Change photo'}
                 </button>
-                {hasPhoto && (
+                {details?.profile_photo && (
                   <button
                     type="button"
                     onClick={removePhoto}
                     disabled={photoPending}
-                    className="inline-flex min-h-9 items-center text-xs font-semibold text-[var(--text-muted)] hover:text-[#dc2626] focus-visible:outline-2 focus-visible:outline-[#006838] disabled:opacity-60"
+                    aria-label="Remove profile photo"
+                    className="flex items-center gap-1 text-[0.75rem] font-semibold leading-4 text-[#dc2626] underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#dc2626] disabled:opacity-60"
                   >
+                    <Trash2 className="size-3" aria-hidden="true" />
                     Remove
                   </button>
                 )}
               </div>
+              {photoError && (
+                <p role="alert" className="mt-1 text-sm text-[#dc2626] dark:text-red-300">
+                  {photoError}
+                </p>
+              )}
               <input
                 ref={photoInputRef}
                 type="file"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                aria-hidden="true"
+                tabIndex={-1}
                 className="sr-only"
                 onChange={(e) => {
                   const file = e.target.files?.[0]
@@ -514,15 +581,15 @@ export function SettingsClient() {
           </div>
         )}
 
-        {/* Edit form */}
-        {editing && (
+        {/* Edit form — hidden for superadmin */}
+        {editing && !isSuperadmin && (
           <form
             onSubmit={handleSubmit(saveProfile)}
             noValidate
             className="mt-7 space-y-5"
           >
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="First name" error={errors.first_name?.message} required>
+              <Field label="First name" error={errors.first_name?.message}>
                 <input
                   type="text"
                   autoComplete="given-name"
@@ -531,7 +598,7 @@ export function SettingsClient() {
                   {...register('first_name')}
                 />
               </Field>
-              <Field label="Last name" error={errors.last_name?.message} required>
+              <Field label="Last name" error={errors.last_name?.message}>
                 <input
                   type="text"
                   autoComplete="family-name"
@@ -542,7 +609,7 @@ export function SettingsClient() {
               </Field>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Email" error={errors.email?.message} required>
+              <Field label="Email" error={errors.email?.message}>
                 <input
                   type="email"
                   autoComplete="email"
@@ -561,6 +628,15 @@ export function SettingsClient() {
                 />
               </Field>
             </div>
+            <Field label="Designation" error={errors.designation?.message}>
+              <input
+                type="text"
+                autoComplete="organization"
+                aria-invalid={!!errors.designation}
+                className="ui-form-field"
+                {...register('designation')}
+              />
+            </Field>
             <div className="flex gap-3">
               <button
                 type="submit"
@@ -572,13 +648,7 @@ export function SettingsClient() {
               <button
                 type="button"
                 onClick={() => {
-                  const { first, last } = splitName(details?.first_name || details?.name)
-                  reset({
-                    first_name: details?.first_name ?? first,
-                    last_name: details?.last_name ?? last,
-                    email: details?.email ?? user?.email ?? '',
-                    phone: details?.phone ?? details?.telephone ?? '',
-                  })
+                  resetFormToCurrent()
                   setEditing(false)
                 }}
                 className="btn-secondary text-sm"

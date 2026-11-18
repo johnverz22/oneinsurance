@@ -15,7 +15,8 @@ import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
 import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
-import { exportToCSV } from '@/lib/export-to-csv'
+import { downloadExport } from '@/lib/download-export'
+import { extractApiError } from '@/lib/api-error'
 import { formatDate } from '@/lib/utils'
 import {
   btnDangerCls,
@@ -48,21 +49,32 @@ export function ApplicantsTab() {
   const [selected, setSelected] = useState<Applicant | null>(null)
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null)
   const [busy, setBusy] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => setSearchDebounced(search.trim()), 300)
     return () => clearTimeout(t)
   }, [search])
 
-  const { data, isLoading, isError } = useQuery<PaginatedType<Applicant>>({
+  const { data, isLoading, isError, error } = useQuery<
+    PaginatedType<Applicant>
+  >({
     queryKey: ['admin-applicants', page, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
-      const params = new URLSearchParams({ page: String(page), per_page: '15' })
+      const params = new URLSearchParams({
+        page: String(page),
+        per_page: '15',
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      })
       if (searchDebounced) params.set('search', searchDebounced)
       if (dateFrom) params.set('date_from', dateFrom)
       if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/applicants?${params}`)
-      if (!res.ok) throw new Error('Failed to load applicants')
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(extractApiError(json, 'Failed to load applicants'))
+      }
       const json = await res.json()
       return (json?.data ?? json) as PaginatedType<Applicant>
     },
@@ -70,16 +82,6 @@ export function ApplicantsTab() {
   })
 
   const applicants = data?.data ?? []
-
-  // Client-side fallback if the upstream ignores date_from/date_to
-  const filteredApplicants = applicants.filter((applicant) => {
-    if (!hasDateFilter) return true
-    const day = (applicant.created_at ?? '').slice(0, 10)
-    if (!day) return false
-    if (dateFrom && day < dateFrom) return false
-    if (dateTo && day > dateTo) return false
-    return true
-  })
 
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: ['admin-applicants'] })
@@ -135,24 +137,29 @@ export function ApplicantsTab() {
     }
   }
 
-  function handleExport() {
-    if (filteredApplicants.length === 0) {
-      toast.info('No applicants to export')
-      return
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const params = new URLSearchParams({
+        sort_by: 'created_at',
+        sort_order: 'desc',
+      })
+      if (searchDebounced) params.set('search', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
+      const result = await downloadExport(
+        authFetch,
+        `/api/admin/applicants/export?${params}`,
+        `applicants-${new Date().toISOString().split('T')[0]}.csv`
+      )
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('Export started')
+    } finally {
+      setIsExporting(false)
     }
-    exportToCSV(
-      filteredApplicants.map((a) => ({
-        id: `APP${String(a.id).padStart(3, '0')}`,
-        name: applicantName(a),
-        type: a.application_type,
-        email: a.email,
-        phone: a.contact_number,
-        status: a.status,
-        applied: formatDate(a.created_at),
-      })),
-      `applicants-${new Date().toISOString().split('T')[0]}.csv`
-    )
-    toast.success(`Exported ${filteredApplicants.length} applicant(s)`)
   }
 
   // ── Detail view ──────────────────────────────────────────────────────────
@@ -304,6 +311,7 @@ export function ApplicantsTab() {
               aria-label="Table actions"
             >
               <ExportMenu
+                disabled={isExporting}
                 items={[
                   { id: 'csv', label: 'CSV', onSelect: handleExport },
                 ]}
@@ -399,11 +407,15 @@ export function ApplicantsTab() {
               ) : null,
           },
         ]}
-        rows={filteredApplicants}
+        rows={applicants}
         getRowKey={(applicant) => applicant.id}
         isLoading={isLoading}
         isError={isError}
-        errorMessage="Failed to load applicants. Please try again."
+        errorMessage={
+          error instanceof Error
+            ? error.message
+            : 'Failed to load applicants. Please try again.'
+        }
         emptyMessage={
           searchDebounced || hasDateFilter
             ? 'No applicants match your search.'

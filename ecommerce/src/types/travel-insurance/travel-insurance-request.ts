@@ -277,6 +277,12 @@ export const personalInfoSchema = z
   .object({
     idType: PhilippineIdType,
     idNumber: z.string().min(1, 'ID number is required'),
+    /**
+     * Set when a proposal was resumed and the backend only returned a masked
+     * ID number.  The masked value is for display only — it must be re-entered
+     * before the quote is submitted again.
+     */
+    idNumberMasked: z.boolean().optional(),
     // Requiredness is insurer-specific — enforced via TravellerFieldRules in
     // validateTravellers(), not here.
     idFrontUploaded: z.boolean(),

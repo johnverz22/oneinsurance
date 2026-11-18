@@ -40,7 +40,6 @@ export function handleServerSideAxiosError(error: AxiosError) {
         }
       )
     case 400:
-      console.log(error.response?.data)
       return NextResponse.json(
         error.response?.data || { message: 'Bad Request' },
         {

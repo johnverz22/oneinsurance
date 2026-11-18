@@ -1,10 +1,13 @@
 import { jsPDF } from 'jspdf'
 import {
+  BAND_BG,
+  BAND_BORDER,
   BRAND,
   CARD,
   CARD_BORDER,
   DIVIDER,
   FS,
+  GAP,
   INK,
   INK_GREEN,
   MARGIN,
@@ -49,7 +52,6 @@ const PAGE_H = 297
 const W = PAGE_W - MARGIN * 2
 const LIMIT_Y = PAGE_H - 24
 const TOP = 14
-const GAP = 6.4
 const INNER_X = MARGIN + PAD
 const INNER_W = W - 2 * PAD
 const VALUE_FS = 11.5
@@ -132,61 +134,145 @@ class Writer {
     const d = this.doc
     const bp = 5
     const inner = W - 2 * bp
+    const bx = MARGIN + bp
+    const rxb = MARGIN + W - bp
+
+    // ── Layout widths ────────────────────────────────────────────────────
     const rightW = 68
     const logoBoxW = this.providerLogo ? 30 : 0
-    const logoGap = this.providerLogo ? 4 : 0
-    const leftW = inner - rightW - 6 - logoBoxW - logoGap
+    const logoGap  = this.providerLogo ? 4 : 0
+    const leftW    = inner - rightW - 6 - logoBoxW - logoGap
+    const x0       = bx + logoBoxW + logoGap
+
+    // ── Plan name + sub-info ─────────────────────────────────────────────
     const planLines = this.wrap(plan, leftW, 14, true).slice(0, 2)
-    const subLines = this.wrap(sub, leftW, FS.min)
-    const topH = Math.max(
-      lh(FS.label) + planLines.length * lh(14) + subLines.length * lh(FS.min) + 1,
-      lh(FS.label) + lh(FS.total) + lh(FS.min) + 1,
-    )
+    const subLines  = sub ? this.wrap(sub, leftW, FS.min) : []
+
+    // ── Height accounting ────────────────────────────────────────────────
+    const leftH  = lh(FS.label) + planLines.length * lh(14) + (subLines.length ? 1.5 + subLines.length * lh(FS.min) : 0)
+    const rightH = lh(FS.label) + lh(FS.total) + 1 + lh(FS.min)
+    const topH   = Math.max(leftH, rightH, this.providerLogo ? logoBoxW * 0.5 : 0)
+
+    // ── Facts columns ────────────────────────────────────────────────────
     const cw = inner / facts.length
-    const factLines = facts.map((f) => this.wrap(f.value, cw - 3, FS.body, true).slice(0, 2))
-    const factsH = lh(FS.label) + Math.max(...factLines.map((l) => l.length)) * lh(FS.body) + 1
+    // For route facts: wrap using ASCII proxy to avoid U+2192 font issue
+    const factPrimary = facts.map((f) => {
+      const isRoute = f.label.toLowerCase() === 'route'
+      const text = isRoute ? f.value.replace(/\s*->\s*/g, ' -> ') : f.value
+      return this.wrap(text, cw - 3, FS.body, true).slice(0, 2)
+    })
+    const maxPrimaryLines = Math.max(...factPrimary.map((l) => l.length))
+    const factsH = lh(FS.label) + maxPrimaryLines * lh(FS.body) + lh(FS.body) + 1
+
     const h = bp + topH + 3.5 + factsH + bp
     this.ensure(h)
-
-    d.setFillColor(...INK_GREEN)
-    d.roundedRect(MARGIN, this.y, W, h, 2.5, 2.5, 'F')
-    const bx = MARGIN + bp
-    const x0 = bx + logoBoxW + logoGap
     const y0 = this.y + bp
+
+    // ── Band background (pale green + border) ───────────────────────────
+    d.setFillColor(...BAND_BG)
+    d.setDrawColor(...BAND_BORDER)
+    d.setLineWidth(0.4)
+    d.roundedRect(MARGIN, this.y, W, h, 2.5, 2.5, 'FD')
+
+    // ── Logo box ─────────────────────────────────────────────────────────
     if (this.providerLogo) {
       const boxH = Math.min(topH, 14)
       d.setFillColor(...WHITE)
-      d.roundedRect(bx, y0, logoBoxW, boxH, 1.5, 1.5, 'F')
-      const lw = Math.min(logoBoxW - 4, (boxH - 3) * this.providerLogo.aspect)
+      d.setDrawColor(...BAND_BORDER)
+      d.setLineWidth(0.3)
+      d.roundedRect(bx, y0, logoBoxW, boxH, 1.5, 1.5, 'FD')
+      const lw  = Math.min(logoBoxW - 4, (boxH - 3) * this.providerLogo.aspect)
       const lhh = lw / this.providerLogo.aspect
       d.addImage(this.providerLogo.data, 'PNG', bx + (logoBoxW - lw) / 2, y0 + (boxH - lhh) / 2, lw, lhh, 'provider', 'FAST')
     }
-    this.font(FS.label, true, WHITE)
+
+    // ── Plan label + plan name (each line drawn individually) ────────────
+    this.font(FS.label, true, MUTED)
     d.text('PLAN', x0, this.base(y0, FS.label))
-    this.font(14, true, WHITE)
-    d.text(planLines, x0, this.base(y0 + lh(FS.label), 14))
-    this.font(FS.min, false, WHITE)
-    d.text(subLines, x0, this.base(y0 + lh(FS.label) + planLines.length * lh(14) + 0.8, FS.min))
-
-    const rxb = MARGIN + W - bp
-    this.font(FS.label, true, WHITE)
-    d.text(totalLabel.toUpperCase(), rxb, this.base(y0, FS.label), { align: 'right' })
-    this.font(FS.total, true, WHITE)
-    d.text(clean(total), rxb, this.base(y0 + lh(FS.label), FS.total), { align: 'right' })
-    this.font(FS.min, false, WHITE)
-    d.text(clean(totalNote), rxb, this.base(y0 + lh(FS.label) + lh(FS.total) + 0.4, FS.min), { align: 'right' })
-
-    const ly = y0 + topH + 1.75
-    d.setDrawColor(...WHITE)
-    d.setLineWidth(0.26)
-    d.line(x0, ly, MARGIN + W - bp, ly)
-    facts.forEach((f, i) => {
-      const fx = x0 + cw * i
-      this.font(FS.label, true, WHITE)
-      d.text(f.label.toUpperCase(), fx, this.base(ly + 1.75, FS.label))
-      this.font(FS.body, true, WHITE)
-      d.text(factLines[i], fx, this.base(ly + 1.75 + lh(FS.label), FS.body))
+    this.font(14, true, INK)
+    planLines.forEach((line, li) => {
+      d.text(line, x0, this.base(y0 + lh(FS.label) + li * lh(14), 14))
     })
+
+    // ── Sub-info (plain text, FS.min, regular, MUTED) ────────────────────
+    if (subLines.length) {
+      this.font(FS.min, false, MUTED)
+      subLines.forEach((line, li) => {
+        d.text(line, x0, this.base(y0 + lh(FS.label) + planLines.length * lh(14) + 1.5 + li * lh(FS.min), FS.min))
+      })
+    }
+
+    // ── Total premium (right zone) ────────────────────────────────────────
+    // Label
+    this.font(FS.label, true, MUTED)
+    d.text(totalLabel.toUpperCase(), rxb, this.base(y0, FS.label), { align: 'right' })
+
+    // Amount: strip "PHP " prefix from total string, draw "PHP" separately at FS.body
+    const amountNum  = clean(total).replace(/^PHP\s*/i, '')
+    const amountY    = y0 + lh(FS.label)
+    const amountBaseline = this.base(amountY, FS.total)
+
+    this.font(FS.total, true, INK_GREEN)
+    const amtNumW = d.getTextWidth(amountNum)
+    this.font(FS.body, true, MUTED)
+    const phpW   = d.getTextWidth('PHP')
+    const phpGap = PAD / 3  // ~1.4 mm spacing-xs
+
+    this.font(FS.total, true, INK_GREEN)
+    d.text(amountNum, rxb, amountBaseline, { align: 'right' })
+    this.font(FS.body, true, MUTED)
+    d.text('PHP', rxb - amtNumW - phpGap - phpW, amountBaseline)
+
+    this.font(FS.min, false, MUTED)
+    d.text(clean(totalNote), rxb, this.base(amountY + lh(FS.total) + 0.6, FS.min), { align: 'right' })
+
+    // ── Divider ───────────────────────────────────────────────────────────
+    const ly = y0 + topH + 1.75
+    d.setDrawColor(...BAND_BORDER)
+    d.setLineWidth(0.4)
+    d.line(bx, ly, rxb, ly)
+
+    // ── Facts columns ─────────────────────────────────────────────────────
+    facts.forEach((f, i) => {
+      const fx = bx + cw * i
+      const isRoute = f.label.toLowerCase() === 'route'
+
+      // Label: overline, bold, uppercase
+      this.font(FS.label, true, MUTED)
+      d.text(f.label.toUpperCase(), fx, this.base(ly + 1.75, FS.label))
+
+      // Primary lines: each drawn as a plain string to avoid jsPDF array letter-spacing
+      this.font(FS.body, true, INK)
+      factPrimary[i].forEach((line, li) => {
+        const baseY = this.base(ly + 1.75 + lh(FS.label) + li * lh(FS.body), FS.body)
+        if (isRoute && line.includes('->')) {
+          // Draw vector arrow between route parts
+          const parts  = line.split('->')
+          const part1  = parts[0].trimEnd()
+          const part2  = (parts[1] || '').trimStart()
+          const p1w    = d.getTextWidth(part1)
+          const arrowGap  = 1.2
+          const arrowLen  = 3.0
+          const arrowHead = 0.9
+          const arrowCapH = FS.body * MM * 0.55
+          const ax = fx + p1w + arrowGap
+          const ay = baseY - arrowCapH
+          d.setDrawColor(...INK)
+          d.setLineWidth(0.4)
+          d.line(ax, ay, ax + arrowLen, ay)
+          d.line(ax + arrowLen, ay, ax + arrowLen - arrowHead, ay - arrowHead)
+          d.line(ax + arrowLen, ay, ax + arrowLen - arrowHead, ay + arrowHead)
+          d.text(part1, fx, baseY)
+          if (part2) d.text(part2, ax + arrowLen + arrowGap, baseY)
+        } else {
+          d.text(line, fx, baseY)
+        }
+      })
+
+      // Secondary slot always reserved for alignment (no secondary in policy band, but keep space)
+      // No secondary value in this band — slot is implicitly reserved by maxPrimaryLines offset
+    })
+
     this.y += h + GAP
   }
 
@@ -339,8 +425,8 @@ export async function downloadCoverageSummary(d: PolicyDocData) {
     'This summary is for easy reference only. It is not the official eCOC. The insurer’s official eCOC and policy wording govern your cover.',
     insurerLogo,
   )
-  w.band(d.planName, `Provider: ${d.insurer}  ·  Policy issued`, 'Total premium paid', money(d.total), 'Includes taxes and fees', [
-    { label: 'Route', value: d.route },
+  w.band(d.planName, `${d.insurer}  \u00b7  Policy issued`, 'Total premium paid', money(d.total), 'Includes taxes and fees', [
+    { label: 'Route', value: d.route.replace(/ - /g, ' -> ') },
     { label: 'Travel dates', value: `${d.dates} (${d.duration})` },
     { label: 'Travellers', value: d.travellers },
   ])
@@ -369,7 +455,7 @@ export async function downloadReceipt(d: PolicyDocData) {
     'This acknowledgement records payment. It does not replace the insurer’s invoice or your eCOC.',
     insurerLogo,
   )
-  w.band(d.planName, `Provider: ${d.insurer}  ·  Payment received`, 'Total amount received', money(d.total), 'Includes taxes and fees', [
+  w.band(d.planName, `${d.insurer}  \u00b7  Payment received`, 'Total amount received', money(d.total), 'Includes taxes and fees', [
     { label: 'Received from', value: d.recipient },
     { label: 'Payment method', value: d.method },
     { label: 'Policy number', value: d.policyNo },

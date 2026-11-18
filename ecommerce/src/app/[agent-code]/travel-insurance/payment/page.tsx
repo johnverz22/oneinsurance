@@ -41,7 +41,7 @@ import { getPrincipal } from '@/utils/traveller-form'
 import { toTitleCase } from '@/lib/utils'
 import { formatDays, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import { isProposalExpired, PROPOSAL_VALIDITY_HOURS } from '@/utils/proposal-loader'
-import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { resolveAgentCode } from '@/lib/agent-code'
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
@@ -123,7 +123,7 @@ export default function Step5PaymentPage() {
 function PaymentRoute() {
   const router = useRouter()
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
+  const agentCode = resolveAgentCode(params['agent-code'] as string)
 
   const hydrated = useSyncExternalStore(
     () => () => {},
@@ -1026,7 +1026,7 @@ function PaymentContent({ agentCode }: { agentCode: string }) {
         ref={cancelRef}
         aria-labelledby="cancel-proposal-title"
         aria-describedby="cancel-proposal-description"
-        className="travel-plan-dialog"
+        className="travel-plan-dialog w-full max-w-3xl rounded-xl p-6 sm:p-8"
         onClick={(e) => e.target === cancelRef.current && setCancelOpen(false)}
       >
         <div className="flex items-start justify-between gap-4">

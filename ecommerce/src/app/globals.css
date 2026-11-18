@@ -2019,15 +2019,19 @@ select.ui-form-field {
     border: 1px solid var(--plan-border);
     background: var(--plan-surface);
     color: inherit;
-    width: min(500px, 100% - 32px);
+    width: 100%;
+    max-width: 48rem;
     max-height: 90dvh;
     margin: auto;
-    padding: 32px;
+    padding: clamp(20px, 4vw, 32px);
     overflow-y: auto;
-    border-radius: 8px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   }
   .travel-plan-dialog::backdrop {
-    background: rgb(23 25 25 / 0.53);
+    background: rgb(0 0 0 / 0.6);
+    backdrop-filter: blur(4px);
   }
   .travel-application-review {
     width: min(760px, 100% - 32px);
@@ -2398,7 +2402,7 @@ select.ui-form-field {
 
   .travel-review-reference {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 8px 24px;
   }
@@ -2441,9 +2445,6 @@ select.ui-form-field {
       width: 168px;
       height: 168px;
       padding: 10px;
-    }
-    .travel-review-reference > button {
-      justify-self: center;
     }
   }
 

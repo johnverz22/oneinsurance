@@ -65,27 +65,54 @@ export async function GET(
 /**
  * Map a raw backend file record to the portal's document shape.
  *
- * The backend ignores `tag` on upload (list always returns "document"), so the
- * agent portal encodes the real tag into the filename as
- * "<tag>__<random_hex>.<ext>" (see agent/docs/skills/google-drive-file-upload-flow.md).
- * Parse the prefix back out here so the UI can label each document.
+ * The backend historically ignored `tag` on upload (list always returned
+ * "document"), so the agent portal encodes the real tag into the filename as
+ * "<tag>__<random_hex>.<ext>". Parse the prefix back out here so the UI can
+ * label each document.
+ *
+ * If the backend now returns a specific tag (not "document"), use it directly.
  */
 function normaliseFile(f: Record<string, unknown>) {
   const rawName = String(f.file_name ?? f.original_name ?? '')
 
+  const knownTags = [
+    'valid_id',
+    'insurance_qual_1',
+    'insurance_qual_2',
+    'insurance_qual_3',
+    'agent_license',
+    'profile_photo',
+  ]
   let tag = String(f.tag ?? 'document')
-  const sepIdx = rawName.indexOf('__')
-  if (sepIdx > 0) {
-    const prefix = rawName.slice(0, sepIdx)
-    // Only treat it as a tag prefix if it looks like a known slug (no spaces/dots)
-    if (/^[a-z0-9_]+$/.test(prefix)) tag = prefix
+
+  if (!knownTags.includes(tag)) {
+    const sepIdx = rawName.indexOf('__')
+    if (sepIdx > 0) {
+      const prefix = rawName.slice(0, sepIdx)
+      // Only treat it as a tag prefix if it looks like a known slug (no spaces/dots)
+      if (/^[a-z0-9_]+$/.test(prefix)) tag = prefix
+    }
   }
 
   return {
     id: f.id,
+    file_name: String(f.file_name ?? ''),
+    original_name: String(f.original_name ?? ''),
     tag,
-    mime_type: f.mime_type ?? '',
-    status: f.status ?? 'pending',
-    created_at: f.created_at ?? null,
+    mime_type: String(f.mime_type ?? ''),
+    size: f.size as number | undefined,
+    status: String(f.status ?? 'pending'),
+    review_status: f.review_status as 'pending' | 'approved' | 'rejected' | undefined,
+    review_note: f.review_note as string | null | undefined,
+    reviewed_at: (f.reviewed_at as string | null | undefined) ?? null,
+    reviewed_by: (f.reviewed_by as number | undefined) ?? undefined,
+    previous_file_id: (f.previous_file_id as number | null) ?? null,
+    previous_review_status: (f.previous_review_status as 'pending' | 'approved' | 'rejected' | null) ?? null,
+    previous_review_note: (f.previous_review_note as string | null) ?? null,
+    previous_reviewed_at: (f.previous_reviewed_at as string | null) ?? null,
+    previous_web_view_link: (f.previous_web_view_link as string | null) ?? null,
+    replaced_by_file_id: (f.replaced_by_file_id as number | null) ?? null,
+    created_at: (f.created_at as string | null) ?? null,
+    updated_at: (f.updated_at as string | undefined) ?? undefined,
   }
 }

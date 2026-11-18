@@ -19,7 +19,6 @@ export function storeCustomFields(fields: CustomFields): void {
     const existingFields = getCustomFields()
     const updatedFields = { ...existingFields, ...fields }
     localStorage.setItem(CUSTOM_FIELDS_KEY, JSON.stringify(updatedFields))
-    console.log('CustomFields stored:', updatedFields)
   } catch (error) {
     console.error('Failed to store CustomFields:', error)
   }
@@ -34,7 +33,6 @@ export function getCustomFields(): CustomFields {
     const stored = localStorage.getItem(CUSTOM_FIELDS_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      console.log('CustomFields retrieved:', parsed)
       return parsed
     }
   } catch (error) {
@@ -50,7 +48,6 @@ export function clearCustomFields(): void {
   try {
     if (typeof window === 'undefined') return
     localStorage.removeItem(CUSTOM_FIELDS_KEY)
-    console.log('CustomFields cleared')
   } catch (error) {
     console.error('Failed to clear CustomFields:', error)
   }

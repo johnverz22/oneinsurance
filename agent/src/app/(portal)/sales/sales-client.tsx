@@ -1,58 +1,43 @@
 'use client'
 
 /**
- * sales-client.tsx — "My Sales" page
+ * sales-client.tsx — "Sales" page (mockup: /mockups/agent/sales)
  *
- * Improvements over baseline:
- *   1. KPI cards: period label, pending context, skeleton + error states, CSS-var status colors
- *   2. Filter bar: search icon + clear, debounced search, date presets, status filter,
- *      accessible export dropdown (aria-haspopup), result count + removable filter chips
- *   3. Table: removed always-N/A Certificate No (merged into Policy cell), status column
- *      with pill, Payment ID in monospace+copy button, title-cased product, right-aligned
- *      numbers, date two-line with nowrap, sortable Created/Premium, sticky header,
- *      net commission shown under Premium as "NC {amount}" with a legend below the table,
- *      accessible semantics, empty/error states
- *   4. Pagination: "Page X of Y" nowrap, first/last buttons, 40px targets, aria-disabled
- *   5. States: skeleton rows, empty state with clear-filters, error with retry, export toast
- *   6. Responsive: full table ≥ 1280, hidden cols 768-1279, card list < 768
- *   7. Accessibility: aria-sort, aria-live result count, aria-label on all icon buttons,
- *      visible focus rings, no color-only communication
+ * Matches the platform-shell mockup:
+ *   - Three metric cards (portal-metric-value scale) on the canvas
+ *   - "Transaction History" heading + live record count on the canvas
+ *   - Single "Date range" field + search, applied live; Clear appears
+ *     only while filters are active; icon-only export menu (PDF, CSV)
+ *   - Table gets its own bordered surface (no enclosing page card):
+ *     Policy no. · Certificate no. · Payment ID · Plan · Premium ·
+ *     Status · Created at · Action
+ *   - Net commission renders as "NC {amount}" under Premium + legend
+ *   - Pagination: Showing X–Y of Z + Rows select + Previous / numbered
+ *     pages / Next
  *
- * KPI vs Table data note: KPI cards read from /api/agent/statistics (lifetime
- * aggregates, server-side). The transaction table reads from /api/transactions
- * (paginated, filterable). If /api/agent/statistics returns 0 while rows exist,
- * the backend must include pending transactions in its aggregation, OR expose a
- * separate summary endpoint scoped to the same filter. See backend note at bottom.
+ * Filtering/pagination is handled server-side. The query re-fetches whenever
+ * search, date range, page, or perPage change.
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Search,
   X,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
   ArrowUpRight,
   AlertCircle,
   RefreshCw,
-  Filter as FilterIcon,
-  Clock,
-  CheckCircle2,
-  XCircle,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import { toast } from 'sonner'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
-import { resolveStatus } from '@/components/sales/status-pill'
-import { PaginationBar } from '@/components/ui/pagination-bar'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
-import { FilterChips } from '@/components/sales/filter-chips'
-import { TransactionCard } from '@/components/sales/transaction-card'
-import type { Transaction, AgentStatistics } from '@/types/agent/sales'
-import type { FilterChip } from '@/components/sales/filter-chips'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
+import type { Transaction, AgentStatistics, PaginationInfo, SalesListResponse } from '@/types/agent/sales'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -64,36 +49,14 @@ function toTitleCase(str: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-/** Extract a human-readable product brand/plan name from either string or object form. */
-function resolveProductName(tx: Transaction): string {
-  const raw =
-    (typeof tx.product === 'object' && tx.product !== null
-      ? tx.product.name
-      : tx.product) ||
-    tx.product_name ||
-    ''
-  return raw ? toTitleCase(raw) : '—'
-}
-
 /**
- * Infer the insurance category ("Travel Insurance", "Health Insurance", etc.)
- * from the product name. Returns null when the category cannot be determined
- * or when it would just repeat what the primary line already says.
+ * Product display name. The `product` key is a catalog object (null for
+ * travel) and must not be displayed — use `product_name`, falling back to
+ * `line_of_business`. Both can be null on older rows.
  */
-function resolveProductCategory(productName: string): string | null {
-  if (!productName || productName === '—') return null
-  const lower = productName.toLowerCase()
-
-  if (lower.includes('travel'))            return 'Travel Insurance'
-  if (lower.includes('health') || lower.includes('medicard') || lower.includes('hmo')) return 'Health Insurance'
-  if (lower.includes('personal accident') || lower.includes('pa ') || / pa$/.test(lower)) return 'Personal Accident'
-  if (lower.includes('life'))              return 'Life Insurance'
-  if (lower.includes('motor') || lower.includes('vehicle') || lower.includes('car ') || lower.includes('auto')) return 'Motor Insurance'
-  if (lower.includes('fire') || lower.includes('property') || lower.includes('home')) return 'Property Insurance'
-  if (lower.includes('marine') || lower.includes('cargo')) return 'Marine Insurance'
-  if (lower.includes('liability'))         return 'Liability Insurance'
-
-  return null
+function resolveProductName(tx: Transaction): string {
+  const raw = tx.product_name || tx.line_of_business || ''
+  return raw ? toTitleCase(raw) : '—'
 }
 
 /** Format a date ISO string into separate date + time strings. */
@@ -111,72 +74,68 @@ function formatDateDisplay(dateStr?: string | null): { date: string; time: strin
   }
 }
 
-/** Extract commission from a transaction; returns amount and whether it's pending. */
+/**
+ * Extract commission from a transaction; returns amount and whether it's pending.
+ * `net_commission` is a top-level money string ("150.00") and is null until a
+ * commission has been logged for the sale.
+ */
 function resolveCommission(tx: Transaction): { amount: number; isPending: boolean } {
-  const status = resolveStatus(tx.status ?? tx.payment_status)
-  const raw =
-    tx.commission_log?.agent_commission ??
-    tx.commission_log?.net_commission ??
-    tx.net_commission
+  const raw = tx.net_commission ?? tx.commission_log?.net_commission ?? tx.commission_log?.agent_commission
   const amount = Number(raw ?? 0)
-  // Commission is only settled when the transaction is paid/success
-  const isPending = status !== 'success'
+  const status = (tx.status ?? tx.transaction_status ?? '').toLowerCase()
+  const isPending = raw == null || !['success', 'successful', 'completed', 'paid'].includes(status)
   return { amount, isPending }
 }
 
-// ─── Payment ID cell — color-coded status icon + text ──────────────────────
-
-type PaymentStatus = 'success' | 'pending' | 'cancelled' | 'failed'
-
-const PAYMENT_STATUS_STYLES: Record<
-  PaymentStatus,
-  { text: string; label: string; icon: React.ElementType }
-> = {
-  success:  { label: 'Paid',      text: 'text-[#006838] dark:text-[#8fddb0]', icon: CheckCircle2 },
-  pending:  { label: 'Pending',   text: 'text-[#8a6200] dark:text-[#f0ca72]', icon: Clock        },
-  cancelled:{ label: 'Cancelled', text: 'text-[#b42318] dark:text-[#ffaaa3]', icon: XCircle      },
-  failed:   { label: 'Failed',    text: 'text-[#b42318] dark:text-[#ffaaa3]', icon: XCircle      },
+function resolvePlanName(tx: Transaction, productName: string): string {
+  const plan = tx.plan_name ?? ''
+  const cleaned = typeof plan === 'string' ? plan.trim() : ''
+  if (!cleaned || cleaned.toLowerCase() === productName.toLowerCase()) {
+    return productName
+  }
+  return toTitleCase(cleaned)
 }
-
-function PaymentIdCell({ paymentRef, status }: { paymentRef: string; status: PaymentStatus }) {
-  const { text, label, icon: Icon } = PAYMENT_STATUS_STYLES[status]
-  return (
-    <span className={cn('inline-flex items-center gap-1.5', text)}>
-      <span
-        className="group relative inline-flex size-6 shrink-0 items-center justify-center rounded focus-visible:outline-2 focus-visible:outline-current"
-        tabIndex={0}
-        role="img"
-        aria-label={`Payment ${label}`}
-      >
-        <Icon className="size-3.5 transition-transform group-hover:scale-110 group-focus-visible:scale-110" aria-hidden="true" />
-        {/* Tooltip */}
-        <span className="pointer-events-none absolute left-0 top-full z-10 mt-1 hidden whitespace-nowrap rounded bg-[var(--text-main)] px-2 py-0.5 text-xs text-[var(--card)] shadow group-hover:block group-focus-visible:block">
-          {label}
-        </span>
-      </span>
-      <span className="text-xs tabular-nums font-medium whitespace-nowrap" title={paymentRef}>
-        {paymentRef}
-      </span>
-    </span>
-  )
-}
-
-type SortField = 'created_at' | 'premium'
-type SortDir = 'asc' | 'desc'
-// Raw values sent straight to the backend — do NOT remap these
-type StatusFilter = 'all' | 'pending' | 'completed' | 'failed' | 'cancelled'
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-/** Animated skeleton row for table loading state */
+/** KPI card skeleton — mirrors the mockup's three-bar pulse */
+function MetricSkeleton() {
+  return (
+    <div className="agent-dashboard__panel min-w-0 border-border p-5 sm:p-6" aria-hidden="true">
+      <div className="space-y-3 motion-safe:animate-pulse">
+        <div className="skeleton h-3 w-24 rounded" />
+        <div className="skeleton h-7 w-32 rounded" />
+        <div className="skeleton h-3 w-28 rounded" />
+      </div>
+    </div>
+  )
+}
+
+/** KPI card error state */
+function MetricError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="agent-dashboard__panel min-w-0 border-border flex flex-col items-center gap-2 p-6 text-center">
+      <AlertCircle className="size-5 text-[#dc2626]" aria-hidden="true" />
+      <p className="text-sm text-[var(--text-muted)]">Failed to load</p>
+      <button type="button" onClick={onRetry} className="btn-tertiary min-h-0 px-3 py-1.5 text-xs">
+        Retry
+      </button>
+    </div>
+  )
+}
+
+/** Table skeleton rows */
 function TableSkeletonRows({ count = 8 }: { count?: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
         <tr key={i} aria-hidden="true">
           {[180, 140, 110, 160, 90, 90, 110, 60].map((w, j) => (
-            <td key={j} className="px-3 py-4">
-              <div className="skeleton h-4 rounded" style={{ width: `${w * 0.6 + Math.random() * w * 0.4}px`, maxWidth: '100%' }} />
+            <td key={j} className="px-4 py-4">
+              <div
+                className="skeleton h-4 rounded"
+                style={{ width: `${w * 0.6 + (i * j * 13) % (w * 0.4)}px`, maxWidth: '100%' }}
+              />
             </td>
           ))}
         </tr>
@@ -185,170 +144,37 @@ function TableSkeletonRows({ count = 8 }: { count?: number }) {
   )
 }
 
-/** KPI card skeleton */
-function MetricSkeleton() {
-  return (
-    <div className="portal-page-card space-y-2 py-4">
-      <div className="skeleton h-3 w-20 rounded" />
-      <div className="skeleton h-7 w-36 rounded" />
-      <div className="skeleton h-3 w-28 rounded" />
-    </div>
-  )
-}
-
-/** KPI card error state */
-function MetricError({ onRetry }: { onRetry: () => void }) {
-  return (
-    <div className="portal-page-card flex flex-col items-center gap-2 py-6 text-center">
-      <AlertCircle className="size-5 text-[#dc2626]" aria-hidden="true" />
-      <p className="text-sm text-[var(--text-muted)]">Failed to load</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="btn-tertiary min-h-0 py-1 px-2 text-xs"
-      >
-        Retry
-      </button>
-    </div>
-  )
-}
-
-/** Sortable column header button */
-function SortHeader({
-  children,
-  field,
-  sortField,
-  sortDir,
-  onSort,
-  className,
-}: {
-  children: React.ReactNode
-  field: SortField
-  sortField: SortField
-  sortDir: SortDir
-  onSort: (field: SortField) => void
-  className?: string
-}) {
-  const isActive = sortField === field
-  const ariaSortValue: React.AriaAttributes['aria-sort'] = isActive
-    ? sortDir === 'asc'
-      ? 'ascending'
-      : 'descending'
-    : 'none'
-
-  return (
-    <th
-      scope="col"
-      aria-sort={ariaSortValue}
-      className={cn('px-3 py-3 font-semibold', className)}
-    >
-      <button
-        type="button"
-        onClick={() => onSort(field)}
-        className="inline-flex items-center gap-1 rounded focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-      >
-        {children}
-        {isActive ? (
-          sortDir === 'asc' ? (
-            <ArrowUp className="size-3 shrink-0" aria-hidden="true" />
-          ) : (
-            <ArrowDown className="size-3 shrink-0" aria-hidden="true" />
-          )
-        ) : (
-          <ArrowUpDown className="size-3 shrink-0 opacity-40" aria-hidden="true" />
-        )}
-      </button>
-    </th>
-  )
-}
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-
-type Toast = { id: number; message: string; type: 'success' | 'error' }
-
-function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
-  if (toasts.length === 0) return null
-  return (
-    <div
-      aria-live="polite"
-      aria-atomic="false"
-      className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
-    >
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          role="status"
-          className={cn(
-            'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium shadow-lg',
-            t.type === 'success'
-              ? 'border-[var(--border)] bg-[var(--card)] text-[var(--text-main)]'
-              : 'border-[#fca5a5] bg-[#fee2e2] text-[#991b1b] dark:border-[#7f1d1d] dark:bg-[#450a0a] dark:text-[#fca5a5]'
-          )}
-        >
-          <span className="flex-1">{t.message}</span>
-          <button
-            type="button"
-            onClick={() => onDismiss(t.id)}
-            aria-label="Dismiss"
-            className="shrink-0 rounded focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </button>
-        </div>
-      ))}
-    </div>
-  )
+/** Compact page-number window: 1 … c-1 c c+1 … last */
+function pageWindow(page: number, totalPages: number): (number | '…')[] {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
+  const pages = new Set<number>([1, totalPages, page - 1, page, page + 1])
+  const sorted = [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b)
+  const out: (number | '…')[] = []
+  sorted.forEach((p, i) => {
+    if (i > 0 && p - sorted[i - 1] > 1) out.push('…')
+    out.push(p)
+  })
+  return out
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-/**
- * My Sales page client component.
- * Keeps the same page structure: header → 3 KPI cards → Transaction History card.
- */
 export function SalesClient() {
-  // ── Filter state (pending — not yet applied) ──
+  // ── Filter state ──
   const [search, setSearch] = useState('')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-
-  // ── Applied filter state (triggers query) ──
   const [appliedSearch, setAppliedSearch] = useState('')
-  const [appliedFrom, setAppliedFrom] = useState('')
-  const [appliedTo, setAppliedTo] = useState('')
-  const [appliedStatus, setAppliedStatus] = useState<StatusFilter>('all')
+  const [appliedRange, setAppliedRange] = useState<DateRange | null>(null)
 
   // ── Table state ──
   const [perPage, setPerPage] = useState(10)
   const [page, setPage] = useState(1)
-  const [sortField, setSortField] = useState<SortField>('created_at')
-  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
-  // ── Export state ──
-  const [exporting, setExporting] = useState(false)
-
-  // ── Toast state ──
-  const [toasts, setToasts] = useState<Toast[]>([])
-  const toastCounter = useRef(0)
-
-  // ── Date validation error ──
-  const [dateError, setDateError] = useState('')
+  // Debounce timer ref for search
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const authFetch = useAuthFetch()
 
-  // ── Derived: anything has changed from applied? ──
-  const filtersChanged =
-    search.trim() !== appliedSearch ||
-    fromDate !== appliedFrom ||
-    toDate !== appliedTo ||
-    statusFilter !== appliedStatus
-
-  const hasActiveFilters = Boolean(
-    appliedSearch || appliedFrom || appliedTo || appliedStatus !== 'all'
-  )
-
-  // ── No auto-apply: all filters (search, date, status) require pressing Apply ──
+  const hasActiveFilters = Boolean(appliedSearch || appliedRange)
 
   // ── Stats query ──
   const {
@@ -366,200 +192,179 @@ export function SalesClient() {
     },
   })
 
-  // ── Transactions query — fetch all, filter client-side ──
-  // The backend /agents/transactions may not support all filter params yet.
-  // We fetch a large batch (up to 500) and filter/sort/paginate entirely in the browser.
-  // This guarantees filters work regardless of backend support.
+  // ── Transactions query — server-side filtering + pagination ──
+  //
+  // Backend endpoint: GET /api/v1/agents/transactions (via BFF /api/transactions)
+  // Params: page, per_page (default 10, max 100), search, date_from, date_to
+  // (yyyy-MM-dd, filters on created_at, both inclusive).
+  //
+  // Response: { success, message, data: { current_page, last_page, per_page,
+  //   total, data: [...rows...] } } — page info lives directly on `data`,
+  //   there is no `meta` block.
+  //
+  const txQueryKey = ['transactions', { page, perPage, search: appliedSearch, range: appliedRange }] as const
+
   const {
     data: txData,
     isLoading: txLoading,
+    isFetching: txFetching,
     isError: txError,
+    error: txQueryError,
     refetch: refetchTx,
-  } = useQuery({
-    queryKey: ['transactions-all'],
+  } = useQuery<SalesListResponse>({
+    queryKey: txQueryKey,
     queryFn: async () => {
-      const res = await authFetch('/api/transactions?per_page=500&page=1')
-      if (!res.ok) throw new Error('Failed to load transactions')
-      return res.json()
+      const params = new URLSearchParams()
+      params.set('page', String(page))
+      params.set('per_page', String(perPage))
+      if (appliedSearch) params.set('search', appliedSearch)
+      if (appliedRange?.from) params.set('date_from', appliedRange.from)
+      if (appliedRange?.to) params.set('date_to', appliedRange.to)
+
+      const res = await authFetch(`/api/transactions?${params.toString()}`)
+      const json = await res.json().catch(() => null)
+      if (!res.ok) {
+        // Surface Laravel validation errors (422) so they can be shown on the filters
+        const err = new Error('Failed to load transactions') as Error & {
+          status?: number
+          fieldErrors?: Record<string, string[]>
+        }
+        err.status = res.status
+        err.fieldErrors = json?.errors
+        throw err
+      }
+      return json as SalesListResponse
     },
-    staleTime: 60_000, // 1 min — don't re-fetch on every filter change
+    placeholderData: (prev) => prev, // keep previous data visible while refetching
+    staleTime: 30_000,
   })
 
-  // ── Extract raw list ──
-  const rawData = txData?.data
-  const allTransactions: Transaction[] = Array.isArray(rawData)
-    ? rawData
-    : Array.isArray(rawData?.data)
-      ? rawData.data
-      : []
+  // ── Normalise the backend response ──
+  // Paginator shape: { data: { data: [...rows...], current_page, last_page,
+  //   per_page, total, ... } }
+  const { transactions, pagination } = useMemo(() => {
+    const inner = txData?.data
+    if (!inner) return { transactions: [] as Transaction[], pagination: null as PaginationInfo | null }
 
-  // ── Client-side filter ──
-  const filtered = allTransactions.filter((tx) => {
-    // Search — match policy no, payment ref, product name, plan name
-    if (appliedSearch) {
-      const q = appliedSearch.toLowerCase()
-      const haystack = [
-        tx.policy_number,
-        tx.carrier_policy_no,
-        tx.merchant_transaction_id,
-        tx.payment_id,
-        typeof tx.product === 'object' ? tx.product?.name : tx.product,
-        tx.product_name,
-        tx.plan_name,
-        tx.plan,
-        tx.customer_name,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase()
-      if (!haystack.includes(q)) return false
+    const rows = Array.isArray(inner.data) ? inner.data : []
+    const p: PaginationInfo = {
+      current_page: inner.current_page ?? page,
+      last_page: inner.last_page ?? 1,
+      per_page: inner.per_page ?? perPage,
+      total: inner.total ?? rows.length,
     }
+    return { transactions: rows, pagination: p }
+  }, [txData, page, perPage])
 
-    // Status — compare against raw tx.status and tx.payment_status
-    if (appliedStatus !== 'all') {
-      const raw = (tx.status ?? tx.payment_status ?? '').toLowerCase()
-      // Map 'completed' UI value to also match 'paid'/'successful'/'success' from DLT
-      const matchCompleted = appliedStatus === 'completed'
-        ? ['completed', 'paid', 'successful', 'success'].includes(raw)
-        : raw === appliedStatus
-      if (!matchCompleted) return false
-    }
+  // First 422 field error message (e.g. errors.date_from / errors.date_to)
+  const filterError = useMemo(() => {
+    const err = txQueryError as { status?: number; fieldErrors?: Record<string, string[]> } | null
+    if (err?.status !== 422 || !err.fieldErrors) return null
+    const first = Object.values(err.fieldErrors).flat()[0]
+    return first ?? 'Check the date range and try again.'
+  }, [txQueryError])
 
-    // Date from — compare against created_at date portion
-    if (appliedFrom) {
-      const txDate = (tx.created_at ?? '').slice(0, 10)
-      if (!txDate || txDate < appliedFrom) return false
-    }
-
-    // Date to
-    if (appliedTo) {
-      const txDate = (tx.created_at ?? '').slice(0, 10)
-      if (!txDate || txDate > appliedTo) return false
-    }
-
-    return true
-  })
-
-  // ── Client-side sort ──
-  const sorted = [...filtered].sort((a, b) => {
-    let av = 0, bv = 0
-    if (sortField === 'created_at') {
-      av = new Date(a.created_at ?? 0).getTime()
-      bv = new Date(b.created_at ?? 0).getTime()
-    } else if (sortField === 'premium') {
-      av = Number(a.amount ?? a.premium ?? 0)
-      bv = Number(b.amount ?? b.premium ?? 0)
-    }
-    return sortDir === 'asc' ? av - bv : bv - av
-  })
-
-  // ── Client-side pagination ──
-  const totalItems = sorted.length
-  const totalPages = Math.max(1, Math.ceil(totalItems / perPage))
+  // Server-reported totals
+  const totalItems = pagination?.total ?? transactions.length
+  const totalPages = pagination?.last_page ?? Math.max(1, Math.ceil(totalItems / perPage))
   const safePage = Math.min(page, totalPages)
   const fromItem = totalItems > 0 ? (safePage - 1) * perPage + 1 : 0
-  const toItem = Math.min(safePage * perPage, totalItems)
-  const transactions: Transaction[] = sorted.slice((safePage - 1) * perPage, safePage * perPage)
+  const toItem = pagination
+    ? Math.min(safePage * perPage, totalItems)
+    : transactions.length > 0
+      ? (safePage - 1) * perPage + transactions.length
+      : 0
 
   // ── KPI values ──
   const totalSales = Number(stats?.total_sales ?? stats?.total_premium ?? 0)
   const totalCases = Number(stats?.number_of_sales ?? stats?.total_cases ?? 0)
   const netCommission = Number(stats?.net_commissions ?? 0)
-  const grossCommission = Number(stats?.gross_commissions ?? 0)
-  // Pending commission estimate: gross - net (adapter; backend should expose this explicitly)
-  const pendingCommission = grossCommission > netCommission ? grossCommission - netCommission : 0
 
   // ── Handlers ──
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => {
+      setAppliedSearch(value.trim())
+      setPage(1)
+    }, 400)
+  }, [])
 
-  const handleApplyFilter = useCallback(() => {
-    if (fromDate && toDate && fromDate > toDate) {
-      setDateError('"From" date must be on or before the "To" date.')
-      return
-    }
-    setDateError('')
-    setAppliedSearch(search.trim())
-    setAppliedFrom(fromDate)
-    setAppliedTo(toDate)
-    setAppliedStatus(statusFilter)
+  const handleRangeApply = useCallback((range: DateRange | null) => {
+    setAppliedRange(range)
     setPage(1)
-  }, [search, fromDate, toDate, statusFilter])
+  }, [])
 
   const handleClearFilters = useCallback(() => {
     setSearch('')
-    setFromDate('')
-    setToDate('')
-    setStatusFilter('all')
     setAppliedSearch('')
-    setAppliedFrom('')
-    setAppliedTo('')
-    setAppliedStatus('all')
-    setDateError('')
+    setAppliedRange(null)
     setPage(1)
   }, [])
 
-  const handleSort = useCallback((field: SortField) => {
-    setSortField((prev) => {
-      if (prev === field) {
-        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-        return prev
+  // ── Export — fetches all filtered rows from the server ──
+  // The backend caps per_page at 100, so page through the results.
+  const fetchAllForExport = useCallback(async (): Promise<Transaction[]> => {
+    const PER_PAGE = 100
+    const rows: Transaction[] = []
+    let currentPage = 1
+    let lastPage = 1
+
+    do {
+      const params = new URLSearchParams()
+      params.set('page', String(currentPage))
+      params.set('per_page', String(PER_PAGE))
+      if (appliedSearch) params.set('search', appliedSearch)
+      if (appliedRange?.from) params.set('date_from', appliedRange.from)
+      if (appliedRange?.to) params.set('date_to', appliedRange.to)
+
+      const res = await authFetch(`/api/transactions?${params.toString()}`)
+      if (!res.ok) throw new Error('Export fetch failed')
+      const json = (await res.json()) as SalesListResponse
+      const inner = json?.data
+      const pageRows = Array.isArray(inner?.data) ? inner.data : []
+      rows.push(...pageRows)
+      lastPage = inner?.last_page ?? currentPage
+      currentPage += 1
+    } while (currentPage <= lastPage)
+
+    return rows
+  }, [authFetch, appliedSearch, appliedRange])
+
+  const buildExportRows = useCallback((rows: Transaction[]) =>
+    rows.map((tx) => {
+      const productName = resolveProductName(tx)
+      const { amount: comm, isPending } = resolveCommission(tx)
+      const { date, time } = formatDateDisplay(tx.created_at)
+      return {
+        policy: tx.policy_number ?? 'N/A',
+        certificate: tx.certificate_number ?? 'N/A',
+        payment: tx.merchant_transaction_id ?? String(tx.id),
+        plan: resolvePlanName(tx, productName),
+        product: productName,
+        premium: Number(tx.amount ?? 0),
+        commission: comm,
+        commissionPending: isPending,
+        status: (tx.status ?? 'pending').toString(),
+        created: time ? `${date} ${time}` : date,
       }
-      setSortDir('desc')
-      return field
-    })
-    setPage(1)
-  }, [])
-
-  // ── Toast helpers ──
-  const addToast = useCallback((message: string, type: Toast['type'] = 'success') => {
-    const id = ++toastCounter.current
-    setToasts((prev) => [...prev, { id, message, type }])
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000)
-  }, [])
-
-  const dismissToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }, [])
-
-  // ── Export ──
-  const buildCSV = useCallback(() => {
-    const headers = [
-      'Policy No.',
-      'Payment ID',
-      'Product',
-      'Plan',
-      'Premium',
-      'Net Commission',
-      'Status',
-      'Date',
-    ]
-    const rows = transactions.map((tx) => {
-      const { amount: comm } = resolveCommission(tx)
-      const { date } = formatDateDisplay(tx.created_at)
-      const productBrand = resolveProductName(tx)
-      const txPlan = tx.plan_name ?? tx.plan ?? ''
-      return [
-        `"${tx.policy_number ?? tx.carrier_policy_no ?? ''}"`,
-        `"${tx.merchant_transaction_id ?? tx.payment_id ?? tx.id}"`,
-        `"${productBrand}"`,
-        `"${txPlan}"`,
-        `"${Number(tx.amount ?? tx.premium ?? 0).toFixed(2)}"`,
-        `"${comm.toFixed(2)}"`,
-        `"${resolveStatus(tx.status ?? tx.payment_status)}"`,
-        `"${date}"`,
-      ]
-    })
-    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
-  }, [transactions])
+    }), [])
 
   const handleExportCSV = useCallback(async () => {
-    if (!transactions.length) {
-      addToast('No transactions to export.', 'error')
-      return
-    }
-    setExporting(true)
     try {
-      await new Promise((r) => setTimeout(r, 200)) // simulate async
-      const csv = buildCSV()
+      const rows = await fetchAllForExport()
+      if (!rows.length) { toast.error('No transactions to export.'); return }
+      const headers = [
+        'Policy No.', 'Certificate No.', 'Payment ID', 'Plan', 'Product',
+        'Premium', 'Net Commission', 'Status', 'Created At',
+      ]
+      const csvRows = buildExportRows(rows).map((r) => [
+        `"${r.policy}"`, `"${r.certificate}"`, `"${r.payment}"`,
+        `"${r.plan}"`, `"${r.product}"`, `"${r.premium.toFixed(2)}"`,
+        `"${r.commissionPending ? 'Pending' : r.commission.toFixed(2)}"`,
+        `"${r.status}"`, `"${r.created}"`,
+      ])
+      const csv = [headers.join(','), ...csvRows.map((r) => r.join(','))].join('\n')
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -569,76 +374,51 @@ export function SalesClient() {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-      addToast('CSV exported successfully.')
     } catch {
-      addToast('Export failed. Please try again.', 'error')
-    } finally {
-      setExporting(false)
+      toast.error('Export failed. Please try again.')
     }
-  }, [transactions, buildCSV, addToast])
+  }, [fetchAllForExport, buildExportRows])
 
-  // XLSX export: server-side or library needed; for now falls back to CSV with note
-  const handleExportXLSX = useCallback(() => {
-    addToast('XLSX export not yet available — downloading CSV instead.', 'error')
-    handleExportCSV()
-  }, [handleExportCSV, addToast])
-
-  // ── Active filter chips ──
-  const filterChips: FilterChip[] = []
-  if (appliedSearch) {
-    filterChips.push({
-      key: 'search',
-      label: `"${appliedSearch}"`,
-      onRemove: () => {
-        setSearch('')
-        setAppliedSearch('')
-        setPage(1)
-      },
-    })
-  }
-  if (appliedFrom || appliedTo) {
-    filterChips.push({
-      key: 'date',
-      label: [appliedFrom, appliedTo].filter(Boolean).join(' → '),
-      onRemove: () => {
-        setFromDate('')
-        setToDate('')
-        setAppliedFrom('')
-        setAppliedTo('')
-        setPage(1)
-      },
-    })
-  }
-  if (appliedStatus !== 'all') {
-    const STATUS_LABELS: Record<string, string> = {
-      pending: 'Pending',
-      completed: 'Paid / Completed',
-      cancelled: 'Cancelled',
-      failed: 'Failed',
+  const handleExportPDF = useCallback(async () => {
+    try {
+      const rows = await fetchAllForExport()
+      if (!rows.length) { toast.error('No transactions to export.'); return }
+      const { jsPDF } = await import('jspdf')
+      const { default: autoTable } = await import('jspdf-autotable')
+      const doc = new jsPDF({ orientation: 'landscape' })
+      doc.setFontSize(14)
+      doc.text('Sales transactions', 14, 15)
+      autoTable(doc, {
+        startY: 20,
+        head: [['Policy No.', 'Certificate No.', 'Payment ID', 'Plan', 'Product', 'Premium', 'Net Commission', 'Status', 'Created At']],
+        body: buildExportRows(rows).map((r) => [
+          r.policy, r.certificate, r.payment, r.plan, r.product,
+          formatCurrency(r.premium),
+          r.commissionPending ? 'Pending' : formatCurrency(r.commission),
+          r.status, r.created,
+        ]),
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [0, 104, 56] },
+      })
+      doc.save(`sales-transactions-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch {
+      toast.error('Export failed. Please try again.')
     }
-    filterChips.push({
-      key: 'status',
-      label: `Status: ${STATUS_LABELS[appliedStatus] ?? appliedStatus}`,
-      onRemove: () => {
-        setStatusFilter('all')
-        setAppliedStatus('all')
-        setPage(1)
-      },
-    })
-  }
+  }, [fetchAllForExport, buildExportRows])
 
   // ── Render ────────────────────────────────────────────────────────────────
-
   return (
     <div className="space-y-6">
-      {/* ── Page header (DO NOT MODIFY) ── */}
       <PortalContentHeader
-        title="My sales"
+        title="Sales"
         description="Review your sales and transaction history."
       />
 
-      {/* ── 1. KPI Cards ── */}
-      <section aria-label="Sales metrics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {/* ── Metric cards ── */}
+      <section
+        aria-label="Sales metrics"
+        className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      >
         {statsLoading ? (
           Array.from({ length: 3 }).map((_, i) => <MetricSkeleton key={i} />)
         ) : statsError ? (
@@ -647,117 +427,125 @@ export function SalesClient() {
           ))
         ) : (
           <>
-            {/* Total Sales */}
-            <div className="portal-page-card py-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
-                Total sales
-              </p>
-              <p className="mt-1.5 text-2xl font-bold tabular-nums text-[var(--text-main)]">
+            <div className="agent-dashboard__panel min-w-0 border-border p-5 sm:p-6">
+              <p className="text-base font-medium text-[var(--text-main)]">Total sales</p>
+              <p className="portal-metric-value mt-4 font-semibold text-[var(--text-main)]">
                 {formatCurrency(totalSales)}
               </p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                All time · paid &amp; settled sales only
-              </p>
-              {/*
-               * ADAPTER NOTE: /api/agent/statistics `total_sales` reflects
-               * settled (completed) transactions only. Pending premium is NOT
-               * included. If zero appears while the table shows rows, the backend
-               * must include pending amounts or expose a separate pending_sales field.
-               */}
+              <p className="mt-2 text-base text-[var(--text-sub)]">Lifetime revenue</p>
             </div>
-
-            {/* Total Cases */}
-            <div className="portal-page-card py-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
-                Total cases
-              </p>
-              <p className="mt-1.5 text-2xl font-bold tabular-nums text-[var(--text-main)]">
+            <div className="agent-dashboard__panel min-w-0 border-border p-5 sm:p-6">
+              <p className="text-base font-medium text-[var(--text-main)]">Total cases</p>
+              <p className="portal-metric-value mt-4 font-semibold text-[var(--text-main)]">
                 {totalCases.toLocaleString()}
               </p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                All time · includes pending transactions
-              </p>
-              
+              <p className="mt-2 text-base text-[var(--text-sub)]">Total transactions</p>
             </div>
-
-            {/* Net Commissions */}
-            <div className="portal-page-card py-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
-                Net commissions
-              </p>
-              <p className="mt-1.5 text-2xl font-bold tabular-nums text-[var(--text-main)]">
+            <div className="agent-dashboard__panel min-w-0 border-border p-5 sm:p-6">
+              <p className="text-base font-medium text-[var(--text-main)]">Net commissions</p>
+              <p className="portal-metric-value mt-4 font-semibold text-[var(--text-main)]">
                 {formatCurrency(netCommission)}
               </p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                All time · settled transactions only
+              <p className="mt-2 text-base text-[var(--text-sub)]">
+                {totalSales > 0 ? `${Math.round((netCommission / totalSales) * 100)}% of gross` : '0% of gross'}
               </p>
-              {pendingCommission > 0 && (
-                <p className="mt-1.5 text-xs font-medium text-[#854d0e] dark:text-[#fde047]">
-                  {formatCurrency(pendingCommission)} pending settlement
-                </p>
-              )}
             </div>
           </>
         )}
       </section>
 
-      {/* ── 2–5. Transaction History card ── */}
-      <div
-        className="portal-page-card overflow-hidden p-0"
-        aria-busy={txLoading}
-        role="region"
-        aria-label="Transaction history"
-      >
-        {/* ── Card header ── */}
-        <div className="p-5 sm:p-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold text-[var(--text-main)]">
-              Transaction History
-            </h2>
-            {/* Result count — aria-live so screen readers announce updates */}
-            <p
-              aria-live="polite"
-              aria-atomic="true"
-              className="text-sm text-[var(--text-muted)]"
-            >
-              {txLoading
-                ? 'Loading…'
-                : `${totalItems.toLocaleString()} transaction${totalItems !== 1 ? 's' : ''} found`}
-            </p>
+      {/* ── Transaction History Skeleton ── */}
+      {txLoading && (
+        <section className="mt-5" role="status" aria-label="Loading transaction history">
+          <div aria-hidden="true" className="space-y-5 motion-safe:animate-pulse">
+            <div className="space-y-3">
+              <div className="skeleton h-6 w-48" />
+              <div className="skeleton h-3 w-36" />
+            </div>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <div className="skeleton h-11 w-40" />
+              <div className="skeleton h-11 w-40" />
+              <div className="skeleton h-11 w-28" />
+              <div className="skeleton h-11 w-28" />
+            </div>
+            <div className="mt-5 overflow-x-auto">
+              <div className="min-w-[970px] border-y border-[var(--border)] py-3 dark:border-[#3d4140]">
+                <div className="skeleton h-3 w-full" />
+              </div>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid min-w-[970px] grid-cols-9 gap-4 py-5"
+                  >
+                    {Array.from({ length: 9 }).map((_, j) => (
+                      <div key={j} className="skeleton h-4" />
+                    ))}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Transaction History Table ── */}
+      {!txLoading && (
+        <section className="portal-table-layout mt-8" aria-labelledby="sales-title">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="min-w-0">
+              <h2
+                id="sales-title"
+                className="text-xl font-semibold tracking-tight text-[var(--text-main)]"
+              >
+                Transaction History
+              </h2>
+              <p
+                aria-live="polite"
+                aria-atomic="true"
+                className="mt-1 text-sm text-[var(--text-sub)]"
+              >
+                {`${totalItems.toLocaleString()} transaction${totalItems !== 1 ? 's' : ''} found`}
+              </p>
+            </div>
           </div>
 
-          {/* ── 2. Filter bar — single row ── */}
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleApplyFilter() }}
-            role="search"
-            aria-label="Search and filter transactions"
-            className="mt-4"
-          >
-            <div className="flex flex-wrap items-end gap-2">
-              {/* Search input */}
-              <div className="min-w-0 flex-1 basis-52">
-                <label htmlFor="sales-search" className="block text-xs font-medium text-[var(--text-sub)] mb-1">
+          <div className="portal-table-filters mt-5">
+            <form
+              role="search"
+              aria-label="Search and filter table"
+              className="portal-table-filters__form"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div className="portal-table-filters__date">
+                <DateRangeField
+                  id="sales-range"
+                  value={appliedRange}
+                  onApply={handleRangeApply}
+                />
+              </div>
+
+              <div className="portal-table-filters__search">
+                <label htmlFor="sales-search" className="sr-only">
                   Search
                 </label>
                 <div className="relative">
                   <Search
-                    className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)]"
+                    className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)]"
                     aria-hidden="true"
                   />
                   <input
                     id="sales-search"
                     type="search"
-                    placeholder="Policy, payment ID, or product"
+                    placeholder="Search..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="ui-form-field pl-8 pr-8"
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="ui-form-field w-full pl-10 pr-8 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
                   />
                   {search && (
                     <button
                       type="button"
-                      onClick={() => setSearch('')}
+                      onClick={() => handleSearchChange('')}
                       aria-label="Clear search"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[var(--text-muted)] hover:text-[var(--text-main)] focus-visible:outline-2 focus-visible:outline-[var(--primary)]"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] focus-visible:outline-2 focus-visible:outline-[#006838]"
                     >
                       <X className="size-3.5" aria-hidden="true" />
                     </button>
@@ -765,399 +553,266 @@ export function SalesClient() {
                 </div>
               </div>
 
-              {/* Status filter */}
-              <div className="basis-36 shrink-0">
-                <label htmlFor="sales-status" className="block text-xs font-medium text-[var(--text-sub)] mb-1">
-                  Status
-                </label>
-                <select
-                  id="sales-status"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                  className="ui-form-field"
-                >
-                  <option value="all">All statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="completed">Paid / Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="failed">Failed</option>
-                </select>
-              </div>
-
-              {/* From */}
-              <div className="shrink-0">
-                <label htmlFor="sales-from" className="block text-xs font-medium text-[var(--text-sub)] mb-1">
-                  From
-                </label>
-                <input
-                  id="sales-from"
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => { setFromDate(e.target.value); setDateError('') }}
-                  aria-invalid={!!dateError}
-                  className="ui-form-field w-auto"
-                />
-              </div>
-
-              {/* To */}
-              <div className="shrink-0">
-                <label htmlFor="sales-to" className="block text-xs font-medium text-[var(--text-sub)] mb-1">
-                  To
-                </label>
-                <input
-                  id="sales-to"
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => { setToDate(e.target.value); setDateError('') }}
-                  min={fromDate || undefined}
-                  aria-invalid={!!dateError}
-                  className="ui-form-field w-auto"
-                />
-              </div>
-
-              {/* Apply filter */}
-              <div className="flex shrink-0 items-end gap-2">
+              {hasActiveFilters && (
                 <button
-                  type="submit"
-                  disabled={!filtersChanged}
-                  aria-disabled={!filtersChanged}
-                  className="btn-primary px-4 disabled:opacity-40 disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="min-h-11 rounded-md px-3 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
                 >
-                  Apply filter
+                  Clear
                 </button>
-                {hasActiveFilters && (
-                  <button
-                    type="button"
-                    onClick={handleClearFilters}
-                    className="btn-tertiary px-3"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
+              )}
 
-              {/* Export dropdown */}
-              <div className="shrink-0">
+              <div className="portal-table-filters__actions">
                 <ExportMenu
-                  label="Export transactions"
-                  disabled={exporting}
+                  label="Download table"
                   items={[
+                    { id: 'pdf', label: 'PDF', onSelect: handleExportPDF },
                     { id: 'csv', label: 'CSV', onSelect: handleExportCSV },
-                    { id: 'xlsx', label: 'XLSX', onSelect: handleExportXLSX },
                   ]}
                 />
               </div>
-            </div>
+            </form>
+          </div>
 
-            {/* Date validation error */}
-            {dateError && (
-              <p role="alert" className="mt-1.5 text-xs font-medium text-[#dc2626] dark:text-[#fca5a5]">
-                {dateError}
+          {filterError && (
+            <p role="alert" className="mt-3 text-sm text-[#dc2626]">
+              {filterError}
+            </p>
+          )}
+
+          {/* ── Table surface ── */}
+          {txError ? (
+            <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+              <AlertCircle className="size-8 text-[#dc2626]" aria-hidden="true" />
+              <p className="text-base font-medium text-[var(--text-main)]">
+                Failed to load transactions
               </p>
-            )}
-          </form>
-
-          {/* Active filter chips */}
-          <FilterChips chips={filterChips} className="mt-3" />
-        </div>
-
-        {/* ── 3. Table / states ── */}
-        {txError ? (
-          /* Error state */
-          <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <AlertCircle className="size-8 text-[#dc2626]" aria-hidden="true" />
-            <p className="text-base font-medium text-[var(--text-main)]">Failed to load transactions</p>
-            <p className="text-sm text-[var(--text-muted)]">Check your connection and try again.</p>
-            <button type="button" onClick={() => refetchTx()} className="btn-secondary px-4 mt-1">
-              <RefreshCw className="size-4 mr-2" aria-hidden="true" />
-              Retry
-            </button>
-          </div>
-        ) : !txLoading && transactions.length === 0 ? (
-          /* Empty state */
-          <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <FilterIcon className="size-8 text-[var(--text-muted)]" aria-hidden="true" />
-            {hasActiveFilters ? (
-              <>
-                <p className="text-base font-medium text-[var(--text-main)]">
-                  No transactions match your filters
-                </p>
-                <p className="text-sm text-[var(--text-muted)]">
-                  Try adjusting the search or date range.
-                </p>
-                <button type="button" onClick={handleClearFilters} className="btn-secondary px-4 mt-1">
-                  Clear filters
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-base font-medium text-[var(--text-main)]">No transactions yet</p>
-                <p className="max-w-xs text-sm text-[var(--text-muted)]">
-                  Your sales and commissions will appear here once a policy is issued.
-                </p>
-              </>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* ── Mobile / Tablet card list (< lg) ── */}
-            <div className="divide-y divide-[var(--border)] lg:hidden">
-              {txLoading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex items-start gap-3 px-4 py-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="skeleton h-4 w-40 rounded" />
-                        <div className="skeleton h-3 w-28 rounded" />
-                        <div className="skeleton h-3 w-24 rounded" />
-                      </div>
-                    </div>
-                  ))
-                : transactions.map((tx) => {
-                    const policyNo = tx.policy_number ?? tx.carrier_policy_no ?? '—'
-                    const paymentRef = tx.merchant_transaction_id ?? tx.payment_id ?? String(tx.id)
-                    const status = resolveStatus(tx.status ?? tx.payment_status)
-                    const productBrand = resolveProductName(tx)
-                    const txPlanName = tx.plan_name ?? tx.plan ?? null
-                    const primaryLine = txPlanName && txPlanName !== productBrand ? txPlanName : productBrand
-                    const premium = Number(tx.amount ?? tx.premium ?? 0)
-                    const { amount: comm, isPending: commPending } = resolveCommission(tx)
-                    const { date, time } = formatDateDisplay(tx.created_at)
-
-                    return (
-                      <TransactionCard
-                        key={tx.id}
-                        id={tx.id}
-                        policyNumber={policyNo}
-                        paymentRef={paymentRef}
-                        productName={productBrand}
-                        planName={primaryLine}
-                        premium={premium}
-                        commission={comm}
-                        commissionIsPending={commPending}
-                        status={status}
-                        date={date}
-                        time={time}
-                        href={`/sales/transactions/${tx.id ?? paymentRef}`}
-                      />
-                    )
-                  })}
+              <p className="text-sm text-[var(--text-muted)]">
+                Check your connection and try again.
+              </p>
+              <button
+                type="button"
+                onClick={() => refetchTx()}
+                className="btn-secondary mt-1 px-4"
+              >
+                <RefreshCw className="mr-2 size-4" aria-hidden="true" />
+                Retry
+              </button>
             </div>
-
-            {/* ── Desktop table (≥ lg) ── */}
-            <div className="hidden overflow-x-auto lg:block">
-              <table className="w-full min-w-[800px] border-collapse text-left text-sm">
-                <caption className="sr-only">
-                  Transaction history — {totalItems} record{totalItems !== 1 ? 's' : ''}
-                </caption>
-                <thead className="border-y border-[var(--border)] bg-[var(--subtle)] text-xs uppercase tracking-wide text-[var(--text-muted)]">
-                  <tr>
-                    {/* Policy No. — static sort */}
-                    <th scope="col" className="px-3 py-3 font-semibold whitespace-nowrap">
-                      Policy No.
-                    </th>
-                    {/* Payment ID — color-coded status */}
-                    <th scope="col" className="px-3 py-3 font-semibold whitespace-nowrap">
-                      Payment ID
-                    </th>
-                    {/* Product — static */}
-                    <th scope="col" className="px-3 py-3 font-semibold">
-                      Product
-                    </th>
-                    {/* Premium — sortable; net commission renders as "NC {amount}" underneath */}
-                    <SortHeader
-                      field="premium"
-                      sortField={sortField}
-                      sortDir={sortDir}
-                      onSort={handleSort}
-                      className="whitespace-nowrap text-right"
-                    >
-                      Premium
-                    </SortHeader>
-                    {/* Created — sortable, default sort */}
-                    <SortHeader
-                      field="created_at"
-                      sortField={sortField}
-                      sortDir={sortDir}
-                      onSort={handleSort}
-                      className="whitespace-nowrap"
-                    >
-                      Created
-                    </SortHeader>
-                    {/* Action */}
-                    <th scope="col" className="px-3 py-3 font-semibold">
-                      <span className="sr-only">Action</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--border)]">
-                  {txLoading ? (
-                    <TableSkeletonRows count={perPage} />
-                  ) : (
-                    transactions.map((tx) => {
-                      const policyNo = tx.policy_number ?? tx.carrier_policy_no ?? null
-                      const certNo = tx.certificate_number ?? null
-                      const paymentRef = tx.merchant_transaction_id ?? tx.payment_id ?? String(tx.id)
-                      const status = resolveStatus(tx.status ?? tx.payment_status)
-                      const productBrand = resolveProductName(tx)          // e.g. "Oona Travel Insurance"
-                      const planName = tx.plan_name ?? tx.plan ?? null      // e.g. "Travel Master"
-                      // Primary line: plan name when distinct, otherwise the product brand
-                      const primaryLine = planName && planName !== productBrand ? planName : productBrand
-                      // Sub-text: insurance category inferred from brand name ("Travel Insurance")
-                      const productCategory = resolveProductCategory(productBrand)
-                      const premium = Number(tx.amount ?? tx.premium ?? 0)
-                      const { amount: comm, isPending: commPending } = resolveCommission(tx)
-                      const { date, time } = formatDateDisplay(tx.created_at)
-                      const href = `/sales/transactions/${tx.id ?? paymentRef}`
-
-                      return (
-                        <tr
-                          key={tx.id}
-                          className="group transition-colors hover:bg-[var(--subtle)] focus-within:bg-[var(--subtle)]"
+          ) : (
+            <>
+              <div
+                className={cn(
+                  'mt-5 overflow-x-auto rounded-lg border border-[var(--border)] dark:border-[#3d4140] transition-opacity',
+                  txFetching && !txLoading && 'opacity-60'
+                )}
+              >
+                <table className="portal-data-table w-full min-w-[970px] text-left text-base">
+                  <caption className="sr-only">
+                    Agent sales transactions
+                  </caption>
+                  <thead className="bg-[var(--portal-canvas)] text-sm font-semibold text-[var(--text-main)] dark:bg-[#303232] dark:text-[#f4f5f2]">
+                    <tr>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Policy no.
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Certificate no.
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Payment ID
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Plan
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Premium
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Status
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Created at
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)] bg-white dark:divide-[#3d4140] dark:bg-[var(--card)]">
+                    {transactions.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={8}
+                          className="p-8 text-center text-sm text-[var(--text-sub)]"
                         >
-                          {/* Policy No. + optional cert secondary line */}
-                          <td className="px-3 py-2.5 align-middle">
-                            <span className="block text-sm font-medium text-[var(--text-main)] whitespace-nowrap">
-                              {policyNo ?? '—'}
-                            </span>
-                            {certNo && (
-                              <span className="block text-xs text-[var(--text-muted)] whitespace-nowrap">
-                                Cert. {certNo}
+                          No cases found.
+                        </td>
+                      </tr>
+                    ) : (
+                      transactions.map((tx) => {
+                        const policyNo = tx.policy_number ?? 'N/A'
+                        const certNo = tx.certificate_number ?? 'N/A'
+                        const paymentRef =
+                          tx.merchant_transaction_id ??
+                          String(tx.id)
+                        const productName = resolveProductName(tx)
+                        const planName = resolvePlanName(tx, productName)
+                        const premium = Number(tx.amount ?? 0)
+                        const { amount: comm, isPending: commPending } =
+                          resolveCommission(tx)
+                        const { date, time } = formatDateDisplay(tx.created_at)
+                        const rawStatus = tx.status ?? 'pending'
+                        const href = `/sales/transactions/${tx.id ?? paymentRef}`
+
+                        return (
+                          <tr key={tx.id}>
+                            <td className="whitespace-nowrap px-4 py-4 font-semibold text-[var(--text-main)]">
+                              {policyNo}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-[var(--text-sub)]">
+                              {certNo}
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className="whitespace-nowrap font-medium text-[var(--text-sub)]">
+                                {paymentRef}
                               </span>
-                            )}
-                          </td>
-
-                          {/* Payment ID — color-coded status icon + monospace text */}
-                          <td className="px-3 py-2.5 align-middle">
-                            <PaymentIdCell paymentRef={paymentRef} status={status} />
-                          </td>
-
-                          {/* Product — plan name primary, insurance category muted secondary */}
-                          <td className="px-3 py-2.5 align-middle max-w-[200px]">
-                            <span
-                              className="block line-clamp-1 text-sm font-medium text-[var(--text-main)]"
-                              title={primaryLine}
-                            >
-                              {primaryLine}
-                            </span>
-                            {productCategory && (
-                              <span
-                                className="block truncate text-xs text-[var(--text-muted)]"
-                                title={productCategory}
+                            </td>
+                            <td className="px-4 py-4 text-[var(--text-main)] max-w-[220px]">
+                              <span className="block font-semibold truncate" title={planName}>
+                                {planName}
+                              </span>
+                              <span className="block text-xs text-[var(--text-sub)] truncate" title={productName}>
+                                {productName}
+                              </span>
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-[var(--text-sub)]">
+                              <span className="block">
+                                {formatCurrency(premium)}
+                              </span>
+                              <span className="block text-xs">
+                                {`NC ${formatCurrency(comm)}`}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <StatusBadge status={String(rawStatus)} />
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-4 text-[var(--text-sub)]">
+                              <span className="block">{date}</span>
+                              {time && (
+                                <span className="block text-xs">{time}</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <ActionIcon
+                                href={href}
+                                label={`View transaction ${paymentRef}`}
+                                hint="View details"
                               >
-                                {productCategory}
-                              </span>
+                                <ArrowUpRight className="size-5" aria-hidden="true" />
+                              </ActionIcon>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Net commission legend ── */}
+              <p className="mt-2 text-sm text-[var(--text-muted)]">
+                Net Commission (NC)
+              </p>
+
+              {/* ── Pagination ── */}
+              {totalItems > 0 && (
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                  <p className="text-sm tabular-nums text-[var(--text-sub)]">
+                    Showing {fromItem}–{toItem} of{' '}
+                    {totalItems.toLocaleString()} results
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label
+                      htmlFor="sales-rows"
+                      className="text-sm text-[var(--text-sub)]"
+                    >
+                      Rows
+                    </label>
+                    <select
+                      id="sales-rows"
+                      value={perPage}
+                      onChange={(e) => {
+                        setPerPage(Number(e.target.value))
+                        setPage(1)
+                      }}
+                      className="table-page-select"
+                    >
+                      {[10, 25].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+
+                    <nav
+                      aria-label="Cases pagination"
+                      className="flex flex-wrap gap-2"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={safePage <= 1}
+                        className="min-h-11 rounded-md border border-[var(--border)] px-3 text-sm text-[var(--text-sub)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#565c58]"
+                      >
+                        Previous
+                      </button>
+                      {pageWindow(safePage, totalPages).map((p, i) =>
+                        p === '…' ? (
+                          <span
+                            key={`ellipsis-${i}`}
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center px-3 text-sm text-[var(--text-muted)]"
+                            aria-hidden="true"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setPage(p)}
+                            aria-current={safePage === p ? 'page' : undefined}
+                            aria-label={`Page ${p}`}
+                            className={cn(
+                              'min-h-11 min-w-11 rounded-md border px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]',
+                              safePage === p
+                                ? 'border-[#006838] bg-[#006838] text-white'
+                                : 'border-[var(--border)] text-[var(--text-sub)] hover:bg-[var(--subtle)] dark:border-[#565c58]'
                             )}
-                          </td>
-
-                          {/* Premium — right-aligned, tabular nums; net commission as "NC {amount}" sub-line */}
-                          <td className="px-3 py-2.5 align-middle text-right whitespace-nowrap tabular-nums">
-                            <span className="block text-sm font-medium text-[var(--text-main)]">
-                              {formatCurrency(premium)}
-                            </span>
-                            {commPending ? (
-                              <span className="block text-xs font-medium text-[#8a6200] dark:text-[#f0ca72]">
-                                NC Pending
-                              </span>
-                            ) : (
-                              <span className="block text-xs text-[var(--text-sub)]">
-                                NC {formatCurrency(comm)}
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Created date — two lines, nowrap */}
-                          <td className="px-3 py-2.5 align-middle whitespace-nowrap">
-                            <span className="block text-sm text-[var(--text-sub)]">{date}</span>
-                            {time && (
-                              <span className="block text-xs text-[var(--text-muted)]">{time}</span>
-                            )}
-                          </td>
-
-                          {/* Action — ArrowUpRight icon link */}
-                          <td className="px-3 py-2.5 align-middle">
-                            <ActionIcon
-                              href={href}
-                              label={`View transaction ${paymentRef}`}
-                              hint="View details"
-                            >
-                              <ArrowUpRight aria-hidden="true" />
-                            </ActionIcon>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-
-        {/* ── Net commission legend (below the table, per official mockup) ── */}
-        {!txError && (
-          <p className="px-5 pb-1 pt-3 text-sm text-[var(--text-muted)] sm:px-6">
-            Net Commission (NC)
-          </p>
-        )}
-
-        {/* ── 4. Pagination ── */}
-        {totalItems > 0 && (
-          <PaginationBar
-            page={safePage}
-            totalPages={totalPages}
-            perPage={perPage}
-            onPageChange={setPage}
-            onPerPageChange={setPerPage}
-            fromItem={fromItem}
-            toItem={toItem}
-            totalItems={totalItems}
-            rowsId="sales-rows"
-          />
-        )}
-      </div>
-
-      {/* ── Toast container ── */}
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+                          >
+                            {p}
+                          </button>
+                        )
+                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={safePage >= totalPages}
+                        className="min-h-11 rounded-md border border-[var(--border)] px-3 text-sm text-[var(--text-sub)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#565c58]"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      )}
     </div>
   )
 }
-
-/*
- * ─────────────────────────────────────────────────────────────────────────────
- * BACKEND NOTES (do not touch API contracts — these are adapter-layer comments)
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * 1. KPI vs Table discrepancy
- *    /api/agent/statistics aggregates on the server side and may filter to
- *    "settled/completed" transactions only. /api/transactions returns all
- *    records including pending. This is why KPI cards can show ₱0 while the
- *    table shows rows.
- *
- *    RECOMMENDED: the statistics endpoint should accept a `scope` param
- *    (e.g. `?scope=all` vs `?scope=settled`) so the UI can label each card
- *    accurately, OR expose separate `pending_premium`, `pending_cases`,
- *    `pending_commissions` fields alongside the settled equivalents.
- *
- * 2. Status field
- *    Transaction.status values seen: 'pending', 'completed', 'failed',
- *    'cancelled'. Also possible: 'payment_status' field. The UI maps all
- *    'completed'/'successful'/'paid' → 'success' via resolveStatus().
- *    Backend should standardise on one status field.
- *
- * 3. Commission state
- *    Transaction.net_commission is 0 while status is 'pending'. The UI marks
- *    the commission cell as "Pending" (not ₱0.00) when status !== 'success'.
- *    Backend should ideally expose `commission_status: 'pending' | 'settled'`
- *    or keep net_commission null until settled.
- *
- * 4. Certificate number
- *    Transaction.certificate_number is always null in the current dataset.
- *    The column has been moved to a secondary line under Policy No. and is
- *    conditionally rendered (only when non-null). No data change needed.
- *
- * 5. Sort / filter params
- *    The UI now sends `sort_by` and `sort_dir` query params to /api/transactions.
- *    Backend should honour these; otherwise client-side sort can be added as a
- *    fallback without changing this file.
- * ─────────────────────────────────────────────────────────────────────────────
- */

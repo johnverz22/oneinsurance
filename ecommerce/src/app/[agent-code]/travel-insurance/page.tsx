@@ -2,11 +2,7 @@
 
 import { useState, useEffect, use, useMemo } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import {
-  AlertCircle,
-  Loader2,
-  RefreshCw,
   ShieldCheck,
   ChevronDown,
   ArrowRight,
@@ -21,8 +17,8 @@ import {
 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { TripDetailsForm } from '@/components/travel-insurance/trip-details-form'
-import { loadProposalIntoStore } from '@/utils/proposal-loader'
-import type { RetrieveNotice } from '@/components/travel-insurance/proposal-retrieve'
+import { ProposalRetrieveDialog } from '@/components/travel-insurance/proposal-retrieve-dialog'
+import { resolveAgentCode } from '@/lib/agent-code'
 import { cn } from '@/lib/utils'
 
 interface PageProps {
@@ -99,12 +95,9 @@ const FAQS: FaqItem[] = [
 ]
 
 export default function TravelInsuranceLandingPage({ params }: PageProps) {
-  const { 'agent-code': agentCode } = use(params)
-  const router = useRouter()
+  const { 'agent-code': rawAgentCode } = use(params)
+  const agentCode = resolveAgentCode(rawAgentCode)
   const [retrieveOpen, setRetrieveOpen] = useState(false)
-  const [retrievalNotice, setRetrievalNotice] = useState<RetrieveNotice>(null)
-  const [proposalRef, setProposalRef] = useState('')
-  const [retrieving, setRetrieving] = useState(false)
 
   // FAQ Accordion State with Deep-linking support
   const [openFaqs, setOpenFaqs] = useState<Record<string, boolean>>({})
@@ -204,48 +197,6 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
       if (rafId !== null) cancelAnimationFrame(rafId)
     }
   }, [])
-
-  const submitRetrieval = async () => {
-    const proposalNo = proposalRef.trim()
-    if (!proposalNo || retrieving) return
-    setRetrieving(true)
-    setRetrievalNotice(null)
-    const result = await loadProposalIntoStore(proposalNo)
-    setRetrieving(false)
-    if (result.status === 'ok') {
-      setRetrieveOpen(false)
-      router.push(
-        `/${agentCode}/travel-insurance/review?proposal=${encodeURIComponent(result.proposalNo)}`
-      )
-      return
-    }
-    // Already paid/issued elsewhere — continue the post-payment journey
-    // instead of dead-ending on a notice.
-    if (result.status === 'issued' && result.next === 'policy') {
-      setRetrieveOpen(false)
-      router.push(`/${agentCode}/travel-insurance/policy`)
-      return
-    }
-    if (result.status === 'issued' && result.next === 'issuance') {
-      setRetrieveOpen(false)
-      router.push(
-        `/${agentCode}/travel-insurance/issuance?paid=1${result.paymentRef ? `&txn=${encodeURIComponent(result.paymentRef)}` : ''}`
-      )
-      return
-    }
-    setRetrievalNotice({
-      kind: result.status,
-      message:
-        result.status === 'issued' && result.policyNo
-          ? `${result.message} Policy number: ${result.policyNo}.`
-          : result.message,
-    })
-  }
-
-  const handleRetrieveSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    void submitRetrieval()
-  }
 
   // Build JSON-LD for FAQs
   const faqJsonLd = useMemo(() => {
@@ -836,117 +787,11 @@ export default function TravelInsuranceLandingPage({ params }: PageProps) {
       </main>
 
       {/* Retrieve Proposal Dialog / Modal */}
-      {retrieveOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="retrieve-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
-        >
-          <div className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-xl border border-[#dfe7df] bg-white p-6 text-[var(--text-main)] shadow-2xl dark:border-[#3d4140] dark:bg-[#262828] dark:text-[var(--text-main)] sm:p-8">
-            <div className="flex items-start justify-between gap-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[#006838] dark:text-[#d0e3c8]">
-                  Pick up where you left off
-                </p>
-                <h2 id="retrieve-title" className="mt-1 text-2xl font-bold tracking-tight">
-                  Retrieve your proposal.
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setRetrieveOpen(false)
-                  setRetrievalNotice(null)
-                }}
-                aria-label="Close proposal retrieval"
-                className="inline-flex size-11 items-center justify-center rounded-md text-2xl text-[var(--text-muted)] hover:bg-[#f1f2f0] hover:text-[var(--text-main)] dark:hover:bg-[#303232] dark:hover:text-white focus-visible:outline-2 focus-visible:outline-[#006838]"
-              >
-                ×
-              </button>
-            </div>
-
-            <p className="mt-2 sm:mt-3 text-base leading-normal sm:leading-relaxed text-[var(--text-sub)] dark:text-[var(--text-sub)]">
-              Enter your proposal reference to review your saved quote and proceed to policy payment.
-            </p>
-
-            <form onSubmit={handleRetrieveSubmit} className="mt-6 space-y-5">
-              <div>
-                <label htmlFor="proposal-reference" className="text-sm font-medium">
-                  Proposal or policy reference
-                </label>
-                <input
-                  id="proposal-reference"
-                  name="reference"
-                  value={proposalRef}
-                  onChange={(e) => setProposalRef(e.target.value)}
-                  required
-                  disabled={retrieving}
-                  autoComplete="off"
-                  autoCapitalize="characters"
-                  placeholder="e.g. MIC-TMPHPC2-261019-000001"
-                  className="ui-form-field mt-2 block min-h-12 w-full rounded-md border border-[#c7d4c9] bg-white px-3 py-2 text-base text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:border-[#006838] focus:outline-2 focus:outline-[#006838] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:text-[var(--text-main)] dark:placeholder:text-[var(--text-muted)] dark:focus:border-[#006838]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={retrieving}
-                className="w-full inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#006838] px-5 py-3 text-base font-semibold text-white hover:bg-[#00552e] active:bg-[#004525] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] disabled:opacity-50 dark:focus-visible:outline-white"
-              >
-                {retrieving ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" aria-hidden /> Retrieving…
-                  </>
-                ) : (
-                  'Retrieve proposal'
-                )}
-              </button>
-
-              {retrievalNotice && (
-                <div
-                  role="alert"
-                  className={cn(
-                    'flex items-start gap-3 rounded-lg border px-4 py-3 text-sm',
-                    retrievalNotice.kind === 'unavailable'
-                      ? 'border-amber-200 bg-amber-50 dark:border-amber-700/40 dark:bg-amber-900/10'
-                      : 'border-red-200 bg-red-50 dark:border-red-800/40 dark:bg-red-900/10'
-                  )}
-                >
-                  <AlertCircle
-                    className={cn(
-                      'mt-0.5 size-4 shrink-0',
-                      retrievalNotice.kind === 'unavailable'
-                        ? 'text-amber-600 dark:text-amber-400'
-                        : 'text-red-600 dark:text-red-400'
-                    )}
-                    aria-hidden
-                  />
-                  <div
-                    className={
-                      retrievalNotice.kind === 'unavailable'
-                        ? 'text-amber-800 dark:text-amber-300'
-                        : 'text-red-800 dark:text-red-300'
-                    }
-                  >
-                    <p>{retrievalNotice.message}</p>
-                    {retrievalNotice.kind === 'unavailable' && (
-                      <button
-                        type="button"
-                        onClick={() => void submitRetrieval()}
-                        className="mt-2 inline-flex items-center gap-1.5 font-semibold underline underline-offset-4"
-                      >
-                        <RefreshCw className="size-3.5" aria-hidden />
-                        Try again
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
-      )}
+      <ProposalRetrieveDialog
+        open={retrieveOpen}
+        onClose={() => setRetrieveOpen(false)}
+        agentCode={agentCode}
+      />
     </div>
   )
 }

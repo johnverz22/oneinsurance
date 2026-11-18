@@ -52,7 +52,7 @@ import {
   type ProposalLoadResult,
 } from '@/utils/proposal-loader'
 import type { InsuranceBenefit } from '@/types/plan'
-import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { resolveAgentCode } from '@/lib/agent-code'
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 const mask = (v: string, keep = 3) => (v.length > keep ? `${'•'.repeat(v.length - keep)}${v.slice(-keep)}` : v)
@@ -105,7 +105,7 @@ function ReviewRoute() {
   const router = useRouter()
   const params = useParams()
   const search = useSearchParams()
-  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
+  const agentCode = resolveAgentCode(params['agent-code'] as string)
   const proposalParam = search.get('proposal')?.trim() || null
 
   const hydrated = useSyncExternalStore(
@@ -117,13 +117,20 @@ function ReviewRoute() {
   const hasPlan = useTravelInsuranceStore((s) => !!s.coverageOption.selectedPlan)
 
   const target = proposalParam ?? storedNo
-  const ready = !!target && target === storedNo && hasPlan
-  const needsLoad = hydrated && !!target && !ready
 
   const [loaded, setLoaded] = useState<{ key: string; result: ProposalLoadResult } | null>(null)
   const [attempt, setAttempt] = useState(0)
+  const isLoadedThisSession = loaded?.key === `${target}:${attempt}`
+  const ready = !!target && target === storedNo && hasPlan && (!proposalParam || isLoadedThisSession)
+  const needsLoad = hydrated && !!target && !ready
   const [guardNotice, setGuardNotice] = useState<RetrieveNotice>(null)
+  const [skipVerification, setSkipVerification] = useState(false)
   const base = `/${agentCode}/travel-insurance`
+
+  // A fresh proposal number or retry should offer verification again.
+  useEffect(() => {
+    setSkipVerification(false)
+  }, [target, attempt])
 
   useEffect(() => {
     if (!needsLoad || !target) return
@@ -203,12 +210,14 @@ function ReviewRoute() {
 
   let notice: RetrieveNotice = guardNotice
   if (!notice && loadResult && loadResult.status !== 'ok') {
-    notice = {
-      kind: loadResult.status,
-      message:
-        loadResult.status === 'issued' && loadResult.policyNo
-          ? `${loadResult.message} Policy number: ${loadResult.policyNo}.`
-          : loadResult.message,
+    if (loadResult.status !== 'needs_verification') {
+      notice = {
+        kind: loadResult.status,
+        message:
+          loadResult.status === 'issued' && loadResult.policyNo
+            ? `${loadResult.message} Policy number: ${loadResult.policyNo}.`
+            : loadResult.message,
+      }
     }
   }
 
@@ -228,11 +237,15 @@ function ReviewRoute() {
         <div className="w-full mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 lg:px-8">
           <ProposalRetrieve
             key={`${target ?? ''}:${attempt}`}
-            agentCode={agentCode}
             initialValue={target ?? ''}
             notice={notice}
             loading={false}
+            verificationFor={loadResult?.status === 'needs_verification' ? target : null}
             onSearch={search_}
+            onVerified={() => setAttempt((a) => a + 1)}
+            onCancelVerification={() => {
+              router.replace(`/${agentCode}/travel-insurance/review`)
+            }}
             onNewQuote={startNewQuote}
             onRetry={notice?.kind === 'unavailable' ? retry : undefined}
           />
@@ -456,7 +469,23 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
                 <p id="proposal-title" className="text-sm text-[var(--text-muted)]">
                   Proposal number
                 </p>
-                <p className="mt-2 break-all text-lg font-semibold sm:text-2xl">{proposalNo}</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <p className="break-all text-lg font-semibold sm:text-2xl">{proposalNo}</p>
+                  <button
+                    type="button"
+                    onClick={copyProposal}
+                    aria-label="Copy proposal number"
+                    title="Copy proposal number"
+                    className="no-print inline-flex size-9 shrink-0 items-center justify-center rounded-md text-[var(--text-muted)] hover:bg-[var(--subtle)] hover:text-[var(--primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)]"
+                  >
+                    {copyStatus.startsWith('Proposal') ? (
+                      <Check className="size-4" aria-hidden />
+                    ) : (
+                      <Copy className="size-4" aria-hidden />
+                    )}
+                  </button>
+                </div>
+                <p className="text-sm" role="status">{copyStatus}</p>
                 <p className="mt-2 text-sm text-[var(--text-muted)]">
                   {expired ? 'Expired proposal' : 'Generated proposal · Awaiting payment'}
                 </p>
@@ -466,21 +495,6 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
                   </p>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={copyProposal}
-                className="no-print inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-transparent px-5 py-2.5 text-sm font-semibold text-[var(--primary)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] dark:text-[var(--text-main)]"
-              >
-                {copyStatus.startsWith('Proposal') ? (
-                  <Check className="size-4" aria-hidden />
-                ) : (
-                  <Copy className="size-4" aria-hidden />
-                )}
-                Copy number
-              </button>
-              <p className="text-sm" role="status">
-                {copyStatus}
-              </p>
             </section>
 
             <Disclosure title="Your travel details" className="travel-review-trip">
@@ -591,26 +605,29 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
               meta={selectedAddons.length ? `${selectedAddons.length} selected` : 'None selected'}
             >
               {selectedAddons.length ? (
-                <ul className="mt-5 space-y-5">
+                <ul className="mt-5 space-y-4">
                   {selectedAddons.map((a) => (
-                    <li key={a.code} className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
+                    <li
+                      key={a.code}
+                      className="rounded-md border border-[var(--border)] p-4 sm:p-5"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">{a.name}</h3>
-                        <div className="mt-2 space-y-1 text-base leading-6 text-[var(--text-muted)]">
-                          {a.benefits.map((b, i) => (
-                            <p
-                              key={`${b.BenefitCode}-${i}`}
-                              className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-3"
-                            >
-                              <span className="min-w-0">{b.BenefitDesc}</span>
-                              <span className="shrink-0 font-medium">{addonLimit(b) || formatBenefitLimit(b)}</span>
-                            </p>
-                          ))}
-                        </div>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#d0e3c8] px-2.5 py-0.5 text-xs font-semibold text-[#006838] dark:bg-[#d0e3c8]/15 dark:text-[#d0e3c8]">
+                          <Check className="size-3.5" aria-hidden />
+                          Included · {plural(total, 'traveller')}
+                        </span>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-sm font-semibold">Included</p>
-                        <p className="mt-1 text-xs text-[var(--text-muted)]">For {plural(total, 'traveller')}</p>
+                      <div className="mt-3 space-y-1 text-base leading-6 text-[var(--text-muted)]">
+                        {a.benefits.map((b, i) => (
+                          <p
+                            key={`${b.BenefitCode}-${i}`}
+                            className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-3"
+                          >
+                            <span className="min-w-0">{b.BenefitDesc}</span>
+                            <span className="shrink-0 font-medium">{addonLimit(b) || formatBenefitLimit(b)}</span>
+                          </p>
+                        ))}
                       </div>
                     </li>
                   ))}
@@ -773,7 +790,7 @@ function ReviewContent({ agentCode, onStartNewQuote }: { agentCode: string; onSt
         ref={cancelRef}
         aria-labelledby="cancel-proposal-title"
         aria-describedby="cancel-proposal-description"
-        className="travel-plan-dialog"
+        className="travel-plan-dialog w-full max-w-3xl rounded-xl p-6 sm:p-8"
         onClick={(e) => e.target === cancelRef.current && setCancelOpen(false)}
       >
         <div className="flex items-start justify-between gap-4">

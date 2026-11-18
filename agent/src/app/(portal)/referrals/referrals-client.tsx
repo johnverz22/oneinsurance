@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUpRight, Search, Info } from 'lucide-react'
-import { toast } from 'sonner'
+import { ArrowUpRight } from 'lucide-react'
 import { STOREFRONT_BASE_URL } from '@/lib/utils'
 import { useAgentUser } from '@/store/agent-auth-store'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 type ReferralLink = {
   id: string
@@ -15,32 +15,36 @@ type ReferralLink = {
   url: string
 }
 
-// ---- Skeleton ----
+// ---- Skeleton (exact mockup parity) ----
 function Skeleton() {
   return (
-    <div className="portal-page-card space-y-5">
-      {/* Panel header skeleton */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-2">
-          <div className="skeleton h-6 w-44 rounded" />
-          <div className="skeleton h-4 w-64 rounded" />
-        </div>
-        <div className="skeleton h-11 w-64 rounded" />
-      </div>
-      {/* Card skeletons */}
-      <div className="space-y-4 border-t border-[#e0e9e0] pt-6 dark:border-[#3d4140]">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="space-y-4 rounded-lg border border-[#dfe7df] p-5 dark:border-[#475049] sm:p-6">
-            <div className="flex items-center gap-3">
-              <div className="skeleton size-11 rounded-md" />
-              <div className="space-y-2">
-                <div className="skeleton h-5 w-36 rounded" />
-                <div className="skeleton h-4 w-28 rounded" />
-              </div>
+    <div role="status" aria-label="Loading referral links">
+      <span className="sr-only">Loading referral links</span>
+      <div aria-hidden="true" className="space-y-5 motion-safe:animate-pulse">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(290px,0.65fr)]">
+          <section className="agent-dashboard__panel min-w-0 border-border p-5 sm:p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="h-6 w-44 rounded bg-leaf-20 dark:bg-ink-31" />
+              <div className="h-11 w-64 max-w-full rounded bg-leaf-20 dark:bg-ink-31" />
             </div>
-            <div className="skeleton h-11 rounded" />
-          </div>
-        ))}
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="space-y-4 rounded-lg border border-[var(--border)] p-5 dark:border-[#3d4140]"
+              >
+                <div className="h-5 w-36 rounded bg-leaf-20 dark:bg-ink-31" />
+                <div className="h-4 w-28 rounded bg-leaf-20 dark:bg-ink-31" />
+                <div className="h-11 rounded bg-leaf-20 dark:bg-ink-31" />
+              </div>
+            ))}
+          </section>
+          <section className="agent-dashboard__panel min-w-0 border-border self-start p-5 sm:p-6 space-y-5">
+            <div className="h-6 w-36 rounded bg-leaf-20 dark:bg-ink-31" />
+            <div className="h-4 w-full rounded bg-leaf-20 dark:bg-ink-31" />
+            <div className="h-4 w-4/5 rounded bg-leaf-20 dark:bg-ink-31" />
+            <div className="h-24 rounded bg-leaf-20 dark:bg-ink-31" />
+          </section>
+        </div>
       </div>
     </div>
   )
@@ -61,7 +65,7 @@ function ReferralCard({
   onShare: () => void
 }) {
   return (
-    <article className="rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#475049] dark:bg-transparent sm:p-6">
+    <article className="rounded-lg border border-[var(--border)] bg-white p-5 dark:border-[#3d4140] dark:bg-transparent sm:p-6">
       {/* Header: icon + product name */}
       <div className="flex items-center gap-3">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#e6f2e8] text-[#006838] dark:bg-[#3d5242] dark:text-[#d0e3c8]">
@@ -77,7 +81,7 @@ function ReferralCard({
       <label htmlFor={`referral-link-${link.id}`} className="mt-6 block text-sm font-medium text-[var(--text-main)]">
         Referral link
       </label>
-      <div className="mt-2 grid min-w-0 overflow-hidden rounded-md border border-[#c7d4c9] bg-white focus-within:border-[#006838] focus-within:outline-2 focus-within:outline-[#006838] dark:border-[#565c58] dark:bg-[#282c29] dark:focus-within:border-[#006838] dark:focus-within:outline-[#006838] sm:grid-cols-[minmax(0,1fr)_auto]">
+      <div className="mt-2 grid min-w-0 overflow-hidden rounded-md border border-[var(--border)] bg-white focus-within:border-[#006838] focus-within:outline-2 focus-within:outline-[#006838] dark:border-[#3d4140] dark:bg-[#171919] dark:focus-within:border-[#006838] dark:focus-within:outline-[#006838] sm:grid-cols-[minmax(0,1fr)_auto]">
         <input
           id={`referral-link-${link.id}`}
           type="text"
@@ -85,14 +89,14 @@ function ReferralCard({
           aria-readonly="true"
           aria-label={`Referral URL for ${link.product_name}`}
           value={link.url}
-          className="min-h-11 min-w-0 w-full bg-transparent px-3 text-base text-[var(--text-main)] focus:outline-none dark:text-[var(--text-main)]"
+          className="min-h-11 min-w-0 w-full bg-transparent px-3 text-base text-[var(--text-main)] focus:outline-none"
         />
-        <div className="grid grid-cols-3 gap-0.5 border-t border-[#dfe7df] p-1 dark:border-[#475049] sm:flex sm:border-t-0 sm:border-l">
+        <div className="grid grid-cols-3 gap-0.5 border-t border-[var(--border)] p-1 dark:border-[#3d4140] sm:flex sm:border-t-0 sm:border-l">
           <button
             type="button"
             onClick={onCopy}
             aria-label={copied ? 'Copied!' : `Copy ${link.product_name} referral link`}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#282c29] dark:focus-visible:outline-white sm:px-3"
           >
             {copied ? 'Copied' : 'Copy'}
           </button>
@@ -102,16 +106,15 @@ function ReferralCard({
             rel="noopener noreferrer"
             onClick={onOpen}
             aria-label={`Open ${link.product_name} link in a new tab`}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#282c29] dark:focus-visible:outline-white sm:px-3"
           >
-            Open
-            <span className="sr-only">in a new tab</span>
+            Open <span className="sr-only">in a new tab</span>
           </a>
           <button
             type="button"
             onClick={onShare}
             aria-label={`Share ${link.product_name} link`}
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[var(--text-main)] dark:hover:bg-[#303232] dark:active:bg-[#3d4140] dark:focus-visible:outline-white sm:px-3"
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-transparent bg-transparent px-2 text-sm font-semibold text-[#006838] hover:bg-[#f1f2f0] active:bg-[#d0e3c8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#f4f5f2] dark:hover:bg-[#303232] dark:active:bg-[#282c29] dark:focus-visible:outline-white sm:px-3"
           >
             Share
           </button>
@@ -129,8 +132,16 @@ function ReferralCard({
 export function ReferralsClient() {
   const [search, setSearch] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [notice, setNotice] = useState('')
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const user = useAgentUser()
   const authFetch = useAuthFetch()
+
+  function showNotice(message: string) {
+    setNotice(message)
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    noticeTimer.current = setTimeout(() => setNotice(''), 4000)
+  }
 
   // Referral code query
   const { data: referralCodeData } = useQuery({
@@ -221,10 +232,10 @@ export function ReferralsClient() {
         document.execCommand('copy')
       }
       setCopiedId(link.id)
-      toast.success('Link copied to clipboard')
+      showNotice('Link copied to clipboard')
       setTimeout(() => setCopiedId(null), 2500)
     } catch {
-      toast.error('Failed to copy link')
+      showNotice('Copy was unavailable. Select the link to copy it manually.')
     }
   }
 
@@ -253,9 +264,10 @@ export function ReferralsClient() {
         description="Find and share links for your assigned products."
         actions={
           !isLobsLoading && links.length > 0 ? (
-            <span className="rounded-md bg-[#e1f1e5] px-3 py-2 text-xs font-semibold text-[#006838] dark:bg-[#304535] dark:text-[#d0e3c8]">
-              {links.length} product{links.length !== 1 ? 's' : ''}
-            </span>
+            <StatusBadge
+              variant="info"
+              label={`${links.length} product${links.length !== 1 ? 's' : ''}`}
+            />
           ) : undefined
         }
       />
@@ -264,12 +276,12 @@ export function ReferralsClient() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(290px,0.65fr)]">
         {/* Left: Product links list */}
         <section
-          className="portal-page-card min-w-0 p-5 sm:p-6"
+          className="agent-dashboard__panel min-w-0 border-border p-5 sm:p-6"
           id="referral-list"
           aria-labelledby="links-title"
         >
-          {/* Panel header: title + search */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Panel header: title left + search right on desktop, stacked on phone */}
+          <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
             <div>
               <h2 id="links-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
                 Your product links
@@ -282,33 +294,27 @@ export function ReferralsClient() {
               <label htmlFor="referral-search" className="sr-only">
                 Search by product
               </label>
-              <div className="relative">
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--text-muted)]"
-                  aria-hidden="true"
-                />
-                <input
-                  id="referral-search"
-                  type="search"
-                  placeholder="Search by product"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="ui-form-field min-h-11 w-full rounded-md bg-white pl-9 text-base dark:bg-[#303530] dark:placeholder:text-[var(--text-muted)]"
-                />
-              </div>
+              <input
+                id="referral-search"
+                type="search"
+                placeholder="Search by product"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="ui-form-field w-full"
+              />
             </div>
           </div>
 
           {/* Product cards */}
-          <div className="mt-6 space-y-4 border-t border-[#e0e9e0] pt-6 dark:border-[#3d4140]">
+          <div className="mt-6 space-y-4 border-t border-[var(--border)] pt-6">
             {isLobsLoading ? (
               <div aria-busy="true" aria-live="polite">
                 <Skeleton />
               </div>
             ) : filtered.length === 0 ? (
-              <p className="rounded-lg border border-[#dfe7df] bg-[#fbfcfa] px-5 py-10 text-center text-base text-[var(--text-sub)] dark:border-[#475049] dark:bg-[#303530]">
+              <p className="rounded-lg border border-[var(--border)] bg-[#fbfcfa] px-5 py-10 text-center text-base text-[var(--text-sub)] dark:border-[#3d4140] dark:bg-[#1f2320]">
                 {search
-                  ? 'No products match your search.'
+                  ? 'No sample products match your search.'
                   : 'No referral links assigned yet. Contact your administrator.'}
               </p>
             ) : (
@@ -325,9 +331,18 @@ export function ReferralsClient() {
             )}
           </div>
 
+          {notice && (
+            <p
+              role="status"
+              className="mt-4 rounded-md border border-[#c7d4c9] bg-[#eef4ee] px-4 py-3 text-base text-[#006838] dark:border-[#3d5242] dark:bg-[#1a2e1f] dark:text-[#d0e3c8]"
+            >
+              {notice}
+            </p>
+          )}
+
           {/* Showing X of Y count */}
           {!isLobsLoading && links.length > 0 && (
-            <p className="mt-6 border-t border-[#e0e9e0] pt-4 text-base text-[var(--text-muted)] dark:border-[#3d4140]">
+            <p className="mt-6 border-t border-[var(--border)] pt-4 text-base text-[var(--text-sub)]">
               Showing {filtered.length} of {links.length} product{links.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -335,7 +350,7 @@ export function ReferralsClient() {
 
         {/* Right: Sidebar info panel */}
         <section
-          className="portal-page-card min-w-0 self-start p-5 sm:p-6"
+          className="agent-dashboard__panel min-w-0 border-border self-start p-5 sm:p-6"
           aria-labelledby="about-links-title"
         >
           <h2 id="about-links-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
@@ -344,14 +359,13 @@ export function ReferralsClient() {
           <p className="mt-3 text-base leading-6 text-[var(--text-sub)]">
             Copy the link and send it to a customer, or open it to preview the product journey.
           </p>
-          <div className="mt-6 rounded-md bg-[#eef4ee] p-4 text-base leading-6 text-[var(--text-sub)] dark:bg-[#363f38]">
-            <strong className="block text-[#006838] dark:text-[#d0e3c8]">About attribution</strong>
-            These links contain your agent code (
+          <div className="mt-6 rounded-md bg-[#eef4ee] p-4 text-base leading-6 text-[var(--text-sub)] dark:bg-[#282c29]">
+            <strong className="block text-[#006838] dark:text-[#d0e3c8]">Attribution note</strong>
+            Each link includes your unique agent code (
             <span className="font-mono font-semibold text-[#006838] dark:text-[#d0e3c8]">{code}</span>).
-            When a customer purchases a policy through your link, the sale is attributed to you and commission
-            is calculated automatically.
+            When a client purchases through your link, the policy is attributed to your account automatically.
           </div>
-          <p className="mt-5 text-base leading-6 text-[var(--text-muted)]">
+          <p className="mt-5 text-base leading-6 text-[var(--text-sub)]">
             Product assignments and actual referral URLs must come from the live portal.
           </p>
         </section>

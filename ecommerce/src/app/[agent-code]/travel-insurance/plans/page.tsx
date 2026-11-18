@@ -47,7 +47,7 @@ import {
   getKeyBenefits,
   normalizeStaticPlan,
 } from '@/utils/travel-benefits'
-import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { resolveAgentCode } from '@/lib/agent-code'
 import { PACIFIC_CROSS_STATIC_PLANS } from '@/lib/feature-flags'
 
 const BENEFIT_ICONS: [RegExp, LucideIcon][] = [
@@ -83,7 +83,7 @@ const staticPlansFor = (area: string): StaticPlanSource[] => {
 export default function Step2ChoosePlanPage() {
   const router = useRouter()
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
+  const agentCode = resolveAgentCode(params['agent-code'] as string)
 
   const {
     travelDetails,

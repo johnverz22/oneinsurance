@@ -1,6 +1,7 @@
 import { differenceInCalendarDays, format, isSameMonth, isSameYear } from 'date-fns'
 import { TravelCoverageMap } from '@/constants/travel-coverage'
 import type { TravelCoverageArea } from '@/types/travel-insurance/travel-insurance-request'
+import { COUNTRY_TO_ISO2 } from '@/utils/mappers/travel-insurance/init-compare-quote'
 
 export const titleCase = (value?: string) =>
   (value ?? '')
@@ -21,6 +22,12 @@ const getCoverageIndex = () => {
       if (!coverageIndex.has(nameKey)) coverageIndex.set(nameKey, entry)
     }
   }
+  for (const [internalCode, iso2] of Object.entries(COUNTRY_TO_ISO2)) {
+    const entry = coverageIndex.get(internalCode)
+    if (entry && !coverageIndex.has(iso2)) {
+      coverageIndex.set(iso2, entry)
+    }
+  }
   return coverageIndex
 }
 
@@ -28,9 +35,31 @@ const getCoverageIndex = () => {
 export const findCountry = (value?: string | null) =>
   value ? getCoverageIndex().get(normKey(value)) : undefined
 
-/** Display name for a stored country code (e.g. KOREASOUTH -> "Korea (South)"). */
-export const countryLabel = (code?: string | null) =>
-  findCountry(code)?.name ?? titleCase(code ?? '')
+let regionDisplayNames: Intl.DisplayNames | null = null
+const getRegionDisplayNames = () => {
+  if (regionDisplayNames) return regionDisplayNames
+  try {
+    regionDisplayNames = new Intl.DisplayNames(['en'], { type: 'region' })
+  } catch {
+    // environment doesn't support Intl.DisplayNames
+  }
+  return regionDisplayNames
+}
+
+/** Display name for a stored country code (e.g. KOREASOUTH -> "Korea (South)", JP -> "Japan"). */
+export const countryLabel = (code?: string | null): string => {
+  if (!code) return ''
+  const trimmed = code.trim()
+  const found = findCountry(trimmed)
+  if (found) return found.name
+
+  if (/^[A-Za-z]{2}$/.test(trimmed)) {
+    const intlName = getRegionDisplayNames()?.of(trimmed.toUpperCase())
+    if (intlName) return intlName
+  }
+
+  return titleCase(trimmed)
+}
 
 export const getTripDays = (departure: Date, returning?: Date | null) =>
   Math.max(1, differenceInCalendarDays(returning ?? departure, departure) + 1)

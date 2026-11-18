@@ -16,7 +16,7 @@ import { KeyConditions } from '@/components/travel-insurance/key-conditions'
 import { formatDays, formatTravelers, formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary'
 import { formatAmount as money } from '@/utils/currency'
 import type { PolicyDocData } from '@/utils/generate-policy-pdfs'
-import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { resolveAgentCode } from '@/lib/agent-code'
 import { cn } from '@/lib/utils'
 
 const fmtPaidAt = (iso?: string | null) => {
@@ -37,7 +37,7 @@ type Doc = 'coverage' | 'receipt'
 
 export default function PolicyIssuedPage() {
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
+  const agentCode = resolveAgentCode(params['agent-code'] as string)
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,

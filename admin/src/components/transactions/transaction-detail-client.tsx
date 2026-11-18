@@ -12,13 +12,13 @@ import { panelTitleCls } from '@/lib/ui-classes'
 import {
   formatAmount,
   formatTxDate,
+  txLineOfBusiness,
   txPaymentRef,
   txPremium,
-  txProductType,
+  txProductName,
   txStatus,
   type Transaction,
 } from '@/lib/transactions'
-import type { Product } from '@/types/admin/catalog'
 
 const panelCls =
   'min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6'
@@ -72,28 +72,10 @@ export function TransactionDetailClient({ id }: { id: string }) {
     enabled,
   })
 
-  const { data: catalog } = useQuery<Product[]>({
-    queryKey: ['admin-products', 'transaction-lookup'],
-    queryFn: async () => {
-      const res = await authFetch('/api/admin/products?page=1&per_page=100')
-      if (!res.ok) throw new Error('Failed to load products')
-      const json = await res.json()
-      return ((json?.data?.data ?? json?.data ?? []) as Product[]).filter(
-        (p) => !p.deleted_at
-      )
-    },
-    enabled,
-  })
-
-  const productByCode = new Map(
-    (catalog ?? [])
-      .filter((p) => p.carrier_product_code)
-      .map((p) => [p.carrier_product_code as string, p])
-  )
-
   const details = tx ? summaryPolicyDetails(tx) : null
   const premium = tx ? txPremium(tx) : null
-  const product = tx ? txProductType(tx, productByCode) : null
+  const product = tx ? txProductName(tx) : null
+  const lineOfBusiness = tx ? txLineOfBusiness(tx) : null
   const ref = tx
     ? (txPaymentRef(tx) ?? `Transaction #${tx.id}`)
     : `Transaction #${id}`
@@ -164,6 +146,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                   />
                   <DlRow label="Plan" value={plan} />
                   <DlRow label="Product" value={product} />
+                  <DlRow label="Line of business" value={lineOfBusiness} />
                   <DlRow
                     label="Coverage start"
                     value={formatTxDate(

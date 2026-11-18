@@ -9,8 +9,10 @@ import { Sun, Moon, Mail, Menu, CheckCircle2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ADMIN_NAV_ITEMS } from '@/components/layout/portal-sidebar'
 import { useTopBarSearchStore } from '@/store/top-bar-search-store'
-import { useAdminAuthStore } from '@/store/admin-auth-store'
+import { useAdminAuthStore, useAdminUser } from '@/store/admin-auth-store'
+import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
 import { ActionIcon } from '@/components/ui/action-icon'
+import { getInitials } from '@/lib/utils'
 
 /**
  * Shared portal top bar — visible at every breakpoint.
@@ -33,6 +35,12 @@ export function PortalTopBar() {
   const getAuthHeader = useAdminAuthStore((s) => s.getAuthHeader)
   const router = useRouter()
   const isDashboard = pathname === '/dashboard'
+
+  const user = useAdminUser()
+  // The profile_photo.url is already rewritten to /api/admin/profile/photo?v=…
+  // by the GET /api/admin/users/[id] proxy. useAuthenticatedImage blob-fetches
+  // it with the bearer token so the <img> never gets a 401.
+  const avatarSrc = useAuthenticatedImage(user?.profile_photo?.url ?? null)
 
   const activeItem =
     ADMIN_NAV_ITEMS.find((item) =>
@@ -221,6 +229,24 @@ export function PortalTopBar() {
             </div>
           )}
         </div>
+
+        {/* Avatar — links to settings; shows photo when available, initials otherwise */}
+        <Link
+          href="/settings"
+          aria-label="Your profile settings"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[var(--field-border)] overflow-hidden bg-[#eef4ec] text-sm font-bold text-[#006838] hover:ring-2 hover:ring-[#006838]/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:bg-[#243329] dark:text-[#d0e3c8]"
+        >
+          {avatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={avatarSrc}
+              alt={user?.name ?? 'Profile'}
+              className="size-full object-cover object-top"
+            />
+          ) : (
+            <span aria-hidden="true">{getInitials(user?.name) || 'AD'}</span>
+          )}
+        </Link>
 
         <ActionIcon label="Log out" hint="Log out" onClick={handleLogout}>
           <LogOut aria-hidden="true" />

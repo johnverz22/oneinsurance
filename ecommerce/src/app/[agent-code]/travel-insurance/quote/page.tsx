@@ -28,7 +28,7 @@ import { toPHP, formatFreeTextMoney } from '@/utils/fx'
 import { formatAmount as money, formatPHPAmount } from '@/utils/currency'
 import { formatDays, formatTripRange, getTripDays, titleCase, countryLabel } from '@/utils/trip-summary'
 import type { InsuranceBenefit } from '@/types/plan'
-import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { resolveAgentCode } from '@/lib/agent-code'
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
@@ -58,7 +58,7 @@ function ProposalNotice() {
 export default function Step3GenerateQuotePage() {
   const router = useRouter()
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
+  const agentCode = resolveAgentCode(params['agent-code'] as string)
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,

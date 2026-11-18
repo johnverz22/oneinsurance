@@ -36,7 +36,7 @@ export function AuthLayout({
         Skip to sign in
       </a>
 
-      <div className="auth-hero-backdrop relative grid min-h-dvh bg-white font-sans text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:bg-[#f1f2f0] lg:dark:bg-[#282c29]">
+      <div className="auth-hero-backdrop relative grid min-h-dvh bg-white font-sans text-[var(--text-main)] antialiased dark:bg-[#141716] dark:text-[var(--text-main)] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:bg-[#f1f2f0] lg:dark:bg-[#282c29]">
         {/* Left brand aside (Desktop) */}
         <aside className="relative z-10 hidden min-h-dvh flex-col px-6 py-6 text-white sm:px-10 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:min-h-0 lg:px-12 lg:py-10">
           <Link
@@ -86,7 +86,7 @@ export function AuthLayout({
                   type="button"
                   onClick={toggleTheme}
                   aria-label="Toggle color theme"
-                  className="inline-flex size-11 items-center justify-center rounded-md hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-white text-white"
+                  className="inline-flex size-11 items-center justify-center rounded-md hover:bg-[#f8efd8] focus-visible:outline-2 focus-visible:outline-white hover:text-[var(--primary)] dark:hover:text-[#006838] text-white"
                 >
                   <Moon className="size-5 dark:hidden" aria-hidden="true" />
                   <Sun className="size-5 hidden dark:block" aria-hidden="true" />
@@ -108,7 +108,7 @@ export function AuthLayout({
               type="button"
               onClick={toggleTheme}
               aria-label="Toggle color theme"
-              className="inline-flex size-11 items-center justify-center rounded-md hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:hover:bg-white/10 text-[var(--text-main)] dark:text-[var(--text-main)]"
+              className="inline-flex size-11 items-center justify-center rounded-md hover:bg-[#f8efd8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] hover:text-[var(--primary)] dark:hover:text-[#006838] text-[var(--text-main)] dark:text-[var(--text-main)]"
             >
               <Moon className="size-5 dark:hidden" aria-hidden="true" />
               <Sun className="size-5 hidden dark:block" aria-hidden="true" />

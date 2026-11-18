@@ -4,19 +4,24 @@ import { BASE_URL, buildApiHeaders, getAuthToken, proxyApiRequest, unauthorized 
 type Ctx = { params: Promise<{ id: string }> }
 
 /**
- * Rewrite the backend profile_photo.url to the admin proxy route.
+ * Rewrite a backend profile photo URL to the admin proxy route.
  *
- * The backend returns "/api/v1/agents/{agentId}/profile-photo" (with an
- * optional ?v= query). We swap it for "/api/admin/agents/{agentId}/profile-photo".
+ * The dedicated endpoint is "/api/v1/agents/{agentId}/profile-photo" (with an
+ * optional ?v= query); older records may still point at the agent app's file
+ * proxy ("/api/agent/files/{id}/serve"). We swap both for their admin
+ * equivalents so the admin token is sent.
  */
 function rewriteProfilePhotoUrl(url: string | undefined | null, agentId?: number | string): string | null {
   if (!url) return null
   if (url.startsWith('/api/admin/')) return url
 
-  if (url.includes('/agents/') && url.includes('/profile-photo')) {
+  if (url.includes('/profile-photo') && agentId) {
     const qs = url.includes('?') ? url.slice(url.indexOf('?')) : ''
-    if (agentId) return `/api/admin/agents/${agentId}/profile-photo${qs}`
+    return `/api/admin/agents/${agentId}/profile-photo${qs}`
   }
+
+  const fileServe = url.match(/\/api\/(?:agent\/|v1\/)?files\/([^/]+)\/serve/)
+  if (fileServe) return `/api/admin/files/${fileServe[1]}/serve`
 
   return url
 }
@@ -41,10 +46,15 @@ export async function GET(req: NextRequest, { params }: Ctx) {
       )
     }
 
-    // Rewrite profile_photo.url to the admin proxy route
+    // Rewrite photo URLs to the admin proxy routes. The backend may return the
+    // structured profile_photo object or the legacy flat profile_photo_url.
     const data = json?.data ?? json
+    const photoAgentId = data?.id ?? id
     if (data?.profile_photo?.url) {
-      data.profile_photo.url = rewriteProfilePhotoUrl(data.profile_photo.url, data?.id ?? id)
+      data.profile_photo.url = rewriteProfilePhotoUrl(data.profile_photo.url, photoAgentId)
+    }
+    if (data?.profile_photo_url) {
+      data.profile_photo_url = rewriteProfilePhotoUrl(data.profile_photo_url, photoAgentId)
     }
 
     return NextResponse.json(json, { status: 200, headers })

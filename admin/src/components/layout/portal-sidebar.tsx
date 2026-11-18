@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAdminUser, useAdminAuthStore, useHasHydrated } from '@/store/admin-auth-store'
+import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
 import { getInitials } from '@/lib/utils'
 
 export const ADMIN_NAV_ITEMS = [
@@ -64,7 +65,7 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
             email: profile.email,
             role: profile.role,
             designation: profile.designation,
-            profile_photo_url: profile.profile_photo_url || profile.avatar || null,
+            profile_photo_url: profile.profile_photo?.url ?? profile.profile_photo_url ?? (profile.avatar || null),
           })
         }
       })
@@ -72,10 +73,15 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasHydrated, user?.id, getAuthHeader, updateUser])
 
+  const displayName = user?.name || 'Admin User'
+  const displayRole = user?.role || 'Admin'
+  const avatarUrl = user?.profile_photo_url || (user as { avatar?: string | null })?.avatar || null
+  const avatarSrc = useAuthenticatedImage(avatarUrl)
+
   // Reset img error if profile photo URL changes
   useEffect(() => {
     setImgError(false)
-  }, [user?.profile_photo_url])
+  }, [avatarSrc])
 
   const handleLogout = async () => {
     try {
@@ -91,10 +97,6 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
 
   const isActive = (href: string) =>
     href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href)
-
-  const displayName = user?.name || 'Admin User'
-  const displayRole = user?.role || 'Admin'
-  const avatarUrl = user?.profile_photo_url || (user as { avatar?: string | null })?.avatar
 
   return (
     <aside
@@ -222,10 +224,10 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
           )}
         >
           <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/90 text-xs font-bold text-[#183d2c]">
-            {avatarUrl && !imgError ? (
+            {avatarSrc && !imgError ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={avatarUrl}
+                src={avatarSrc}
                 alt={displayName}
                 onError={() => setImgError(true)}
                 className="h-full w-full object-cover"

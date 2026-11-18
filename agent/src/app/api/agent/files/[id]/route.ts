@@ -39,6 +39,9 @@ export async function GET(
           tag: raw.tag || 'document',
           mime_type: raw.mime_type || '',
           status: raw.status || 'pending',
+          review_status: raw.review_status ?? raw.status,
+          review_note: raw.review_note ?? null,
+          reviewed_at: raw.reviewed_at ?? null,
           web_view_link: raw.web_view_link || raw.web_content_link || '',
           created_at: raw.created_at || new Date().toISOString(),
         }

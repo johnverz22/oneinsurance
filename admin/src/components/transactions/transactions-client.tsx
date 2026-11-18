@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowUpRight } from 'lucide-react'
 import { toast } from 'sonner'
@@ -14,19 +14,21 @@ import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
 import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
-import { exportToCSV } from '@/lib/export-to-csv'
+import { downloadExport } from '@/lib/download-export'
+import { extractApiError } from '@/lib/api-error'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
 import { formatPersonName } from '@/lib/utils'
 import {
   formatAmount,
+  txLineOfBusiness,
   txPaymentRef,
   txPremium,
-  txProductType,
+  txProductName,
   txStatus,
   type Transaction,
 } from '@/lib/transactions'
-import type { ApiResponse, Paginated, Product } from '@/types/admin/catalog'
+import type { ApiResponse, Paginated } from '@/types/admin/catalog'
 
 const dash = (
   <span className="font-sans text-sm font-normal text-[var(--text-sub)]">
@@ -56,31 +58,6 @@ function formatCreatedAt(raw?: string | null) {
   }
 }
 
-function searchBlob(tx: Transaction, productType: string | null): string {
-  return [
-    tx.policy_number,
-    tx.certificate_number,
-    tx.policy_holder,
-    tx.customer_name,
-    tx.plan_name,
-    tx.plan,
-    productType,
-    tx.insurer_name,
-    tx.merchant_transaction_id,
-    tx.payment_id,
-    tx.proposal_number,
-    tx.agent_code_used,
-    tx.agent?.name,
-    tx.agent?.code,
-    tx.status,
-    tx.transaction_status,
-    txStatus(tx),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-}
-
 export function TransactionsClient() {
   const authFetch = useAuthFetch()
   const hasHydrated = useHasHydrated()
@@ -90,94 +67,76 @@ export function TransactionsClient() {
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
   const [search, setSearch] = useState('')
+  const [searchDebounced, setSearchDebounced] = useState('')
   const [dateRange, setDateRange] = useState<DateRange | null>(null)
   const dateFrom = dateRange?.from ?? ''
   const dateTo = dateRange?.to ?? ''
 
-  const hasApplied = !!(search || dateRange)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearchDebounced(search.trim())
+      setPage(1)
+    }, 300)
+    return () => clearTimeout(t)
+  }, [search])
+
+  const hasApplied = !!(searchDebounced || dateRange)
 
   const clearFilter = () => {
     setSearch('')
+    setSearchDebounced('')
     setDateRange(null)
     setPage(1)
   }
 
-  const { data, isLoading, isError } = useQuery<
+  const [isExporting, setIsExporting] = useState(false)
+
+  const { data, isLoading, isError, error } = useQuery<
     ApiResponse<Paginated<Transaction>>
   >({
-    queryKey: ['admin-transactions', page, perPage, dateFrom, dateTo],
+    queryKey: ['admin-transactions', page, perPage, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
         per_page: String(perPage),
       })
+      if (searchDebounced) params.set('search', searchDebounced)
       if (dateFrom) params.set('date_from', dateFrom)
       if (dateTo) params.set('date_to', dateTo)
       const res = await authFetch(`/api/admin/transactions?${params}`)
-      if (!res.ok) throw new Error('Failed to load transactions')
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(extractApiError(json, 'Failed to load transactions'))
+      }
       return res.json()
     },
     enabled,
   })
 
-  const { data: catalog } = useQuery<Product[]>({
-    queryKey: ['admin-products', 'transaction-lookup'],
-    queryFn: async () => {
-      const res = await authFetch('/api/admin/products?page=1&per_page=100')
-      if (!res.ok) throw new Error('Failed to load products')
-      const json = await res.json()
-      return ((json?.data?.data ?? json?.data ?? []) as Product[]).filter(
-        (p) => !p.deleted_at
-      )
-    },
-    enabled,
-  })
-
-  const productByCode = new Map(
-    (catalog ?? [])
-      .filter((p) => p.carrier_product_code)
-      .map((p) => [p.carrier_product_code as string, p])
-  )
-
   const transactions = data?.data?.data ?? []
   const pagination = data?.data
 
-  const term = search.trim().toLowerCase()
-  const filtered = transactions.filter((tx) => {
-    if (term && !searchBlob(tx, txProductType(tx, productByCode)).includes(term))
-      return false
-    // Client-side fallback if the upstream ignores date_from/date_to
-    if (dateFrom || dateTo) {
-      const raw = tx.transaction_date ?? tx.created_at
-      if (!raw) return false
-      const day = raw.slice(0, 10)
-      if (dateFrom && day < dateFrom) return false
-      if (dateTo && day > dateTo) return false
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const params = new URLSearchParams()
+      if (searchDebounced) params.set('search', searchDebounced)
+      if (dateFrom) params.set('date_from', dateFrom)
+      if (dateTo) params.set('date_to', dateTo)
+      const query = params.toString()
+      const result = await downloadExport(
+        authFetch,
+        `/api/admin/transactions/export${query ? `?${query}` : ''}`,
+        `transactions-${new Date().toISOString().split('T')[0]}.csv`
+      )
+      if (!result.ok) {
+        toast.error(result.message)
+        return
+      }
+      toast.success('Export started')
+    } finally {
+      setIsExporting(false)
     }
-    return true
-  })
-
-  function handleExport() {
-    if (filtered.length === 0) {
-      toast.info('No transactions to export')
-      return
-    }
-    exportToCSV(
-      filtered.map((tx) => ({
-        policy_number: tx.policy_number ?? '',
-        certificate_number: tx.certificate_number ?? '',
-        policy_holder:
-          formatPersonName(tx.policy_holder ?? tx.customer_name) || '',
-        plan: tx.plan_name ?? tx.plan ?? '',
-        product: txProductType(tx, productByCode) ?? '',
-        premium: txPremium(tx) ?? '',
-        currency: tx.currency ?? '',
-        status: txStatus(tx),
-        date: (tx.transaction_date ?? tx.created_at ?? '').slice(0, 10),
-      })),
-      `transactions-${new Date().toISOString().split('T')[0]}.csv`
-    )
-    toast.success(`Exported ${filtered.length} transaction(s)`)
   }
 
   return (
@@ -218,9 +177,8 @@ export function TransactionsClient() {
                     value={search}
                     onChange={(v) => {
                       setSearch(v)
-                      setPage(1)
                     }}
-                    placeholder="Policy, holder, plan..."
+                    placeholder="Policy, holder, product, insurer, agent..."
                   />
                 </div>
                 {hasApplied && (
@@ -238,6 +196,7 @@ export function TransactionsClient() {
                   aria-label="Table actions"
                 >
                   <ExportMenu
+                    disabled={isExporting}
                     items={[
                       { id: 'csv', label: 'CSV', onSelect: handleExport },
                     ]}
@@ -261,14 +220,6 @@ export function TransactionsClient() {
                 ),
               },
               {
-                header: 'Certificate no.',
-                cell: (tx) => (
-                  <span className="text-[var(--text-sub)]">
-                    {tx.certificate_number ?? dash}
-                  </span>
-                ),
-              },
-              {
                 header: 'Policy holder',
                 mobile: 'primary',
                 cell: (tx) => (
@@ -279,28 +230,34 @@ export function TransactionsClient() {
                 ),
               },
               {
-                header: 'Plan',
+                header: 'Product',
                 cell: (tx) => {
-                  const product = txProductType(tx, productByCode)
-                  return tx.plan_name || tx.plan ? (
+                  const product = txProductName(tx)
+                  const lob = txLineOfBusiness(tx)
+                  if (!product && !lob) return dash
+                  return (
                     <>
-                      <span className="block font-medium text-[var(--text-main)]">
-                        {tx.plan_name ?? tx.plan}
-                      </span>
                       {product && (
-                        <span className="mt-1 inline-flex rounded-md bg-[#eef4ee] px-2 py-0.5 text-xs text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
+                        <span className="block font-medium text-[var(--text-main)]">
                           {product}
                         </span>
                       )}
+                      {lob && (
+                        <span className="mt-1 inline-flex rounded-md bg-[#eef4ee] px-2 py-0.5 text-xs text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
+                          {lob}
+                        </span>
+                      )}
                     </>
-                  ) : product ? (
-                    <span className="inline-flex rounded-md bg-[#eef4ee] px-2 py-0.5 text-xs text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
-                      {product}
-                    </span>
-                  ) : (
-                    dash
                   )
                 },
+              },
+              {
+                header: 'Plan',
+                cell: (tx) => (
+                  <span className="text-[var(--text-sub)]">
+                    {tx.plan_name ?? tx.plan ?? dash}
+                  </span>
+                ),
               },
               {
                 header: 'Premium',
@@ -327,9 +284,7 @@ export function TransactionsClient() {
                 header: 'Created at',
                 className: 'whitespace-nowrap',
                 cell: (tx) => {
-                  const created = formatCreatedAt(
-                    tx.transaction_date ?? tx.created_at
-                  )
+                  const created = formatCreatedAt(tx.created_at)
                   if (!created) return dash
                   return (
                     <span className="block">
@@ -361,11 +316,15 @@ export function TransactionsClient() {
                 ),
               },
             ]}
-            rows={filtered}
+            rows={transactions}
             getRowKey={(tx) => tx.id}
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load transactions. Please try again."
+            errorMessage={
+              error instanceof Error
+                ? error.message
+                : 'Failed to load transactions. Please try again.'
+            }
             emptyMessage={
               hasApplied
                 ? 'No transactions match your filters.'

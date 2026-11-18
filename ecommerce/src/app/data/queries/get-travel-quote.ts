@@ -45,7 +45,6 @@ export const useGetTravelQuote = (
           axios.isCancel(error) ||
           error?.message === 'Request was cancelled'
         ) {
-          console.log('Travel quote request was cancelled')
           setStatus?.('error')
           throw error
         }
@@ -57,7 +56,6 @@ export const useGetTravelQuote = (
           throw new Error('Request timeout: Please try again')
         }
 
-        console.log('Get init quote error:', error)
         setStatus?.('error')
         throw error
       }

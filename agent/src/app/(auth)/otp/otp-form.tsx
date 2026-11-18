@@ -9,6 +9,33 @@ import { useAgentAuthStore } from '@/store/agent-auth-store'
 import type { LoginAgentResponse } from '@/types/agent/auth'
 
 /**
+ * After login, fetch the full profile so profile_photo is in the store
+ * immediately. The login endpoint returns profile_photo: null; the profile
+ * endpoint returns the real object.
+ */
+async function syncProfileAfterLogin(authHeader: string, updateUser: (u: any) => void) {
+  try {
+    const res = await fetch('/api/agent/profile', {
+      headers: { Authorization: authHeader, Accept: 'application/json' },
+    })
+    if (!res.ok) return
+    const json = await res.json().catch(() => null)
+    const profile = json?.data
+    if (!profile) return
+    updateUser({
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      role: profile.role,
+      designation: profile.designation,
+      profile_photo: profile.profile_photo ?? null,
+    })
+  } catch {
+    // Non-fatal — the sidebar will sync on the next mount anyway
+  }
+}
+
+/**
  * Login verification form matching mockup:
  * https://developers.oneinsurance.shop/mockups/auth/otp
  */
@@ -16,6 +43,8 @@ export function OtpForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const login = useAgentAuthStore((s) => s.login)
+  const updateUser = useAgentAuthStore((s) => s.updateUser)
+  const getAuthHeader = useAgentAuthStore((s) => s.getAuthHeader)
   const [code, setCode] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -68,6 +97,14 @@ export function OtpForm() {
         }
       } else if (data?.data?.access_token) {
         login(data as LoginAgentResponse)
+      }
+
+      // The login endpoint returns profile_photo: null — fetch the full
+      // profile now so the photo is in the store (and localStorage) before
+      // the user reaches the dashboard.
+      const authHeader = getAuthHeader()
+      if (authHeader) {
+        await syncProfileAfterLogin(authHeader, updateUser)
       }
 
       sessionStorage.removeItem('pending_auth')

@@ -26,7 +26,7 @@ import { formatTripRange, getTripDays, countryLabel } from '@/utils/trip-summary
 import { formatAmount } from '@/utils/currency'
 import { getPrincipal } from '@/utils/traveller-form'
 import { cn } from '@/lib/utils'
-import { PRIMARY_AGENT_CODE } from '@/lib/agent-code'
+import { resolveAgentCode } from '@/lib/agent-code'
 
 type Stage = 'verifying' | 'issuing' | 'pending' | 'rejected' | 'unknown' | 'issueError' | 'noPayment' | 'noSession'
 
@@ -48,7 +48,7 @@ export default function PolicyIssuancePage() {
 
 function IssuanceRoute() {
   const params = useParams()
-  const agentCode = (params['agent-code'] as string) || PRIMARY_AGENT_CODE
+  const agentCode = resolveAgentCode(params['agent-code'] as string)
   const hydrated = useSyncExternalStore(
     () => () => {},
     () => true,

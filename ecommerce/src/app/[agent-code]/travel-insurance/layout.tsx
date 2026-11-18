@@ -1,4 +1,5 @@
 import { Footer } from '@/components/layout/footer'
+import { resolveAgentCode } from '@/lib/agent-code'
 
 export default async function TravelInsuranceLayout({
   children,
@@ -7,7 +8,8 @@ export default async function TravelInsuranceLayout({
   children: React.ReactNode
   params: Promise<{ 'agent-code': string }>
 }) {
-  const { 'agent-code': agentCode } = await params
+  const { 'agent-code': rawAgentCode } = await params
+  const agentCode = resolveAgentCode(rawAgentCode)
 
   return (
     <div className="flex min-h-dvh flex-col bg-[#fcfdfb] text-[var(--text-main)] dark:bg-[#1c1e1e] dark:text-[var(--text-main)]">
