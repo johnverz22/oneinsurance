@@ -40,7 +40,7 @@
     "jspdf": "^4.2.1",
     "laravel-echo": "^2.2.4",
     "lucide-react": "^0.536.0",
-    "next": "^16.3.1",
+    "next": "16.4.6",
     "next-themes": "^0.4.6",
     "onnxruntime-web": "^1.22.0",
     "pusher-js": "^8.4.0",
@@ -62,7 +62,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.29",
+    "eslint-config-next": "16.4.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

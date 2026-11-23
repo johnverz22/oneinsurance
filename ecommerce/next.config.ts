@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   experimental: {
     authInterrupts: true,
+    agentUpgrade: 'security',
   },
   images: {
     qualities: [75, 90],
