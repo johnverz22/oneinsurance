@@ -82,21 +82,21 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
       <div className="agent-dashboard__sidebar-top flex min-h-12 items-center justify-between">
         <Link
           href="/dashboard"
-          aria-label="One Insurance dashboard"
-          title="One Insurance dashboard"
+          aria-label="UnoSure dashboard"
+          title="UnoSure dashboard"
           className="agent-dashboard__brand-link inline-flex min-h-12 items-center rounded-md focus-visible:outline-2"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/logo-oi-dark.png"
-            alt=""
+            src="/images/logo-unosure-dark.png"
+            alt="UnoSure"
             className="agent-dashboard__logo--full h-auto w-36"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/logo-oi-shield-dark.svg"
-            alt=""
-            className="agent-dashboard__logo--shield size-9"
+            src="/images/icon-unosure-dark.png"
+            alt="UnoSure"
+            className="agent-dashboard__logo--shield size-12"
           />
         </Link>
       </div>
