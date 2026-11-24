@@ -53,7 +53,7 @@ export function Modal({
       />
       <div
         className={cn(
-          'relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-[#dfe7df] bg-white shadow-2xl dark:border-[#3d4140] dark:bg-[#171919]',
+          'relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-[#dfe7df] bg-white shadow-2xl dark:border-[#3d4140] dark:bg-[var(--card-summary)]',
           className
         )}
       >
@@ -119,7 +119,7 @@ export function ConfirmModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="inline-flex min-h-11 items-center rounded-md border border-[#c7d4c9] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-main)] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#565c58] dark:bg-transparent dark:text-[var(--text-main)] dark:hover:bg-[#303232]"
+            className="btn-secondary inline-flex min-h-11 items-center rounded-md border border-[#006838] bg-transparent px-4 py-2 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#565c58] dark:text-[#f4f5f2] dark:hover:bg-[#303232]"
           >
             Cancel
           </button>
@@ -130,7 +130,7 @@ export function ConfirmModal({
             className={cn(
               'inline-flex min-h-11 items-center rounded-md px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50',
               destructive
-                ? 'bg-red-600 hover:bg-red-700'
+                ? 'bg-[#991b1b] hover:bg-[#7f1717]'
                 : 'bg-[#006838] hover:bg-[#00552e]'
             )}
           >
@@ -147,82 +147,8 @@ export function ConfirmModal({
 }
 
 /**
- * Compact confirmation dialog — no close button, no dividers.
- * Use for destructive/confirmation actions (delete, activate, approve, reject).
- * Matches the design: large bold title, body text, Cancel + action buttons.
+ * Rebuilt on Modal per spec M1 (8px radius, 20px green/sage title, 6px buttons, X close).
  */
-export function ConfirmDialog({
-  open,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  confirmLabel = 'Confirm',
-  loading,
-  destructive,
-}: ConfirmModalProps) {
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  if (!open || typeof document === 'undefined') return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center p-6"
-      role="dialog"
-      aria-modal="true"
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/45"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Panel */}
-      <div className="relative w-full max-w-sm rounded-2xl bg-white px-7 py-8 shadow-2xl dark:bg-[#1e2120]">
-        {/* Title */}
-        <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-          {title}
-        </h2>
-
-        {/* Body */}
-        <p className="mt-3 text-base leading-6 text-[var(--text-sub)]">
-          {message}
-        </p>
-
-        {/* Actions */}
-        <div className="mt-7 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="inline-flex h-11 items-center rounded-xl border-2 border-[#183d2c] bg-white px-5 text-sm font-bold text-[var(--text-main)] transition-colors hover:bg-[#f1f2f0] disabled:opacity-50 dark:border-[#d0e3c8] dark:bg-transparent dark:text-[#d0e3c8] dark:hover:bg-[#2b352d]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={loading}
-            className={cn(
-              'inline-flex h-11 items-center rounded-xl px-5 text-sm font-bold text-white transition-colors disabled:opacity-50',
-              destructive
-                ? 'bg-red-600 hover:bg-red-700 active:bg-red-800'
-                : 'bg-[#006838] hover:bg-[#00552e] active:bg-[#00441f]'
-            )}
-          >
-            {loading ? 'Please wait…' : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  )
+export function ConfirmDialog(props: ConfirmModalProps) {
+  return <ConfirmModal {...props} />
 }

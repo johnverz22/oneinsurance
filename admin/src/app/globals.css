@@ -3,8 +3,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   One Insurance Agent Portal — Design Tokens
-   Based on: /downloads/design/ui-theme (rev. 20 Oct 2026)
+   One Insurance Admin Portal — Design Tokens
+   Based on: /downloads/design/ui-theme (rev. 20 Nov 2026)
    ============================================================ */
 
 @theme {
@@ -18,7 +18,7 @@
 
   /* Page canvas */
   --color-canvas-light: #fcfdfb;
-  --color-canvas-dark: #1c1e1e;
+  --color-canvas-dark: #282c29;
 
   /* Portal shell surfaces (sidebar, topbar, inset) */
   --color-portal-canvas-light: #f7f7f7;
@@ -26,7 +26,9 @@
 
   /* Card surfaces */
   --color-card-light: #ffffff;
-  --color-card-dark: #262828;
+  --color-card-dark: #171919;
+  /* Summary/regular/modal cards (spec D2: inset #262828 vs page #171919) */
+  --color-card-summary-dark: #262828;
 
   /* Subtle/secondary surfaces */
   --color-subtle-light: #f1f2f0;
@@ -46,9 +48,9 @@
 
   /* Text */
   --color-text-main-light: #0c0d0d;
-  --color-text-main-dark: #ffffff;
-  --color-text-sub-light: #707070;
-  --color-text-sub-dark: #c4c7c5;
+  --color-text-main-dark: #f4f5f2;
+  --color-text-sub-light: #5b6e61;
+  --color-text-sub-dark: #b2b7b4;
   --color-text-muted-light: #a9a9a9;
   --color-text-muted-dark: #767776;
 
@@ -65,12 +67,13 @@
   --canvas: #fcfdfb;
   --portal-canvas: #f7f7f7;
   --card: #ffffff;
+  --card-summary: #ffffff;
   --subtle: #f1f2f0;
   --header: #ffffff;
   --border: #dfe7df;
   --field-border: #c7d4c9;
   --text-main: #0c0d0d;
-  --text-sub: #707070;
+  --text-sub: #5b6e61;
   --text-muted: #a9a9a9;
   --primary: #006838;
   --primary-hover: #00552e;
@@ -78,15 +81,16 @@
 }
 
 .dark {
-  --canvas: #1c1e1e;
+  --canvas: #282c29;
   --portal-canvas: #171919;
-  --card: #262828;
+  --card: #171919;
+  --card-summary: #262828;
   --subtle: #303232;
   --header: #171919;
   --border: #3d4140;
   --field-border: #565c58;
-  --text-main: #ffffff;
-  --text-sub: #c4c7c5;
+  --text-main: #f4f5f2;
+  --text-sub: #b2b7b4;
   --text-muted: #767776;
   --primary: #006838;
   --primary-hover: #00552e;
@@ -350,9 +354,13 @@
 
   /* Skeleton pulse — stops for prefers-reduced-motion */
   .skeleton {
-    background-color: var(--subtle);
+    background-color: #e6ece6;
     border-radius: 4px;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  .dark .skeleton {
+    background-color: #3d4140;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -611,6 +619,207 @@
     background-size: cover;
     background-position: 50% 50%, 50% 50%, 50% 24%;
   }
+
+  /* ---- Dashboard metric value — 24px phone / 30px desktop ---- */
+  .portal-metric-value {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .portal-metric-value {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+    }
+  }
+
+  /* ---- Dashboard metric cards ---- */
+  .agent-dashboard__metric {
+    box-shadow: none;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 8px;
+  }
+
+  /* Phone layout: icon top-right → value → label → helper hidden */
+  @media (max-width: 639px) {
+    .agent-dashboard__metric {
+      display: grid;
+      grid-template-areas:
+        ". icon"
+        "value value"
+        "label label";
+      grid-template-columns: 1fr auto;
+      grid-template-rows: minmax(36px, 1fr) auto auto;
+      padding: 12px;
+      min-height: 120px;
+    }
+
+    .agent-dashboard__metric-icon {
+      grid-area: icon;
+      justify-self: end;
+      width: 36px;
+      height: 36px;
+    }
+
+    .agent-dashboard__metric-value {
+      grid-area: value;
+      align-self: end;
+    }
+
+    .agent-dashboard__metric-label {
+      grid-area: label;
+      margin-top: 8px;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+
+    .agent-dashboard__metric-description {
+      display: none;
+    }
+  }
+
+  /* Desktop layout: label top-left / icon top-right / value / helper */
+  @media (min-width: 640px) {
+    .agent-dashboard__metric {
+      display: grid;
+      grid-template-areas:
+        "label icon"
+        "value value"
+        "desc desc";
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto 1fr auto;
+      padding: 20px;
+      min-height: 174px;
+    }
+
+    .agent-dashboard__metric-label {
+      grid-area: label;
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.25rem;
+    }
+
+    .agent-dashboard__metric-icon {
+      grid-area: icon;
+      justify-self: end;
+      width: 40px;
+      height: 40px;
+    }
+
+    .agent-dashboard__metric-value {
+      grid-area: value;
+      align-self: end;
+      margin-top: 1.25rem;
+    }
+
+    .agent-dashboard__metric-description {
+      grid-area: desc;
+      margin-top: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.25rem;
+      opacity: 0.75;
+    }
+  }
+
+  /* ---- Dashboard/portal content panel — bordered card surface ---- */
+  .agent-dashboard__panel {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 8px;
+  }
+
+  /* ---- Portal data table ---- */
+  .portal-data-table thead {
+    background-color: var(--subtle);
+  }
+
+  .dark .portal-data-table thead {
+    background-color: #303232;
+  }
+
+  .portal-data-table th[scope='col'] {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  /* ---- Thin scrollbars on canvas and sidebar (P2) ---- */
+  .agent-dashboard__content,
+  .agent-dashboard__sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #afc3b3 transparent;
+  }
+
+  .agent-dashboard__content::-webkit-scrollbar,
+  .agent-dashboard__sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .agent-dashboard__content::-webkit-scrollbar-track,
+  .agent-dashboard__sidebar::-webkit-scrollbar-track {
+    background: transparent;
+    margin-block: 8px;
+  }
+
+  .agent-dashboard__content::-webkit-scrollbar-thumb,
+  .agent-dashboard__sidebar::-webkit-scrollbar-thumb {
+    background: #afc3b3;
+    border: 2px solid #f7f7f7;
+    border-radius: 8px;
+  }
+
+  .agent-dashboard__content::-webkit-scrollbar-thumb:hover,
+  .agent-dashboard__sidebar::-webkit-scrollbar-thumb:hover {
+    background: #718f79;
+  }
+
+  .dark .agent-dashboard__content,
+  .dark .agent-dashboard__sidebar {
+    scrollbar-color: #586e5e transparent;
+  }
+
+  .dark .agent-dashboard__content::-webkit-scrollbar-thumb,
+  .dark .agent-dashboard__sidebar::-webkit-scrollbar-thumb {
+    background: #586e5e;
+    border-color: #171919;
+  }
+
+  /* ---- Fixed mobile bottom navigation items ---- */
+  .agent-dashboard__bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 56px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #526858;
+  }
+
+  .agent-dashboard__bottom-item[aria-current='page'] {
+    background: #d0e3c8;
+    color: #006838;
+  }
+
+  .dark .agent-dashboard__bottom-item {
+    color: #808482;
+  }
+
+  .dark .agent-dashboard__bottom-item[aria-current='page'] {
+    color: #ffffff;
+    background: #006838;
+  }
+
+  /* agent-only: details filter toggle */
+  .portal-table-filters__form > details {
+    flex-shrink: 0;
+    align-self: flex-end;
+    margin-left: auto;
+  }
 }
 
 /* ============================================================
@@ -629,9 +838,14 @@
 }
 
 .agent-dashboard__action:hover {
-  border: 1px solid var(--primary);
-  background: transparent;
+  border: 1px solid var(--primary) !important;
+  background: transparent !important;
   transform: translateY(-2%);
+}
+
+.dark .agent-dashboard__action:hover {
+  border-color: var(--primary) !important;
+  background: transparent !important;
 }
 
 .agent-dashboard__action:focus-visible {
@@ -640,13 +854,14 @@
 
 .agent-dashboard__action:hover > span:first-child,
 .agent-dashboard__action:focus-visible > span:first-child {
-  background: #f8efd8;
-  color: var(--primary);
+  background: #f8efd8 !important;
+  color: var(--primary) !important;
 }
 
 .dark .agent-dashboard__action:hover > span:first-child,
 .dark .agent-dashboard__action:focus-visible > span:first-child {
-  color: var(--primary);
+  background: #f8efd8 !important;
+  color: var(--primary) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

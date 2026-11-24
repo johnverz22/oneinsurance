@@ -122,7 +122,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
             </div>
           </div>
         ) : isError || !tx ? (
-          <div className={`${panelCls} mt-4 text-center text-[#b91c1c] dark:text-[#eba3a3]`}>
+          <div className={`${panelCls} mt-4 text-center text-[#991b1b] dark:text-[#fca5a5]`}>
             Failed to load this transaction. It may not exist or you may not
             have access.
           </div>
@@ -176,7 +176,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                       tx.client_email ? (
                         <a
                           href={`mailto:${tx.client_email}`}
-                          className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                          className="text-[#006838] hover:underline dark:text-[#d0e3c8]"
                         >
                           {tx.client_email}
                         </a>
@@ -189,7 +189,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                       tx.client_phone ? (
                         <a
                           href={`tel:${tx.client_phone.replace(/\s+/g, '')}`}
-                          className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                          className="text-[#006838] hover:underline dark:text-[#d0e3c8]"
                         >
                           {tx.client_phone}
                         </a>
@@ -228,7 +228,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                 <h2 id="payment-summary-title" className={panelTitleCls}>
                   Payment summary
                 </h2>
-                <div className="mt-5 rounded-md bg-[#eaf4e9] p-5 dark:bg-[#2d4433]">
+                <div className="mt-5 rounded-md bg-[#eff6ef] p-5 dark:bg-[#38483b]">
                   <p className="text-sm font-medium text-[#006838] dark:text-[#d0e3c8]">
                     Premium
                   </p>
@@ -285,7 +285,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                       {tx.agent_id ? (
                         <Link
                           href={`/agents/${tx.agent_id}/profile`}
-                          className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                          className="text-[#006838] hover:underline dark:text-[#d0e3c8]"
                         >
                           {formatPersonName(tx.agent?.name) ||
                             `Agent #${tx.agent_id}`}
@@ -299,7 +299,7 @@ export function TransactionDetailClient({ id }: { id: string }) {
                     <dt className={dtCls}>Agent code</dt>
                     <dd className="text-right text-sm font-medium text-[var(--text-main)]">
                       {agentCode ? (
-                        <code className="rounded-md bg-[#eff6ef] px-2 py-0.5 font-mono text-xs text-[#006838] dark:bg-[#2b352d] dark:text-[#9fd4ae]">
+                        <code className="rounded-md bg-[#eff6ef] px-2 py-0.5 font-mono text-xs text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
                           {agentCode}
                         </code>
                       ) : (

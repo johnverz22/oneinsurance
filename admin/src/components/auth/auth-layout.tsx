@@ -36,7 +36,7 @@ export function AuthLayout({
         Skip to sign in
       </a>
 
-      <div className="auth-hero-backdrop relative grid min-h-dvh bg-white font-sans text-[var(--text-main)] antialiased dark:bg-[#1c1e1e] dark:text-[var(--text-main)] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:bg-[#f1f2f0] lg:dark:bg-[#282c29]">
+      <div className="auth-hero-backdrop relative grid min-h-dvh bg-white font-sans text-[var(--text-main)] antialiased dark:bg-[#282c29] dark:text-[var(--text-main)] lg:grid-cols-[minmax(0,30%)_minmax(0,70%)] lg:bg-[#f1f2f0] lg:dark:bg-[#282c29]">
         {/* Left brand aside (Desktop) */}
         <aside className="relative z-10 hidden min-h-dvh flex-col px-6 py-6 text-white sm:px-10 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:min-h-0 lg:px-12 lg:py-10">
           <Link
@@ -45,7 +45,7 @@ export function AuthLayout({
             aria-label="UnoSure home"
           >
             <img
-              src="/storage/img/logo-unosure-dark.png"
+              src="/images/logo-unosure-dark.png"
               alt="UnoSure"
               width={160}
               height={53}
@@ -94,7 +94,7 @@ export function AuthLayout({
               </div>
             </div>
             <img
-              src="/storage/img/logo-unosure-dark.png"
+              src="/images/logo-unosure-dark.png"
               alt="UnoSure"
               width={160}
               height={53}

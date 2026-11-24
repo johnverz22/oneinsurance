@@ -220,9 +220,9 @@ export function PortalTopBar() {
                   All caught up
                 </span>
               </div>
-              <div className="mt-4 flex items-start gap-3 rounded-md bg-[#fbfcfa] p-3 dark:bg-[#202422]">
+              <div className="mt-4 flex items-start gap-3 rounded-md bg-[#eff6ef] p-3 dark:bg-[#38483b]">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#006838] dark:text-[#d0e3c8]" />
-                <p className="text-sm leading-5 text-[var(--text-sub)]">
+                <p className="text-base leading-6 text-[var(--text-sub)]">
                   No new notifications. All policy and commission updates will appear here.
                 </p>
               </div>
@@ -234,7 +234,7 @@ export function PortalTopBar() {
         <Link
           href="/settings"
           aria-label="Your profile settings"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[var(--field-border)] overflow-hidden bg-[#eef4ec] text-sm font-bold text-[#006838] hover:ring-2 hover:ring-[#006838]/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:bg-[#243329] dark:text-[#d0e3c8]"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[var(--field-border)] overflow-hidden bg-[#eff6ef] text-sm font-bold text-[#006838] hover:ring-2 hover:ring-[#006838]/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]"
         >
           {avatarSrc ? (
             // eslint-disable-next-line @next/next/no-img-element

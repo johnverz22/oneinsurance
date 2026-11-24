@@ -507,7 +507,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
         </div>
       ) : isError || !agent ? (
         <section className={panelCls}>
-          <p className="py-8 text-center text-[#b91c1c] dark:text-[#eba3a3]">
+          <p className="py-8 text-center text-[#991b1b] dark:text-[#fca5a5]">
             Failed to load agent profile. Please try again.
           </p>
         </section>
@@ -536,7 +536,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                       className="size-[200px] max-w-full rounded-full border border-[#dfe7df] object-cover dark:border-[#3d4140]"
                     />
                   ) : (
-                    <span className="flex size-[200px] max-w-full items-center justify-center rounded-full border border-[#dfe7df] bg-[#eff6ef] text-3xl font-bold text-[#006838] dark:border-[#3d4140] dark:bg-[#2b352d] dark:text-[#9fd4ae]">
+                    <span className="flex size-[200px] max-w-full items-center justify-center rounded-full border border-[#dfe7df] bg-[#eff6ef] text-3xl font-bold text-[#006838] dark:border-[#3d4140] dark:bg-[#38483b] dark:text-[#d0e3c8]">
                       {getInitials(name) || 'A'}
                     </span>
                   )}
@@ -627,7 +627,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                                   className={cn(
                                     'rounded-full border px-2 py-0.5 text-[11px] font-semibold',
                                     isReplacement
-                                      ? 'border-[#b88e28]/30 text-[#8a6a1c] dark:text-[#e4c27f]'
+                                      ? 'border-[#b88e28]/30 text-[#b88e28] dark:text-[#e4c27f]'
                                       : 'border-[#006838]/20 text-[#006838] dark:text-[#d0e3c8]'
                                   )}
                                 >
@@ -637,7 +637,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                                 </span>
                               )}
                               {status === 'rejected' && uploaded.review_note && (
-                                <span className="text-xs text-[#b91c1c]">
+                                <span className="text-xs text-[#991b1b]">
                                   {uploaded.review_note}
                                 </span>
                               )}
@@ -964,7 +964,7 @@ function FileViewerModal({
         )}
         {error && (
           <div className="flex h-48 flex-col items-center justify-center gap-2 text-center">
-            <p className="text-sm text-[#b91c1c]">{error}</p>
+            <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{error}</p>
             <p className="text-xs text-[var(--text-sub)]">
               Check your connection and try again.
             </p>
@@ -1012,7 +1012,7 @@ function FileViewerModal({
             </p>
           )}
           {status === 'rejected' && (
-            <p className="mr-auto text-sm text-[#b91c1c] dark:text-[#fca5a5]">
+            <p className="mr-auto text-sm text-[#991b1b] dark:text-[#fca5a5]">
               Rejected
               {file.review_note ? ` — ${file.review_note}` : ''}
             </p>
@@ -1219,7 +1219,7 @@ function DocumentCompareModal({
             )}
             {prevError && (
               <div className="p-4 text-center">
-                <p className="text-sm text-[#b91c1c]">{prevError}</p>
+                <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{prevError}</p>
                 <p className="mt-1 text-xs text-[var(--text-sub)]">
                   The previous file cannot be previewed.
                 </p>
@@ -1256,7 +1256,7 @@ function DocumentCompareModal({
         </div>
 
         {/* Right: Current Document */}
-        <div className="flex flex-col rounded-lg border border-[#006838]/40 bg-[#fbfdfb] p-4 dark:border-[#006838]/60 dark:bg-[#151d18]">
+        <div className="flex flex-col rounded-lg border border-[#006838]/40 bg-white p-4 dark:border-[#006838]/60 dark:bg-[var(--card)]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#dfe7df] pb-3 dark:border-[#3d4140]">
             <div>
               <div className="flex items-center gap-2">
@@ -1289,7 +1289,7 @@ function DocumentCompareModal({
             )}
             {currError && (
               <div className="p-4 text-center">
-                <p className="text-sm text-[#b91c1c]">{currError}</p>
+                <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{currError}</p>
                 <p className="mt-1 text-xs text-[var(--text-sub)]">
                   Check your connection and try again.
                 </p>

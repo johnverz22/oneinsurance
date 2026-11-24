@@ -48,19 +48,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
           toastOptions={{
             classNames: {
               toast:
-                'rounded-md border border-[#c7d4c9] bg-white text-[var(--text-main)] shadow-lg dark:border-[#565c58] dark:bg-[#1c1e1e]',
+                'rounded-md border border-[#c7d4c9] bg-white text-[var(--text-main)] shadow-lg dark:border-[#565c58] dark:bg-[var(--card)]',
               title: 'font-semibold text-[var(--text-main)]',
               description: 'text-[var(--text-sub)]',
               success: '[&_[data-icon]]:text-[#006838]',
-              error: '[&_[data-icon]]:text-red-600',
+              error: '[&_[data-icon]]:text-[#991b1b]',
               warning: '[&_[data-icon]]:text-[#805c0c]',
               info: '[&_[data-icon]]:text-[#006838]',
               actionButton:
                 'rounded-md bg-[#006838] px-3 text-white hover:bg-[#00552e]',
               cancelButton:
-                'rounded-md border border-[#c7d4c9] bg-white px-3 text-[var(--text-main)] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:hover:bg-[#303232]',
+                'rounded-md border border-[#c7d4c9] bg-white px-3 text-[var(--text-main)] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[var(--card)] dark:hover:bg-[#303232]',
               closeButton:
-                'rounded-md border-[#c7d4c9] bg-white text-[var(--text-sub)] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[#1c1e1e] dark:hover:bg-[#303232]',
+                'rounded-md border-[#c7d4c9] bg-white text-[var(--text-sub)] hover:bg-[#f1f2f0] dark:border-[#565c58] dark:bg-[var(--card)] dark:hover:bg-[#303232]',
             },
           }}
         />

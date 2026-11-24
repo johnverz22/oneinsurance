@@ -170,7 +170,7 @@ export function ApplicantsTab() {
         <button
           type="button"
           onClick={() => setSelected(null)}
-          className="mb-4 flex items-center gap-1.5 text-sm font-medium text-[#006838] transition-colors hover:underline dark:text-[#9fd4ae]"
+          className="mb-4 flex items-center gap-1.5 text-sm font-medium text-[#006838] transition-colors hover:underline dark:text-[#d0e3c8]"
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
           Back to agents
@@ -192,13 +192,13 @@ export function ApplicantsTab() {
 
           <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-xs text-[var(--text-sub)]">Email</dt>
+              <dt className="text-sm text-[var(--text-sub)]">Email</dt>
               <dd className="font-medium break-all text-[var(--text-main)]">
                 {selected.email}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-[var(--text-sub)]">
+              <dt className="text-sm text-[var(--text-sub)]">
                 Phone number
               </dt>
               <dd className="font-medium text-[var(--text-main)]">
@@ -206,7 +206,7 @@ export function ApplicantsTab() {
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-[var(--text-sub)]">
+              <dt className="text-sm text-[var(--text-sub)]">
                 Applied
               </dt>
               <dd className="font-medium text-[var(--text-main)]">
@@ -214,7 +214,7 @@ export function ApplicantsTab() {
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-[var(--text-sub)]">Notes</dt>
+              <dt className="text-sm text-[var(--text-sub)]">Notes</dt>
               <dd className="font-medium text-[var(--text-main)]">
                 {selected.notes || '—'}
               </dd>

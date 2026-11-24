@@ -37,18 +37,15 @@ export function MobileNav() {
           <Link
             key={href}
             href={href}
-            aria-label={label}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex min-h-14 flex-col items-center justify-center gap-[3px] rounded-md text-base font-semibold transition-colors',
+              'agent-dashboard__bottom-item flex-1 rounded-md px-1 transition-colors',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]',
-              active
-                ? 'bg-[#e8f3e9] dark:bg-[#006838] dark:text-[#d0e3c8]'
-                : 'text-[var(--text-sub)]'
+              !active && 'text-[#526858] dark:text-[#808482]'
             )}
           >
-            <Icon className="size-5 max-sm:size-[18px]" aria-hidden="true" />
-            <span className="sr-only">{label}</span>
+            <Icon className="size-[18px] sm:size-5" aria-hidden="true" strokeWidth={1.5} />
+            <span className="text-xs sm:text-sm font-semibold">{label}</span>
           </Link>
         )
       })}

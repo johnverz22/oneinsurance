@@ -94,13 +94,13 @@ function AreaRow({
   return (
     <Link
       href={href}
-      className="agent-dashboard__action flex min-h-22 w-full items-center gap-4 rounded-md border border-[#dfe7df] bg-[#fbfcfa] p-4 text-left focus-visible:outline-2 focus-visible:outline-[#006838] dark:border-[#475049] dark:bg-[#222725]"
+      className="agent-dashboard__action flex min-h-22 w-full items-center gap-4 rounded-md border border-[var(--border)] bg-transparent p-4 text-left focus-visible:outline-2 focus-visible:outline-[#006838]"
     >
       <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#e6f2e8] text-[#006838] dark:bg-[#3d5242] dark:text-[#d0e3c8]">
         {icon}
       </span>
       <span>
-        <strong className="block text-sm text-[var(--text-main)]">{title}</strong>
+        <strong className="block text-base font-semibold leading-6 text-[var(--text-main)]">{title}</strong>
         <small className="mt-1 block text-base leading-5 text-[var(--text-sub)]">
           {subtitle}
         </small>

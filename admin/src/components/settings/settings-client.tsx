@@ -492,7 +492,7 @@ export function SettingsClient() {
                   className="size-20 rounded-full border border-[var(--field-border)] object-cover object-top"
                 />
               ) : (
-                <div className="flex size-20 items-center justify-center rounded-full border border-[var(--field-border)] bg-[#eef4ec] text-xl font-bold text-[#006838] dark:bg-[#243329] dark:text-[#d0e3c8]">
+                <div className="flex size-20 items-center justify-center rounded-full border border-[var(--field-border)] bg-[#eff6ef] text-xl font-bold text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
                   {getInitials(displayName) || 'AD'}
                 </div>
               )}

@@ -32,47 +32,47 @@ Priority: **P0** visibly wrong or broken, **P1** spec deviation, **P2** polish.
 
 ## 1. Design tokens
 
-### 1.1 `globals.css` `@theme` / `:root` / `.dark` [A]
+### 1.1 `globals.css` `@theme` / `:root` / `.dark` [A] — [x] DONE
 
-| Token | admin now | Target | Pri |
-|---|---|---|---|
-| `--text-sub` (light) | `#707070` | `#5b6e61` | P1 |
-| `--text-main` (dark) | `#ffffff` | `#f4f5f2` | P1 |
-| `--text-sub` (dark) | `#c4c7c5` | `#b2b7b4` | P1 |
-| `--color-text-*` mirrors of the above in `@theme` | same | same | P1 |
-| `--card` (dark) | `#262828` | `#171919` for page cards/tables (see D2) | P1 |
-| `--canvas` (dark) | `#1c1e1e` | `#282c29` | P1 |
-| `.skeleton` bg | `var(--subtle)` | `#e6ece6` light, `#3d4140` dark | P2 |
-| header comment | "One Insurance Agent Portal" | rename to Admin Portal | P2 |
+| Token | admin now | Target | Pri | Status |
+|---|---|---|---|---|
+| `--text-sub` (light) | `#707070` | `#5b6e61` | P1 | [x] Done |
+| `--text-main` (dark) | `#ffffff` | `#f4f5f2` | P1 | [x] Done |
+| `--text-sub` (dark) | `#c4c7c5` | `#b2b7b4` | P1 | [x] Done |
+| `--color-text-*` mirrors of the above in `@theme` | same | same | P1 | [x] Done |
+| `--card` (dark) | `#262828` | `#171919` for page cards/tables (see D2) | P1 | [x] Done |
+| `--canvas` (dark) | `#1c1e1e` | `#282c29` | P1 | [x] Done |
+| `.skeleton` bg | `var(--subtle)` | `#e6ece6` light, `#3d4140` dark | P2 | [x] Done |
+| header comment | "One Insurance Agent Portal" | rename to Admin Portal | P2 | [x] Done |
 
 Unchanged and correct: `--primary #006838`, hover `#00552e`, pressed `#004525`, `--portal-canvas #f7f7f7 / #171919`, `--subtle #f1f2f0 / #303232`, `--border #dfe7df / #3d4140`, `--field-border #c7d4c9 / #565c58`, `--text-muted #a9a9a9 / #767776`, `--color-error #dc2626`.
 
-### 1.2 Missing shared classes (exist in `agent/globals.css`, absent in `admin`) [A]
+### 1.2 Missing shared classes (exist in `agent/globals.css`, absent in `admin`) [A] — [x] DONE
 
-- `.portal-metric-value`: 24px/32px below 640px, 30px/36px from 640px. **P1**
-- `.portal-data-table`: `thead` uses `--subtle` (dark `#303232`); `th[scope=col]` 14px / 20px, no uppercase, normal tracking. **P1**
-- `.agent-dashboard__panel`, `.agent-dashboard__metric*`: dashboard card surfaces. **P1**
-- `.agent-dashboard__content` thin scrollbars (thumb `#afc3b3`, dark `#586e5e`, 8px, 2px border) on canvas and sidebar. **P2**
-- `.dark .agent-dashboard__action:hover > span:first-child` pale-gold `#f8efd8` icon bg is missing (the light rule exists). `agent` also uses `!important` on hover border/background. **P1**
-- `.portal-table-filters__form > details` rule (agent-only). **P2**
+- [x] `.portal-metric-value`: 24px/32px below 640px, 30px/36px from 640px. **P1**
+- [x] `.portal-data-table`: `thead` uses `--subtle` (dark `#303232`); `th[scope=col]` 14px / 20px, no uppercase, normal tracking. **P1**
+- [x] `.agent-dashboard__panel`, `.agent-dashboard__metric*`: dashboard card surfaces. **P1**
+- [x] `.agent-dashboard__content` thin scrollbars (thumb `#afc3b3`, dark `#586e5e`, 8px, 2px border) on canvas and sidebar. **P2**
+- [x] `.dark .agent-dashboard__action:hover > span:first-child` pale-gold `#f8efd8` icon bg is missing (the light rule exists). `agent` also uses `!important` on hover border/background. **P1**
+- [x] `.portal-table-filters__form > details` rule (agent-only). **P2**
 
-### 1.3 Off-palette hex colours (used in `admin`, never in `agent`) [A]
+### 1.3 Off-palette hex colours (used in `admin`, never in `agent`) [A] — [x] DONE
 
 Keep (admin sidebar variation): `#a67f20`, `#d6bd7d`, `#805c0c`, `#fff8e8`, `#183d2c`.
 
 Replace:
 
-| Hex | Where | Replace with |
-|---|---|---|
-| `#e8f3e9` | `mobile-nav.tsx` active pill | `#d0e3c8` |
-| `#b91c1c`, `#eba3a3`, `#fecaca`, `#fca5a5` | error text in `data-table`, profile, detail, providers | Failure red `#991b1b` (light); dark: define one token |
-| `bg-red-600/700/800` | `ui-classes` `btnDangerCls`, `modal.tsx` | `#991b1b` family |
-| `#262828` | `pill-tabs.tsx` | `--card` / `#171919` |
-| `#1e2120` | `modal.tsx` ConfirmDialog | `--card-summary` |
-| `#1c1e1e` | `ui-classes` `fieldCls`, `search-input.tsx` dark bg | `--card` (agent top-bar search uses `#303530`) |
-| `#9bb09f` | `fieldCls` placeholder | `--text-muted` |
-| `#eef4ec`, `#243329` | top-bar avatar, settings avatar | `#eff6ef` / `#38483b` (the pair the dashboard already uses) |
-| `#202422`, `#222725`, `#2d4433`, `#f3f6f2`, `#eaf4e9`, `#fbfdfb`, `#151d18`, `#8a6a1c`, `#9fd4ae`, `#bddac0`, `#00441f` | detail, profile, tabs, providers, modal | map to existing `agent` tokens (`#eff6ef`, `#e6f2e8`, `#38483b`, `#3d5242`, `#d0e3c8`, `#006838`) |
+| Hex | Where | Replace with | Status |
+|---|---|---|---|
+| `#e8f3e9` | `mobile-nav.tsx` active pill | `#d0e3c8` | [x] Done |
+| `#b91c1c`, `#eba3a3`, `#fecaca`, `#fca5a5` | error text in `data-table`, profile, detail, providers | Failure red `#991b1b` (light); dark: define one token | [x] Done |
+| `bg-red-600/700/800` | `ui-classes` `btnDangerCls`, `modal.tsx` | `#991b1b` family | [x] Done |
+| `#262828` | `pill-tabs.tsx` | `--card` / `#171919` | [x] Done |
+| `#1e2120` | `modal.tsx` ConfirmDialog | `--card-summary` | [x] Done |
+| `#1c1e1e` | `ui-classes` `fieldCls`, `search-input.tsx` dark bg | `--card` (agent top-bar search uses `#303530`) | [x] Done |
+| `#9bb09f` | `fieldCls` placeholder | `--text-muted` | [x] Done |
+| `#eef4ec`, `#243329` | top-bar avatar, settings avatar | `#eff6ef` / `#38483b` (the pair the dashboard already uses) | [x] Done |
+| `#202422`, `#222725`, `#2d4433`, `#f3f6f2`, `#eaf4e9`, `#fbfdfb`, `#151d18`, `#8a6a1c`, `#9fd4ae`, `#bddac0`, `#00441f` | detail, profile, tabs, providers, modal | map to existing `agent` tokens (`#eff6ef`, `#e6f2e8`, `#38483b`, `#3d5242`, `#d0e3c8`, `#006838`) | [x] Done |
 
 ---
 
@@ -80,17 +80,17 @@ Replace:
 
 Both apps share geometry. Verified identical [A]: sidebar 232/76px, top bar `min-h-72px` with 1px border, outer frame `#e9ece9`/`#141716`, nav item min-height 44px, active edge bar 3px (`-left-5` / `-left-3`), edge toggle 44×44 with 18×24 tab, canvas padding on desktop (20 top / 22 H / 30 bottom) and from 640px (28 top / 24 H), max width 1280px, popover `shadow 0 20px 50px rgba(24,61,44,.12)`, bottom-nav border `#dce6dd`.
 
-| # | Finding | File | Target | Pri |
-|---|---|---|---|---|
-| S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 |
-| S2 | Phone canvas padding: bottom `pb-7` (28px); phone spec is 24 top / 16 H / 24 bottom. | `portal-layout.tsx` | `pb-6` on phone | P2 |
-| S3 | Sidebar nav icons use default stroke (2). Spec: 20px outline, `strokeWidth=1.5`. | `portal-sidebar.tsx` | add `strokeWidth={1.5}` | P2 [V] |
-| S4 | Mobile nav shows icons only (label is `sr-only`). Agent shows a visible label (`text-xs sm:text-sm font-semibold`) with 18px/20px icon, stroke 1.5. | `mobile-nav.tsx` | Visible label; admin mockup nav set [V] | P1 |
-| S5 | Mobile nav active pill `#e8f3e9` + `--text-sub`; dark active text `#d0e3c8`. Target: light `#d0e3c8` bg + `#006838` text; dark `#006838` bg + white text. Inactive light `#526858`, dark `#808482`. | `mobile-nav.tsx` | per `.agent-dashboard__bottom-item` | P1 |
-| S6 | Top-bar horizontal padding `px-5 sm:px-6 lg:pl-11`; agent CSS is `padding-inline: 10px`, `lg: padding-left: 44px`. | `portal-top-bar.tsx` | verify `px-5/6` is intended | P2 [V] |
-| S7 | Notifications popover body `text-sm leading-5`; agent uses `text-base leading-6`. | `portal-top-bar.tsx` | 16px / 24px | P2 |
-| S8 | Mobile menu popover item colours/typography are inline hex. | `portal-top-bar.tsx` | shared popover/nav classes | P2 |
-| S9 | Logo asset path split: sidebar uses `/images/logo-unosure-dark.png`; auth layout uses `/storage/img/logo-unosure-dark.png`. | see §6 | | **P0** |
+| # | Finding | File | Target | Pri | Status |
+|---|---|---|---|---|---|
+| S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 | |
+| S2 | Phone canvas padding: bottom `pb-7` (28px); phone spec is 24 top / 16 H / 24 bottom. | `portal-layout.tsx` | `pb-6` on phone | P2 | |
+| S3 | Sidebar nav icons use default stroke (2). Spec: 20px outline, `strokeWidth=1.5`. | `portal-sidebar.tsx` | add `strokeWidth={1.5}` | P2 [V] | |
+| S4 | Mobile nav shows icons only (label is `sr-only`). Agent shows a visible label (`text-xs sm:text-sm font-semibold`) with 18px/20px icon, stroke 1.5. | `mobile-nav.tsx` | Visible label; admin mockup nav set [V] | P1 | [x] Done |
+| S5 | Mobile nav active pill `#e8f3e9` + `--text-sub`; dark active text `#d0e3c8`. Target: light `#d0e3c8` bg + `#006838` text; dark `#006838` bg + white text. Inactive light `#526858`, dark `#808482`. | `mobile-nav.tsx` | per `.agent-dashboard__bottom-item` | P1 | [x] Done |
+| S6 | Top-bar horizontal padding `px-5 sm:px-6 lg:pl-11`; agent CSS is `padding-inline: 10px`, `lg: padding-left: 44px`. | `portal-top-bar.tsx` | verify `px-5/6` is intended | P2 [V] | |
+| S7 | Notifications popover body `text-sm leading-5`; agent uses `text-base leading-6`. | `portal-top-bar.tsx` | 16px / 24px | P2 | [x] Done |
+| S8 | Mobile menu popover item colours/typography are inline hex. | `portal-top-bar.tsx` | shared popover/nav classes | P2 | |
+| S9 | Logo asset path split: sidebar uses `/images/logo-unosure-dark.png`; auth layout uses `/storage/img/logo-unosure-dark.png`. | see §6 | | **P0** | [x] Done |
 
 ---
 
@@ -114,15 +114,15 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 
 ### 4.1 Tables (`lib/ui-classes.ts`, `ui/data-table.tsx`)
 
-| # | Finding | Target | Pri |
-|---|---|---|---|
-| T1 | `tableWrapCls` and the mobile `<ul>` set **no background**. Rows inherit the `#f7f7f7` canvas. [G] says the table is its own surface, white in light and inset in dark. | `bg-white dark:bg-[--card]` on wrapper, tbody and mobile list | **P0** [V] |
-| T2 | `thCls` / `theadCls` are `text-xs` (12px) with colour `#333`. | 14px, `font-semibold`, `--text-main`; use `.portal-data-table` | P1 |
-| T3 | Body `text-sm` (14px). Agent table body is `text-base` (16px). | 16px [V] | P1 |
-| T4 | Cell padding `px-4 py-4` / `py-3` for actions | matches agent | ok |
-| T5 | Error text `#b91c1c` / dark `#eba3a3`. | Failure red token | P1 |
-| T6 | Table container `rounded-lg` (8px) + 1px `--border` | matches | ok |
-| T7 | Secondary line in cells uses `text-xs` (policy no., created time, product slug). | 14px secondary (agent keeps `text-xs` only for sub-lines of dense cells — [V]) | P2 |
+| # | Finding | Target | Pri | Status |
+|---|---|---|---|---|
+| T1 | `tableWrapCls` and the mobile `<ul>` set **no background**. Rows inherit the `#f7f7f7` canvas. [G] says the table is its own surface, white in light and inset in dark. | `bg-white dark:bg-[--card]` on wrapper, tbody and mobile list | **P0** [V] | [x] Done |
+| T2 | `thCls` / `theadCls` are `text-xs` (12px) with colour `#333`. | 14px, `font-semibold`, `--text-main`; use `.portal-data-table` | P1 | [x] Done |
+| T3 | Body `text-sm` (14px). Agent table body is `text-base` (16px). | 16px [V] | P1 | |
+| T4 | Cell padding `px-4 py-4` / `py-3` for actions | matches agent | ok | |
+| T5 | Error text `#b91c1c` / dark `#eba3a3`. | Failure red token | P1 | [x] Done |
+| T6 | Table container `rounded-lg` (8px) + 1px `--border` | matches | ok | |
+| T7 | Secondary line in cells uses `text-xs` (policy no., created time, product slug). | 14px secondary (agent keeps `text-xs` only for sub-lines of dense cells — [V]) | P2 | |
 
 ### 4.2 Table header (`ui/table-header.tsx`)
 
@@ -137,33 +137,33 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 
 ### 4.4 Tabs (`ui/pill-tabs.tsx`)
 
-- Container dark bg `#262828`; page canvas/table surfaces are `#171919`. Use `--card`. **P2**
+- Container dark bg `#262828`; page canvas/table surfaces are `#171919`. Use `--card`. **P2** [x] Done
 - Tabs sit directly on the canvas [G]. Confirm container border/pill treatment against the mockup. [V]
 
 ### 4.5 Buttons and fields (`lib/ui-classes.ts`)
 
 `globals.css` already defines `.btn-primary/secondary/tertiary` and `.ui-form-field` identically to `agent`. The `ui-classes.ts` strings **bypass** them:
 
-| # | Finding | Target | Pri |
-|---|---|---|---|
-| B1 | `btnSecondaryCls`: neutral `#c7d4c9` border, `#183d2c` text. [G] §8: secondary is green border/text on light, `#707873` outline on dark. | use `.btn-secondary` | P1 |
-| B2 | `btnDangerCls`: `bg-red-600`. | Failure red `#991b1b` (`#7f1717` hover) | P1 |
-| B3 | `fieldCls`: `focus-visible:outline-offset-2`; [G] §9: 2px `#006838` outline, **zero offset**, no page-level offset on text fields. | remove offset | P1 |
-| B4 | `fieldCls`: text `#183d2c`, dark bg `#1c1e1e`, placeholder `#9bb09f`. | `--text-main`, `--card`, `--text-muted` | P1 |
-| B5 | Fields are `text-sm`; [G]: mobile text inputs stay 16px. | `text-base` below `sm`, or per `.ui-form-field` | P1 |
-| B6 | Compact controls under 44px: `min-h-9` (date range Apply/Clear), `min-h-10` (export menu items, profile buttons), `min-h-9` (retry). | `min-h-11` | P1 |
-| B7 | Login inputs `min-h-12` (48px) with label gap `mt-1` on password. | 44px min, label gap 8px | P2 |
+| # | Finding | Target | Pri | Status |
+|---|---|---|---|---|
+| B1 | `btnSecondaryCls`: neutral `#c7d4c9` border, `#183d2c` text. [G] §8: secondary is green border/text on light, `#707873` outline on dark. | use `.btn-secondary` | P1 | [x] Done |
+| B2 | `btnDangerCls`: `bg-red-600`. | Failure red `#991b1b` (`#7f1717` hover) | P1 | [x] Done |
+| B3 | `fieldCls`: `focus-visible:outline-offset-2`; [G] §9: 2px `#006838` outline, **zero offset**, no page-level offset on text fields. | remove offset | P1 | [x] Done |
+| B4 | `fieldCls`: text `#183d2c`, dark bg `#1c1e1e`, placeholder `#9bb09f`. | `--text-main`, `--card`, `--text-muted` | P1 | [x] Done |
+| B5 | Fields are `text-sm`; [G]: mobile text inputs stay 16px. | `text-base` below `sm`, or per `.ui-form-field` | P1 | [x] Done |
+| B6 | Compact controls under 44px: `min-h-9` (date range Apply/Clear), `min-h-10` (export menu items, profile buttons), `min-h-9` (retry). | `min-h-11` | P1 | |
+| B7 | Login inputs `min-h-12` (48px) with label gap `mt-1` on password. | 44px min, label gap 8px | P2 | |
 
 ### 4.6 Modals (`ui/modal.tsx`)
 
 [G] `x-modal-card`: wraps `x-regular-card`; header is title only (no description, no icon) with a 44px X at far right; footer through `x-card-actions` (right-aligned, secondary before primary); backdrop/Escape/X close.
 
-| # | Finding | Target | Pri |
-|---|---|---|---|
-| M1 | `ConfirmDialog` is a different component: `rounded-2xl`, `text-2xl font-extrabold`, `rounded-xl` buttons, `border-2 border-[#183d2c]`, `font-bold`, `bg-[#1e2120]`, no X. | Rebuild on `Modal`: 8px radius, 20px green/sage title, 6px buttons, X close | **P0** |
-| M2 | `Modal` has an optional description line and a header divider. | Remove description (title only); confirm dividers [V] | P1 |
-| M3 | Dark surface `#171919`; summary/regular/modal cards use `#262828` (D2). | `--card-summary` | P1 |
-| M4 | `ConfirmModal` buttons use `text-sm font-semibold` with inline hex. | `.btn-secondary` / `.btn-primary` / failure | P1 |
+| # | Finding | Target | Pri | Status |
+|---|---|---|---|---|
+| M1 | `ConfirmDialog` is a different component: `rounded-2xl`, `text-2xl font-extrabold`, `rounded-xl` buttons, `border-2 border-[#183d2c]`, `font-bold`, `bg-[#1e2120]`, no X. | Rebuild on `Modal`: 8px radius, 20px green/sage title, 6px buttons, X close | **P0** | [x] Done |
+| M2 | `Modal` has an optional description line and a header divider. | Remove description (title only); confirm dividers [V] | P1 | |
+| M3 | Dark surface `#171919`; summary/regular/modal cards use `#262828` (D2). | `--card-summary` | P1 | [x] Done |
+| M4 | `ConfirmModal` buttons use `text-sm font-semibold` with inline hex. | `.btn-secondary` / `.btn-primary` / failure | P1 | [x] Done |
 
 ### 4.7 Status badge, tags, action icons
 
@@ -307,6 +307,6 @@ Other codes (400/401/403/405/408/410/413/419/422/429/502/503/504) have mockups; 
 - [ ] All interactive targets ≥ 44px; focus outline 2px `#006838`, zero offset on fields.
 - [ ] Text: titles 24/30px, table headers 14px, secondary 16px where agent uses 16px.
 - [ ] Radii: cards/tables 8px, controls 6px, badges full pill.
-- [ ] No hex outside `agent` palette + admin sidebar variation (`grep` check).
+- [x] No hex outside `agent` palette + admin sidebar variation (`grep` check).
 - [ ] Transaction details shows five stacked cards, download works.
-- [ ] 404/500 match copy and layout; login logo renders.
+- [ ] 404/500 match copy and layout; [x] login logo renders.

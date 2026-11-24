@@ -22,7 +22,7 @@ export function PillTabs({ tabs, active, onChange, className }: PillTabsProps) {
     <div
       role="tablist"
       className={cn(
-        'inline-flex max-w-full items-center gap-1 rounded-md border border-[#dfe7df] bg-white p-1 dark:border-[#3d4140] dark:bg-[#262828]',
+        'inline-flex max-w-full items-center gap-1 rounded-md border border-[#dfe7df] bg-white p-1 dark:border-[#3d4140] dark:bg-[var(--card)]',
         className
       )}
     >

@@ -1307,7 +1307,7 @@ function CaseDetailDialog({
                     <SummaryField label="Email">
                       <a
                         href={`mailto:${holderEmail}`}
-                        className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                        className="text-[#006838] hover:underline dark:text-[#d0e3c8]"
                       >
                         {holderEmail}
                       </a>
@@ -1317,7 +1317,7 @@ function CaseDetailDialog({
                     <SummaryField label="Phone">
                       <a
                         href={`tel:${holderPhone.replace(/\s+/g, '')}`}
-                        className="text-[#006838] hover:underline dark:text-[#9fd4ae]"
+                        className="text-[#006838] hover:underline dark:text-[#d0e3c8]"
                       >
                         {holderPhone}
                       </a>

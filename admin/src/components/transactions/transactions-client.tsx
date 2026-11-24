@@ -243,7 +243,7 @@ export function TransactionsClient() {
                         </span>
                       )}
                       {lob && (
-                        <span className="mt-1 inline-flex rounded-md bg-[#eef4ee] px-2 py-0.5 text-xs text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
+                        <span className="mt-1 inline-flex rounded-md bg-[#eff6ef] px-2 py-0.5 text-xs font-medium text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
                           {lob}
                         </span>
                       )}

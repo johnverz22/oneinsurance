@@ -111,14 +111,14 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#dfe7df] dark:divide-[#3d4140]">
+          <tbody className="divide-y divide-[#dfe7df] bg-white dark:divide-[#3d4140] dark:bg-[var(--card)]">
             {state === 'loading' ? (
               <TableRowsSkeleton cols={columns.length} />
             ) : state === 'error' ? (
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-12 text-center text-[#b91c1c] dark:text-[#eba3a3]"
+                  className="px-4 py-12 text-center text-[#991b1b] dark:text-[#fca5a5]"
                 >
                   {errorMessage}
                 </td>
@@ -162,11 +162,11 @@ export function DataTable<T>({
       </div>
 
       {/* Mobile list view */}
-      <ul className="divide-y divide-[#dfe7df] rounded-lg border border-[#dfe7df] lg:hidden dark:divide-[#3d4140] dark:border-[#3d4140]">
+      <ul className="divide-y divide-[#dfe7df] rounded-lg border border-[#dfe7df] bg-white lg:hidden dark:divide-[#3d4140] dark:border-[#3d4140] dark:bg-[var(--card)]">
         {state === 'loading' ? (
           <ListRowsSkeleton />
         ) : state === 'error' ? (
-          <li className="px-4 py-12 text-center text-[#b91c1c] dark:text-[#eba3a3]">
+          <li className="px-4 py-12 text-center text-[#991b1b] dark:text-[#fca5a5]">
             {errorMessage}
           </li>
         ) : state === 'empty' ? (

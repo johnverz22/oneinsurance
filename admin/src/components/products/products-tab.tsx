@@ -267,7 +267,7 @@ export function ProductsTab({ onCreateLob }: { onCreateLob: () => void }) {
   if (noActiveLobs && noProducts) {
     return (
       <div className="py-12 text-center sm:py-16">
-        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#e6f2e8] text-[#006838] dark:bg-[#2d4433] dark:text-[#d0e3c8]">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#e6f2e8] text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
           <FileCheck2 className="size-7" aria-hidden="true" />
         </span>
         <h3 className="mt-5 text-xl font-semibold text-[var(--text-main)]">
@@ -585,7 +585,7 @@ export function ProductsTab({ onCreateLob }: { onCreateLob: () => void }) {
           </div>
 
           {!editing && (
-            <p className="rounded-md bg-[#f3f6f2] p-4 text-sm leading-5 text-[var(--text-sub)] dark:bg-[#303232]">
+            <p className="rounded-md bg-[#f1f2f0] p-4 text-sm leading-5 text-[var(--text-sub)] dark:bg-[#303232]">
               A default commission configuration will be created automatically.
               Adjust rates later in Commission setup.
             </p>
