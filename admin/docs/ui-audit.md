@@ -118,7 +118,7 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 |---|---|---|---|---|
 | T1 | `tableWrapCls` and the mobile `<ul>` set **no background**. Rows inherit the `#f7f7f7` canvas. [G] says the table is its own surface, white in light and inset in dark. | `bg-white dark:bg-[--card]` on wrapper, tbody and mobile list | **P0** [V] | [x] Done |
 | T2 | `thCls` / `theadCls` are `text-xs` (12px) with colour `#333`. | 14px, `font-semibold`, `--text-main`; use `.portal-data-table` | P1 | [x] Done |
-| T3 | Body `text-sm` (14px). Agent table body is `text-base` (16px). | 16px [V] | P1 | [x] Done |
+| T3 | Body `text-sm` (14px). Agent table body is `text-base` (16px). | 16px [V] | P1 | [x] Done, then **revised 24 Nov**: the rendered admin mockups (Agents, Agent cases) show 14px body text, `--text-main` `font-medium` for the identity column, neutral grey `#707070` (`tableMutedCls`) for supporting cells, 12px sub-lines. `DataTable` gained `bodyClassName`; Agents and Agent cases pass `text-sm`. Other tables still default to 16px and need the same check. |
 | T4 | Cell padding `px-4 py-4` / `py-3` for actions | matches agent | ok | |
 | T5 | Error text `#b91c1c` / dark `#eba3a3`. | Failure red token | P1 | [x] Done |
 | T6 | Table container `rounded-lg` (8px) + 1px `--border` | matches | ok | |

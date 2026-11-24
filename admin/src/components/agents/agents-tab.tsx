@@ -17,6 +17,7 @@ import { PaginationBar } from '@/components/ui/pagination-bar'
 import { StatusPill } from '@/components/ui/status-pill'
 import { ConfirmDialog } from '@/components/ui/modal'
 import { DataTable } from '@/components/ui/data-table'
+import { tableMutedCls } from '@/lib/ui-classes'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { TableHeader } from '@/components/ui/table-header'
@@ -311,12 +312,13 @@ export function AgentsTab() {
       <DataTable<Agent>
         className="mt-5"
         minWidth="min-w-[760px]"
+        bodyClassName="text-sm"
         columns={[
           {
             header: 'Agent code',
             rowHeader: true,
             cell: (agent) => (
-              <span className="text-sm font-normal text-[var(--text-main)]">
+              <span className={tableMutedCls}>
                 {(agent.settings?.code ?? agent.agent_code ?? 'N/A').toUpperCase()}
               </span>
             ),
@@ -325,7 +327,7 @@ export function AgentsTab() {
             header: 'Name',
             mobile: 'primary',
             cell: (agent) => (
-              <span className="font-semibold text-[var(--text-main)]">
+              <span className="font-medium text-[var(--text-main)]">
                 {agentDisplayName(agent)}
               </span>
             ),
@@ -334,7 +336,7 @@ export function AgentsTab() {
           {
             header: 'Email',
             cell: (agent) => (
-              <span className="text-[var(--text-sub)]">
+              <span className={tableMutedCls}>
                 {agent.email || 'N/A'}
               </span>
             ),
@@ -342,7 +344,7 @@ export function AgentsTab() {
           {
             header: 'Phone',
             cell: (agent) => (
-              <span className="text-[var(--text-sub)]">
+              <span className={tableMutedCls}>
                 {agent.phone || 'N/A'}
               </span>
             ),

@@ -26,6 +26,9 @@ export const tableWrapCls =
 
 export const tableCls = 'portal-data-table w-full min-w-[650px] text-left text-base'
 
+/** Supporting table-cell text: neutral grey per the admin mockups (ui-theme `#707070`). */
+export const tableMutedCls = 'text-[#707070] dark:text-[var(--text-sub)]'
+
 export const theadCls =
   'bg-[#f1f2f0] text-sm font-semibold text-[var(--text-main)] normal-case tracking-normal dark:bg-[#303232]'
 

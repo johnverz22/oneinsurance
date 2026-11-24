@@ -24,7 +24,8 @@ import { downloadExport } from '@/lib/download-export'
 import { extractApiError } from '@/lib/api-error'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
-import { formatPersonName } from '@/lib/utils'
+import { cn, formatPersonName } from '@/lib/utils'
+import { tableMutedCls } from '@/lib/ui-classes'
 import {
   formatAmount,
   formatTxDate,
@@ -37,7 +38,7 @@ import type { Agent } from '@/types/admin/people'
 import type { ApiResponse, Paginated } from '@/types/admin/catalog'
 
 const dash = (
-  <span className="font-sans text-sm font-normal text-[var(--text-sub)]">
+  <span className={cn('font-sans text-sm font-normal', tableMutedCls)}>
     —
   </span>
 )
@@ -308,6 +309,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
         <DataTable<Transaction>
           className="mt-5"
           minWidth="min-w-[970px]"
+          bodyClassName="text-sm"
           columns={[
             {
               header: 'Policy no.',
@@ -321,7 +323,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
             {
               header: 'Certificate no.',
               cell: (tx) => (
-                <span className="text-[var(--text-sub)]">
+                <span className={tableMutedCls}>
                   {tx.certificate_number ?? dash}
                 </span>
               ),
@@ -331,7 +333,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               cell: (tx) => {
                 const paymentId = paymentIdOf(tx)
                 return (
-                  <span className="font-medium text-[var(--text-sub)]">
+                  <span className={tableMutedCls}>
                     {paymentId ?? dash}
                   </span>
                 )
@@ -352,7 +354,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
                       </span>
                     )}
                     {product && (
-                      <span className="block text-xs text-[var(--text-sub)]">
+                      <span className={cn('block text-xs', tableMutedCls)}>
                         {product}
                       </span>
                     )}
@@ -365,7 +367,11 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               className: 'whitespace-nowrap tabular-nums',
               cell: (tx) => {
                 const premium = txPremium(tx)
-                return premium !== null ? formatAmount(premium) : dash
+                return premium !== null ? (
+                  <span className={tableMutedCls}>{formatAmount(premium)}</span>
+                ) : (
+                  dash
+                )
               },
             },
             {
@@ -373,7 +379,11 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
               className: 'whitespace-nowrap tabular-nums',
               cell: (tx) => {
                 const commission = netCommissionOf(tx)
-                return commission !== null ? formatAmount(commission) : dash
+                return commission !== null ? (
+                  <span className={tableMutedCls}>{formatAmount(commission)}</span>
+                ) : (
+                  dash
+                )
               },
             },
             {
@@ -389,11 +399,11 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
                 if (!created) return dash
                 return (
                   <span className="block">
-                    <span className="block text-[var(--text-sub)]">
+                    <span className={cn('block', tableMutedCls)}>
                       {created.day}
                     </span>
                     {created.time && (
-                      <span className="mt-0.5 block text-xs text-[var(--text-sub)]">
+                      <span className={cn('mt-0.5 block text-xs', tableMutedCls)}>
                         {created.time}
                       </span>
                     )}

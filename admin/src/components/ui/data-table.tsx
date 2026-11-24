@@ -37,6 +37,8 @@ type DataTableProps<T> = {
   onRowClick?: (row: T) => void
   /** Table min-width utility for desktop overflow, e.g. 'min-w-[960px]'. */
   minWidth?: string
+  /** Body text size utility for the desktop table (default `text-base`). */
+  bodyClassName?: string
   className?: string
 }
 
@@ -76,6 +78,7 @@ export function DataTable<T>({
   emptyMessage = 'No records found.',
   onRowClick,
   minWidth,
+  bodyClassName,
   className,
 }: DataTableProps<T>) {
   const primaryCols = columns.filter((c) => c.mobile === 'primary')
@@ -97,7 +100,7 @@ export function DataTable<T>({
     <div className={className}>
       {/* Desktop table */}
       <div className={cn('hidden lg:block', tableWrapCls)}>
-        <table className={cn(tableCls, minWidth)}>
+        <table className={cn(tableCls, bodyClassName, minWidth)}>
           <thead className={theadCls}>
             <tr>
               {columns.map((col, i) => (
