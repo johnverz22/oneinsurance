@@ -81,6 +81,38 @@ export function titleCase(value?: string | null): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+/**
+ * Human-readable label for an add-on name or code that may arrive from the API
+ * as a raw snake_case key (e.g. "hazardous_sports"). Known codes are mapped to
+ * proper display names; everything else falls back to titleCase().
+ */
+const ADDON_LABELS: Record<string, string> = {
+  hazardous_sports: 'Hazardous sports cover',
+  adventure_sports: 'Adventure sports cover',
+  adventure_activity: 'Adventure activity cover',
+  adventure_activity_cover: 'Adventure activity cover',
+  sports_equipment: 'Sports equipment cover',
+  sports_equipment_cover: 'Sports equipment cover',
+  rental_vehicle_excess: 'Rental vehicle excess cover',
+  rental_vehicle_excess_cover: 'Rental vehicle excess cover',
+  car_rental_excess: 'Car rental excess cover',
+  pre_existing_condition: 'Pre-existing condition cover',
+  pre_existing: 'Pre-existing condition cover',
+  cancel_any_reason: 'Cancel for any reason',
+  cfar: 'Cancel for any reason',
+  trip_cancellation: 'Trip cancellation',
+  baggage_cover: 'Baggage cover',
+  golf_cover: 'Golf equipment cover',
+  home_protection: 'Home protection',
+  political_evacuation: 'Political evacuation cover',
+}
+
+export function addonLabel(raw?: string | null): string {
+  if (!raw) return '—'
+  const key = raw.trim().toLowerCase().replace(/\s+/g, '_')
+  return ADDON_LABELS[key] ?? titleCase(raw)
+}
+
 export function countryName(code?: string | null): string {
   const value = rawText(code).toUpperCase()
   if (!value) return '—'
@@ -422,16 +454,18 @@ export function buildTransactionSummary(
   const selectedAddonNames = pdTravellers
     .flatMap((t) => (Array.isArray(t?.selected_addons) ? t.selected_addons : []))
     .map((addon: any) =>
-      rawText(
-        typeof addon === 'string' ? addon : addon?.name,
-        typeof addon === 'object' ? addon?.label : '',
-        typeof addon === 'object' ? addon?.code : ''
+      addonLabel(
+        rawText(
+          typeof addon === 'string' ? addon : addon?.name,
+          typeof addon === 'object' ? addon?.label : '',
+          typeof addon === 'object' ? addon?.code : ''
+        ) || null
       )
     )
-    .filter(Boolean)
+    .filter((name) => name && name !== '—')
   const addonItems = [
     ...addonCoverages.map((c) => ({
-      name: rawText(c?.name, c?.CoverageName),
+      name: addonLabel(rawText(c?.name, c?.CoverageName) || null),
       limit: coverageLimitText(c),
     })),
     ...selectedAddonNames.map((name: string) => ({ name, limit: 'Included' })),

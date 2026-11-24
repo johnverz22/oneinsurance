@@ -228,17 +228,19 @@ export function TransactionSummaryCards({ summary }: { summary: TransactionSumma
     )}
 
     {/* Add-ons */}
-    {addonItems.length > 0 && (
-      <SummaryCard
-        icon={Plus}
-        title="Add-ons"
-        description="Additional cover included with this policy."
-        badge={
+    <SummaryCard
+      icon={Plus}
+      title="Add-ons"
+      description="Additional cover included with this policy."
+      badge={
+        addonItems.length > 0 ? (
           <StatusPill
             status={`${addonItems.length} add-on${addonItems.length === 1 ? '' : 's'}`}
           />
-        }
-      >
+        ) : null
+      }
+    >
+      {addonItems.length > 0 ? (
         <SummaryGroup title="Additional benefits">
           <div className="portal-benefit-list overflow-hidden">
             <dl className="grid">
@@ -258,8 +260,12 @@ export function TransactionSummaryCards({ summary }: { summary: TransactionSumma
             </dl>
           </div>
         </SummaryGroup>
-      </SummaryCard>
-    )}
+      ) : (
+        <p className="text-base text-[#878787] dark:text-[#b2b7b4]">
+          No add-ons selected for this case.
+        </p>
+      )}
+    </SummaryCard>
 
     {/* Contact info (if not embedded in travellers) */}
     {!hasNewShape && (holderEmail || holderPhone) && (

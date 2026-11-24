@@ -22,6 +22,11 @@ import { txStatus, type Transaction } from '@/lib/transactions'
 
 /** Flatten the summary into a single CSV row (one record per download). */
 function summaryToCsvRow(s: TransactionSummary): Record<string, unknown> {
+  const fmtAmount = (v: unknown) => {
+    if (v === null || v === undefined || v === '') return ''
+    const n = Number(v)
+    return Number.isFinite(n) ? n.toFixed(2) : String(v)
+  }
   return {
     policy_number: s.policyNumber ?? '',
     proposal_number: s.proposalNumber ?? '',
@@ -35,12 +40,12 @@ function summaryToCsvRow(s: TransactionSummary): Record<string, unknown> {
     trip_type: s.travelType,
     travellers: s.travellers.map((t) => t.name).join('; '),
     payment_reference: s.referenceId,
-    amount: s.amount ?? '',
+    amount: fmtAmount(s.amount),
     currency: s.currencyCode,
     payment_method: s.method,
     payment_status: s.rawStatus,
     payment_timestamp: formatTimestamp(s.timestamp),
-    net_commission: s.rawNetCommission ?? '',
+    net_commission: fmtAmount(s.rawNetCommission),
     agent: s.agentName ?? '',
     agent_code: s.agentCode,
     add_ons: s.addonItems.map((a) => a.name).join('; '),

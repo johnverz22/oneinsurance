@@ -8,7 +8,7 @@ import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { SearchInput } from '@/components/ui/search-input'
 import { SelectField } from '@/components/ui/select-field'
 import { PaginationBar } from '@/components/ui/pagination-bar'
-import { StatusPill, TagPill } from '@/components/ui/status-pill'
+import { StatusPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
@@ -19,7 +19,6 @@ import { extractApiError } from '@/lib/api-error'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
 import { cn, formatPersonName } from '@/lib/utils'
-import { tableMutedCls } from '@/lib/ui-classes'
 import {
   formatAmount,
   txLineOfBusiness,
@@ -29,7 +28,11 @@ import {
   txStatus,
   type Transaction,
 } from '@/lib/transactions'
+
 import type { ApiResponse, Paginated } from '@/types/admin/catalog'
+
+/** `text-regular-text` equivalent using CSS vars — supporting/body text in table cells. */
+const tdTextCls = 'text-[var(--text-sub)] dark:text-[var(--text-sub)]'
 
 const dash = (
   <span className="font-sans text-sm font-normal text-[var(--text-sub)]">
@@ -208,15 +211,23 @@ export function TransactionsClient() {
 
           <DataTable<Transaction>
             className="mt-5"
-            minWidth="min-w-[1050px]"
+            minWidth="min-w-[1100px]"
             bodyClassName="text-sm"
             columns={[
               {
                 header: 'Policy no.',
                 rowHeader: true,
                 cell: (tx) => (
-                  <span className="text-base text-[var(--text-main)]">
+                  <span className="text-base font-medium text-[var(--text-main)]">
                     {tx.policy_number ?? dash}
+                  </span>
+                ),
+              },
+              {
+                header: 'Certificate no.',
+                cell: (tx) => (
+                  <span className={tdTextCls}>
+                    {tx.certificate_number ?? dash}
                   </span>
                 ),
               },
@@ -224,41 +235,30 @@ export function TransactionsClient() {
                 header: 'Policy holder',
                 mobile: 'primary',
                 cell: (tx) => (
-                  <span className={tableMutedCls}>
+                  <span className={cn('font-medium', tdTextCls)}>
                     {formatPersonName(tx.policy_holder ?? tx.customer_name) ||
                       dash}
                   </span>
                 ),
               },
               {
-                header: 'Product',
+                header: 'Plan',
                 cell: (tx) => {
-                  const product = txProductName(tx)
-                  const lob = txLineOfBusiness(tx)
-                  if (!product && !lob) return dash
+                  const plan = tx.plan_name ?? tx.plan
+                  const product = txProductName(tx) ?? txLineOfBusiness(tx)
                   return (
-                    <>
+                    <span className="block text-[var(--text-main)]">
+                      <span className="block font-medium">
+                        {plan ?? dash}
+                      </span>
                       {product && (
-                        <span className={cn('block', tableMutedCls)}>
+                        <span className={cn('block text-xs', tdTextCls)}>
                           {product}
                         </span>
                       )}
-                      {lob && (
-                        <span className="mt-1 block">
-                          <TagPill>{lob}</TagPill>
-                        </span>
-                      )}
-                    </>
+                    </span>
                   )
                 },
-              },
-              {
-                header: 'Plan',
-                cell: (tx) => (
-                  <span className="font-medium text-[var(--text-main)]">
-                    {tx.plan_name ?? tx.plan ?? dash}
-                  </span>
-                ),
               },
               {
                 header: 'Premium',
@@ -266,7 +266,7 @@ export function TransactionsClient() {
                 cell: (tx) => {
                   const premium = txPremium(tx)
                   return premium !== null ? (
-                    <span className={tableMutedCls}>{formatAmount(premium)}</span>
+                    <span className={tdTextCls}>{formatAmount(premium)}</span>
                   ) : (
                     dash
                   )
@@ -275,7 +275,7 @@ export function TransactionsClient() {
               {
                 header: 'Currency',
                 cell: (tx) => (
-                  <span className={tableMutedCls}>
+                  <span className={tdTextCls}>
                     {tx.currency || dash}
                   </span>
                 ),
@@ -293,11 +293,11 @@ export function TransactionsClient() {
                   if (!created) return dash
                   return (
                     <span className="block">
-                      <span className={cn('block', tableMutedCls)}>
+                      <span className={cn('block', tdTextCls)}>
                         {created.day}
                       </span>
                       {created.time && (
-                        <span className={cn('mt-0.5 block text-xs', tableMutedCls)}>
+                        <span className="mt-0.5 block text-xs">
                           {created.time}
                         </span>
                       )}
