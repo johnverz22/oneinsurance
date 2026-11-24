@@ -213,7 +213,7 @@ Structure matches (Agents / Referral partners / Applicants tabs, `TableHeader`, 
 
 No dedicated admin mockup; guided by `admin-agents` ("local profile/case views") and the summary-card pattern.
 
-- `agent-cases-client.tsx` already contains a `SummaryCard` that matches the mockup (45px green icon tile, 20px green/sage title, 14px `#878787` description, 14px labels, 16px values, 12px uppercase gold group headings). **Extract it to `components/ui/summary-card.tsx`** and reuse it for transaction details, profile and settings. **P1**
+- `agent-cases-client.tsx` already contains a `SummaryCard` that matches the mockup (45px green icon tile, 20px green/sage title, 14px `#878787` description, 14px labels, 16px values, 12px uppercase gold group headings). **Extract it to `components/ui/summary-card.tsx`** and reuse it for transaction details, profile and settings. **P1** — [x] Extracted (`SummaryCard`, `SummaryGroup`, `SummaryField`, `SummaryCardsSkeleton`; data mapping in `lib/transaction-summary.ts`, cards in `transactions/transaction-summary-cards.tsx`). Reused by the case dialog and transaction details. Profile and settings still to adopt it.
 - `agent-profile-client.tsx`: h2 `text-lg` (518); buttons `min-h-10` / `min-h-9 text-xs` (997, 1249, 1319); badges `text-[11px]`; error text `#b91c1c`; `uppercase font-bold tracking-wider` heading (1263); local `panelTitleCls` card with `rounded-lg` + `#171919`. Convert to the shared summary card, 44px buttons, Failure red token. **P1**
 - Cases client uses `text-xs uppercase` for group headings (728, 1228) — correct per [G] (12px, uppercase, accent gold, sage in dark). Keep.
 - `bg-red-50 / text-red-700` alert (1070) → Failure red surface `#f8d9d6` / `#991b1b`. **P2**
@@ -224,7 +224,9 @@ Matches: table name + live count at left, search/date filters right, Export, tab
 
 Fix: shared table items (T1–T3), policy no. and time `text-xs` (T7), LoB chip, rows selector already present. Copy: mockup search matches policy, certificate, holder, product, plan, payment, status, agent — admin placeholder reads "Policy, holder, product, insurer, agent..."; align wording. **P2** [V]
 
-### 5.6 Transaction details — `admin-transaction-details` (largest structural gap, **P0**)
+### 5.6 Transaction details — `admin-transaction-details` (largest structural gap, **P0**) — [x] DONE except PDF download
+
+Done: header (title = policy number or `Not available`, description "Transaction details", status badge + download menu, "Back to transactions" link), five stacked full-width summary cards (Policy overview, Payment & commission, Travellers, Coverage summary, Add-ons), skeleton mirroring the cards, CSV download of the flattened record. `.travel-faq` CSS was already ported. Remaining: **PDF** download (no PDF generator exists; needs a decision: server-side export vs print stylesheet) and a visual check [V].
 
 | Aspect | Mockup [G] | admin now |
 |---|---|---|
@@ -309,5 +311,5 @@ Other codes (400/401/403/405/408/410/413/419/422/429/502/503/504) have mockups; 
 - [ ] Text: titles 24/30px, table headers 14px, secondary 16px where agent uses 16px.
 - [ ] Radii: cards/tables 8px, controls 6px, badges full pill.
 - [x] No hex outside `agent` palette + admin sidebar variation (`grep` check).
-- [ ] Transaction details shows five stacked cards, download works.
+- [~] Transaction details shows five stacked cards (done), download works (CSV done, PDF pending).
 - [ ] 404/500 match copy and layout; [x] login logo renders.
