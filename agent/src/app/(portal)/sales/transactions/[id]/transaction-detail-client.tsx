@@ -14,6 +14,7 @@ import {
   Download,
   XCircle,
 } from 'lucide-react'
+import { escapeCsvCell } from '@/lib/export-to-csv'
 import type { LucideIcon } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
@@ -410,12 +411,11 @@ function DownloadMenu({
   const ready = docData !== null
 
   const downloadCsv = () => {
-    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`
     const csv = [
       'Field,Value',
-      ...rows.map(([f, v]) => `${escape(f)},${escape(v)}`),
+      ...rows.map(([f, v]) => `${escapeCsvCell(f)},${escapeCsvCell(v)}`),
     ].join('\r\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

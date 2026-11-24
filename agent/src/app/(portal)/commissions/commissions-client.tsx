@@ -16,6 +16,7 @@ import {
 import { cn, formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { escapeCsvCell } from '@/lib/export-to-csv'
 import type { AgentStatistics } from '@/types/agent/sales'
 
 type CommissionLog = {
@@ -132,19 +133,19 @@ export function CommissionsClient() {
     ]
 
     const rows = logs.map((log) => [
-      `"${log.id}"`,
-      `"${log.policy_number ?? 'N/A'}"`,
-      `"${log.product_name ?? 'N/A'}"`,
-      `"${log.total_net_premium ?? 0}"`,
-      `"${log.commission_rate ?? 0}%"`,
-      `"${log.gross_commission ?? 0}"`,
-      `"${log.net_commission ?? 0}"`,
-      `"${log.is_included_in_payout ? 'Paid' : 'Pending'}"`,
-      `"${log.created_at ? log.created_at.split('T')[0] : ''}"`,
+      escapeCsvCell(log.id),
+      escapeCsvCell(log.policy_number ?? 'N/A'),
+      escapeCsvCell(log.product_name ?? 'N/A'),
+      escapeCsvCell(log.total_net_premium ?? 0),
+      escapeCsvCell(`${log.commission_rate ?? 0}%`),
+      escapeCsvCell(log.gross_commission ?? 0),
+      escapeCsvCell(log.net_commission ?? 0),
+      escapeCsvCell(log.is_included_in_payout ? 'Paid' : 'Pending'),
+      escapeCsvCell(log.created_at ? log.created_at.split('T')[0] : ''),
     ])
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url

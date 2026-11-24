@@ -38,6 +38,7 @@ import { ExportMenu } from '@/components/ui/export-menu'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { DateRangeField, type DateRange } from '@/components/ui/date-range-field'
 import type { Transaction, AgentStatistics, PaginationInfo, SalesListResponse } from '@/types/agent/sales'
+import { escapeCsvCell } from '@/lib/export-to-csv'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -359,13 +360,13 @@ export function SalesClient() {
         'Premium', 'Net Commission', 'Status', 'Created At',
       ]
       const csvRows = buildExportRows(rows).map((r) => [
-        `"${r.policy}"`, `"${r.certificate}"`, `"${r.payment}"`,
-        `"${r.plan}"`, `"${r.product}"`, `"${r.premium.toFixed(2)}"`,
-        `"${r.commissionPending ? 'Pending' : r.commission.toFixed(2)}"`,
-        `"${r.status}"`, `"${r.created}"`,
+        escapeCsvCell(r.policy), escapeCsvCell(r.certificate), escapeCsvCell(r.payment),
+        escapeCsvCell(r.plan), escapeCsvCell(r.product), escapeCsvCell(r.premium.toFixed(2)),
+        escapeCsvCell(r.commissionPending ? 'Pending' : r.commission.toFixed(2)),
+        escapeCsvCell(r.status), escapeCsvCell(r.created),
       ])
       const csv = [headers.join(','), ...csvRows.map((r) => r.join(','))].join('\n')
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
