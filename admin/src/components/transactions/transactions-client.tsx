@@ -18,7 +18,8 @@ import { downloadExport } from '@/lib/download-export'
 import { extractApiError } from '@/lib/api-error'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useHasHydrated, useIsAuthenticated } from '@/store/admin-auth-store'
-import { formatPersonName } from '@/lib/utils'
+import { cn, formatPersonName } from '@/lib/utils'
+import { tableMutedCls } from '@/lib/ui-classes'
 import {
   formatAmount,
   txLineOfBusiness,
@@ -208,12 +209,13 @@ export function TransactionsClient() {
           <DataTable<Transaction>
             className="mt-5"
             minWidth="min-w-[1050px]"
+            bodyClassName="text-sm"
             columns={[
               {
                 header: 'Policy no.',
                 rowHeader: true,
                 cell: (tx) => (
-                  <span className="text-sm font-medium text-[var(--text-main)]">
+                  <span className="text-base text-[var(--text-main)]">
                     {tx.policy_number ?? dash}
                   </span>
                 ),
@@ -222,7 +224,7 @@ export function TransactionsClient() {
                 header: 'Policy holder',
                 mobile: 'primary',
                 cell: (tx) => (
-                  <span className="font-medium text-[var(--text-main)]">
+                  <span className={tableMutedCls}>
                     {formatPersonName(tx.policy_holder ?? tx.customer_name) ||
                       dash}
                   </span>
@@ -237,7 +239,7 @@ export function TransactionsClient() {
                   return (
                     <>
                       {product && (
-                        <span className="block font-medium text-[var(--text-main)]">
+                        <span className={cn('block', tableMutedCls)}>
                           {product}
                         </span>
                       )}
@@ -253,7 +255,7 @@ export function TransactionsClient() {
               {
                 header: 'Plan',
                 cell: (tx) => (
-                  <span className="text-[var(--text-sub)]">
+                  <span className="font-medium text-[var(--text-main)]">
                     {tx.plan_name ?? tx.plan ?? dash}
                   </span>
                 ),
@@ -263,13 +265,17 @@ export function TransactionsClient() {
                 className: 'whitespace-nowrap tabular-nums',
                 cell: (tx) => {
                   const premium = txPremium(tx)
-                  return premium !== null ? formatAmount(premium) : dash
+                  return premium !== null ? (
+                    <span className={tableMutedCls}>{formatAmount(premium)}</span>
+                  ) : (
+                    dash
+                  )
                 },
               },
               {
                 header: 'Currency',
                 cell: (tx) => (
-                  <span className="text-[var(--text-sub)]">
+                  <span className={tableMutedCls}>
                     {tx.currency || dash}
                   </span>
                 ),
@@ -287,11 +293,11 @@ export function TransactionsClient() {
                   if (!created) return dash
                   return (
                     <span className="block">
-                      <span className="block text-[var(--text-sub)]">
+                      <span className={cn('block', tableMutedCls)}>
                         {created.day}
                       </span>
                       {created.time && (
-                        <span className="mt-0.5 block text-sm text-[var(--text-sub)]">
+                        <span className={cn('mt-0.5 block text-xs', tableMutedCls)}>
                           {created.time}
                         </span>
                       )}
