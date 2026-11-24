@@ -438,6 +438,8 @@
 
   .agent-dashboard__shell--collapsed .agent-dashboard__brand-link {
     margin-inline-start: 0;
+    width: 100%;
+    justify-content: center;
   }
 
   /* Wordmark / shield logo visibility — mirrors the mockup's sidebar-scoped rules.
