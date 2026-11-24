@@ -3,7 +3,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   One Insurance Agent Portal — Design Tokens
+   UnoSure Agent Portal — Design Tokens
    Based on: /downloads/design/ui-theme (rev. 20 Oct 2026)
    ============================================================ */
 
@@ -324,6 +324,51 @@
     }
   }
 
+  /* ---- Transaction details — coverage disclosures & benefit list ---- */
+
+  /* Disclosure used by the coverage summary groups. Starts closed; the
+     chevron rotates on open and motion is disabled for reduced-motion users. */
+  .travel-faq {
+    overflow: hidden;
+    transition: background-color 0.2s ease;
+  }
+
+  .travel-faq.portal-coverage-group[open] {
+    background-color: transparent;
+  }
+
+  .travel-faq__question::-webkit-details-marker {
+    display: none;
+  }
+
+  .travel-faq__chevron {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.26s ease;
+  }
+
+  .travel-faq[open] .travel-faq__chevron {
+    transform: rotate(180deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .travel-faq,
+    .travel-faq__chevron {
+      transition: none;
+    }
+  }
+
+  /* Tinted benefit limits surface with zebra striping. */
+  .portal-benefit-list {
+    background-color: var(--subtle);
+    border-radius: 6px;
+    color: var(--text-main);
+  }
+
+  .portal-benefit-list dl > :nth-child(2n) {
+    background-color: var(--portal-canvas);
+  }
+
   /* Portal shell canvas (inset scrollable area behind cards) */
   .portal-canvas {
     background-color: var(--portal-canvas);
@@ -395,16 +440,24 @@
     margin-inline-start: 0;
   }
 
-  /* Wordmark swaps for the shield logo when collapsed */
+  /* Wordmark / shield logo visibility — mirrors the mockup's sidebar-scoped rules.
+     Sidebar always shows the full wordmark; shield shows only when collapsed. */
   .agent-dashboard__logo--shield {
     display: none;
   }
 
-  .agent-dashboard__shell--collapsed .agent-dashboard__logo--full {
+  /* Sidebar context: show the full wordmark, hide the shield by default */
+  .agent-dashboard__sidebar .agent-dashboard__logo--full {
+    display: block;
+  }
+
+  .agent-dashboard__sidebar .agent-dashboard__logo--shield,
+  .agent-dashboard__shell--collapsed .agent-dashboard__sidebar .agent-dashboard__logo--full {
     display: none;
   }
 
-  .agent-dashboard__shell--collapsed .agent-dashboard__logo--shield {
+  /* Collapsed: show shield icon (size-9 = 36 × 36 px, per mockup) */
+  .agent-dashboard__shell--collapsed .agent-dashboard__sidebar .agent-dashboard__logo--shield {
     display: block;
   }
 
