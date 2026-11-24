@@ -192,6 +192,7 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
                   'size-5 shrink-0 max-sm:size-[18px]',
                   active ? 'text-[#006838]' : 'text-white'
                 )}
+                strokeWidth={1.5}
                 aria-hidden="true"
               />
               <span

@@ -29,7 +29,7 @@ export function AgentsClient() {
         title="Agents & applicants"
         description="Review registered agents, referral partners, and incoming applications."
       />
-      <div className="mx-auto w-full max-w-7xl">
+      <>
         <PillTabs
           tabs={TABS}
           active={activeTab}
@@ -44,7 +44,7 @@ export function AgentsClient() {
           {activeTab === 'referral-partners' && <ReferralPartnersTab />}
           {activeTab === 'applicants' && <ApplicantsTab />}
         </section>
-      </div>
+      </>
     </>
   )
 }

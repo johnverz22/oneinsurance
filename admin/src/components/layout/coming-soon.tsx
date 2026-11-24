@@ -10,7 +10,7 @@ export function ComingSoon({ title }: { title: string }) {
   return (
     <>
       <PortalContentHeader title={title} />
-      <div className="mx-auto w-full max-w-7xl">
+      <>
         <section className="mt-8 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6">
           <div className="flex min-h-64 flex-col items-center justify-center py-8 text-center sm:min-h-80">
             <span
@@ -32,7 +32,7 @@ export function ComingSoon({ title }: { title: string }) {
           Design placeholder only. No live admin workflow or data is connected
           here.
         </p>
-      </div>
+      </>
     </>
   )
 }

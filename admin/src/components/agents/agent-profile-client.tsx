@@ -461,7 +461,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
     : []
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-5">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Link

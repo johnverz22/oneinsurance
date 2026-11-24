@@ -27,7 +27,7 @@ export function ProductsClient() {
         title="Product catalog"
         description="Create a line of business first, then add products to the right area."
       />
-      <div className="mx-auto w-full max-w-7xl">
+      <>
         <section className="mt-6" aria-label="Product catalog">
           <PillTabs
             tabs={TABS}
@@ -46,7 +46,7 @@ export function ProductsClient() {
             )}
           </div>
         </section>
-      </div>
+      </>
     </>
   )
 }

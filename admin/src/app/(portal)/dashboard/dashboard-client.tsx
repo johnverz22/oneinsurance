@@ -197,7 +197,7 @@ export function DashboardClient() {
         title="Dashboard"
         description="Manage products, commissions, agents and platform activity from one place."
       />
-      <div className="mx-auto w-full max-w-7xl">
+      <>
       {/* Overview metrics */}
       <section aria-labelledby="admin-overview-title" className="mt-8">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
@@ -289,7 +289,7 @@ export function DashboardClient() {
           )}
         </div>
       </section>
-    </div>
+    </>
     </>
   )
 }

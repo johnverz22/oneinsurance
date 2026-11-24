@@ -145,7 +145,7 @@ export function TransactionsClient() {
         title="Transactions"
         description="Review policy transactions across agents."
       />
-      <div className="mx-auto w-full max-w-7xl">
+      <>
         <section className="mt-6" aria-label="Transactions">
           <TableHeader
             title="All transactions"
@@ -348,7 +348,7 @@ export function TransactionsClient() {
             />
           )}
         </section>
-      </div>
+      </>
     </>
   )
 }

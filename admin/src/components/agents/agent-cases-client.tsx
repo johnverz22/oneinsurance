@@ -205,7 +205,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl">
+    <>
       <div>
         <Link
           href="/agents?tab=agents"
@@ -453,7 +453,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
         transactionId={selectedCaseId}
         onClose={() => setSelectedCaseId(null)}
       />
-    </div>
+    </>
   )
 }
 

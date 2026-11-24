@@ -83,8 +83,8 @@ Both apps share geometry. Verified identical [A]: sidebar 232/76px, top bar `min
 | # | Finding | File | Target | Pri | Status |
 |---|---|---|---|---|---|
 | S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 | |
-| S2 | Phone canvas padding: bottom `pb-7` (28px); phone spec is 24 top / 16 H / 24 bottom. | `portal-layout.tsx` | `pb-6` on phone | P2 | |
-| S3 | Sidebar nav icons use default stroke (2). Spec: 20px outline, `strokeWidth=1.5`. | `portal-sidebar.tsx` | add `strokeWidth={1.5}` | P2 [V] | |
+| S2 | Phone canvas padding: bottom `pb-7` (28px); phone spec is 24 top / 16 H / 24 bottom. | `portal-layout.tsx` | `pb-6` on phone | P2 | [x] Done |
+| S3 | Sidebar nav icons use default stroke (2). Spec: 20px outline, `strokeWidth=1.5`. | `portal-sidebar.tsx` | add `strokeWidth={1.5}` | P2 [V] | [x] Done |
 | S4 | Mobile nav shows icons only (label is `sr-only`). Agent shows a visible label (`text-xs sm:text-sm font-semibold`) with 18px/20px icon, stroke 1.5. | `mobile-nav.tsx` | Visible label; admin mockup nav set [V] | P1 | [x] Done |
 | S5 | Mobile nav active pill `#e8f3e9` + `--text-sub`; dark active text `#d0e3c8`. Target: light `#d0e3c8` bg + `#006838` text; dark `#006838` bg + white text. Inactive light `#526858`, dark `#808482`. | `mobile-nav.tsx` | per `.agent-dashboard__bottom-item` | P1 | [x] Done |
 | S6 | Top-bar horizontal padding `px-5 sm:px-6 lg:pl-11`; agent CSS is `padding-inline: 10px`, `lg: padding-left: 44px`. | `portal-top-bar.tsx` | verify `px-5/6` is intended | P2 [V] | |
@@ -94,7 +94,7 @@ Both apps share geometry. Verified identical [A]: sidebar 232/76px, top bar `min
 
 ---
 
-## 3. Page header (`portal-content-header.tsx`) [A]
+## 3. Page header (`portal-content-header.tsx`) [A] — [x] DONE (P1 rows ported from `agent`; `searchSlot` prop removed, no callers)
 
 | Property | admin | agent (target) | Pri |
 |---|---|---|---|
@@ -106,7 +106,7 @@ Both apps share geometry. Verified identical [A]: sidebar 232/76px, top bar `min
 
 Title is correct: `mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl`.
 
-Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper inside every page client (dashboard, agents, products, transactions, detail, coming-soon). `PortalLayout` already centres at 1280px. **P2**
+Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper inside every page client (dashboard, agents, products, transactions, detail, coming-soon). `PortalLayout` already centres at 1280px. **P2** — [x] Done (dashboard, agents, products, transactions, cases, coming-soon, profile; `PageSkeleton` keeps its own wrapper)
 
 ---
 
