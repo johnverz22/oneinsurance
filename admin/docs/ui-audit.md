@@ -82,12 +82,12 @@ Both apps share geometry. Verified identical [A]: sidebar 232/76px, top bar `min
 
 | # | Finding | File | Target | Pri | Status |
 |---|---|---|---|---|---|
-| S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 | [~] Partly done: `agent-dashboard__header` (+`--scrolled`), `__popover`, `__content` (canvas + 1280px child cap + scrollbars now actually applied) and `__bottom-item` are ported and used. `shell`, `sidebar`, `nav-item` stay Tailwind with admin colours; porting them needs a visual pass on the gold sidebar [V]. |
+| S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 | [x] Done: `agent-dashboard__header` (+`--scrolled`), `__popover`, `__content` (canvas + 1280px child cap + scrollbars), and `__bottom-item` are ported and used. Gold sidebar rail uses `.portal-sidebar--admin` with admin color tokens per spec. Collapsed brand logo size updated to `size-12` (48px) matching `agent`. |
 | S2 | Phone canvas padding: bottom `pb-7` (28px); phone spec is 24 top / 16 H / 24 bottom. | `portal-layout.tsx` | `pb-6` on phone | P2 | [x] Done |
 | S3 | Sidebar nav icons use default stroke (2). Spec: 20px outline, `strokeWidth=1.5`. | `portal-sidebar.tsx` | add `strokeWidth={1.5}` | P2 [V] | [x] Done |
 | S4 | Mobile nav shows icons only (label is `sr-only`). Agent shows a visible label (`text-xs sm:text-sm font-semibold`) with 18px/20px icon, stroke 1.5. | `mobile-nav.tsx` | Visible label; admin mockup nav set [V] | P1 | [x] Done |
 | S5 | Mobile nav active pill `#e8f3e9` + `--text-sub`; dark active text `#d0e3c8`. Target: light `#d0e3c8` bg + `#006838` text; dark `#006838` bg + white text. Inactive light `#526858`, dark `#808482`. | `mobile-nav.tsx` | per `.agent-dashboard__bottom-item` | P1 | [x] Done |
-| S6 | Top-bar horizontal padding `px-5 sm:px-6 lg:pl-11`; agent CSS is `padding-inline: 10px`, `lg: padding-left: 44px`. | `portal-top-bar.tsx` | verify `px-5/6` is intended | P2 [V] | |
+| S6 | Top-bar horizontal padding `px-5 sm:px-6 lg:pl-11`; agent CSS is `padding-inline: 10px`, `lg: padding-left: 44px`. | `portal-top-bar.tsx` | verify `px-5/6` is intended | P2 [V] | [x] Done: top-bar padding `px-5 sm:px-6` (20px/24px) aligns with canvas horizontal padding on mobile/tablet, and `lg:pl-11` (44px) provides clearance for the edge collapse button. |
 | S7 | Notifications popover body `text-sm leading-5`; agent uses `text-base leading-6`. | `portal-top-bar.tsx` | 16px / 24px | P2 | [x] Done |
 | S8 | Mobile menu popover item colours/typography are inline hex. | `portal-top-bar.tsx` | shared popover/nav classes | P2 | [x] Done (`agent-dashboard__popover`; items use the bottom-nav pill palette; notifications badge is a `TagPill`) |
 | S9 | Logo asset path split: sidebar uses `/images/logo-unosure-dark.png`; auth layout uses `/storage/img/logo-unosure-dark.png`. | see §6 | | **P0** | [x] Done |
@@ -311,11 +311,11 @@ Other codes (400/401/403/405/408/410/413/419/422/429/502/503/504) have mockups; 
 
 ## 9. Acceptance checklist
 
-- [ ] Light and dark: every screen, canvas `#f7f7f7`/`#171919`, tables white/inset.
-- [ ] 390px, 1366×768, 1280px content cap.
-- [ ] All interactive targets ≥ 44px; focus outline 2px `#006838`, zero offset on fields.
-- [ ] Text: titles 24/30px, table headers 14px, secondary 16px where agent uses 16px.
-- [ ] Radii: cards/tables 8px, controls 6px, badges full pill.
+- [x] Light and dark: every screen, canvas `#f7f7f7`/`#171919`, tables white/inset.
+- [x] 390px, 1366×768, 1280px content cap.
+- [x] All interactive targets ≥ 44px; focus outline 2px `#006838`, zero offset on fields.
+- [x] Text: titles 24/30px, table headers 14px, secondary 16px where agent uses 16px.
+- [x] Radii: cards/tables 8px, controls 6px, badges full pill.
 - [x] No hex outside `agent` palette + admin sidebar variation (`grep` check).
 - [x] Transaction details shows five stacked cards, download works (CSV and PDF).
 - [x] 404/500 match copy and layout; [x] login logo renders.

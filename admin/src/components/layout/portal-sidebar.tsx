@@ -117,7 +117,7 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
           aria-label="UnoSure dashboard"
           className={cn(
             'inline-flex min-h-12 items-center rounded-md focus-visible:outline-2 focus-visible:outline-[#183d2c]',
-            collapsed ? 'ms-0' : 'ms-3'
+            collapsed ? 'ms-0 w-full justify-center' : 'ms-3'
           )}
         >
           {/* Full wordmark — hidden when collapsed */}
@@ -129,13 +129,13 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
             className={cn('h-auto w-36', collapsed && 'hidden')}
             priority
           />
-          {/* Shield mark — only visible when collapsed */}
+          {/* Shield mark — only visible when collapsed (size-12 per agent/mockup spec) */}
           <Image
             src="/images/icon-unosure-dark.png"
             alt="UnoSure"
-            width={36}
-            height={36}
-            className={cn('size-9', !collapsed && 'hidden')}
+            width={48}
+            height={48}
+            className={cn('size-12', !collapsed && 'hidden')}
             priority
           />
         </Link>
@@ -153,7 +153,7 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
           ADMIN PORTAL
         </span>
         <span aria-hidden="true" className={collapsed ? undefined : 'hidden'}>
-          M
+          AD
         </span>
       </p>
 

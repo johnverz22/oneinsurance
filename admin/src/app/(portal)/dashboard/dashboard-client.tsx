@@ -20,7 +20,7 @@ import type { AgentStatistics } from '@/types/admin/auth'
 type MetricProps = {
   label: string
   value: string
-  description: string
+  description?: string
   icon: React.ReactNode
   loading?: boolean
 }
@@ -41,9 +41,11 @@ function MetricCard({ label, value, description, icon, loading }: MetricProps) {
           {value}
         </p>
       )}
-      <p className="agent-dashboard__metric-description text-[var(--text-sub)]">
-        {description}
-      </p>
+      {description ? (
+        <p className="agent-dashboard__metric-description text-[var(--text-sub)]">
+          {description}
+        </p>
+      ) : null}
     </article>
   )
 }
@@ -208,28 +210,24 @@ export function DashboardClient() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <MetricCard
             label="Total sales"
-            description="Across all agents"
             value={formatCurrency(stats?.total_sales ?? 0)}
             icon={<CreditCard className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Gross commissions"
-            description="Before deductions"
             value={formatCurrency(stats?.gross_commissions ?? 0)}
             icon={<ArrowUpRight className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Net commissions"
-            description="After deductions"
             value={formatCurrency(stats?.net_commissions ?? 0)}
             icon={<CreditCard className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Active agents"
-            description="Currently active"
             value={String(activeAgents ?? 0)}
             icon={<Users className="size-5" aria-hidden="true" />}
             loading={agentsLoading}
