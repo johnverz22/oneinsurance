@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Pencil, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, Pencil, Trash2, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { getInitials } from '@/lib/utils'
 import type { AdminUser } from '@/types/admin/auth'
@@ -16,7 +16,9 @@ import {
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
+import { ActionIcon } from '@/components/ui/action-icon'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SummaryCard, SummaryField } from '@/components/ui/summary-card'
 
 // ============================================================
 // Schema
@@ -130,7 +132,7 @@ function PasswordField({
           type="button"
           onClick={onToggleShow}
           aria-label={show ? 'Hide password' : 'Show password'}
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-[#59645d] hover:text-[#006838] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[var(--text-muted)] dark:hover:text-[#d0e3c8]"
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-[var(--text-sub)] hover:text-[#006838] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:text-[var(--text-muted)] dark:hover:text-[#d0e3c8]"
         >
           {show ? (
             <EyeOff className="size-4" aria-hidden="true" />
@@ -449,39 +451,32 @@ export function SettingsClient() {
         <SettingsSkeleton />
       ) : (
       /* ── Profile information ── */
-      <section className="portal-page-card p-5 sm:p-6" aria-labelledby="profile-title">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2
-              id="profile-title"
-              className="text-xl font-semibold tracking-tight text-[var(--text-main)]"
-            >
-              Profile information
-            </h2>
-            <p className="mt-1 text-sm text-[var(--text-muted)]">
-              {isSuperadmin
-                ? 'Profile details are read-only for superadmin accounts.'
-                : 'The details associated with your portal account.'}
-            </p>
-          </div>
-          {/* Superadmins cannot edit via PUT /admin/users/{id} — hide the edit button. */}
-          {!editing && !isSuperadmin && (
-            <button
-              type="button"
+      <SummaryCard
+        icon={UserRound}
+        title="Profile information"
+        description={
+          isSuperadmin
+            ? 'Profile details are read-only for superadmin accounts.'
+            : 'The details associated with your portal account.'
+        }
+        badge={
+          /* Superadmins cannot edit via PUT /admin/users/{id} — hide the edit button. */
+          !editing && !isSuperadmin ? (
+            <ActionIcon
+              label="Edit profile"
+              hint="Edit profile"
               onClick={() => {
                 resetFormToCurrent()
                 setEditing(true)
               }}
-              aria-label="Edit profile"
-              className="ui-action-icon shrink-0"
             >
               <Pencil aria-hidden="true" />
-            </button>
-          )}
-        </div>
-
+            </ActionIcon>
+          ) : undefined
+        }
+      >
         {/* Avatar + identity row */}
-        <div className="mt-6 flex flex-wrap items-start justify-between gap-5 border-b border-[var(--border)] pb-6">
+        <div className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--border)] pb-6">
           <div className="flex min-w-0 items-center gap-5">
             <div className="relative shrink-0">
               {profilePhotoSrc ? (
@@ -512,7 +507,7 @@ export function SettingsClient() {
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
                   disabled={photoPending}
-                  className="text-left text-[0.75rem] font-semibold leading-4 text-[#006838] underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#006838] disabled:opacity-60 dark:text-[#d0e3c8]"
+                  className="inline-flex min-h-11 items-center text-left text-sm font-semibold text-[#006838] underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#006838] disabled:opacity-60 dark:text-[#d0e3c8]"
                 >
                   {photoPending ? 'Uploading…' : 'Change photo'}
                 </button>
@@ -522,7 +517,7 @@ export function SettingsClient() {
                     onClick={removePhoto}
                     disabled={photoPending}
                     aria-label="Remove profile photo"
-                    className="flex items-center gap-1 text-[0.75rem] font-semibold leading-4 text-[#dc2626] underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#dc2626] disabled:opacity-60"
+                    className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-[#991b1b] underline underline-offset-4 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-[#991b1b] disabled:opacity-60 dark:text-[#fca5a5] dark:focus-visible:outline-[#fca5a5]"
                   >
                     <Trash2 className="size-3" aria-hidden="true" />
                     Remove
@@ -530,7 +525,7 @@ export function SettingsClient() {
                 )}
               </div>
               {photoError && (
-                <p role="alert" className="mt-1 text-sm text-[#dc2626] dark:text-red-300">
+                <p role="alert" className="mt-1 text-sm text-[#991b1b] dark:text-[#fca5a5]">
                   {photoError}
                 </p>
               )}
@@ -553,32 +548,20 @@ export function SettingsClient() {
 
         {/* Read-only fields */}
         {!editing && (
-          <div className="mt-7 grid gap-6 sm:grid-cols-2">
-            <div>
-              <p className="text-sm text-[var(--text-muted)]">First name</p>
-              <p className="mt-1 font-semibold text-[var(--text-main)]">
-                {details?.first_name || splitName(details?.name).first || '—'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-[var(--text-muted)]">Last name</p>
-              <p className="mt-1 font-semibold text-[var(--text-main)]">
-                {details?.last_name || splitName(details?.name).last || '—'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-[var(--text-muted)]">Email</p>
-              <p className="mt-1 break-all font-semibold text-[var(--text-main)]">
-                {details?.email || user?.email || '—'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-[var(--text-muted)]">Phone</p>
-              <p className="mt-1 font-semibold text-[var(--text-main)]">
-                {details?.phone || details?.telephone || '—'}
-              </p>
-            </div>
-          </div>
+          <dl className="mt-7 grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            <SummaryField label="First name">
+              {details?.first_name || splitName(details?.name).first || '—'}
+            </SummaryField>
+            <SummaryField label="Last name">
+              {details?.last_name || splitName(details?.name).last || '—'}
+            </SummaryField>
+            <SummaryField label="Email">
+              {details?.email || user?.email || '—'}
+            </SummaryField>
+            <SummaryField label="Phone">
+              {details?.phone || details?.telephone || '—'}
+            </SummaryField>
+          </dl>
         )}
 
         {/* Edit form — hidden for superadmin */}
@@ -637,45 +620,33 @@ export function SettingsClient() {
                 {...register('designation')}
               />
             </Field>
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-primary text-sm"
-              >
-                {isSubmitting ? 'Saving…' : 'Save changes'}
-              </button>
+            <div className="flex flex-wrap justify-end gap-3 border-t border-[var(--border)] pt-5">
               <button
                 type="button"
                 onClick={() => {
                   resetFormToCurrent()
                   setEditing(false)
                 }}
-                className="btn-secondary text-sm"
+                className="btn-secondary"
               >
                 Cancel
+              </button>
+              <button type="submit" disabled={isSubmitting} className="btn-primary">
+                {isSubmitting ? 'Saving…' : 'Save changes'}
               </button>
             </div>
           </form>
         )}
-      </section>
+      </SummaryCard>
       )}
 
       {/* ── Update password ── */}
-      <section
-        className="portal-page-card mt-5 p-5 sm:p-6"
-        aria-labelledby="password-title"
+      <SummaryCard
+        icon={KeyRound}
+        title="Update password"
+        description="Use a unique password with at least 12 characters."
       >
-        <h2
-          id="password-title"
-          className="text-xl font-semibold tracking-tight text-[var(--text-main)]"
-        >
-          Update password
-        </h2>
-        <p className="mt-1 text-sm text-[var(--text-sub)]">
-          Use a unique password with at least 12 characters.
-        </p>
-        <form onSubmit={handlePasswordSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handlePasswordSubmit} className="space-y-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <PasswordField
               id="admin-current-password"
@@ -708,7 +679,7 @@ export function SettingsClient() {
             />
           </div>
           {pwError && (
-            <p role="alert" className="text-sm text-[#dc2626] dark:text-red-300">
+            <p role="alert" className="text-sm text-[#991b1b] dark:text-[#fca5a5]">
               {pwError}
             </p>
           )}
@@ -717,11 +688,13 @@ export function SettingsClient() {
               {pwNotice}
             </p>
           )}
-          <button type="submit" disabled={pwSaving} className="btn-primary">
-            {pwSaving ? 'Updating…' : 'Update password'}
-          </button>
+          <div className="flex justify-end border-t border-[var(--border)] pt-5">
+            <button type="submit" disabled={pwSaving} className="btn-primary">
+              {pwSaving ? 'Updating…' : 'Update password'}
+            </button>
+          </div>
         </form>
-      </section>
+      </SummaryCard>
     </div>
   )
 }

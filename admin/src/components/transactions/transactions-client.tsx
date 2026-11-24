@@ -8,7 +8,7 @@ import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { SearchInput } from '@/components/ui/search-input'
 import { SelectField } from '@/components/ui/select-field'
 import { PaginationBar } from '@/components/ui/pagination-bar'
-import { StatusPill } from '@/components/ui/status-pill'
+import { StatusPill, TagPill } from '@/components/ui/status-pill'
 import { DataTable } from '@/components/ui/data-table'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { ExportMenu } from '@/components/ui/export-menu'
@@ -242,8 +242,8 @@ export function TransactionsClient() {
                         </span>
                       )}
                       {lob && (
-                        <span className="mt-1 inline-flex rounded-md bg-[#eff6ef] px-2 py-0.5 text-xs font-medium text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
-                          {lob}
+                        <span className="mt-1 block">
+                          <TagPill>{lob}</TagPill>
                         </span>
                       )}
                     </>

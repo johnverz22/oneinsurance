@@ -82,14 +82,14 @@ Both apps share geometry. Verified identical [A]: sidebar 232/76px, top bar `min
 
 | # | Finding | File | Target | Pri | Status |
 |---|---|---|---|---|---|
-| S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 | |
+| S1 | Shell uses hardcoded Tailwind hex instead of the shared `agent-dashboard__*` classes (`shell`, `sidebar`, `nav-item`, `header`, `content`, `popover`, `bottom-item`). `AGENTS.md` says shell CSS should stay in sync with the mockup. | `portal-layout/sidebar/top-bar/mobile-nav` | Port the agent classes to `admin/globals.css`; keep admin colours as overrides (`.portal-sidebar--admin`). | P1 | [~] Partly done: `agent-dashboard__header` (+`--scrolled`), `__popover`, `__content` (canvas + 1280px child cap + scrollbars now actually applied) and `__bottom-item` are ported and used. `shell`, `sidebar`, `nav-item` stay Tailwind with admin colours; porting them needs a visual pass on the gold sidebar [V]. |
 | S2 | Phone canvas padding: bottom `pb-7` (28px); phone spec is 24 top / 16 H / 24 bottom. | `portal-layout.tsx` | `pb-6` on phone | P2 | [x] Done |
 | S3 | Sidebar nav icons use default stroke (2). Spec: 20px outline, `strokeWidth=1.5`. | `portal-sidebar.tsx` | add `strokeWidth={1.5}` | P2 [V] | [x] Done |
 | S4 | Mobile nav shows icons only (label is `sr-only`). Agent shows a visible label (`text-xs sm:text-sm font-semibold`) with 18px/20px icon, stroke 1.5. | `mobile-nav.tsx` | Visible label; admin mockup nav set [V] | P1 | [x] Done |
 | S5 | Mobile nav active pill `#e8f3e9` + `--text-sub`; dark active text `#d0e3c8`. Target: light `#d0e3c8` bg + `#006838` text; dark `#006838` bg + white text. Inactive light `#526858`, dark `#808482`. | `mobile-nav.tsx` | per `.agent-dashboard__bottom-item` | P1 | [x] Done |
 | S6 | Top-bar horizontal padding `px-5 sm:px-6 lg:pl-11`; agent CSS is `padding-inline: 10px`, `lg: padding-left: 44px`. | `portal-top-bar.tsx` | verify `px-5/6` is intended | P2 [V] | |
 | S7 | Notifications popover body `text-sm leading-5`; agent uses `text-base leading-6`. | `portal-top-bar.tsx` | 16px / 24px | P2 | [x] Done |
-| S8 | Mobile menu popover item colours/typography are inline hex. | `portal-top-bar.tsx` | shared popover/nav classes | P2 | |
+| S8 | Mobile menu popover item colours/typography are inline hex. | `portal-top-bar.tsx` | shared popover/nav classes | P2 | [x] Done (`agent-dashboard__popover`; items use the bottom-nav pill palette; notifications badge is a `TagPill`) |
 | S9 | Logo asset path split: sidebar uses `/images/logo-unosure-dark.png`; auth layout uses `/storage/img/logo-unosure-dark.png`. | see §6 | | **P0** | [x] Done |
 
 ---
@@ -151,8 +151,8 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 | B3 | `fieldCls`: `focus-visible:outline-offset-2`; [G] §9: 2px `#006838` outline, **zero offset**, no page-level offset on text fields. | remove offset | P1 | [x] Done |
 | B4 | `fieldCls`: text `#183d2c`, dark bg `#1c1e1e`, placeholder `#9bb09f`. | `--text-main`, `--card`, `--text-muted` | P1 | [x] Done |
 | B5 | Fields are `text-sm`; [G]: mobile text inputs stay 16px. | `text-base` below `sm`, or per `.ui-form-field` | P1 | [x] Done |
-| B6 | Compact controls under 44px: `min-h-9` (date range Apply/Clear), `min-h-10` (export menu items, profile buttons), `min-h-9` (retry). | `min-h-11` | P1 | [~] Shared parts done (date range, export menu). Profile buttons (`agent-profile-client.tsx` 997, 1249, 1319) remain for §5.4 |
-| B7 | Login inputs `min-h-12` (48px) with label gap `mt-1` on password. | 44px min, label gap 8px | P2 | |
+| B6 | Compact controls under 44px: `min-h-9` (date range Apply/Clear), `min-h-10` (export menu items, profile buttons), `min-h-9` (retry). | `min-h-11` | P1 | [x] Done (shared parts earlier; profile download buttons now `min-h-11`) |
+| B7 | Login inputs `min-h-12` (48px) with label gap `mt-1` on password. | 44px min, label gap 8px | P2 | [x] Done: password gap is now `mt-2`. Inputs stay `min-h-12` (48px) because that satisfies the 44px minimum and matches `agent` login; revisit only if the mockup shows 44px [V]. Login error box now uses the Failure red surface. |
 
 ### 4.6 Modals (`ui/modal.tsx`)
 
@@ -170,7 +170,7 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 - `.ui-status-badge` and variants are identical to `agent`; `.ui-action-icon` and hint badge match [G]. No change. [A]
 - Ad-hoc chips: LoB tag `rounded-md bg-#eef4ee text-xs` (transactions), `rounded-full … text-[11px]` badges in profile. Replace with `<StatusPill>` or the count-badge variant (no icon). **P2**
 - [x] Table "Clear" buttons use `hover:bg-#e6f2e8`; use `.btn-tertiary`. **P2** Done
-- [ ] Ad-hoc chips (LoB tag, profile badges) → `<StatusPill>` / count badge. Not yet done.
+- [x] Ad-hoc chips (LoB tag, profile badges, notifications badge, compare-modal tags) → new `TagPill` (`ui/status-pill.tsx`, same `.ui-status-badge` chrome, no icon; `tone` `info` / `pending`). Done.
 
 ---
 
@@ -199,26 +199,26 @@ Guide: four metric cards (sales, commissions, active agents), quick actions lead
 
 Conforms structurally: h1 "Product catalog" with the guide's description, tabs above tables, `TableHeader` with count, inline plus `ActionIcon` before Export, add-product disabled with no active lines of business, edit/delete icons with hints. [G][A]
 
-Remaining: shared fixes in §4 (table bg/headers, buttons, modals, pagination, 44px targets). Empty-state card in `products-tab.tsx` (`rounded-full bg-#e6f2e8 size-14`, `text-xl`) — confirm [V]. Helper `text-xs` hints at 571 and the `#f3f6f2` note at 588 → tokens. **P2**
+Remaining: shared fixes in §4 (table bg/headers, buttons, modals, pagination, 44px targets). Empty-state card in `products-tab.tsx` (`rounded-full bg-#e6f2e8 size-14`, `text-xl`) — confirm [V]. Helper hint and the default-commission note now use `text-sm --text-sub` and `--subtle`. **P2** — [x] Done (empty-state card still [V]).
 
 ### 5.3 Agents & applicants — `admin-agents`
 
 Structure matches (Agents / Referral partners / Applicants tabs, `TableHeader`, export, search).
 
 - [x] Pagination shows only the bar; add rows selector (4.3). **P1** Done
-- `applicants-tab.tsx` `dt` labels `text-xs` (lines 195–217): detail labels are 14px. **P1**
-- `ConfirmDialog` usage (delete, activate, approve, reject) → fixed via M1. **P0**
+- [x] `applicants-tab.tsx` detail labels are 14px and values 16px regular. **P1** Done
+- [x] `ConfirmDialog` usage (delete, activate, approve, reject) → fixed via M1. **P0** Done
 - Empty/search copy "No agents match your search." — confirm [V]. **P2**
-- Documents dialog should state that no verification/bank documents are supplied; profile must not show bank account data. [G] Check `agent-profile-client.tsx` payment section (line 748+) — it renders payment accounts. **P1** [V]
+- Documents dialog should state that no verification/bank documents are supplied; profile must not show bank account data. [G] Check `agent-profile-client.tsx` payment section (line 748+) — it renders payment accounts. **P1** [V] **Not changed:** the Payment details card still shows masked payout methods. Removing it drops live data, so it needs product confirmation first.
 
 ### 5.4 Agent profile & cases (`agent-profile-client.tsx`, `agent-cases-client.tsx`)
 
 No dedicated admin mockup; guided by `admin-agents` ("local profile/case views") and the summary-card pattern.
 
 - `agent-cases-client.tsx` already contains a `SummaryCard` that matches the mockup (45px green icon tile, 20px green/sage title, 14px `#878787` description, 14px labels, 16px values, 12px uppercase gold group headings). **Extract it to `components/ui/summary-card.tsx`** and reuse it for transaction details, profile and settings. **P1** — [x] Extracted (`SummaryCard`, `SummaryGroup`, `SummaryField`, `SummaryCardsSkeleton`; data mapping in `lib/transaction-summary.ts`, cards in `transactions/transaction-summary-cards.tsx`). Reused by the case dialog and transaction details. Profile and settings still to adopt it.
-- `agent-profile-client.tsx`: h2 `text-lg` (518); buttons `min-h-10` / `min-h-9 text-xs` (997, 1249, 1319); badges `text-[11px]`; error text `#b91c1c`; `uppercase font-bold tracking-wider` heading (1263); local `panelTitleCls` card with `rounded-lg` + `#171919`. Convert to the shared summary card, 44px buttons, Failure red token. **P1**
+- `agent-profile-client.tsx`: h2 `text-lg` (518); buttons `min-h-10` / `min-h-9 text-xs` (997, 1249, 1319); badges `text-[11px]`; error text `#b91c1c`; `uppercase font-bold tracking-wider` heading (1263); local `panelTitleCls` card with `rounded-lg` + `#171919`. Convert to the shared summary card, 44px buttons, Failure red token. **P1** — [x] Done: Profile information, Verification documents and Payment details are `SummaryCard`s; modal buttons are 44px; secondary text is 14px; badges are `TagPill`; the compare-modal headings use the 12px uppercase gold group-heading style; error text uses `#991b1b` / `#fca5a5`.
 - Cases client uses `text-xs uppercase` for group headings (728, 1228) — correct per [G] (12px, uppercase, accent gold, sage in dark). Keep.
-- `bg-red-50 / text-red-700` alert (1070) → Failure red surface `#f8d9d6` / `#991b1b`. **P2**
+- [x] `bg-red-50 / text-red-700` alerts → Failure red surface `#f8d9d6` / `#991b1b`. **P2** Done (compare modal; login uses it too).
 
 ### 5.5 Transactions list — `admin-transactions`
 
@@ -246,12 +246,14 @@ Fix: rebuild the body from the shared summary card (5.4), add the download contr
 
 [G]: canonical shell, a **Coming soon** card, and a **return link**; no live-workflow claim.
 
-- No return link (e.g. "Back to dashboard"). **P1**
-- Extra paragraph "Design placeholder only. No live admin workflow…" below the card isn't in the guide. Confirm [V]. **P2**
-- Card uses inline hex; `h2` `text-2xl sm:text-3xl`. Use `agent-dashboard__panel`. **P2**
+- [x] Return link "Back to dashboard" added. **P1** Done
+- [x] Extra "Design placeholder only…" paragraph removed (not in the guide). **P2** Done
+- [x] Card uses `agent-dashboard__panel`. **P2** Done (`h2` size kept).
 - Page titles: guide names the third "Generate report"; nav label matches. ok.
 
-### 5.8 User settings (`settings-client.tsx`) — based on `agent-settings`
+### 5.8 User settings (`settings-client.tsx`) — based on `agent-settings` — [x] DONE
+
+Done: both cards are `SummaryCard`s (icon tile, 20px green/sage title, 14px description); the edit pencil sits in the header; profile values are 16px regular via `SummaryField`; the edit and password forms end in a right-aligned action row (Cancel before Save); photo links are 44px; hardcoded `#59645d` and `#dc2626` text replaced by tokens / Failure red. The skeleton is unchanged.
 
 - Cards use `portal-page-card` with `h2 text-xl --text-main` and description `--text-muted`/`--text-sub` (inconsistent between the two cards). [G]: `x-regular-card` — 20px/24px green (sage dark) title, 14px muted description, `py-5` body, header icon action, footer through `x-card-actions` (Cancel before Save). **P1**
 - Profile detail keys `text-sm` with `--text-muted`; values should be `text-base`. **P1**
@@ -270,9 +272,11 @@ Fix: rebuild the body from the shared summary card (5.4), add the download contr
 - Heading `clamp(2.2rem,4vw,3.25rem)` / `tracking-[-.055em]` — confirm against mockup. [V]
 - Missing screens in `admin`: **OTP verification** (6-digit numeric, one-time-code autofill, resend/back) and **reset password**. **P1** (feature gap) - DEFERRED
 - Portal switch (agent/admin) — N/A for the admin app. - DISREGARD
-- Footer copy "© year One Insurance" vs brand "UnoSure" in aside; confirm brand text. **P2**
+- [x] Footer copy aligned to "UnoSure" (same as `agent`). **P2** Done
 
-### 6.2 404 and 500 (`not-found.tsx`, `error.tsx`) — `error-404`, `error-500` **P1**
+### 6.2 404 and 500 (`not-found.tsx`, `error.tsx`) — `error-404`, `error-500` **P1** — [x] DONE
+
+Done: both pages render the new shared `components/error-page.tsx` (open layout, no card/icon, code `clamp(6rem,16vw,10rem)`, H1 3xl/4xl, `max-w-md` body, Back to home + Get in touch + email link to `sales@ifrcinsurance.com`, canvas `#fcfdfb` / `#1c1e1e`) with the approved copy. The 500 page has no retry button, per the guide. Other codes are still not built.
 
 [G]: open layout, **no enclosing card, no alarm colours**, large code `clamp(6rem,16vw,10rem)` semibold tight tracking `#006838` (sage `#d0e3c8` dark), one H1 `text-3xl sm:text-4xl`, explanation `max-w-md` 16px relaxed, `max-w-2xl` content, padding 64px (mobile) / 80px (sm+), actions **Back to home** (primary) + **Get in touch** (secondary) stacked on mobile, plus an email help link. Canvas `#fcfdfb` / `#1c1e1e`.
 
@@ -314,4 +318,4 @@ Other codes (400/401/403/405/408/410/413/419/422/429/502/503/504) have mockups; 
 - [ ] Radii: cards/tables 8px, controls 6px, badges full pill.
 - [x] No hex outside `agent` palette + admin sidebar variation (`grep` check).
 - [x] Transaction details shows five stacked cards, download works (CSV and PDF).
-- [ ] 404/500 match copy and layout; [x] login logo renders.
+- [x] 404/500 match copy and layout; [x] login logo renders.

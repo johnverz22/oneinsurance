@@ -125,7 +125,7 @@ export function AuthLayout({
 
           {/* Footer */}
           <footer className="bg-white px-6 pb-6 text-center text-xs leading-5 text-[var(--text-muted)] dark:bg-[#282c29] lg:bg-transparent lg:px-0 lg:pb-0 lg:text-right lg:dark:bg-transparent">
-            <p>&copy; {new Date().getFullYear()} One Insurance. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} UnoSure. All rights reserved.</p>
           </footer>
         </div>
       </div>

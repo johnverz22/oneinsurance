@@ -51,6 +51,24 @@ function titleCase(status: string): string {
   return status.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+/**
+ * Neutral tag / count badge: same pill chrome as `StatusPill`, no icon.
+ * Use for categories (e.g. line of business) instead of ad-hoc chips.
+ */
+export function TagPill({
+  children,
+  tone = 'info',
+}: {
+  children: React.ReactNode
+  tone?: 'info' | 'pending'
+}) {
+  return (
+    <span className={cn('ui-status-badge', `ui-status-badge--${tone}`)}>
+      {children}
+    </span>
+  )
+}
+
 export function StatusPill({ status }: { status?: string | null }) {
   const raw = (status ?? '').trim()
   if (!raw || raw.toLowerCase() === 'n/a') {

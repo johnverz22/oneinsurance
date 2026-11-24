@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Check, Eye, GitCompare, Loader2, XCircle } from 'lucide-react'
+import { ArrowLeft, Check, Eye, FileCheck2, GitCompare, Loader2, UserRound, Wallet, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { ActionIcon } from '@/components/ui/action-icon'
 import { Modal, ConfirmDialog } from '@/components/ui/modal'
-import { StatusPill } from '@/components/ui/status-pill'
+import { StatusPill, TagPill } from '@/components/ui/status-pill'
+import { SummaryCard, SummaryField } from '@/components/ui/summary-card'
 import { CardSkeleton, Skeleton } from '@/components/ui/skeleton'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
@@ -16,14 +17,7 @@ import { btnDangerCls, btnOutlineGreenCls, btnPrimaryCls, btnSecondaryCls, field
 import { cn, formatPersonName, formatPhone, getInitials } from '@/lib/utils'
 import type { Agent, AgentDocument } from '@/types/admin/people'
 
-const panelCls =
-  'min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6'
-const panelTitleCls =
-  'text-xl font-semibold tracking-tight text-[var(--text-main)]'
-const subTextCls = 'text-base text-[var(--text-sub)]'
-const fieldLabelCls = 'block text-base text-[var(--text-sub)]'
-const fieldValueCls =
-  'mt-1 block break-words text-sm font-semibold text-[var(--text-main)]'
+const panelCls = 'agent-dashboard__panel min-w-0 p-5 sm:p-6'
 
 function agentDisplayName(agent?: Agent | null): string {
   if (!agent) return 'Agent'
@@ -514,16 +508,16 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
       ) : (
         <div className="space-y-5">
           {/* Profile information */}
-          <section className={panelCls} aria-labelledby="profile-info-title">
-            <h2 id="profile-info-title" className="text-lg font-semibold text-[var(--text-main)]">
-              Profile information
-            </h2>
-            <dl className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <SummaryCard
+            icon={UserRound}
+            title="Profile information"
+            description="Account details for this partner."
+          >
+            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-4">
               {profileFields.map((field) => (
-                <div key={field.label}>
-                  <dt className={fieldLabelCls}>{field.label}</dt>
-                  <dd className={fieldValueCls}>{field.value}</dd>
-                </div>
+                <SummaryField key={field.label} label={field.label}>
+                  {field.value}
+                </SummaryField>
               ))}
               <div className="sm:col-span-2 xl:col-span-1 xl:col-start-4 xl:row-span-4 xl:row-start-1">
                 <dt className="sr-only">Partner photo</dt>
@@ -533,36 +527,27 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                     <img
                       src={photoUrl}
                       alt={name}
-                      className="size-[200px] max-w-full rounded-full border border-[#dfe7df] object-cover dark:border-[#3d4140]"
+                      className="size-[200px] max-w-full rounded-full border border-[var(--border)] object-cover"
                     />
                   ) : (
-                    <span className="flex size-[200px] max-w-full items-center justify-center rounded-full border border-[#dfe7df] bg-[#eff6ef] text-3xl font-bold text-[#006838] dark:border-[#3d4140] dark:bg-[#38483b] dark:text-[#d0e3c8]">
+                    <span className="flex size-[200px] max-w-full items-center justify-center rounded-full border border-[var(--border)] bg-[#eff6ef] text-3xl font-bold text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
                       {getInitials(name) || 'A'}
                     </span>
                   )}
                 </dd>
               </div>
             </dl>
-          </section>
+          </SummaryCard>
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.8fr)]">
             {/* Verification documents */}
-            <section
-              className={panelCls}
-              aria-labelledby="verification-documents-title"
+            <SummaryCard
+              icon={FileCheck2}
+              title="Verification documents"
+              description="View the documents submitted to verify this partner account."
             >
-              <h2
-                id="verification-documents-title"
-                className={panelTitleCls}
-              >
-                Verification documents
-              </h2>
-              <p className={cn('mt-1', subTextCls)}>
-                View the documents submitted to verify this partner account.
-              </p>
-
               {!docsLoading && !docsError && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <StatusPill status={`${reviewCounts.pending} pending`} />
                   <StatusPill status={`${reviewCounts.approved} approved`} />
                   <StatusPill status={`${reviewCounts.rejected} rejected`} />
@@ -570,26 +555,26 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
               )}
 
               {docsError ? (
-                <div className="mt-6 flex flex-col items-center gap-3 rounded-md border border-[var(--border)] py-12 text-center">
+                <div className="mt-5 flex flex-col items-center gap-3 rounded-md border border-[var(--border)] py-12 text-center">
                   <p className="text-sm text-[var(--text-sub)]">
                     Failed to load documents.
                   </p>
                   <button
                     type="button"
                     onClick={() => refetchDocs()}
-                    className="text-sm font-semibold text-[#006838] hover:underline focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
+                    className="inline-flex min-h-11 items-center text-sm font-semibold text-[#006838] hover:underline focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8]"
                   >
                     Try again
                   </button>
                 </div>
               ) : docsLoading ? (
-                <div className="mt-6 space-y-4" aria-busy="true">
+                <div className="mt-5 space-y-4" aria-busy="true">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="skeleton h-20 rounded" />
                   ))}
                 </div>
               ) : (
-                <div className="mt-6 divide-y divide-[#dfe7df] border-y border-[#dfe7df] dark:divide-[#3d4140] dark:border-[#3d4140]">
+                <div className="mt-5 divide-y divide-[var(--border)] border-y border-[var(--border)]">
                   {documentSlots.map(({ reqDoc, current: uploaded }) => {
                     const status = reviewStatusOf(uploaded)
                     const isReplacement = Boolean(uploaded?.previous_file_id)
@@ -620,31 +605,24 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                             </p>
                           )}
                           {uploaded && (
-                            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs leading-none">
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
                               <StatusPill status={status} />
                               {status === 'pending' && (
-                                <span
-                                  className={cn(
-                                    'rounded-full border px-2 py-0.5 text-[11px] font-semibold',
-                                    isReplacement
-                                      ? 'border-[#b88e28]/30 text-[#b88e28] dark:text-[#e4c27f]'
-                                      : 'border-[#006838]/20 text-[#006838] dark:text-[#d0e3c8]'
-                                  )}
-                                >
+                                <TagPill tone={isReplacement ? 'pending' : 'info'}>
                                   {isReplacement
                                     ? 'Replacement upload'
                                     : 'New upload'}
-                                </span>
+                                </TagPill>
                               )}
                               {status === 'rejected' && uploaded.review_note && (
-                                <span className="text-xs text-[#991b1b]">
+                                <span className="text-sm text-[#991b1b] dark:text-[#fca5a5]">
                                   {uploaded.review_note}
                                 </span>
                               )}
                             </div>
                           )}
                           {isReplacement && uploaded && (
-                            <p className="mt-1 text-xs text-[var(--text-muted)]">
+                            <p className="mt-1 text-sm text-[var(--text-sub)]">
                               {uploaded.previous_review_status === 'rejected' && (
                                 <>
                                   Replaced a rejected document
@@ -667,7 +645,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                             </p>
                           )}
                           {uploaded && uploaded.reviewed_at && status !== 'pending' && (
-                            <p className="mt-1 text-xs text-[var(--text-muted)]">
+                            <p className="mt-1 text-sm text-[var(--text-sub)]">
                               Reviewed {formatReviewDate(uploaded.reviewed_at)}
                             </p>
                           )}
@@ -741,36 +719,31 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                   })}
                 </div>
               )}
-            </section>
+            </SummaryCard>
 
             {/* Payment details */}
-            <section className={panelCls} aria-labelledby="payment-title">
-              <h2 id="payment-title" className={panelTitleCls}>
-                Payment details
-              </h2>
-              <p className={cn('mt-1 leading-6', subTextCls)}>
-                Payout methods on file for this partner.
-              </p>
-
+            <SummaryCard
+              icon={Wallet}
+              title="Payment details"
+              description="Payout methods on file for this partner."
+            >
               {accounts.length === 0 ? (
-                <p className="mt-4 text-sm text-[var(--text-sub)]">
+                <p className="text-base text-[var(--text-sub)]">
                   No payout methods on file.
                 </p>
               ) : (
-                <div className="mt-4 space-y-4">
+                <div className="space-y-4">
                   {accounts.map((account, index) => (
                     <div
                       key={`${account.kind}-${account.provider}-${index}`}
-                      className="rounded-md border border-[#dfe7df] p-4 dark:border-[#3d4140]"
+                      className="rounded-md border border-[var(--border)] p-4"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <strong className="text-base text-[var(--text-main)]">
                           {account.provider}
                         </strong>
                         {account.isPrimary ? (
-                          <span className="text-xs font-semibold text-[#006838] dark:text-[#d0e3c8]">
-                            Primary
-                          </span>
+                          <TagPill>Primary</TagPill>
                         ) : null}
                       </div>
                       <p className="mt-1 text-base text-[var(--text-sub)]">
@@ -786,7 +759,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
                   ))}
                 </div>
               )}
-            </section>
+            </SummaryCard>
           </div>
         </div>
       )}
@@ -814,7 +787,7 @@ export function AgentProfileClient({ agentId }: { agentId: number }) {
               </span>
             )}
             {reviewError && (
-              <span className="mt-2 block text-red-600 dark:text-red-400">
+              <span className="mt-2 block text-[#991b1b] dark:text-[#fca5a5]">
                 {reviewError}
               </span>
             )}
@@ -967,7 +940,7 @@ function FileViewerModal({
         {error && (
           <div className="flex h-48 flex-col items-center justify-center gap-2 text-center">
             <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{error}</p>
-            <p className="text-xs text-[var(--text-sub)]">
+            <p className="text-sm text-[var(--text-sub)]">
               Check your connection and try again.
             </p>
           </div>
@@ -996,7 +969,7 @@ function FileViewerModal({
               href={blobUrl}
               download
               aria-label={`Download ${title} document`}
-              className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[#006838] px-4 text-sm font-semibold text-white hover:bg-[#00552e]"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md bg-[#006838] px-4 text-sm font-semibold text-white hover:bg-[#00552e]"
             >
               Download file
             </a>
@@ -1004,7 +977,7 @@ function FileViewerModal({
         )}
       </div>
       {file && (
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[#dfe7df] px-5 py-4 dark:border-[#3d4140]">
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
           {status === 'approved' && (
             <p className="mr-auto text-sm text-[var(--text-sub)]">
               Approved
@@ -1190,18 +1163,16 @@ function DocumentCompareModal({
       </p>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left: Previous Document */}
-        <div className="flex flex-col rounded-lg border border-[#dfe7df] p-4 dark:border-[#3d4140]">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#dfe7df] pb-3 dark:border-[#3d4140]">
+        <div className="flex flex-col rounded-lg border border-[var(--border)] p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold uppercase tracking-wider text-[var(--text-sub)]">
+                <span className="text-xs font-normal uppercase text-[#b88e28] dark:text-[#e4c27f]">
                   Previous document
                 </span>
-                <span className="rounded bg-[var(--subtle)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-muted)]">
-                  Read-only
-                </span>
+                <TagPill>Read-only</TagPill>
               </div>
-              <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+              <p className="mt-0.5 text-sm text-[var(--text-sub)]">
                 File ID #{file.previous_file_id}
                 {file.previous_reviewed_at && ` · Decided ${formatReviewDate(file.previous_reviewed_at)}`}
               </p>
@@ -1210,7 +1181,7 @@ function DocumentCompareModal({
           </div>
 
           {file.previous_review_note && (
-            <div className="mb-3 rounded-md bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+            <div className="mb-3 rounded-md border border-[#f1b8b3] bg-[#f8d9d6] p-3 text-sm text-[#991b1b] dark:border-[#991b1b]/50 dark:bg-[#991b1b]/20 dark:text-[#fecaca]">
               <span className="font-semibold">Rejection reason:</span> {file.previous_review_note}
             </div>
           )}
@@ -1224,7 +1195,7 @@ function DocumentCompareModal({
             {prevError && (
               <div className="p-4 text-center">
                 <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{prevError}</p>
-                <p className="mt-1 text-xs text-[var(--text-sub)]">
+                <p className="mt-1 text-sm text-[var(--text-sub)]">
                   The previous file cannot be previewed.
                 </p>
               </div>
@@ -1250,7 +1221,7 @@ function DocumentCompareModal({
                 <a
                   href={prevBlobUrl}
                   download
-                  className="mt-2 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#006838] px-3 text-xs font-semibold text-white"
+                  className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-md bg-[#006838] px-4 text-sm font-semibold text-white"
                 >
                   Download file
                 </a>
@@ -1261,17 +1232,15 @@ function DocumentCompareModal({
 
         {/* Right: Current Document */}
         <div className="flex flex-col rounded-lg border border-[#006838]/40 bg-white p-4 dark:border-[#006838]/60 dark:bg-[var(--card)]">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#dfe7df] pb-3 dark:border-[#3d4140]">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold uppercase tracking-wider text-[#006838] dark:text-[#d0e3c8]">
+                <span className="text-xs font-normal uppercase text-[#b88e28] dark:text-[#e4c27f]">
                   Current upload (new)
                 </span>
-                <span className="rounded-full border border-[#006838]/30 px-2 py-0.5 text-[11px] font-semibold text-[#006838] dark:text-[#d0e3c8]">
-                  File ID #{file.id}
-                </span>
+                <TagPill>File ID #{file.id}</TagPill>
               </div>
-              <p className="mt-0.5 text-xs text-[var(--text-sub)]">
+              <p className="mt-0.5 text-sm text-[var(--text-sub)]">
                 {documentFileName(file)}
                 {file.created_at && ` · Uploaded ${formatReviewDate(file.created_at)}`}
               </p>
@@ -1280,7 +1249,7 @@ function DocumentCompareModal({
           </div>
 
           {currentStatus === 'rejected' && file.review_note && (
-            <div className="mb-3 rounded-md bg-red-50 p-2.5 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+            <div className="mb-3 rounded-md border border-[#f1b8b3] bg-[#f8d9d6] p-3 text-sm text-[#991b1b] dark:border-[#991b1b]/50 dark:bg-[#991b1b]/20 dark:text-[#fecaca]">
               <span className="font-semibold">Rejection reason:</span> {file.review_note}
             </div>
           )}
@@ -1294,7 +1263,7 @@ function DocumentCompareModal({
             {currError && (
               <div className="p-4 text-center">
                 <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{currError}</p>
-                <p className="mt-1 text-xs text-[var(--text-sub)]">
+                <p className="mt-1 text-sm text-[var(--text-sub)]">
                   Check your connection and try again.
                 </p>
               </div>
@@ -1320,7 +1289,7 @@ function DocumentCompareModal({
                 <a
                   href={currBlobUrl}
                   download
-                  className="mt-2 inline-flex min-h-9 items-center gap-2 rounded-md bg-[#006838] px-3 text-xs font-semibold text-white"
+                  className="mt-2 inline-flex min-h-11 items-center gap-2 rounded-md bg-[#006838] px-4 text-sm font-semibold text-white"
                 >
                   Download file
                 </a>
@@ -1331,7 +1300,7 @@ function DocumentCompareModal({
       </div>
 
       {/* Review actions strictly on current file */}
-      <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-[#dfe7df] pt-4 dark:border-[#3d4140]">
+      <div className="mt-5 flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] pt-4">
         <button type="button" onClick={handleClose} className={btnSecondaryCls}>
           Close
         </button>
@@ -1427,22 +1396,22 @@ function RejectReasonModal({
           className={cn(
             fieldCls,
             'mt-1',
-            noteError ? 'border-red-600 focus-visible:outline-red-600' : ''
+            noteError ? 'border-[#991b1b] focus-visible:outline-[#991b1b]' : ''
           )}
           placeholder="Why is this document being rejected?"
         />
         {noteError && (
           <p
             id="reject-reason-note-error"
-            className="mt-1 text-xs text-red-600 dark:text-red-400"
+            className="mt-1 text-sm text-[#991b1b] dark:text-[#fca5a5]"
           >
             {noteError}
           </p>
         )}
         {error && (
-          <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm text-[#991b1b] dark:text-[#fca5a5]">{error}</p>
         )}
-        <p className="text-xs text-[var(--text-muted)]">
+        <p className="text-sm text-[var(--text-sub)]">
           {note.length}/500 characters
         </p>
       </div>

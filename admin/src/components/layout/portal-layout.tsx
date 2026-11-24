@@ -100,7 +100,7 @@ export function PortalLayout({
           <main
             id="main-content"
             tabIndex={-1}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[var(--portal-canvas)] px-4 pb-6 pt-6 focus:outline-none sm:px-6 sm:pt-7 lg:px-[22px] lg:pb-[30px] lg:pt-5"
+            className="agent-dashboard__content px-4 pb-6 pt-6 focus:outline-none sm:px-6 sm:pt-7 lg:px-[22px] lg:pb-[30px] lg:pt-5"
           >
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>

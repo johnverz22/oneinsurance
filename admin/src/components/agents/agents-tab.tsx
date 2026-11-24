@@ -302,7 +302,7 @@ export function AgentsTab() {
           </form>
         </div>
         {isSearching && (
-          <p className="mt-2 text-xs text-[var(--text-sub)]">
+          <p className="mt-2 text-sm text-[var(--text-sub)]">
             Date range does not apply while searching.
           </p>
         )}

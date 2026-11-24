@@ -12,6 +12,7 @@ import { useTopBarSearchStore } from '@/store/top-bar-search-store'
 import { useAdminAuthStore, useAdminUser } from '@/store/admin-auth-store'
 import { useAuthenticatedImage } from '@/hooks/use-authenticated-image'
 import { ActionIcon } from '@/components/ui/action-icon'
+import { TagPill } from '@/components/ui/status-pill'
 import { getInitials } from '@/lib/utils'
 
 /**
@@ -100,9 +101,8 @@ export function PortalTopBar() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 flex min-h-[72px] shrink-0 items-center justify-between gap-3 border-b border-[#dfe7df] bg-[#f7f7f7] px-5 sm:px-6 lg:pl-11 dark:border-[#3d4140] dark:bg-[#171919]',
-        scrolled &&
-          'shadow-[0_3px_9px_rgba(24,61,44,0.06)] dark:shadow-[0_3px_9px_rgba(0,0,0,0.14)]'
+        'agent-dashboard__header sticky top-0 z-30 flex min-h-[72px] items-center justify-between gap-3 px-5 sm:px-6 lg:pl-11',
+        scrolled && 'agent-dashboard__header--scrolled'
       )}
     >
       {/* ── Mobile controls: menu + brand (hidden on lg+) ─────────────── */}
@@ -121,7 +121,7 @@ export function PortalTopBar() {
           {menuOpen && (
             <nav
               aria-label="Mobile admin portal"
-              className="absolute left-0 top-14 z-40 w-60 rounded-lg border border-[#dfe7df] bg-white p-2 shadow-[0_20px_50px_rgba(24,61,44,0.12)] dark:border-[#48524a] dark:bg-[#282c29]"
+              className="agent-dashboard__popover absolute left-0 top-14 w-60 p-2"
             >
               {ADMIN_NAV_ITEMS.map(({ href, label }) => {
                 const active =
@@ -137,8 +137,8 @@ export function PortalTopBar() {
                       'flex min-h-11 items-center rounded-md px-3 text-base transition-colors',
                       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838]',
                       active
-                        ? 'bg-[#eef4ee] font-semibold text-[#183d2c] dark:bg-[#006838] dark:text-[#d0e3c8]'
-                        : 'text-[var(--text-sub)] hover:bg-[#e4e9e2] hover:text-[#006838] dark:hover:bg-[#006838] dark:hover:text-[#d0e3c8]'
+                        ? 'bg-[#d0e3c8] font-semibold text-[#006838] dark:bg-[#006838] dark:text-white'
+                        : 'text-[var(--text-sub)] hover:bg-[#eff6ef] hover:text-[#006838] dark:hover:bg-[#006838] dark:hover:text-white'
                     )}
                   >
                     {label}
@@ -186,7 +186,7 @@ export function PortalTopBar() {
         </div>
       ) : (
         <p className="hidden text-base font-medium text-[var(--text-sub)] lg:block">
-          Admin portal <span className="mx-2 text-[#b5c5b8]">/</span> {activeItem?.label}
+          Admin portal <span className="mx-2 text-[var(--text-muted)]">/</span> {activeItem?.label}
         </p>
       )}
 
@@ -213,12 +213,10 @@ export function PortalTopBar() {
           </ActionIcon>
 
           {notificationsOpen && (
-            <div className="absolute right-0 top-14 z-40 w-[min(20rem,calc(100vw-2rem))] rounded-lg border border-[#dfe7df] bg-white p-5 shadow-[0_20px_50px_rgba(24,61,44,0.12)] dark:border-[#48524a] dark:bg-[#282c29] dark:text-[var(--text-main)]">
+            <div className="agent-dashboard__popover absolute right-0 top-14 w-[min(20rem,calc(100vw-2rem))] p-5 dark:text-[var(--text-main)]">
               <div className="flex items-center justify-between">
                 <strong className="text-base font-semibold text-[var(--text-main)]">Notifications</strong>
-                <span className="rounded-full bg-[#eff6ef] px-2 py-0.5 text-[11px] font-semibold text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
-                  All caught up
-                </span>
+                <TagPill>All caught up</TagPill>
               </div>
               <div className="mt-4 flex items-start gap-3 rounded-md bg-[#eff6ef] p-3 dark:bg-[#38483b]">
                 <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#006838] dark:text-[#d0e3c8]" />

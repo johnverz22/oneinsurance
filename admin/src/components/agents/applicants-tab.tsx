@@ -191,10 +191,10 @@ export function ApplicantsTab() {
             <StatusPill status={selected.status} />
           </div>
 
-          <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
+          <dl className="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 text-base sm:grid-cols-2">
             <div>
               <dt className="text-sm text-[var(--text-sub)]">Email</dt>
-              <dd className="font-medium break-all text-[var(--text-main)]">
+              <dd className="break-all text-[var(--text-main)]">
                 {selected.email}
               </dd>
             </div>
@@ -202,7 +202,7 @@ export function ApplicantsTab() {
               <dt className="text-sm text-[var(--text-sub)]">
                 Phone number
               </dt>
-              <dd className="font-medium text-[var(--text-main)]">
+              <dd className="text-[var(--text-main)]">
                 {selected.contact_number || 'N/A'}
               </dd>
             </div>
@@ -210,13 +210,13 @@ export function ApplicantsTab() {
               <dt className="text-sm text-[var(--text-sub)]">
                 Applied
               </dt>
-              <dd className="font-medium text-[var(--text-main)]">
+              <dd className="text-[var(--text-main)]">
                 {formatDate(selected.created_at)}
               </dd>
             </div>
             <div>
               <dt className="text-sm text-[var(--text-sub)]">Notes</dt>
-              <dd className="font-medium text-[var(--text-main)]">
+              <dd className="text-[var(--text-main)]">
                 {selected.notes || '—'}
               </dd>
             </div>

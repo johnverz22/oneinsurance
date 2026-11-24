@@ -37,7 +37,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               '--normal-border': '#c7d4c9',
               '--normal-text': '#183d2c',
               '--success-bg': '#ffffff',
-              '--success-border': '#bddac0',
+              '--success-border': '#d0e3c8',
               '--success-text': '#183d2c',
               '--error-bg': '#ffffff',
               '--error-border': '#fecaca',

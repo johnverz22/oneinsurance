@@ -569,7 +569,7 @@ export function ProductsTab({ onCreateLob }: { onCreateLob: () => void }) {
                   </option>
                 ))}
               </SelectField>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
+              <p className="mt-1 text-sm text-[var(--text-sub)]">
                 Only active LoBs can be assigned.
               </p>
             </div>
@@ -586,7 +586,7 @@ export function ProductsTab({ onCreateLob }: { onCreateLob: () => void }) {
           </div>
 
           {!editing && (
-            <p className="rounded-md bg-[#f1f2f0] p-4 text-sm leading-5 text-[var(--text-sub)] dark:bg-[#303232]">
+            <p className="rounded-md bg-[var(--subtle)] p-4 text-sm leading-5 text-[var(--text-sub)]">
               A default commission configuration will be created automatically.
               Adjust rates later in Commission setup.
             </p>

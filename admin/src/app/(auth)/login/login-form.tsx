@@ -76,7 +76,7 @@ export function LoginForm() {
         {errorMessage && (
           <div
             role="alert"
-            className="mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
+            className="mt-6 rounded-md border border-[#f1b8b3] bg-[#f8d9d6] p-4 text-sm text-[#991b1b] dark:border-[#991b1b]/50 dark:bg-[#991b1b]/20 dark:text-[#fecaca]"
           >
             {errorMessage}
           </div>
@@ -116,7 +116,7 @@ export function LoginForm() {
                 Password
               </label>
             </div>
-            <div className="relative mt-1">
+            <div className="relative mt-2">
               <input
                 id="portal-password"
                 type={showPassword ? 'text' : 'password'}
