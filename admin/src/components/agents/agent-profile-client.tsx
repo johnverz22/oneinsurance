@@ -950,9 +950,11 @@ function FileViewerModal({
       open={file !== null}
       onClose={handleClose}
       title={title}
-      description={file ? documentFileName(file) : 'Document preview'}
       className="sm:max-w-2xl lg:max-w-6xl"
     >
+      <p className="mb-3 text-sm text-[var(--text-sub)]">
+        {file ? documentFileName(file) : 'Document preview'}
+      </p>
       <div className="min-h-48 overflow-auto">
         {loading && (
           <div className="flex h-48 items-center justify-center">
@@ -1181,9 +1183,11 @@ function DocumentCompareModal({
       open={file !== null}
       onClose={handleClose}
       title={`Compare: ${title}`}
-      description="Comparing the replaced document with the new upload side-by-side."
       className="sm:max-w-4xl lg:max-w-7xl"
     >
+      <p className="mb-4 text-sm text-[var(--text-sub)]">
+        Comparing the replaced document with the new upload side-by-side.
+      </p>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Left: Previous Document */}
         <div className="flex flex-col rounded-lg border border-[#dfe7df] p-4 dark:border-[#3d4140]">
@@ -1391,10 +1395,12 @@ function RejectReasonModal({
       open={open}
       onClose={onClose}
       title={`Reject ${file ? documentTagLabel(file.tag) : 'document'}`}
-      description="Enter the reason for rejection. The agent will be emailed."
       className="sm:max-w-md"
     >
       <div className="space-y-3">
+        <p className="text-sm text-[var(--text-sub)]">
+          Enter the reason for rejection. The agent will be emailed.
+        </p>
         <p className="text-sm text-[var(--text-sub)]">
           {file ? documentFileName(file) : 'This document'} will be rejected
           {status === 'approved'

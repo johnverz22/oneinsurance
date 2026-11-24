@@ -31,7 +31,7 @@ export function TableHeader({
     <div className={cn('min-w-0', className)}>
       <h3
         className={cn(
-          'text-lg font-semibold tracking-tight text-[var(--text-main)]',
+          'text-xl font-semibold tracking-tight text-[var(--text-main)]',
           titleClassName
         )}
       >

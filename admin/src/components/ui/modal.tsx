@@ -10,7 +10,6 @@ type ModalProps = {
   open: boolean
   onClose: () => void
   title: React.ReactNode
-  description?: React.ReactNode
   /** Rendered to the right of the title block, before the close button. */
   headerRight?: React.ReactNode
   children: React.ReactNode
@@ -18,12 +17,14 @@ type ModalProps = {
   className?: string
 }
 
-/** Lightweight dialog matching the admin portal design tokens. */
+/**
+ * Lightweight dialog matching the admin portal design tokens. Header is the
+ * title only (no description); put supporting copy at the top of the body.
+ */
 export function Modal({
   open,
   onClose,
   title,
-  description,
   headerRight,
   children,
   footer,
@@ -62,11 +63,6 @@ export function Modal({
             <h2 className="text-[20px] font-semibold leading-6 text-[#006838] dark:text-[#d0e3c8]">
               {title}
             </h2>
-            {description && (
-              <p className="mt-0.5 text-sm text-[var(--text-sub)]">
-                {description}
-              </p>
-            )}
           </div>
           {headerRight && (
             <div className="shrink-0">{headerRight}</div>

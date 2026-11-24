@@ -158,14 +158,14 @@ export function DateRangeField({ id, value, onApply, disabled }: DateRangeFieldP
             <button
               type="button"
               onClick={handleClear}
-              className="min-h-9 rounded-md px-3 text-sm font-semibold text-[#006838] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[var(--subtle)]"
+              className="min-h-11 rounded-md px-3 text-sm font-semibold text-[#006838] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[var(--subtle)]"
             >
               Clear
             </button>
             <button
               type="button"
               onClick={handleDone}
-              className="min-h-9 rounded-md px-3 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[var(--subtle)]"
+              className="min-h-11 rounded-md px-3 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--subtle)] focus-visible:outline-2 focus-visible:outline-[#006838] dark:hover:bg-[var(--subtle)]"
             >
               Done
             </button>

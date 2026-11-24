@@ -118,22 +118,22 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 |---|---|---|---|---|
 | T1 | `tableWrapCls` and the mobile `<ul>` set **no background**. Rows inherit the `#f7f7f7` canvas. [G] says the table is its own surface, white in light and inset in dark. | `bg-white dark:bg-[--card]` on wrapper, tbody and mobile list | **P0** [V] | [x] Done |
 | T2 | `thCls` / `theadCls` are `text-xs` (12px) with colour `#333`. | 14px, `font-semibold`, `--text-main`; use `.portal-data-table` | P1 | [x] Done |
-| T3 | Body `text-sm` (14px). Agent table body is `text-base` (16px). | 16px [V] | P1 | |
+| T3 | Body `text-sm` (14px). Agent table body is `text-base` (16px). | 16px [V] | P1 | [x] Done |
 | T4 | Cell padding `px-4 py-4` / `py-3` for actions | matches agent | ok | |
 | T5 | Error text `#b91c1c` / dark `#eba3a3`. | Failure red token | P1 | [x] Done |
 | T6 | Table container `rounded-lg` (8px) + 1px `--border` | matches | ok | |
-| T7 | Secondary line in cells uses `text-xs` (policy no., created time, product slug). | 14px secondary (agent keeps `text-xs` only for sub-lines of dense cells — [V]) | P2 | |
+| T7 | Secondary line in cells uses `text-xs` (policy no., created time, product slug). | 14px secondary (agent keeps `text-xs` only for sub-lines of dense cells — [V]) | P2 | [x] Done (transactions, LoB slug, product description; LoB chip still `text-xs`, see 4.7) |
 
 ### 4.2 Table header (`ui/table-header.tsx`)
 
-- Default title `text-lg`; every consumer overrides with `titleClassName="text-xl"`. Make the default `text-xl font-semibold tracking-tight` and drop the overrides. **P1**
+- Default title `text-lg`; every consumer overrides with `titleClassName="text-xl"`. Make the default `text-xl font-semibold tracking-tight` and drop the overrides. **P1** — [x] Done
 - Count line `mt-1 text-sm --text-sub` matches agent. Copy "N transactions found" — confirm in mockup. [V]
 
 ### 4.3 Pagination (`ui/pagination-bar.tsx`)
 
-- "Showing x–y of z" is `text-xs`; target `text-sm tabular-nums --text-sub`. **P1**
-- Button border `#c7d4c9` and text `--text-main`; agent uses `--border` / `--text-sub`, dark `#565c58`. Active page should be `font-semibold`. **P2**
-- Transactions page shows a rows selector + page bar; Agents/Referral/Applicants show the bar only. Mockup: "The rows selector and pagination operate on filtered results." Add the rows selector to all table tabs. **P1**
+- [x] "Showing x–y of z" is `text-xs`; target `text-sm tabular-nums --text-sub`. **P1** Done
+- Button border `#c7d4c9` and text `--text-main`; agent uses `--border` / `--text-sub`, dark `#565c58`. Active page should be `font-semibold`. **P2** [x] Done
+- Transactions page shows a rows selector + page bar; Agents/Referral/Applicants show the bar only. Mockup: "The rows selector and pagination operate on filtered results." Add the rows selector to all table tabs. **P1** [x] Done (`PaginationBar` takes `perPage` / `onPerPageChange`; wired in agents, referral partners, applicants, products, LoBs, plus the transactions and agent-cases footers now reuse it)
 
 ### 4.4 Tabs (`ui/pill-tabs.tsx`)
 
@@ -151,7 +151,7 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 | B3 | `fieldCls`: `focus-visible:outline-offset-2`; [G] §9: 2px `#006838` outline, **zero offset**, no page-level offset on text fields. | remove offset | P1 | [x] Done |
 | B4 | `fieldCls`: text `#183d2c`, dark bg `#1c1e1e`, placeholder `#9bb09f`. | `--text-main`, `--card`, `--text-muted` | P1 | [x] Done |
 | B5 | Fields are `text-sm`; [G]: mobile text inputs stay 16px. | `text-base` below `sm`, or per `.ui-form-field` | P1 | [x] Done |
-| B6 | Compact controls under 44px: `min-h-9` (date range Apply/Clear), `min-h-10` (export menu items, profile buttons), `min-h-9` (retry). | `min-h-11` | P1 | |
+| B6 | Compact controls under 44px: `min-h-9` (date range Apply/Clear), `min-h-10` (export menu items, profile buttons), `min-h-9` (retry). | `min-h-11` | P1 | [~] Shared parts done (date range, export menu). Profile buttons (`agent-profile-client.tsx` 997, 1249, 1319) remain for §5.4 |
 | B7 | Login inputs `min-h-12` (48px) with label gap `mt-1` on password. | 44px min, label gap 8px | P2 | |
 
 ### 4.6 Modals (`ui/modal.tsx`)
@@ -161,7 +161,7 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 | # | Finding | Target | Pri | Status |
 |---|---|---|---|---|
 | M1 | `ConfirmDialog` is a different component: `rounded-2xl`, `text-2xl font-extrabold`, `rounded-xl` buttons, `border-2 border-[#183d2c]`, `font-bold`, `bg-[#1e2120]`, no X. | Rebuild on `Modal`: 8px radius, 20px green/sage title, 6px buttons, X close | **P0** | [x] Done |
-| M2 | `Modal` has an optional description line and a header divider. | Remove description (title only); confirm dividers [V] | P1 | |
+| M2 | `Modal` has an optional description line and a header divider. | Remove description (title only); confirm dividers [V] | P1 | [x] Done (description prop removed; copy moved into the body where it carried information; dividers kept pending [V]) |
 | M3 | Dark surface `#171919`; summary/regular/modal cards use `#262828` (D2). | `--card-summary` | P1 | [x] Done |
 | M4 | `ConfirmModal` buttons use `text-sm font-semibold` with inline hex. | `.btn-secondary` / `.btn-primary` / failure | P1 | [x] Done |
 
@@ -169,7 +169,8 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 
 - `.ui-status-badge` and variants are identical to `agent`; `.ui-action-icon` and hint badge match [G]. No change. [A]
 - Ad-hoc chips: LoB tag `rounded-md bg-#eef4ee text-xs` (transactions), `rounded-full … text-[11px]` badges in profile. Replace with `<StatusPill>` or the count-badge variant (no icon). **P2**
-- Table "Clear" buttons use `hover:bg-#e6f2e8`; use `.btn-tertiary`. **P2**
+- [x] Table "Clear" buttons use `hover:bg-#e6f2e8`; use `.btn-tertiary`. **P2** Done
+- [ ] Ad-hoc chips (LoB tag, profile badges) → `<StatusPill>` / count badge. Not yet done.
 
 ---
 
@@ -202,7 +203,7 @@ Remaining: shared fixes in §4 (table bg/headers, buttons, modals, pagination, 4
 
 Structure matches (Agents / Referral partners / Applicants tabs, `TableHeader`, export, search).
 
-- Pagination shows only the bar; add rows selector (4.3). **P1**
+- [x] Pagination shows only the bar; add rows selector (4.3). **P1** Done
 - `applicants-tab.tsx` `dt` labels `text-xs` (lines 195–217): detail labels are 14px. **P1**
 - `ConfirmDialog` usage (delete, activate, approve, reject) → fixed via M1. **P0**
 - Empty/search copy "No agents match your search." — confirm [V]. **P2**

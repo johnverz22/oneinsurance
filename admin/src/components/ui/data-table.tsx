@@ -43,7 +43,7 @@ type DataTableProps<T> = {
 const clickableCls =
   'cursor-pointer transition-colors hover:bg-[#f1f2f0] dark:hover:bg-[#303232]'
 const fieldLabelCls =
-  'shrink-0 text-xs font-medium text-[var(--text-sub)]'
+  'shrink-0 text-sm font-medium text-[var(--text-sub)]'
 
 function ListRowsSkeleton({ rows = 4 }: { rows?: number }) {
   return (

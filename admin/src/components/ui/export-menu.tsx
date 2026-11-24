@@ -78,7 +78,7 @@ export function ExportMenu({
                 setOpen(false)
                 item.onSelect()
               }}
-              className="block min-h-10 w-full cursor-pointer rounded px-3 text-left text-sm font-medium text-[var(--text-main)] transition-colors hover:bg-[var(--canvas)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838]"
+              className="block min-h-11 w-full cursor-pointer rounded px-3 text-left text-sm font-medium text-[var(--text-main)] transition-colors hover:bg-[var(--canvas)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#006838]"
             >
               {item.label}
             </button>

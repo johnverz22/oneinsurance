@@ -235,7 +235,6 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
       <section className="mt-8" aria-label="Cases">
         <TableHeader
           title="Cases"
-          titleClassName="text-xl"
           count={pagination?.total ?? null}
           noun="case"
         />
@@ -277,7 +276,7 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
                     setDateRange(null)
                     setPage(1)
                   }}
-                  className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                  className="btn-tertiary"
                 >
                   Clear
                 </button>
@@ -429,44 +428,22 @@ export function AgentCasesClient({ agentId }: { agentId: number }) {
           }
         />
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm tabular-nums text-[var(--text-sub)]">
-            {pagination && pagination.total > 0
-              ? `Showing ${pagination.from ?? 0}–${pagination.to ?? 0} of ${pagination.total} results`
-              : 'Showing 0 of 0 results'}
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <label
-              htmlFor="cases-rows"
-              className="text-sm text-[var(--text-main)]"
-            >
-              Rows
-            </label>
-            <SelectField
-              id="cases-rows"
-              value={perPage}
-              onChange={(e) => {
-                setPerPage(Number(e.target.value))
-                setPage(1)
-              }}
-              className="mt-0 w-auto"
-            >
-              {[10, 25].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </SelectField>
-            {pagination && (
-              <PaginationBar
-                className="mt-0"
-                currentPage={pagination.current_page}
-                lastPage={pagination.last_page}
-                onPageChange={setPage}
-              />
-            )}
-          </div>
-        </div>
+        {pagination && (
+          <PaginationBar
+            className="mt-5"
+            currentPage={pagination.current_page}
+            lastPage={pagination.last_page}
+            total={pagination.total}
+            from={pagination.from ?? undefined}
+            to={pagination.to ?? undefined}
+            onPageChange={setPage}
+            perPage={perPage}
+            onPerPageChange={(n) => {
+              setPerPage(n)
+              setPage(1)
+            }}
+          />
+        )}
       </section>
 
       <CaseDetailDialog

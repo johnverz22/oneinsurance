@@ -24,7 +24,7 @@ export const btnDangerCls =
 export const tableWrapCls =
   'overflow-x-auto rounded-lg border border-[#dfe7df] bg-white dark:border-[#3d4140] dark:bg-[var(--card)]'
 
-export const tableCls = 'portal-data-table w-full min-w-[650px] text-left text-sm'
+export const tableCls = 'portal-data-table w-full min-w-[650px] text-left text-base'
 
 export const theadCls =
   'bg-[#f1f2f0] text-sm font-semibold text-[var(--text-main)] normal-case tracking-normal dark:bg-[#303232]'

@@ -51,6 +51,7 @@ export function LobsTab({
   const enabled = hasHydrated && isAuthenticated
 
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(15)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
   const [dateRange, setDateRange] = useState<DateRange | null>(null)
@@ -79,11 +80,11 @@ export function LobsTab({
   }, [createNonce, onCreateNonceConsumed])
 
   const { data, isLoading, isError } = useQuery<Paginated<LineOfBusiness>>({
-    queryKey: ['admin-lobs', page, searchDebounced, dateFrom, dateTo],
+    queryKey: ['admin-lobs', page, perPage, searchDebounced, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
-        per_page: '15',
+        per_page: String(perPage),
         sort_by: 'created_at',
         sort_order: 'desc',
       })
@@ -243,7 +244,7 @@ export function LobsTab({
                     setDateRange(null)
                     setPage(1)
                   }}
-                  className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                  className="btn-tertiary"
                 >
                   Clear
                 </button>
@@ -282,10 +283,10 @@ export function LobsTab({
             header: 'Slug',
             cell: (lob) => (
               <span className="block">
-                <span className="block text-xs text-[var(--text-main)]">
+                <span className="block text-sm text-[var(--text-main)]">
                   {lob.slug || '—'}
                 </span>
-                <span className="mt-1 block text-xs text-[var(--text-sub)]">
+                <span className="mt-1 block text-sm text-[var(--text-sub)]">
                   {lob.description || 'No description'}
                 </span>
               </span>
@@ -339,6 +340,11 @@ export function LobsTab({
           from={data.from ?? undefined}
           to={data.to ?? undefined}
           onPageChange={setPage}
+          perPage={perPage}
+          onPerPageChange={(n) => {
+            setPerPage(n)
+            setPage(1)
+          }}
         />
       )}
 
@@ -347,11 +353,6 @@ export function LobsTab({
         open={formOpen}
         onClose={() => setFormOpen(false)}
         title={editing ? 'Edit line of business' : 'Create line of business'}
-        description={
-          editing
-            ? 'Update this LoB.'
-            : 'Products can be created after an active LoB is available.'
-        }
         footer={
           <>
             <button

@@ -48,6 +48,7 @@ export function AgentsTab() {
   const enabled = hasHydrated && isAuthenticated
 
   const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState(15)
   const [search, setSearch] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
   const [dateRange, setDateRange] = useState<DateRange | null>(null)
@@ -73,11 +74,11 @@ export function AgentsTab() {
     isError: listError,
     error: listErrorObj,
   } = useQuery<AgentsResponse>({
-    queryKey: ['admin-agents', 'list', page, dateFrom, dateTo],
+    queryKey: ['admin-agents', 'list', page, perPage, dateFrom, dateTo],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
-        per_page: '15',
+        per_page: String(perPage),
         sort_by: 'created_at',
         sort_order: 'desc',
       })
@@ -240,7 +241,6 @@ export function AgentsTab() {
     <div>
       <TableHeader
         title="Agent management"
-        titleClassName="text-xl"
         count={data?.data?.total ?? pagination?.total ?? null}
         noun="agent"
       />
@@ -282,7 +282,7 @@ export function AgentsTab() {
                   setDateRange(null)
                   setPage(1)
                 }}
-                className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-semibold text-[#006838] transition-colors hover:bg-[#e6f2e8] focus-visible:outline-2 focus-visible:outline-[#006838] dark:text-[#d0e3c8] dark:hover:bg-[#303232]"
+                className="btn-tertiary"
               >
                 Clear
               </button>
@@ -429,6 +429,11 @@ export function AgentsTab() {
           from={pagination.from ?? undefined}
           to={pagination.to ?? undefined}
           onPageChange={setPage}
+          perPage={perPage}
+          onPerPageChange={(n) => {
+            setPerPage(n)
+            setPage(1)
+          }}
         />
       )}
 
