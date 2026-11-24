@@ -224,9 +224,9 @@ Matches: table name + live count at left, search/date filters right, Export, tab
 
 Fix: shared table items (T1–T3), policy no. and time `text-xs` (T7), LoB chip, rows selector already present. Copy: mockup search matches policy, certificate, holder, product, plan, payment, status, agent — admin placeholder reads "Policy, holder, product, insurer, agent..."; align wording. **P2** [V]
 
-### 5.6 Transaction details — `admin-transaction-details` (largest structural gap, **P0**) — [x] DONE except PDF download
+### 5.6 Transaction details — `admin-transaction-details` (largest structural gap, **P0**) — [x] DONE
 
-Done: header (title = policy number or `Not available`, description "Transaction details", status badge + download menu, "Back to transactions" link), five stacked full-width summary cards (Policy overview, Payment & commission, Travellers, Coverage summary, Add-ons), skeleton mirroring the cards, CSV download of the flattened record. `.travel-faq` CSS was already ported. Remaining: **PDF** download (no PDF generator exists; needs a decision: server-side export vs print stylesheet) and a visual check [V].
+Done: header (title = policy number or `Not available`, description "Transaction details", status badge + download menu, "Back to transactions" link), five stacked full-width summary cards (Policy overview, Payment & commission, Travellers, Coverage summary, Add-ons), skeleton mirroring the cards, CSV download of the flattened record, and a PDF cover-notes download (jsPDF generator ported from `agent/src/utils/generate-policy-pdfs.ts` into `lib/generate-policy-pdfs.ts`, loaded on demand). `.travel-faq` CSS was already ported. Remaining: visual check [V].
 
 | Aspect | Mockup [G] | admin now |
 |---|---|---|
@@ -311,5 +311,5 @@ Other codes (400/401/403/405/408/410/413/419/422/429/502/503/504) have mockups; 
 - [ ] Text: titles 24/30px, table headers 14px, secondary 16px where agent uses 16px.
 - [ ] Radii: cards/tables 8px, controls 6px, badges full pill.
 - [x] No hex outside `agent` palette + admin sidebar variation (`grep` check).
-- [~] Transaction details shows five stacked cards (done), download works (CSV done, PDF pending).
+- [x] Transaction details shows five stacked cards, download works (CSV and PDF).
 - [ ] 404/500 match copy and layout; [x] login logo renders.

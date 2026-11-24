@@ -1,4 +1,5 @@
 import type { Transaction } from '@/lib/transactions'
+import type { PolicyDocData } from '@/lib/generate-policy-pdfs'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -471,7 +472,84 @@ export function buildTransactionSummary(
     coverageGroups,
     addonItems,
     status,
+    departureDate: (pdTrip?.departure_date ?? pd.EffectiveDate ?? null) as string | null,
+    returnDate: (pdTrip?.return_date ?? pd.ExpiryDate ?? null) as string | null,
+    planLabel: rawText(pd?.plan?.name, tx?.plan_name, pd?.CarrierPlanDesc) || 'Travel insurance',
+    insurerLogoUrl:
+      rawText(
+        pd?.insurer?.logo_url,
+        pd?.insurer?.logo,
+        pd?.insurer?.image_url,
+        tx?.insurer_logo_url,
+        tx?.insurer_logo
+      ) || null,
   }
 }
 
 export type TransactionSummary = ReturnType<typeof buildTransactionSummary>
+
+/** Payment timestamp in the policy PDF style (en-GB, Asia/Manila, PHT). */
+export function formatPaidAt(value?: string | null): string {
+  if (!value) return '—'
+  const normalized = value.includes('T') ? value : value.replace(' ', 'T')
+  const date = new Date(normalized)
+  if (isNaN(date.getTime())) return value
+  return `${date.toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Manila',
+  })} PHT`
+}
+
+/** Map the summary onto the data the cover-notes PDF generator expects. */
+export function toPolicyPdfData(s: TransactionSummary): PolicyDocData {
+  const start = s.departureDate ? formatDateOnly(s.departureDate) : null
+  const end = s.returnDate ? formatDateOnly(s.returnDate) : null
+  const dates =
+    start && end ? `${start} – ${end}` : (start ?? end ?? 'Not available')
+  const from = new Date(s.departureDate ?? '')
+  const to = new Date(s.returnDate ?? '')
+  const days =
+    !isNaN(from.getTime()) && !isNaN(to.getTime())
+      ? Math.round((to.getTime() - from.getTime()) / 86_400_000) + 1
+      : 0
+  const route =
+    [s.origin, s.destination].filter((v): v is string => !!v).join(' - ') ||
+    'Not available'
+
+  return {
+    policyNo: s.policyNumber || 'Not available',
+    proposalNo: s.proposalNumber || '',
+    paymentRef: String(s.referenceId),
+    planName: s.planLabel,
+    insurer: s.insurer === '—' ? '—' : s.insurer,
+    insurerLogoUrl: s.insurerLogoUrl,
+    route,
+    dates,
+    duration: days > 0 ? `${days} ${days === 1 ? 'day' : 'days'}` : '',
+    travellers: s.travellerSummary,
+    recipient: s.holderName,
+    groups: [
+      ...s.coverageGroups.map((g) => ({
+        title: g.name,
+        rows: g.items.map((i) => ({ label: i.name, value: i.limit })),
+      })),
+      ...(s.addonItems.length
+        ? [
+            {
+              title: 'Selected add-ons',
+              rows: s.addonItems.map((i) => ({ label: i.name, value: i.limit })),
+            },
+          ]
+        : []),
+    ],
+    total: toFiniteNumber(s.amount) ?? 0,
+    paidAt: formatPaidAt(s.timestamp),
+    method: s.method === '—' ? '—' : s.method,
+    statusLabel: titleCase(s.rawStatus),
+  }
+}

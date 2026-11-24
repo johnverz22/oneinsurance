@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
+import { toast } from 'sonner'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { ExportMenu } from '@/components/ui/export-menu'
 import { StatusPill } from '@/components/ui/status-pill'
@@ -14,6 +15,7 @@ import { exportToCSV } from '@/lib/export-to-csv'
 import {
   buildTransactionSummary,
   formatTimestamp,
+  toPolicyPdfData,
   type TransactionSummary,
 } from '@/lib/transaction-summary'
 import { txStatus, type Transaction } from '@/lib/transactions'
@@ -42,6 +44,16 @@ function summaryToCsvRow(s: TransactionSummary): Record<string, unknown> {
     agent: s.agentName ?? '',
     agent_code: s.agentCode,
     add_ons: s.addonItems.map((a) => a.name).join('; '),
+  }
+}
+
+async function downloadPdf(summary: TransactionSummary) {
+  try {
+    const { downloadCoverageSummary } = await import('@/lib/generate-policy-pdfs')
+    await downloadCoverageSummary(toPolicyPdfData(summary))
+  } catch (err) {
+    console.error('Transaction PDF failed:', err)
+    toast.error('We could not create the PDF. Please try again.')
   }
 }
 
@@ -92,6 +104,11 @@ export function TransactionDetailClient({ id }: { id: string }) {
               <ExportMenu
                 label="Download transaction"
                 items={[
+                  {
+                    id: 'pdf',
+                    label: 'PDF',
+                    onSelect: () => void downloadPdf(summary),
+                  },
                   {
                     id: 'csv',
                     label: 'CSV',
