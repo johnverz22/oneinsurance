@@ -249,7 +249,6 @@ export function DashboardClient() {
               The four main admin workflows.
             </p>
           </div>
-          <span className="text-xs text-[var(--text-sub)]">Live data</span>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
           {QUICK_ACTIONS.filter((a) => matches(a.keywords)).map(

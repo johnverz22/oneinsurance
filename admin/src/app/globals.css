@@ -709,8 +709,12 @@
 
     .agent-dashboard__metric-value {
       grid-area: value;
-      align-self: end;
+      align-self: start;
       margin-top: 1.25rem;
+    }
+
+    .agent-dashboard__metric:has(.agent-dashboard__metric-description) .agent-dashboard__metric-value {
+      align-self: end;
     }
 
     .agent-dashboard__metric-description {

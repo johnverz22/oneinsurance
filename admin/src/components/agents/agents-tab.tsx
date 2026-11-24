@@ -317,6 +317,7 @@ export function AgentsTab() {
           {
             header: 'Agent code',
             rowHeader: true,
+            className: 'font-normal',
             cell: (agent) => (
               <span className={tableMutedCls}>
                 {(agent.settings?.code ?? agent.agent_code ?? 'N/A').toUpperCase()}
@@ -327,7 +328,7 @@ export function AgentsTab() {
             header: 'Name',
             mobile: 'primary',
             cell: (agent) => (
-              <span className="font-medium text-[var(--text-main)]">
+              <span className={`font-semibold ${tableMutedCls}`}>
                 {agentDisplayName(agent)}
               </span>
             ),
@@ -343,6 +344,7 @@ export function AgentsTab() {
           },
           {
             header: 'Phone',
+            className: 'whitespace-nowrap',
             cell: (agent) => (
               <span className={tableMutedCls}>
                 {agent.phone || 'N/A'}
@@ -357,6 +359,7 @@ export function AgentsTab() {
           {
             header: 'Actions',
             mobile: 'action',
+            className: 'py-3',
             cell: (agent) => {
               const status = agent.status?.toLowerCase()
               return (
