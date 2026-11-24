@@ -176,7 +176,9 @@ Also remove the redundant `<div className="mx-auto w-full max-w-7xl">` wrapper i
 
 ## 5. Screens
 
-### 5.1 Dashboard (`dashboard-client.tsx`) — `admin-dashboard`
+### 5.1 Dashboard (`dashboard-client.tsx`) — `admin-dashboard` — [x] DONE (DB1–DB10)
+
+Done: metric cards use `agent-dashboard__metric*` + `.portal-metric-value` (helper line hidden on phone), quick-action and area panels use `agent-dashboard__panel`, 14px section gaps, "Overview" heading kept as sr-only (DB8), 16px subtitles, 12px meta, `--border` borders. The helper lines ("Across all agents", "Before deductions", "After deductions", "Currently active") are placeholder copy I wrote; confirm wording against the mockup [V].
 
 Guide: four metric cards (sales, commissions, active agents), quick actions leading to the admin mockups, canonical shell. [G]
 

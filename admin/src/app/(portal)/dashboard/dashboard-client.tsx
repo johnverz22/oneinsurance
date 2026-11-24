@@ -16,32 +16,34 @@ import { PortalContentHeader } from '@/components/layout/portal-content-header'
 import { formatCurrency } from '@/lib/utils'
 import type { AgentStatistics } from '@/types/admin/auth'
 
-// ---- Overview metric card ----
+// ---- Overview metric card (agent-dashboard__metric: label/icon/value/helper grid) ----
 type MetricProps = {
   label: string
   value: string
+  description: string
   icon: React.ReactNode
   loading?: boolean
 }
 
-function MetricCard({ label, value, icon, loading }: MetricProps) {
+function MetricCard({ label, value, description, icon, loading }: MetricProps) {
   return (
-    <article className="min-h-[174px] min-w-0 rounded-lg border border-[#dfe7df] bg-white p-4 dark:border-[#3d4140] dark:bg-[#171919] sm:p-5">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-medium leading-5 text-[var(--text-sub)]">
-          {label}
-        </h3>
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#eff6ef] text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
-          {icon}
-        </span>
-      </div>
+    <article className="agent-dashboard__metric min-w-0">
+      <h3 className="agent-dashboard__metric-label text-[var(--text-main)]">
+        {label}
+      </h3>
+      <span className="agent-dashboard__metric-icon flex items-center justify-center rounded-full bg-[#eff6ef] text-[#006838] dark:bg-[#38483b] dark:text-[#d0e3c8]">
+        {icon}
+      </span>
       {loading ? (
-        <div className="skeleton mt-3 h-8 w-24 rounded-md" />
+        <div className="agent-dashboard__metric-value skeleton h-8 w-24 rounded-md" />
       ) : (
-        <p className="mt-6 text-2xl font-semibold tracking-tight text-[var(--text-main)] sm:text-3xl">
+        <p className="agent-dashboard__metric-value portal-metric-value font-semibold tracking-tight text-[var(--text-main)]">
           {value}
         </p>
       )}
+      <p className="agent-dashboard__metric-description text-[var(--text-sub)]">
+        {description}
+      </p>
     </article>
   )
 }
@@ -59,7 +61,7 @@ function ActionCard({ href, title, subtitle, meta, icon }: ActionCardProps) {
   return (
     <Link
       href={href}
-      className="agent-dashboard__action flex min-h-44 w-full flex-col items-start rounded-md border border-[#dfe7df] bg-transparent p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[#475049]"
+      className="agent-dashboard__action flex min-h-44 w-full flex-col items-start rounded-md border border-[var(--border)] bg-transparent p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#006838] dark:border-[var(--border)]"
     >
       <span className="flex size-11 items-center justify-center rounded-md bg-[#e6f2e8] text-[#006838] dark:bg-[#3d5242] dark:text-[#d0e3c8]">
         {icon}
@@ -67,11 +69,11 @@ function ActionCard({ href, title, subtitle, meta, icon }: ActionCardProps) {
       <strong className="mt-4 block text-base leading-5 text-[var(--text-main)]">
         {title}
       </strong>
-      <span className="mt-1 block text-sm leading-5 text-[var(--text-sub)]">
+      <span className="mt-1 block text-base leading-5 text-[var(--text-sub)]">
         {subtitle}
       </span>
       {meta && (
-        <span className="mt-auto pt-4 text-[11px] font-semibold text-[#006838] dark:text-[#d0e3c8]">
+        <span className="mt-auto pt-4 text-xs font-semibold text-[#006838] dark:text-[#d0e3c8]">
           {meta}
         </span>
       )}
@@ -197,35 +199,37 @@ export function DashboardClient() {
         title="Dashboard"
         description="Manage products, commissions, agents and platform activity from one place."
       />
-      <>
+      <div className="space-y-[14px]">
       {/* Overview metrics */}
-      <section aria-labelledby="admin-overview-title" className="mt-8">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-          <h2 id="admin-overview-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
-            Overview
-          </h2>
-        </div>
+      <section aria-labelledby="admin-overview-title">
+        <h2 id="admin-overview-title" className="sr-only">
+          Overview
+        </h2>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <MetricCard
             label="Total sales"
+            description="Across all agents"
             value={formatCurrency(stats?.total_sales ?? 0)}
             icon={<CreditCard className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Gross commissions"
+            description="Before deductions"
             value={formatCurrency(stats?.gross_commissions ?? 0)}
             icon={<ArrowUpRight className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Net commissions"
+            description="After deductions"
             value={formatCurrency(stats?.net_commissions ?? 0)}
             icon={<CreditCard className="size-5" aria-hidden="true" />}
             loading={statsLoading}
           />
           <MetricCard
             label="Active agents"
+            description="Currently active"
             value={String(activeAgents ?? 0)}
             icon={<Users className="size-5" aria-hidden="true" />}
             loading={agentsLoading}
@@ -236,7 +240,7 @@ export function DashboardClient() {
       {/* Quick actions */}
       <section
         aria-labelledby="admin-actions-title"
-        className="mt-5 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6"
+        className="agent-dashboard__panel min-w-0 p-5 sm:p-6"
       >
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -267,7 +271,7 @@ export function DashboardClient() {
       {/* Other admin areas */}
       <section
         aria-labelledby="admin-more-title"
-        className="mt-5 min-w-0 rounded-lg border border-[#dfe7df] bg-white p-5 dark:border-[#3d4140] dark:bg-[#171919] sm:p-6"
+        className="agent-dashboard__panel min-w-0 p-5 sm:p-6"
       >
         <h2 id="admin-more-title" className="text-xl font-semibold tracking-tight text-[var(--text-main)]">
           Other admin areas
@@ -289,7 +293,7 @@ export function DashboardClient() {
           )}
         </div>
       </section>
-    </>
+    </div>
     </>
   )
 }
