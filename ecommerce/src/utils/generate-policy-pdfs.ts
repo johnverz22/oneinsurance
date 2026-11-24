@@ -100,7 +100,7 @@ class Writer {
     if (this.logo) d.addImage(this.logo.data, 'PNG', MARGIN, this.y, logoH * this.logo.aspect, logoH, 'logo', 'FAST')
     else {
       this.font(18, true, INK_GREEN)
-      d.text('One Insurance', MARGIN, this.y + 8)
+      d.text('UnoSure', MARGIN, this.y + 8)
     }
     const tagH = 6.4
     const tagY = this.y + logoH + 3
@@ -414,7 +414,7 @@ class Writer {
 const slug = (s: string) => s.replace(/[^A-Za-z0-9-]+/g, '-')
 
 export async function downloadCoverageSummary(d: PolicyDocData) {
-  const logo = await loadImage('/images/logo-oi-light.png')
+  const logo = await loadImage('/images/logo-unosure-light.png')
   const insurerLogo = d.insurerLogoUrl ? await loadImage(d.insurerLogoUrl) : null
   const w = new Writer(
     'Cover notes',
@@ -444,7 +444,7 @@ export async function downloadCoverageSummary(d: PolicyDocData) {
 }
 
 export async function downloadReceipt(d: PolicyDocData) {
-  const logo = await loadImage('/images/logo-oi-light.png')
+  const logo = await loadImage('/images/logo-unosure-light.png')
   const insurerLogo = d.insurerLogoUrl ? await loadImage(d.insurerLogoUrl) : null
   const w = new Writer(
     'Acknowledgement receipt',

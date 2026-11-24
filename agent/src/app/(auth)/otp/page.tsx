@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { OtpForm } from './otp-form'
 
 export const metadata: Metadata = {
-  title: 'Verify your login · One Insurance',
+  title: 'Verify your login · UnoSure',
 }
 
 export default function OtpPage() {

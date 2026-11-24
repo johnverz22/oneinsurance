@@ -149,20 +149,20 @@ export function PortalTopBar() {
           )}
         </div>
 
-        <Link href="/dashboard" aria-label="One Insurance – Home" className="flex items-center">
+        <Link href="/dashboard" aria-label="UnoSure – Home" className="flex items-center">
           <Image
-            src="/images/logo-oi-light.png"
-            alt="One Insurance"
+            src="/images/logo-unosure-light.png"
+            alt="UnoSure"
             width={124}
-            height={30}
+            height={41}
             className="h-auto w-[124px] dark:hidden"
             priority
           />
           <Image
-            src="/images/logo-oi-dark.png"
-            alt="One Insurance"
+            src="/images/logo-unosure-dark.png"
+            alt="UnoSure"
             width={124}
-            height={30}
+            height={41}
             className="hidden h-auto w-[124px] dark:block"
             priority
           />

@@ -14,6 +14,10 @@ export type AgentUser = {
   email: string
   role: string
   designation: string
+  /** Agent's professional background / bio, or null when unset */
+  background?: string | null
+  /** True when the agent's email is confirmed and the account is active */
+  is_verified?: boolean
   phone: string
   status: string
   /** Structured profile photo, or null when the agent has no photo */

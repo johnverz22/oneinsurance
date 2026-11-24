@@ -14,7 +14,7 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  ShieldCheck,
+  Shield,
   AlertTriangle,
   CheckCircle2,
   Info,
@@ -46,6 +46,7 @@ const profileSchema = z.object({
       'Phone may only contain digits, spaces, brackets and dashes, with an optional leading +.',
     ),
   designation: z.string().max(100, 'Designation must be 100 characters or fewer'),
+  background: z.string().max(2000, 'Background must be 2000 characters or fewer'),
 })
 type ProfileForm = z.infer<typeof profileSchema>
 
@@ -640,6 +641,7 @@ function PasswordField({
   onToggleShow,
   autoComplete,
   minLength,
+  error,
 }: {
   id: string
   label: string
@@ -649,6 +651,7 @@ function PasswordField({
   onToggleShow: () => void
   autoComplete: string
   minLength?: number
+  error?: string
 }) {
   return (
     <div>
@@ -664,6 +667,8 @@ function PasswordField({
           autoComplete={autoComplete}
           minLength={minLength}
           required
+          aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : undefined}
           className="ui-form-field w-full pr-11"
         />
         <button
@@ -679,6 +684,11 @@ function PasswordField({
           )}
         </button>
       </div>
+      {error && (
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-xs text-[#dc2626] dark:text-red-300">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -748,6 +758,8 @@ export function SettingsClient() {
             phone: profile.phone,
             role: profile.role,
             designation: profile.designation,
+            background: profile.background ?? null,
+            is_verified: profile.is_verified,
             profile_photo: profile.profile_photo ?? null,
           })
         }
@@ -788,6 +800,11 @@ export function SettingsClient() {
   const [pwConfirm, setPwConfirm] = useState('')
   const [pwShow, setPwShow] = useState({ current: false, new: false, confirm: false })
   const [pwError, setPwError] = useState('')
+  const [pwFieldErrors, setPwFieldErrors] = useState<{
+    current?: string
+    password?: string
+    confirm?: string
+  }>({})
   const [pwSaving, setPwSaving] = useState(false)
 
   // Derived: account type from user role (read-only)
@@ -868,6 +885,7 @@ export function SettingsClient() {
       last_name: defaultLastName,
       phone: user?.phone ?? '',
       designation: user?.designation ?? '',
+      background: user?.background ?? '',
     },
   })
 
@@ -892,7 +910,7 @@ export function SettingsClient() {
     queryKey: ['referralCode', user?.id],
     queryFn: async () => {
       try {
-        const res = await authFetch(`/api/agent/referral?id=${user?.id || ''}`)
+        const res = await authFetch('/api/agent/referral')
         if (!res.ok) return null
         const json = await res.json()
         return typeof json.data === 'string' ? json.data : json.data?.referral_code || null
@@ -900,7 +918,6 @@ export function SettingsClient() {
         return null
       }
     },
-    enabled: !!user?.id,
   })
 
   const agentCode = referralCodeData || user?.agent_code || null
@@ -1084,6 +1101,8 @@ export function SettingsClient() {
     if (!original || values.phone !== original.phone) payload.phone = values.phone === '' ? null : values.phone
     if (!original || values.designation !== original.designation)
       payload.designation = values.designation === '' ? null : values.designation
+    if (!original || values.background !== original.background)
+      payload.background = values.background === '' ? null : values.background
 
     if (Object.keys(payload).length === 0) {
       setEditing(false)
@@ -1110,6 +1129,7 @@ export function SettingsClient() {
           if (fields.last_name) setError('last_name', { type: 'manual', message: fields.last_name[0] })
           if (fields.phone) setError('phone', { type: 'manual', message: fields.phone[0] })
           if (fields.designation) setError('designation', { type: 'manual', message: fields.designation[0] })
+          if (fields.background) setError('background', { type: 'manual', message: fields.background[0] })
           toast.error(err?.message || 'Please fix the highlighted fields.')
           return
         }
@@ -1197,16 +1217,17 @@ export function SettingsClient() {
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault()
     setPwError('')
+    setPwFieldErrors({})
     if (pwNew.length < 12) {
-      setPwError('New password must be at least 12 characters.')
+      setPwFieldErrors({ password: 'New password must be at least 12 characters.' })
       return
     }
     if (pwNew !== pwConfirm) {
-      setPwError('New passwords do not match.')
+      setPwFieldErrors({ confirm: 'New passwords do not match.' })
       return
     }
     if (pwNew === pwCurrent) {
-      setPwError('Choose a new password that differs from the current password.')
+      setPwFieldErrors({ password: 'Choose a new password that differs from the current password.' })
       return
     }
     setPwSaving(true)
@@ -1221,11 +1242,26 @@ export function SettingsClient() {
         }),
       })
       const json = await res.json().catch(() => null)
-      if (!res.ok) throw new Error(json?.message || 'Failed to update password')
+      if (!res.ok) {
+        if (res.status === 422 && json?.errors) {
+          const fields = json.errors as Record<string, string[]>
+          const next = {
+            current: fields.current_password?.[0],
+            password: fields.password?.[0],
+            confirm: fields.password_confirmation?.[0],
+          }
+          if (next.current || next.password || next.confirm) {
+            setPwFieldErrors(next)
+            return
+          }
+        }
+        throw new Error(json?.message || 'Failed to update password')
+      }
       toast.success('Password updated')
       setPwCurrent('')
       setPwNew('')
       setPwConfirm('')
+      setPwFieldErrors({})
       setPwShow({ current: false, new: false, confirm: false })
     } catch (err: any) {
       setPwError(err?.message || 'Failed to update password')
@@ -1235,7 +1271,7 @@ export function SettingsClient() {
   }
 
   // ---- Computed values ----
-  const isVerified = mockAccountVerified(documents)
+  const isVerified = user?.is_verified ?? mockAccountVerified(documents)
   const emailVerified = mockEmailVerified(user)
   const uploadedCount = REQUIRED_DOCUMENTS.filter((rd) => findDocForType(rd.tag)).length
   const progressPct = (uploadedCount / REQUIRED_DOCUMENTS.length) * 100
@@ -1260,7 +1296,8 @@ export function SettingsClient() {
   const allRequiredUploaded = !docsLoading && requiredTags.every(
     (tag) => !!findDocForType(tag)
   )
-  const showShieldBadge = isAgentActive && allRequiredUploaded
+  const showShieldBadge =
+    typeof user?.is_verified === 'boolean' ? isVerified : isAgentActive && allRequiredUploaded
 
   if (!user) {
     return (
@@ -1304,7 +1341,15 @@ export function SettingsClient() {
                     last_name: defaultLastName,
                     phone: user?.phone ?? '',
                     designation: user?.designation ?? '',
+                    background: user?.background ?? '',
                   }
+                  resetProfile({
+                    first_name: defaultFirstName,
+                    last_name: defaultLastName,
+                    phone: user?.phone ?? '',
+                    designation: user?.designation ?? '',
+                    background: user?.background ?? '',
+                  })
                   setEditing(true)
                 }}
                 className="shrink-0"
@@ -1366,20 +1411,25 @@ export function SettingsClient() {
                     }}
                   />
                 </label>
-                {/* Shield badge — active agent with all required docs = shield, otherwise = warning */}
+                {/* Shield badge — filled for licensed agents, outlined for referral partners */}
                 {showShieldBadge ? (
-                  <span
-                    aria-label="Active agent badge"
-                    role="img"
-                    className={cn(
-                      'absolute -bottom-1 -right-1 grid size-8 place-items-center rounded-full border-2 border-white dark:border-[#282c29]',
-                      accountType === 'advisor'
-                        ? 'bg-[#006838] text-white'
-                        : 'bg-white text-[#006838] ring-1 ring-[var(--field-border)] dark:bg-[#282c29] dark:text-[#d0e3c8]'
-                    )}
-                  >
-                    <ShieldCheck className="size-4" aria-hidden="true" />
-                  </span>
+                  accountType === 'advisor' ? (
+                    <span
+                      aria-label="Licensed agent badge"
+                      role="img"
+                      className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full bg-[#006838] text-white"
+                    >
+                      <Shield className="size-[18px]" strokeWidth={2} aria-hidden="true" />
+                    </span>
+                  ) : (
+                    <span
+                      aria-label="Referral partner badge"
+                      role="img"
+                      className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full border-2 border-[#d0e3c8] bg-white text-[#006838] dark:border-[#3d4140] dark:bg-[#282c29] dark:text-[#d0e3c8]"
+                    >
+                      <Shield className="size-[18px]" strokeWidth={2} aria-hidden="true" />
+                    </span>
+                  )
                 ) : (
                   <span
                     aria-label="Account pending or incomplete"
@@ -1430,33 +1480,6 @@ export function SettingsClient() {
               </div>
             </div>
 
-            {/* Account type — segmented control */}
-            <div
-              role="group"
-              aria-label="Preview account type"
-              className="flex rounded-md border border-[var(--border)] p-1 dark:border-[#3d4140]"
-            >
-              <button
-                type="button"
-                aria-pressed={accountType === 'advisor'}
-                className={cn(
-                  'min-h-10 rounded px-3 text-base font-semibold focus-visible:outline-2 focus-visible:outline-[#006838]',
-                  accountType === 'advisor' ? 'bg-[#006838] text-white' : 'text-[#006838] dark:text-[#d0e3c8]'
-                )}
-              >
-                Agent / advisor
-              </button>
-              <button
-                type="button"
-                aria-pressed={accountType === 'referral'}
-                className={cn(
-                  'min-h-10 rounded px-3 text-base font-semibold focus-visible:outline-2 focus-visible:outline-[#006838]',
-                  accountType === 'referral' ? 'bg-[#006838] text-white' : 'text-[#006838] dark:text-[#d0e3c8]'
-                )}
-              >
-                Referral partner
-              </button>
-            </div>
           </div>
 
           {/* Profile fields (read-only fact grid) */}
@@ -1491,7 +1514,7 @@ export function SettingsClient() {
               <div>
                 <p className="text-sm text-[var(--text-sub)]">Your background</p>
                 <p className="mt-1 font-semibold text-[var(--text-main)]">
-                  {user?.designation || 'Not selected'}
+                  {user?.background || user?.designation || 'Not selected'}
                 </p>
               </div>
             </div>
@@ -1542,6 +1565,15 @@ export function SettingsClient() {
                   />
                 </Field>
               </div>
+              <Field label="Your background" error={profileErrors.background?.message}>
+                <textarea
+                  rows={4}
+                  aria-invalid={!!profileErrors.background}
+                  className="ui-form-field min-h-[96px] resize-y py-2"
+                  placeholder="Tell clients about your professional background"
+                  {...regProfile('background')}
+                />
+              </Field>
               <div className="flex gap-3">
                 <button
                   type="submit"
@@ -1558,6 +1590,7 @@ export function SettingsClient() {
                         last_name: defaultLastName,
                         phone: user?.phone ?? '',
                         designation: user?.designation ?? '',
+                        background: user?.background ?? '',
                       })
                       setEditing(false)
                     }}
@@ -1591,6 +1624,7 @@ export function SettingsClient() {
                 show={pwShow.current}
                 onToggleShow={() => setPwShow((s) => ({ ...s, current: !s.current }))}
                 autoComplete="current-password"
+                error={pwFieldErrors.current}
               />
               <PasswordField
                 id="agent-new-password"
@@ -1601,6 +1635,7 @@ export function SettingsClient() {
                 onToggleShow={() => setPwShow((s) => ({ ...s, new: !s.new }))}
                 autoComplete="new-password"
                 minLength={12}
+                error={pwFieldErrors.password}
               />
               <PasswordField
                 id="agent-confirm-password"
@@ -1611,6 +1646,7 @@ export function SettingsClient() {
                 onToggleShow={() => setPwShow((s) => ({ ...s, confirm: !s.confirm }))}
                 autoComplete="new-password"
                 minLength={12}
+                error={pwFieldErrors.confirm}
               />
             </div>
             {pwError && (

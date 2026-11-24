@@ -4,7 +4,8 @@ import { BASE_URL, buildApiHeaders, unauthorized } from '@/lib/api-helpers'
 
 /**
  * GET /api/transactions/[id] — single transaction detail.
- * Supports numeric transaction ID, merchant_transaction_id, or policy_number.
+ * Supports numeric transaction ID, proposal number, merchant_transaction_id,
+ * or policy_number. The agent-scoped upstream route is tried first.
  */
 export async function GET(
   req: NextRequest,
@@ -16,34 +17,13 @@ export async function GET(
   if (!token) return unauthorized(req)
 
   const authHeaders = { Authorization: token, Accept: 'application/json' }
-  const isNumeric = /^\d+$/.test(id)
 
-  // Strategy 1: Direct endpoint lookup
-  if (isNumeric) {
+  // Strategy 1: direct endpoint lookup. The agent-scoped route accepts an id or
+  // a proposal number and only returns the signed-in agent's own transactions,
+  // so try it first and fall back to the shared transaction route.
+  for (const path of [`/agents/transactions/${id}`, `/transactions/${id}`]) {
     try {
-      const res = await axios.get(`${BASE_URL}/transactions/${id}`, { headers: authHeaders })
-      if (res.data?.data || res.data?.id)
-        return NextResponse.json(res.data, { status: 200, headers })
-    } catch (e: any) {
-      if (e.response?.status !== 404) {
-        // continue to next strategy
-      }
-    }
-
-    try {
-      const res = await axios.get(`${BASE_URL}/agents/transactions/${id}`, { headers: authHeaders })
-      if (res.data?.data || res.data?.id)
-        return NextResponse.json(res.data, { status: 200, headers })
-    } catch {}
-  } else {
-    try {
-      const res = await axios.get(`${BASE_URL}/transactions/${id}`, { headers: authHeaders })
-      if (res.data?.data || res.data?.id)
-        return NextResponse.json(res.data, { status: 200, headers })
-    } catch {}
-
-    try {
-      const res = await axios.get(`${BASE_URL}/agents/transactions/${id}`, { headers: authHeaders })
+      const res = await axios.get(`${BASE_URL}${path}`, { headers: authHeaders })
       if (res.data?.data || res.data?.id)
         return NextResponse.json(res.data, { status: 200, headers })
     } catch {}

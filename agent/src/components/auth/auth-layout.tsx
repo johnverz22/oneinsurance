@@ -42,13 +42,13 @@ export function AuthLayout({
           <Link
             href="/"
             className="inline-flex w-fit rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006838]"
-            aria-label="One Insurance home"
+            aria-label="UnoSure home"
           >
             <img
-              src="/storage/img/logo-oi-dark.png"
-              alt="One Insurance"
+              src="/storage/img/logo-unosure-dark.png"
+              alt="UnoSure"
               width={160}
-              height={41}
+              height={53}
               className="h-auto w-37"
             />
           </Link>
@@ -65,7 +65,7 @@ export function AuthLayout({
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs leading-5 text-white/80">One Insurance</p>
+            <p className="text-xs leading-5 text-white/80">UnoSure</p>
           </div>
         </aside>
 
@@ -76,7 +76,7 @@ export function AuthLayout({
             <div className="flex items-center justify-between">
               <Link
                 href="/"
-                aria-label="Back to One Insurance home"
+                aria-label="Back to UnoSure home"
                 className="inline-flex size-11 items-center justify-center rounded-md text-2xl focus-visible:outline-2 focus-visible:outline-white"
               >
                 ‹
@@ -94,10 +94,10 @@ export function AuthLayout({
               </div>
             </div>
             <img
-              src="/storage/img/logo-oi-dark.png"
-              alt="One Insurance"
+              src="/storage/img/logo-unosure-dark.png"
+              alt="UnoSure"
               width={160}
-              height={41}
+              height={53}
               className="mx-auto mt-8 h-auto w-40"
             />
           </div>
@@ -125,7 +125,7 @@ export function AuthLayout({
 
           {/* Footer */}
           <footer className="bg-white px-6 pb-6 text-center text-xs leading-5 text-[var(--text-muted)] dark:bg-[#282c29] lg:bg-transparent lg:px-0 lg:pb-0 lg:text-right lg:dark:bg-transparent">
-            <p>&copy; {new Date().getFullYear()} One Insurance. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} UnoSure. All rights reserved.</p>
           </footer>
         </div>
       </div>

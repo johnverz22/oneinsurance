@@ -1,4 +1,4 @@
-# One Insurance Agent Portal — Claude Context
+# UnoSure Agent Portal — Claude Context
 
 This file configures Claude Code and other Anthropic AI assistants for working on the `agent` app in the oneinsurance monorepo.
 

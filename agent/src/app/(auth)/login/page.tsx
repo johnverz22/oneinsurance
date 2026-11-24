@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { LoginForm } from './login-form'
 
 export const metadata: Metadata = {
-  title: 'Portal sign in · One Insurance',
+  title: 'Portal sign in · UnoSure',
 }
 
 export default function LoginPage() {

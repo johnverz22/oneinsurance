@@ -255,7 +255,7 @@ export async function createQuotePDF(
   data: QuotePDFData,
   opts: { logo?: PdfImage | null; providerLogo?: PdfImage | null; origin?: string } = {}
 ) {
-  const logo = opts.logo === undefined ? await loadImage('/images/logo-oi-light.png') : opts.logo
+  const logo = opts.logo === undefined ? await loadImage('/images/logo-unosure-light.png') : opts.logo
   const providerLogo =
     opts.providerLogo === undefined
       ? data.providerLogoUrl
@@ -516,7 +516,7 @@ function renderQuote(
   if (logo) doc.addImage(logo.data, 'PNG', MARGIN, y, logoH * logo.aspect, logoH, 'logo', 'FAST')
   else {
     font(18, 'bold', INK_GREEN)
-    doc.text('One Insurance', MARGIN, y + 8)
+    doc.text('UnoSure', MARGIN, y + 8)
   }
   const tagW = 25
   const tagH = 6.4

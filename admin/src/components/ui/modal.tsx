@@ -11,6 +11,8 @@ type ModalProps = {
   onClose: () => void
   title: React.ReactNode
   description?: React.ReactNode
+  /** Rendered to the right of the title block, before the close button. */
+  headerRight?: React.ReactNode
   children: React.ReactNode
   footer?: React.ReactNode
   className?: string
@@ -22,6 +24,7 @@ export function Modal({
   onClose,
   title,
   description,
+  headerRight,
   children,
   footer,
   className,
@@ -50,13 +53,13 @@ export function Modal({
       />
       <div
         className={cn(
-          'relative flex max-h-[90vh] w-full max-w-lg lg:max-w-2xl flex-col overflow-hidden rounded-lg border border-[#dfe7df] bg-white shadow-2xl dark:border-[#3d4140] dark:bg-[#171919]',
+          'relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-[#dfe7df] bg-white shadow-2xl dark:border-[#3d4140] dark:bg-[#171919]',
           className
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-[#dfe7df] px-5 py-4 dark:border-[#3d4140]">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight text-[var(--text-main)]">
+        <div className="flex items-center gap-3 border-b border-[#dfe7df] px-5 py-4 dark:border-[#3d4140]">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[20px] font-semibold leading-6 text-[#006838] dark:text-[#d0e3c8]">
               {title}
             </h2>
             {description && (
@@ -65,11 +68,14 @@ export function Modal({
               </p>
             )}
           </div>
+          {headerRight && (
+            <div className="shrink-0">{headerRight}</div>
+          )}
           <ActionIcon label="Close dialog" hint="Close" onClick={onClose} className="shrink-0">
             <X aria-hidden="true" />
           </ActionIcon>
         </div>
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
         {footer && (
           <div className="flex items-center justify-end gap-2 border-t border-[#dfe7df] px-5 py-4 dark:border-[#3d4140]">
             {footer}

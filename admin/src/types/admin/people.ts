@@ -100,6 +100,30 @@ export type AgentDocument = {
   updated_at?: string | null
 }
 
+export type ReferralPartner = {
+  id: number
+  name?: string
+  first_name?: string
+  middle_name?: string | null
+  last_name?: string
+  email: string
+  status: string
+  role?: number | string
+  designation?: string | null
+  phone?: string | null
+  agent_code?: string | null
+  avatar?: string | null
+  created_at: string
+  updated_at: string
+  settings?: {
+    id: number
+    agent_id: number
+    code: string
+  }
+}
+
+export type ReferralPartnersResponse = ApiResponse<Paginated<ReferralPartner>>
+
 export type Invitation = {
   id: number
   email: string

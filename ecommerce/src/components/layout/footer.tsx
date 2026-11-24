@@ -23,21 +23,21 @@ export function Footer({ agentCode = PRIMARY_AGENT_CODE }: FooterProps) {
           <div className="flex flex-col">
             <Link
               href={`/${agentCode}/travel-insurance`}
-              aria-label="One Insurance home"
+              aria-label="UnoSure home"
               className="inline-block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006838] dark:focus-visible:outline-white"
             >
               <Image
-                src="/storage/img/logo-oi-light.png"
-                alt="One Insurance"
+                src="/storage/img/logo-unosure-light.png"
+                alt="UnoSure"
                 width={176}
-                height={44}
+                height={59}
                 className="h-auto w-44 dark:hidden"
               />
               <Image
-                src="/storage/img/logo-oi-dark.png"
-                alt="One Insurance"
+                src="/storage/img/logo-unosure-dark.png"
+                alt="UnoSure"
                 width={176}
-                height={44}
+                height={59}
                 className="hidden h-auto w-44 dark:block"
               />
             </Link>

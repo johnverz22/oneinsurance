@@ -1,13 +1,13 @@
 # Skill: Google Drive–backed File Upload & Viewer
 
-**Applies to:** One Insurance agent portal (Next.js App Router)  
+**Applies to:** UnoSure agent portal (Next.js App Router)  
 **Last updated:** 2026-11-06
 
 ---
 
 ## Overview
 
-All agent files (verification documents and profile photos) are stored on Google Drive via the One Insurance backend. Because Drive URLs require auth cookies that are not available in the browser, every upload and download is proxied through Next.js API routes that inject the agent's Bearer token.
+All agent files (verification documents and profile photos) are stored on Google Drive via the UnoSure backend. Because Drive URLs require auth cookies that are not available in the browser, every upload and download is proxied through Next.js API routes that inject the agent's Bearer token.
 
 This skill covers:
 - How to upload a file through the Next.js proxy

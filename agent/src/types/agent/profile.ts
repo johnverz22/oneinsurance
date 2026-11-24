@@ -7,6 +7,10 @@ export type AgentProfile = {
   email: string
   phone: string
   designation: string
+  /** Agent's professional background / bio, or null when unset */
+  background?: string | null
+  /** True when the agent's email is confirmed and the account is active */
+  is_verified?: boolean
   role: string
   status: string
   agent_code: string | null
@@ -30,7 +34,7 @@ export type FileTag =
   | 'insurance_qual_3'
   | 'agent_license'
 
-/** A file stored on Google Drive via the One Insurance backend */
+/** A file stored on Google Drive via the UnoSure backend */
 export type AgentFile = {
   id: number | string
   /** Storage name, e.g. "valid_id.jpeg" — not a user-facing label */

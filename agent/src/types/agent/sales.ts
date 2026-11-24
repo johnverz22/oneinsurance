@@ -67,8 +67,8 @@ export type AgentStatistics = {
   active_policies?: number
   daily_premiums?: Record<string, number>
   product_sales_ranking?: Array<{
-    product_id: number
-    product_name: string
+    product_id: number | null
+    product_name: string | null
     total_cases: number
     total_sales: number
   }>

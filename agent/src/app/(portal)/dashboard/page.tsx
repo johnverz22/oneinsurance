@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { DashboardClient } from './dashboard-client'
 
 export const metadata: Metadata = {
-  title: 'Dashboard — One Insurance Agent Portal',
+  title: 'Dashboard — UnoSure Agent Portal',
 }
 
 export default function DashboardPage() {

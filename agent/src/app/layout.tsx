@@ -8,7 +8,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'One Insurance — Agent Portal',
+  title: 'UnoSure — Agent Portal',
   description: 'Agent portal for managing sales, referrals, and commissions.',
   icons: {
     icon: [

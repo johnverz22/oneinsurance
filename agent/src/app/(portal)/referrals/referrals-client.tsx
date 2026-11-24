@@ -143,12 +143,12 @@ export function ReferralsClient() {
     noticeTimer.current = setTimeout(() => setNotice(''), 4000)
   }
 
-  // Referral code query
-  const { data: referralCodeData } = useQuery({
+  // Referral code query — resolved from the token, no id required.
+  const { data: referralCodeData } = useQuery<string | null>({
     queryKey: ['referralCode', user?.id],
     queryFn: async () => {
       try {
-        const res = await authFetch(`/api/agent/referral?id=${user?.id || ''}`)
+        const res = await authFetch('/api/agent/referral')
         if (!res.ok) return null
         const json = await res.json()
         return typeof json.data === 'string' ? json.data : json.data?.referral_code || null
@@ -156,7 +156,6 @@ export function ReferralsClient() {
         return null
       }
     },
-    enabled: !!user?.id,
   })
 
   // Agent LOBs query
@@ -178,7 +177,7 @@ export function ReferralsClient() {
     },
   })
 
-  const code = referralCodeData || user?.agent_code || 'agent'
+  const code = referralCodeData || user?.agent_code || null
   const ecommerceBase = STOREFRONT_BASE_URL
 
   // Build referral links from active LOBs or defaults
@@ -193,27 +192,27 @@ export function ReferralsClient() {
           return {
             id: String(item.id || slug),
             product_name: name,
-            url: `${ecommerceBase}/${code}/${slug}`,
+            url: code ? `${ecommerceBase}/${code}/${slug}` : '',
           }
         })
     }
 
-    // Default lines of business available in One Insurance
+    // Default lines of business available in UnoSure
     return [
       {
         id: 'travel',
         product_name: 'Travel Insurance',
-        url: `${ecommerceBase}/${code}/travel-insurance`,
+        url: code ? `${ecommerceBase}/${code}/travel-insurance` : '',
       },
       {
         id: 'motor',
         product_name: 'Motor Insurance',
-        url: `${ecommerceBase}/${code}/motor-insurance`,
+        url: code ? `${ecommerceBase}/${code}/motor-insurance` : '',
       },
       {
         id: 'health',
         product_name: 'Health Insurance',
-        url: `${ecommerceBase}/${code}/health-insurance`,
+        url: code ? `${ecommerceBase}/${code}/health-insurance` : '',
       },
     ]
   })()
@@ -223,6 +222,10 @@ export function ReferralsClient() {
   )
 
   const handleCopy = async (link: ReferralLink) => {
+    if (!link.url) {
+      showNotice('Your referral code is unavailable. Contact your administrator.')
+      return
+    }
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(link.url)
@@ -362,7 +365,7 @@ export function ReferralsClient() {
           <div className="mt-6 rounded-md bg-[#eef4ee] p-4 text-base leading-6 text-[var(--text-sub)] dark:bg-[#282c29]">
             <strong className="block text-[#006838] dark:text-[#d0e3c8]">Attribution note</strong>
             Each link includes your unique agent code (
-            <span className="font-mono font-semibold text-[#006838] dark:text-[#d0e3c8]">{code}</span>).
+            <span className="font-mono font-semibold text-[#006838] dark:text-[#d0e3c8]">{code ?? 'Not available'}</span>).
             When a client purchases through your link, the policy is attributed to your account automatically.
           </div>
           <p className="mt-5 text-base leading-6 text-[var(--text-sub)]">

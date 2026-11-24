@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 7000 --webpack",
+    "dev": "next dev --port 5000 --webpack",
     "build": "NEXT_DISABLE_ESLINT=1 next build --webpack",
     "start": "next start --port 5000",
     "lint": "eslint ."

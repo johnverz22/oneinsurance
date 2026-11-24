@@ -15,7 +15,7 @@ import {
 import Link from 'next/link'
 import { subDays, format, parseISO } from 'date-fns'
 import { useAgentUser } from '@/store/agent-auth-store'
-import { cn, formatCurrency, STOREFRONT_BASE_URL } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 import { useAuthFetch } from '@/hooks/use-auth-fetch'
 import { usePortalSearchStore } from '@/store/portal-search-store'
 import { PortalContentHeader } from '@/components/layout/portal-content-header'
@@ -191,12 +191,13 @@ export function DashboardClient() {
     },
   })
 
-  // 5. Agent referral code
-  const { data: referralCodeData } = useQuery({
+  // 5. Agent referral code — the backend resolves the agent from the token,
+  // so no id is needed. `data` is null when the agent has no code.
+  const { data: referralCodeData } = useQuery<string | null>({
     queryKey: ['referralCode', user?.id],
     queryFn: async () => {
       try {
-        const res = await authFetch(`/api/agent/referral?id=${user?.id || ''}`)
+        const res = await authFetch('/api/agent/referral')
         if (!res.ok) return null
         const json = await res.json()
         return typeof json.data === 'string' ? json.data : json.data?.referral_code || null
@@ -204,12 +205,11 @@ export function DashboardClient() {
         return null
       }
     },
-    enabled: !!user?.id,
   })
 
-  // Metric values with real data
-  const totalSales = Number(stats?.total_sales ?? stats?.total_premium ?? 0)
-  const totalCases = Number(stats?.number_of_sales ?? stats?.total_cases ?? 0)
+  // Metric values with real data (prefer the canonical total_premium/total_cases)
+  const totalSales = Number(stats?.total_premium ?? stats?.total_sales ?? 0)
+  const totalCases = Number(stats?.total_cases ?? stats?.number_of_sales ?? 0)
   const netCommission = Number(stats?.net_commissions ?? stats?.gross_commissions ?? 0)
   const productsCount = Number(
     stats?.number_of_products ??
@@ -219,7 +219,7 @@ export function DashboardClient() {
   )
 
   // Real written premium for the selected period
-  const periodPremium = Number(trendData?.total_sales ?? trendData?.total_premium ?? 0)
+  const periodPremium = Number(trendData?.total_premium ?? trendData?.total_sales ?? 0)
 
   // Chart bars — daily buckets for ranges up to 31 days, equal-width
   // interval buckets for longer ranges (mockup scrolls wide charts)

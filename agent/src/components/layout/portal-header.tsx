@@ -135,14 +135,14 @@ export function PortalHeader() {
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-oi-light.png"
-          alt="One Insurance"
+          src="/images/logo-unosure-light.png"
+          alt="UnoSure"
           className="h-auto w-[124px] max-[359px]:w-[100px] dark:hidden"
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/logo-oi-dark.png"
-          alt="One Insurance"
+          src="/images/logo-unosure-dark.png"
+          alt="UnoSure"
           className="hidden h-auto w-[124px] max-[359px]:w-[100px] dark:block"
         />
       </div>

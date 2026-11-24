@@ -799,3 +799,45 @@
 .rdp-popover[data-state='closed'] {
   animation: rdp-fade-out 0.1s ease;
 }
+
+/* ── Coverage accordion (ported from agent portal) ─────────────────────── */
+.travel-faq {
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+}
+
+.travel-faq.portal-coverage-group[open] {
+  background-color: transparent;
+}
+
+.travel-faq__question::-webkit-details-marker {
+  display: none;
+}
+
+.travel-faq__chevron {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.26s ease;
+}
+
+.travel-faq[open] .travel-faq__chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-faq,
+  .travel-faq__chevron {
+    transition: none;
+  }
+}
+
+/* Tinted benefit limits surface with zebra striping. */
+.portal-benefit-list {
+  background-color: var(--subtle);
+  border-radius: 6px;
+  color: var(--text-main);
+}
+
+.portal-benefit-list dl > :nth-child(2n) {
+  background-color: var(--portal-canvas);
+}

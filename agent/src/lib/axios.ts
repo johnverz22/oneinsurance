@@ -4,7 +4,7 @@ import { useAgentAuthStore } from '@/store/agent-auth-store'
 import { createAPIResponseSchema, getFirstErrorMessage } from '@/types/base-api-response'
 
 /**
- * Axios instance pre-configured for the One Insurance backend API.
+ * Axios instance pre-configured for the UnoSure backend API.
  * Attaches the bearer token from Zustand auth store on every request.
  * Handles 401 → logout + redirect, and unwraps API error messages.
  */

@@ -114,7 +114,7 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
       >
         <Link
           href="/dashboard"
-          aria-label="One Insurance dashboard"
+          aria-label="UnoSure dashboard"
           className={cn(
             'inline-flex min-h-12 items-center rounded-md focus-visible:outline-2 focus-visible:outline-[#183d2c]',
             collapsed ? 'ms-0' : 'ms-3'
@@ -122,17 +122,17 @@ export function PortalSidebar({ collapsed }: { collapsed: boolean }) {
         >
           {/* Full wordmark — hidden when collapsed */}
           <Image
-            src="/images/logo-oi-dark.png"
-            alt=""
+            src="/images/logo-unosure-dark.png"
+            alt="UnoSure"
             width={144}
-            height={36}
+            height={48}
             className={cn('h-auto w-36', collapsed && 'hidden')}
             priority
           />
           {/* Shield mark — only visible when collapsed */}
           <Image
-            src="/images/logo-oi-shield-dark.svg"
-            alt=""
+            src="/images/icon-unosure-dark.png"
+            alt="UnoSure"
             width={36}
             height={36}
             className={cn('size-9', !collapsed && 'hidden')}

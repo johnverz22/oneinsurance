@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import SignupForm from './signup-form'
 
 export const metadata: Metadata = {
-  title: 'One Insurance | Agent Sign Up',
+  title: 'UnoSure | Agent Sign Up',
   description: 'Complete your agent account registration.',
 }
 

@@ -7,18 +7,20 @@ export async function GET(req: NextRequest) {
   const token = req.headers.get('Authorization')
   if (!token) return unauthorized(req)
 
+  // date_from / date_to are optional. Send both or neither — without them the
+  // backend returns all-time figures. Never inject a default range.
   const { searchParams } = req.nextUrl
   const params = new URLSearchParams()
-
-  const now = new Date()
-  const defaultDateFrom = `${now.getFullYear() - 1}-01-01`
-  const defaultDateTo = now.toISOString().split('T')[0]
-
-  params.set('date_from', searchParams.get('date_from') || defaultDateFrom)
-  params.set('date_to', searchParams.get('date_to') || defaultDateTo)
+  const dateFrom = searchParams.get('date_from')
+  const dateTo = searchParams.get('date_to')
+  if (dateFrom) params.set('date_from', dateFrom)
+  if (dateTo) params.set('date_to', dateTo)
+  const query = params.toString()
 
   try {
-    const url = `${BASE_URL}/agents/statistics?${params.toString()}`
+    const url = query
+      ? `${BASE_URL}/agents/statistics?${query}`
+      : `${BASE_URL}/agents/statistics`
     const response = await axios.get(url, {
       headers: { Authorization: token, Accept: 'application/json' },
     })

@@ -500,27 +500,27 @@ export function Header({
         isLanding ? 'sticky top-0' : 'relative pt-[env(safe-area-inset-top)] md:sticky md:top-0 md:pt-0'
       } ${isStuck ? 'is-stuck' : ''}`}
     >
-      <div className={`travel-header__main-row flex w-full ${isLanding ? 'min-h-20' : 'min-h-16 sm:min-h-20 lg:h-16 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8'} items-center justify-between gap-3 px-5 sm:gap-5 sm:px-8 lg:px-12`}>
+      <div className={`travel-header__main-row flex w-full ${isLanding ? 'min-h-20' : 'min-h-16 sm:min-h-20 lg:min-h-20 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8'} items-center justify-between gap-3 px-5 sm:gap-5 sm:px-8 lg:px-12`}>
         <Link
           href={homePath}
-          aria-label="One Insurance home"
+          aria-label="UnoSure home"
           className="travel-header__brand shrink-0 rounded-sm lg:justify-self-start focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#006838]"
         >
           <Image
-            src="/storage/img/logo-oi-light.png"
-            alt="One Insurance"
+            src="/storage/img/logo-unosure-light.png"
+            alt="UnoSure"
             width={160}
-            height={40}
+            height={53}
             priority
-            className={cn('travel-header__logo-light h-auto dark:hidden', isLanding ? 'w-28 sm:w-40' : 'w-24 sm:w-40 lg:h-8 lg:w-auto')}
+            className={cn('travel-header__logo-light h-auto dark:hidden', isLanding ? 'w-28 sm:w-40' : 'w-24 sm:w-40')}
           />
           <Image
-            src="/storage/img/logo-oi-dark.png"
-            alt="One Insurance"
+            src="/storage/img/logo-unosure-dark.png"
+            alt="UnoSure"
             width={160}
-            height={40}
+            height={53}
             priority
-            className={cn('travel-header__logo-dark hidden h-auto dark:block', isLanding ? 'w-28 sm:w-40' : 'w-24 sm:w-40 lg:h-8 lg:w-auto')}
+            className={cn('travel-header__logo-dark hidden h-auto dark:block', isLanding ? 'w-28 sm:w-40' : 'w-24 sm:w-40')}
           />
         </Link>
 
